@@ -85,16 +85,25 @@ final class AdminRegistrar implements RegistrarInterface {
 
 	/**
 	 * The admin app is an ES module build; WordPress 6.4 has no module API, so the tag is adjusted here.
+	 * WordPress hands the filter the inline "before" script (window.swgAdmin) together with the `src` script,
+	 * so only the opening tag that has a `src` attribute may become a module; the inline script stays classic.
 	 *
-	 * @param string $tag    Script tag.
+	 * @param string $tag    Script tag(s).
 	 * @param string $handle Script handle.
 	 */
 	public function mark_as_module( string $tag, string $handle ): string {
 		if ( self::ASSET_HANDLE !== $handle ) {
 			return $tag;
 		}
-		$tag = (string) preg_replace( '/\stype=([\'"])[^\'"]*\1/', '', $tag, 1 );
-		return (string) preg_replace( '/<script\b/', '<script type="module"', $tag, 1 );
+		return (string) preg_replace_callback(
+			'/<script\b[^>]*\ssrc=[^>]*>/',
+			static function ( array $found ): string {
+				$open = (string) preg_replace( '/\stype=([\'"])[^\'"]*\1/', '', $found[0], 1 );
+				return (string) preg_replace( '/^<script\b/', '<script type="module"', $open, 1 );
+			},
+			$tag,
+			1
+		);
 	}
 
 	/**

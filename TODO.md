@@ -128,6 +128,7 @@ Tooling and tests
 - [ ] FU-02 `MediaLibraryProvider` uses `edit_post` per attachment (authors see only their own uploads) — stricter than D11 and than `WpGalleryAccessPolicy::canUseAttachment`. Align it with the policy or document why not (M4-08).
 - [ ] FU-03 REST (M2-03): call `WpGalleryAccessPolicy::canPublish` when a request sets status `publish`; `GalleryService` has no publish check.
 - [ ] FU-04 Service wiring (M1-18, orchestrator): build `Services`-based registry — `WpGalleryRepository`, `WpdbGalleryRelations`, `WpGalleryAccessPolicy`, `WpMediaRepository`, `WpdbGalleryItemRepository(Services::transactions())`, `PostMetaRevisionStore`, `ConsistencyRepair`, core `GalleryService`/`GalleryItemService`/`GalleryItemEditService` with `Services::logger()`/`events()`.
+- [ ] FU-06 E2E: on this host ~1 in 3 page loads lose all requests (`net::ERR_NETWORK_CHANGED`, many Docker veth interfaces churning); `retries: 1` hides it (reported as flaky). Verified in a trace: WordPress's own scripts fail too, so not a plugin defect. Revisit on CI.
 - [ ] FU-05 Docs: `docs/development.md` must mention the `assets/` project, `bin/rebuild-on-change.sh`, `bin/watch-build.sh` and the new test commands.
 
 ## M2 — Management
@@ -149,7 +150,7 @@ REST API (`swg/v1`, S§8)
 Admin app (`apps/admin`, C§7)
 - [x] M2-14 Scaffold modelled on sw-backupit's admin app, copied self-contained: Vue 3, Quasar, TS strict, Vite, ESLint, Prettier, `vue-tsc`, Vitest + Vue Test Utils, `.nvmrc`, lockfile, shared `browserslist` (decisions.md).
 - [x] M2-15 Admin page registrar: menu, mount point, assets only on sw-gallery screens, validated Vite manifest, plugin version on every asset, safe diagnostic on missing build.
-- [ ] M2-36 `tests/e2e-env` (Docker Compose, throw-away WordPress + DB), `e2e/` Playwright project, `bin/test-e2e.sh`, CI job; dev-only `bin/seed.php` (galleries with generated images, never shipped) for E2E, acceptance checks and M5-01 fixtures. (Moved here per F-02.)
+- [x] M2-36 `tests/e2e-env` (Docker Compose, throw-away WordPress + DB), `e2e/` Playwright project, `bin/test-e2e.sh`, CI job; dev-only `bin/seed.php` (galleries with generated images, never shipped) for E2E, acceptance checks and M5-01 fixtures. (Moved here per F-02.)
 - [ ] M2-16 (scoping + build-time check done; open: regression test on a foreign admin screen) Quasar style isolation (`swg-` scope, no restyling of WordPress chrome); regression test on a foreign admin screen.
 - [ ] M2-17 (API-client skeleton done: nonce header, abort, GET retry, 409; open: server bootstrap, Heartbeat/auth-check nonce refresh) Typed API layer: REST root/nonce/locale/capabilities from server bootstrap, error translation, cancellation, retry, 409 surface; nonce refresh via Heartbeat and core auth-check dialog on expired login, unsaved changes kept; no `fetch()` in components.
 - [ ] M2-18 (en/de catalogs, parity test, Quasar language pack done; open: RTL mode, WordPress locale/timezone formatting) i18n bridge: vue-i18n en/de, Quasar language pack follows user locale, RTL mode for RTL locales, parity test; date/number formatting per WordPress locale/timezone.

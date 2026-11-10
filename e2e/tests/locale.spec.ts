@@ -19,9 +19,9 @@ test.describe('user with locale de_DE', () => {
       /Einstellungen$/,
       /Systemstatus$/,
     ]);
-    await expect(
-      page.locator('#swg-admin-root').getByRole('heading', { level: 1, name: 'Galerieverwaltung' }),
-    ).toBeVisible();
+    // One h1 per page: printed by the PHP admin page (screen-reader text), translated by gettext.
+    await expect(page.getByRole('heading', { level: 1, name: 'Galerieverwaltung' })).toHaveCount(1);
+    await expect(page.locator('#swg-admin-root .swg-shell__title')).toHaveText('Galerieverwaltung');
     await expect(page.locator('#swg-admin-root').getByRole('heading', { level: 2 })).toHaveText(
       'Übersicht: noch nicht verfügbar',
     );
@@ -31,11 +31,12 @@ test.describe('user with locale de_DE', () => {
     const context = await browser.newContext({ storageState: authFile('administrator') });
     const page = await context.newPage();
     await page.goto(`${baseURL}${PLUGIN_PAGE}`);
-    await expect(
-      page
-        .locator('#swg-admin-root')
-        .getByRole('heading', { level: 1, name: 'Gallery Management' }),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'Gallery Management' })).toHaveCount(
+      1,
+    );
+    await expect(page.locator('#swg-admin-root .swg-shell__title')).toHaveText(
+      'Gallery Management',
+    );
     await context.close();
   });
 });

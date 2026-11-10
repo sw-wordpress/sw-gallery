@@ -59,6 +59,21 @@ describe('app shell', () => {
     }
   });
 
+  it('marks only the active entry with aria-current and keeps the page heading in PHP', async () => {
+    const { wrapper, router } = await mountApp();
+    for (const item of NAV_ITEMS) {
+      await router.push(item.to);
+      await flushPromises();
+      const current = wrapper.findAll('.swg-nav__item[aria-current="page"]');
+      expect(current).toHaveLength(1);
+      expect(current[0]?.classes()).toContain('swg-nav__item--active');
+    }
+    // The h1 is printed by the PHP admin page; the app must not add a second one.
+    expect(wrapper.find('h1').exists()).toBe(false);
+    expect(wrapper.find('.swg-shell__title').attributes('aria-hidden')).toBe('true');
+    expect(wrapper.find('nav [role="list"]').exists()).toBe(false);
+  });
+
   it('follows the server locale', async () => {
     const { wrapper } = await mountApp('de_DE', '/galleries');
     expect(wrapper.find('.swg-placeholder__title').text()).toBe('Galerien: noch nicht verfügbar');

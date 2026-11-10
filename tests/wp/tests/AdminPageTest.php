@@ -106,6 +106,36 @@ class AdminPageTest extends SwgTestCase {
 		$this->assertSame( $other, $registrar->mark_as_module( $other, 'jquery' ) );
 	}
 
+	public function test_only_the_src_script_becomes_a_module_when_wordpress_passes_the_inline_script_too(): void {
+		$registrar = $this->registrar();
+		$inline    = "<script type='text/javascript' id='swg-admin-js-before'>\nwindow.swgAdmin = {\"a\":\">\"};\n</script>\n";
+		$main      = "<script type='text/javascript' src='https://example.test/a.js?ver=1' id='swg-admin-js'></script>\n";
+
+		$result = $registrar->mark_as_module( $inline . $main, AdminRegistrar::ASSET_HANDLE );
+
+		$this->assertStringStartsWith( $inline, $result, 'The inline script must stay a classic script.' );
+		$this->assertSame( 1, substr_count( $result, 'type="module"' ) );
+		$this->assertMatchesRegularExpression( '#<script type="module"[^>]*src=\'https://example\.test/a\.js\?ver=1\'#', $result );
+		$this->assertSame( 2, substr_count( $result, '<script' ) );
+	}
+
+	public function test_the_real_wordpress_output_marks_the_app_script_as_the_module(): void {
+		$this->write_build();
+		$registrar = $this->registrar();
+		$registrar->register();
+		$suffix = $this->open_screen( $registrar );
+		$registrar->enqueue( $suffix );
+
+		ob_start();
+		wp_scripts()->do_items( array( AdminRegistrar::ASSET_HANDLE ) );
+		$html = (string) ob_get_clean();
+
+		$this->assertSame( 1, preg_match_all( '#<script type="module"[^>]*src=.https://example\.test/build/app-abc\.js\?ver=' . preg_quote( SWGALLERY_VERSION, '#' ) . '#', $html ) );
+		$this->assertDoesNotMatchRegularExpression( '#<script[^>]*type=.module.[^>]*swg-admin-js-before#', $html );
+		$this->assertStringContainsString( 'window.swgAdmin = {', $html );
+		$this->assertSame( 1, substr_count( $html, 'type="module"' ) );
+	}
+
 	public function test_the_bootstrap_matches_the_contract_of_the_vue_app(): void {
 		$this->write_build();
 		$registrar = $this->registrar();

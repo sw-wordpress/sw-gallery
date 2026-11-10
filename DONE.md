@@ -36,3 +36,8 @@
 ## 2026-11-10 — Wave 2 stream A1
 - `WpGalleryRepository` (passes the shared repository contract), `WpGalleryAccessPolicy` (D1/D4/D11, table-tested per role), batched `MediaReference` lookup, lifecycle hooks (attachment/gallery deletion keep relations and covers consistent), `wp swg repair` (dry run by default).
 - State: 276 WordPress tests (single + multisite), 194 unit tests, merged PHP coverage 95.3 %.
+
+## 2026-11-10 — Wave 2 stream B (E2E) and first real-browser findings
+- Docker + Playwright environment (`bin/test-e2e.sh`, `tests/e2e-env`, `e2e/`, `.github/workflows/e2e.yml`): 18 tests (roles, assets only on the plugin screen with `ver=`, CSS isolation, locale, missing build, axe).
+- **Defect found by the first browser run and fixed:** `AdminRegistrar::mark_as_module()` marked the inline `window.swgAdmin` script instead of the app script as `type="module"`, so the admin page stayed blank for every role. A unit test with a single tag had missed it; now covered by a combined-tag test and a test of WordPress's real output.
+- App fixes from the browser review: oversized Quasar headings, duplicate h1 (the PHP page owns the h1), invalid list roles in the navigation (axe critical), `aria-current` on the active entry.
