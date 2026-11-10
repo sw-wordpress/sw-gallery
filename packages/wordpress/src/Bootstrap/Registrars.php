@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace SWGallery\WordPress\Bootstrap;
 
 use SWGallery\WordPress\Admin\AdminRegistrar;
+use SWGallery\WordPress\Database\SchemaRegistrar;
+use SWGallery\WordPress\Infrastructure\EventBridgeRegistrar;
 
 final class Registrars {
 
@@ -22,6 +24,8 @@ final class Registrars {
 		return array(
 			new AdminRegistrar(),
 			new CoreRegistrar(),
+			new EventBridgeRegistrar(),
+			new SchemaRegistrar(),
 		);
 	}
 }
