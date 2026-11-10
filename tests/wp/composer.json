@@ -1,0 +1,36 @@
+{
+    "name": "sw-gallery/wp-tests",
+    "description": "WordPress integration test environment (isolated from the main dev dependencies: the WP test suite needs PHPUnit 9.6).",
+    "type": "project",
+    "require": {
+        "sw-gallery/sw-gallery": "*@dev"
+    },
+    "require-dev": {
+        "johnpbloch/wordpress-core": "^6.8",
+        "phpunit/phpunit": "^9.6",
+        "wp-phpunit/wp-phpunit": "^6.8",
+        "yoast/phpunit-polyfills": "^2.0"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../..",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
+    "config": {
+        "platform": {
+            "php": "8.2.0"
+        },
+        "allow-plugins": {
+            "johnpbloch/wordpress-core-installer": true
+        }
+    },
+    "extra": {
+        "wordpress-install-dir": "vendor/wordpress"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

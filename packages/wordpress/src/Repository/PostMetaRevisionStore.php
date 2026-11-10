@@ -27,7 +27,8 @@ final class PostMetaRevisionStore implements RevisionStoreInterface {
 			throw new RevisionConflictException( $expected->value, $actual->value );
 		}
 
-		if ( '' === (string) get_post_meta( $galleryId, PostTypes::META_REV, true ) ) {
+		// metadata_exists(): get_post_meta() returns the registered default (0) for a missing row, never ''.
+		if ( ! metadata_exists( 'post', $galleryId, PostTypes::META_REV ) ) {
 			// First revision: add_post_meta(unique) is atomic enough for the unique key (post_id, meta_key) check.
 			if ( false === add_post_meta( $galleryId, PostTypes::META_REV, 1, true ) ) {
 				throw new RevisionConflictException( $expected->value, $this->current( $galleryId )->value );
