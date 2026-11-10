@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin bootstrap: registers hooks through dedicated registrars.
+ * Plugin bootstrap: runs the feature registrars.
  *
  * @package sw-gallery
  */
@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace SWGallery\WordPress;
 
-use SWGallery\WordPress\Database\Schema;
+use SWGallery\WordPress\Bootstrap\Registrars;
 
 final class Plugin {
 
@@ -20,12 +20,8 @@ final class Plugin {
 	}
 
 	public function boot(): void {
-		add_action( 'init', array( PostTypes::class, 'register' ) );
-		add_action( 'plugins_loaded', array( Schema::class, 'maybe_migrate' ) );
-		add_action( 'init', array( $this, 'load_textdomain' ) );
-	}
-
-	public function load_textdomain(): void {
-		load_plugin_textdomain( 'sw-gallery', false, dirname( plugin_basename( SWGALLERY_FILE ) ) . '/languages' );
+		foreach ( Registrars::all() as $registrar ) {
+			$registrar->register();
+		}
 	}
 }

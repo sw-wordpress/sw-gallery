@@ -81,6 +81,20 @@ final class InMemoryItems implements GalleryItemRepositoryInterface, RevisionSto
         }
     }
 
+    /** Copies the membership of one gallery to another (used by the in-memory gallery repository). */
+    public function copyGallery(int $sourceId, int $targetId): void
+    {
+        foreach ($this->findPage($sourceId, 0, PHP_INT_MAX) as $item) {
+            $this->append($targetId, $item->attachmentId);
+        }
+    }
+
+    /** Removes every relation of a gallery (permanent gallery deletion). */
+    public function removeGallery(int $galleryId): void
+    {
+        unset($this->rows[$galleryId], $this->revisions[$galleryId]);
+    }
+
     public function current(int $galleryId): Revision
     {
         return new Revision($this->revisions[$galleryId] ?? 0);

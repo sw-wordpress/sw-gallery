@@ -15,7 +15,7 @@ Still to decide later (not blocking 1.0): own gallery URLs before R1.1-05 (D13),
 Goal: run independent streams with sub-agents (one git worktree each, `isolation: worktree`), without conflicting edits. Max. 3–4 concurrent agents; more adds cost, not speed.
 Rules for agents are in `AGENTS.md` ("Parallel work"). The orchestrator (main session) owns `TODO.md`, `DONE.md`, merge order and the final checks.
 
-**Wave 0 — serial, orchestrator (seams first):** M1-01 to M1-04 and the interfaces of M1-13 (entities, repository, access-policy, layout and import contracts, no implementations); M1-18 registrar skeleton (`Plugin::boot` only iterates registrar classes, so features never edit the bootstrap again). Commit before any agent starts.
+**Wave 0 — serial, orchestrator (seams first) — DONE 2026-11-10:** M1-01 to M1-04 and the interfaces of M1-13 (entities, repository, access-policy, layout and import contracts, no implementations); M1-18 registrar skeleton (`Plugin::boot` only iterates registrar classes, so features never edit the bootstrap again). Commit before any agent starts. Reusable for the adapter streams: `tests/Support/GalleryRepositoryContract.php` (run it against every `GalleryRepositoryInterface` implementation) and `InMemoryGalleries`.
 
 | Wave | Streams (parallel) | Tasks | Owns (exclusive paths) |
 |---|---|---|---|
@@ -93,10 +93,10 @@ Status after the review on 2026-11-10. Gaps were turned into acceptance criteria
 ## M1 — Foundation (in progress)
 
 Core domain and contracts
-- [ ] M1-01 `Gallery` entity + value objects (`GalleryStatus`, `GallerySettings`, cover, owner, plain-text description per F-10); cover = any readable image, not necessarily a member; invariants unit-tested.
-- [ ] M1-02 `GalleryRepositoryInterface` (find, search page, create, update, duplicate, trash, restore, delete) + in-memory test double.
-- [ ] M1-03 `GalleryAccessPolicyInterface` with actor/context value objects (view, edit, delete, manage items); decision table unit-tested incl. D4 status rules.
-- [ ] M1-04 Layout contracts: `GalleryLayoutInterface` (`getId`, `getLabel`, `getSettingsSchema`, `render`), `LayoutRegistryInterface` with `grid` fallback result flag; `ThumbnailResolverInterface`.
+- [x] M1-01 `Gallery` entity + value objects (`GalleryStatus`, `GallerySettings`, cover, owner, plain-text description per F-10); cover = any readable image, not necessarily a member; invariants unit-tested.
+- [x] M1-02 `GalleryRepositoryInterface` (find, search page, create, update, duplicate, trash, restore, delete) + in-memory test double.
+- [x] M1-03 `GalleryAccessPolicyInterface` with actor/context value objects (view, edit, delete, manage items); decision table unit-tested incl. D4 status rules.
+- [x] M1-04 Layout contracts: `GalleryLayoutInterface` (`getId`, `getLabel`, `getSettingsSchema`, `render`), `LayoutRegistryInterface` with `grid` fallback result flag; `ThumbnailResolverInterface`.
 - [ ] M1-05 Settings schema: versioned `GallerySettings`/item settings, responsive values, strict schema subset validator in core (no dependency); unknown keys from newer versions preserved; `SortMode` enum per D3; register all S§3.1 meta with schemas and auth callbacks.
 - [ ] M1-06 `MediaRepositoryInterface` extension: batched `MediaReference` lookup (dimensions, MIME, alt, caption, title) without N+1; allowed MIME types per decisions.md (no SVG/HEIC); `WpMediaRepository` implementation.
 - [ ] M1-07 Core `EventDispatcherInterface` + events (items assigned/removed/reordered, gallery created/updated/trashed/restored/deleted/duplicated); listener failures isolated.
@@ -105,14 +105,14 @@ Core domain and contracts
 - [ ] M1-10 Item use cases: bulk remove (bounded), update overrides (`NULL` inherit vs `''` blank), set item settings; typed results.
 - [ ] M1-11 Gallery use cases (`CreateGallery`, `UpdateGallery`, `DuplicateGallery`, `Trash/Restore/DeleteGallery`); every persisted change bumps `_swg_revision`, stale writes raise `RevisionConflictException`.
 - [ ] M1-12 Access policy implementation per D1 (`post` caps, `map_meta_cap`, ownership) and D11 (readable attachments may be assigned; global metadata needs `edit_post` on the attachment).
-- [ ] M1-13 Import contracts only: `ImportSource`, `RemoteMediaObject`, `ImportResult`, `ImportCapabilities`, `FolderPage`, `RemoteMediaPage`, `MediaImportProviderInterface`, `ImportJobInterface`, provider registry; no tables, no connectors.
+- [ ] M1-13 (contracts and value objects done in Wave 0; open: `ImportProviderRegistry` implementation + tests) Import contracts only: `ImportSource`, `RemoteMediaObject`, `ImportResult`, `ImportCapabilities`, `FolderPage`, `RemoteMediaPage`, `MediaImportProviderInterface`, `ImportJobInterface`, provider registry; no tables, no connectors.
 - [ ] M1-14 Media Library provider implementing M1-13 (pages local attachments, "import" resolves to the existing attachment, no copy); contract test suite reusable for later providers.
 
 WordPress adapter
 - [ ] M1-15 `WpGalleryRepository` on `swg_gallery` (CRUD, duplicate copies membership/overrides only, cover = featured image, status, owner); remove `revisions` from CPT `supports` (F-09); attachments never touched.
 - [ ] M1-16 Lifecycle hooks: `delete_attachment` removes relations + clears cover references (render falls back to first item); `before_delete_post` removes gallery relations; trash/untrash keeps relations.
 - [ ] M1-17 Consistency repair service + `wp swg repair` (dry-run default, bounded batches, report); no deletions during read requests.
-- [ ] M1-18 Service registry/bootstrap with constructor injection; hook registration in dedicated registrars (C§3.2).
+- [ ] M1-18 (registrar skeleton done in Wave 0: `Bootstrap/RegistrarInterface`, `CoreRegistrar`, `Registrars`; open: service registry with constructor injection) Service registry/bootstrap with constructor injection; hook registration in dedicated registrars (C§3.2).
 - [ ] M1-19 Multisite + uninstall: schema on network activation and `wp_initialize_site`, per-site prefix; uninstall bounded/batched, all sites, removes options/transients only with opt-in.
 - [ ] M1-20 Schema migration runner: ordered versioned steps, repeatable, failure leaves version unchanged and retries; upgrade-from-v1 fixture test.
 
