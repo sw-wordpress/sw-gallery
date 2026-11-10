@@ -61,7 +61,8 @@ final class SettingsSchemaValidatorTest extends TestCase
 
     public function testResponsiveValuesAreValidatedPerBreakpoint(): void
     {
-        $ok = (new SettingsSchemaValidator())->validate($this->schema(), ['columns' => ['base' => 1, 'md' => 3, 'lg' => 4]]);
+        $ok = (new SettingsSchemaValidator())
+            ->validate($this->schema(), ['columns' => ['base' => 1, 'md' => 3, 'lg' => 4]]);
         self::assertTrue($ok->isValid());
 
         self::assertSame(
@@ -109,13 +110,20 @@ final class SettingsSchemaValidatorTest extends TestCase
         yield 'item type' => [['columns' => 1, 'tags' => ['a', 5]], ['swg_invalid_type@/tags/1']];
         yield 'object type' => [['columns' => 1, 'border' => [1, 2]], ['swg_invalid_type@/border']];
         yield 'nested' => [['columns' => 1, 'border' => ['width' => 'x']], ['swg_invalid_type@/border/width']];
-        yield 'multiple errors' => [['columns' => 0, 'mode' => 5], ['swg_below_minimum@/columns', 'swg_invalid_type@/mode']];
+        yield 'multiple errors' => [
+            ['columns' => 0, 'mode' => 5],
+            ['swg_below_minimum@/columns', 'swg_invalid_type@/mode'],
+        ];
     }
 
     public function testNestedRequiredAndPointerEscaping(): void
     {
         $schema = [
-            'properties' => ['a/b~c' => ['type' => 'object', 'required' => ['x'], 'properties' => ['x' => ['type' => 'string']]]],
+            'properties' => ['a/b~c' => [
+                'type' => 'object',
+                'required' => ['x'],
+                'properties' => ['x' => ['type' => 'string']],
+            ]],
         ];
         $result = (new SettingsSchemaValidator())->validate($schema, ['a/b~c' => []]);
 

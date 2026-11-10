@@ -34,7 +34,7 @@ final class SettingsSchemaValidator
     private const TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object'];
 
     /**
-     * @param array<string, mixed> $schema An object schema (its "type" may be omitted).
+     * @param array<mixed>          $schema An object schema (its "type" may be omitted).
      * @param array<string, mixed> $values
      */
     public function validate(array $schema, array $values): ValidationResult

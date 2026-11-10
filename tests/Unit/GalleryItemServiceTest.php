@@ -11,17 +11,36 @@ use SWGallery\Core\Domain\Gallery\Revision;
 use SWGallery\Core\Exception\InvalidOrderException;
 use SWGallery\Core\Exception\ItemNotFoundException;
 use SWGallery\Core\Exception\RevisionConflictException;
+use SWGallery\Core\Event\EventDispatcher;
+use SWGallery\Core\Event\EventInterface;
+use SWGallery\Core\Logging\NullLogger;
 use SWGallery\Tests\Support\InMemoryItems;
+use SWGallery\Tests\Support\InMemoryTransactionRunner;
+use SWGallery\Tests\Support\VanishingItems;
 
 final class GalleryItemServiceTest extends TestCase
 {
     private InMemoryItems $store;
     private GalleryItemService $service;
+    private InMemoryTransactionRunner $runner;
+    private EventDispatcher $events;
+    /** @var list<string> */
+    private array $seen = [];
 
     protected function setUp(): void
     {
         $this->store = new InMemoryItems([10, 11, 12]);
-        $this->service = new GalleryItemService($this->store, $this->store, $this->store);
+        $this->runner = new InMemoryTransactionRunner([$this->store]);
+        $this->events = new EventDispatcher(new NullLogger());
+        $this->events->listen(EventInterface::class, function (EventInterface $e): void {
+            $this->seen[] = $e->name();
+        });
+        $this->service = $this->serviceWith($this->runner);
+    }
+
+    private function serviceWith(InMemoryTransactionRunner $runner): GalleryItemService
+    {
+        return new GalleryItemService($this->store, $this->store, $this->store, $runner, $this->events);
     }
 
     public function testAssignReportsAddedDuplicatesAndMissingHonestly(): void
@@ -115,6 +134,134 @@ final class GalleryItemServiceTest extends TestCase
     {
         $this->expectException(ItemNotFoundException::class);
         $this->service->remove(1, 42, new Revision(0));
+    }
+
+    public function testEventsAreDispatchedOnlyForRealChanges(): void
+    {
+        $this->service->assign(1, [10, 11], new Revision(0));
+        $this->service->assign(1, [10], new Revision(1));
+        $ids = $this->store->orderedIds(1);
+        $this->service->reorder(1, array_reverse($ids), new Revision(1));
+        $this->service->remove(1, $ids[0], new Revision(2));
+        $this->service->removeMany(1, [999], new Revision(3));
+        $this->service->removeMany(1, [$ids[1]], new Revision(3));
+
+        self::assertSame(['items_assigned', 'items_reordered', 'items_removed', 'items_removed'], $this->seen);
+    }
+
+    public function testFailingWriteRollsBackItemsAndRevisionAndDispatchesNothing(): void
+    {
+        $this->store->failAfterWrites(1);
+
+        try {
+            $this->service->assign(1, [10, 11, 12], new Revision(0));
+            self::fail('The simulated failure must surface.');
+        } catch (\RuntimeException) {
+            self::assertSame(0, $this->store->count(1));
+            self::assertSame(0, $this->store->current(1)->value);
+            self::assertSame([], $this->seen);
+            self::assertSame(1, $this->runner->rollbacks);
+        }
+    }
+
+    public function testFailingRemoveAndReorderRollBackToo(): void
+    {
+        $this->service->assign(1, [10, 11], new Revision(0));
+        $ids = $this->store->orderedIds(1);
+
+        $this->store->failAfterWrites(0);
+        foreach (
+            [
+                fn () => $this->service->reorder(1, array_reverse($ids), new Revision(1)),
+                fn () => $this->service->remove(1, $ids[0], new Revision(1)),
+                fn () => $this->service->removeMany(1, $ids, new Revision(1)),
+            ] as $operation
+        ) {
+            try {
+                $operation();
+                self::fail('The simulated failure must surface.');
+            } catch (\RuntimeException) {
+                self::assertSame(1, $this->store->current(1)->value);
+                self::assertSame($ids, $this->store->orderedIds(1));
+            }
+        }
+    }
+
+    public function testWithoutTransactionsTheRevisionIsStillClaimedBeforeTheFailingWrite(): void
+    {
+        $service = $this->serviceWith(new InMemoryTransactionRunner([$this->store], false));
+        $this->store->failAfterWrites(1);
+
+        try {
+            $service->assign(1, [10, 11], new Revision(0));
+            self::fail('The simulated failure must surface.');
+        } catch (\RuntimeException) {
+            self::assertSame(1, $this->store->count(1), 'partial state remains on engines without transactions');
+            self::assertSame(1, $this->store->current(1)->value, 'the revision moved: stale clients reload');
+        }
+    }
+
+    public function testRemoveManyIsHonestAndBounded(): void
+    {
+        $this->service->assign(1, [10, 11, 12], new Revision(0));
+        $ids = $this->store->orderedIds(1);
+
+        $result = $this->service->removeMany(1, [$ids[0], $ids[2], $ids[0], 777, -1], new Revision(1));
+
+        self::assertSame([$ids[0], $ids[2]], $result->removed);
+        self::assertSame([777], $result->notFound);
+        self::assertSame(2, $result->revision->value);
+        self::assertSame([$ids[1]], $this->store->orderedIds(1));
+        self::assertSame([10, 11, 12], $this->store->existingImageIds([10, 11, 12]));
+    }
+
+    public function testRemoveManyWithNothingToRemoveKeepsTheRevision(): void
+    {
+        $result = $this->service->removeMany(1, [5], new Revision(0));
+
+        self::assertSame([], $result->removed);
+        self::assertSame([5], $result->notFound);
+        self::assertSame(0, $result->revision->value);
+    }
+
+    public function testRemoveManyChecksTheRevisionAndTheBatchLimit(): void
+    {
+        $this->service->assign(1, [10], new Revision(0));
+        $id = $this->store->orderedIds(1)[0];
+
+        try {
+            $this->service->removeMany(1, [$id], new Revision(0));
+            self::fail('A stale revision must conflict.');
+        } catch (RevisionConflictException) {
+            self::assertSame(1, $this->store->count(1));
+        }
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->service->removeMany(1, range(1, GalleryItemService::MAX_BATCH + 1), new Revision(1));
+    }
+
+    public function testConcurrentlyVanishedRelationIsReportedHonestly(): void
+    {
+        $this->service->assign(1, [10, 11], new Revision(0));
+        $ids = $this->store->orderedIds(1);
+        $service = new GalleryItemService(
+            new VanishingItems($this->store),
+            $this->store,
+            $this->store,
+            $this->runner,
+            $this->events
+        );
+
+        $result = $service->removeMany(1, [$ids[0]], new Revision(1));
+        self::assertSame([], $result->removed);
+        self::assertSame([$ids[0]], $result->notFound);
+
+        try {
+            $service->remove(1, $ids[0], new Revision(2));
+            self::fail('A vanished relation must raise not found.');
+        } catch (ItemNotFoundException) {
+            self::assertSame(2, $this->store->current(1)->value, 'the failed removal rolled its claim back');
+        }
     }
 
     public function testErrorCodesAreStable(): void

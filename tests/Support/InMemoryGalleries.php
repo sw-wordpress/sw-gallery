@@ -13,11 +13,12 @@ use SWGallery\Core\Domain\Gallery\NewGallery;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 
 /** In-memory fake of the gallery repository; membership lives in the shared InMemoryItems fake. */
-final class InMemoryGalleries implements GalleryRepositoryInterface
+final class InMemoryGalleries implements GalleryRepositoryInterface, Snapshotable
 {
     /** @var array<int, Gallery> */
     private array $galleries = [];
     private int $nextId = 1;
+    private bool $failNextWrite = false;
 
     public function __construct(private readonly InMemoryItems $items = new InMemoryItems())
     {
@@ -51,6 +52,7 @@ final class InMemoryGalleries implements GalleryRepositoryInterface
 
     public function create(NewGallery $new): Gallery
     {
+        $this->guardWrite();
         $id = $this->nextId++;
 
         return $this->galleries[$id] = new Gallery(
@@ -67,6 +69,7 @@ final class InMemoryGalleries implements GalleryRepositoryInterface
 
     public function update(Gallery $gallery): void
     {
+        $this->guardWrite();
         $this->require($gallery->id);
         if ($gallery->status === GalleryStatus::Trash) {
             throw new \InvalidArgumentException('Use trash() to move a gallery to the trash.');
@@ -76,6 +79,7 @@ final class InMemoryGalleries implements GalleryRepositoryInterface
 
     public function duplicate(int $sourceId, string $title, int $ownerId): Gallery
     {
+        $this->guardWrite();
         $source = $this->require($sourceId);
         $id = $this->nextId++;
         $copy = new Gallery(
@@ -95,19 +99,46 @@ final class InMemoryGalleries implements GalleryRepositoryInterface
 
     public function trash(int $id): void
     {
+        $this->guardWrite();
         $this->galleries[$id] = $this->require($id)->withStatus(GalleryStatus::Trash);
     }
 
     public function restore(int $id): Gallery
     {
+        $this->guardWrite();
         return $this->galleries[$id] = $this->require($id)->withStatus(GalleryStatus::Draft);
     }
 
     public function delete(int $id): void
     {
+        $this->guardWrite();
         $this->require($id);
         unset($this->galleries[$id]);
         $this->items->removeGallery($id);
+    }
+
+    /** Makes the next write operation throw once (to exercise rollback). */
+    public function failNextWrite(): void
+    {
+        $this->failNextWrite = true;
+    }
+
+    public function captureState(): mixed
+    {
+        return [$this->galleries, $this->nextId];
+    }
+
+    public function restoreState(mixed $snapshot): void
+    {
+        [$this->galleries, $this->nextId] = $snapshot;
+    }
+
+    private function guardWrite(): void
+    {
+        if ($this->failNextWrite) {
+            $this->failNextWrite = false;
+            throw new \RuntimeException('Simulated write failure.');
+        }
     }
 
     private function require(int $id): Gallery

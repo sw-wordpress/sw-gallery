@@ -64,7 +64,10 @@ final class EventDispatcherTest extends TestCase
         self::assertTrue($reached);
         self::assertSame(['swg_listener_failed'], $logger->codes());
         self::assertSame(LogLevel::Error, $logger->entries[0]['level']);
-        self::assertSame(['event' => 'gallery_trashed', 'exception' => \RuntimeException::class], $logger->entries[0]['context']);
+        self::assertSame(
+            ['event' => 'gallery_trashed', 'exception' => \RuntimeException::class],
+            $logger->entries[0]['context']
+        );
         self::assertStringNotContainsString('secret', (string) json_encode($logger->entries[0]['context']));
     }
 

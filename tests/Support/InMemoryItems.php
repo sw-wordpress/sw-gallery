@@ -5,20 +5,38 @@ declare(strict_types=1);
 namespace SWGallery\Tests\Support;
 
 use SWGallery\Core\Contract\GalleryItemRepositoryInterface;
+use SWGallery\Core\Contract\ItemOverridesStoreInterface;
+use SWGallery\Core\Contract\ItemSettingsStoreInterface;
 use SWGallery\Core\Contract\MediaRepositoryInterface;
 use SWGallery\Core\Contract\RevisionStoreInterface;
 use SWGallery\Core\Domain\Gallery\GalleryItem;
+use SWGallery\Core\Domain\Gallery\ItemOverrides;
 use SWGallery\Core\Domain\Gallery\Revision;
 use SWGallery\Core\Exception\RevisionConflictException;
 
-/** Single in-memory fake implementing the three repository contracts used by GalleryItemService. */
-final class InMemoryItems implements GalleryItemRepositoryInterface, RevisionStoreInterface, MediaRepositoryInterface
+/**
+ * Single in-memory fake implementing the repository contracts used by the item services. It can snapshot its state
+ * for InMemoryTransactionRunner and fail a write on demand to exercise rollback.
+ */
+final class InMemoryItems implements
+    GalleryItemRepositoryInterface,
+    RevisionStoreInterface,
+    MediaRepositoryInterface,
+    ItemOverridesStoreInterface,
+    ItemSettingsStoreInterface,
+    Snapshotable
 {
     /** @var array<int, array<int, array{id: int, attachment: int, position: int}>> */
     private array $rows = [];
     /** @var array<int, int> */
     private array $revisions = [];
+    /** @var array<int, array<int, ItemOverrides>> */
+    private array $overrides = [];
+    /** @var array<int, array<int, array<string, mixed>>> */
+    private array $settings = [];
     private int $nextId = 1;
+    private ?int $writesBeforeFailure = null;
+
     /**
      * @param list<int> $knownImages
      */
@@ -35,7 +53,13 @@ final class InMemoryItems implements GalleryItemRepositoryInterface, RevisionSto
         );
 
         return array_map(
-            static fn (array $r): GalleryItem => new GalleryItem($r['id'], $galleryId, $r['attachment'], $r['position']),
+            fn (array $r): GalleryItem => new GalleryItem(
+                $r['id'],
+                $galleryId,
+                $r['attachment'],
+                $r['position'],
+                $this->overrides[$galleryId][$r['id']] ?? new ItemOverrides()
+            ),
             array_slice($rows, $offset, $limit)
         );
     }
@@ -59,6 +83,7 @@ final class InMemoryItems implements GalleryItemRepositoryInterface, RevisionSto
 
     public function append(int $galleryId, int $attachmentId): GalleryItem
     {
+        $this->guardWrite();
         $position = count($this->rows[$galleryId] ?? []) + 1;
         $id = $this->nextId++;
         $this->rows[$galleryId][$id] = ['id' => $id, 'attachment' => $attachmentId, 'position' => $position];
@@ -68,14 +93,20 @@ final class InMemoryItems implements GalleryItemRepositoryInterface, RevisionSto
 
     public function remove(int $galleryId, int $itemId): bool
     {
+        $this->guardWrite();
         $existed = isset($this->rows[$galleryId][$itemId]);
-        unset($this->rows[$galleryId][$itemId]);
+        unset(
+            $this->rows[$galleryId][$itemId],
+            $this->overrides[$galleryId][$itemId],
+            $this->settings[$galleryId][$itemId]
+        );
 
         return $existed;
     }
 
     public function applyOrder(int $galleryId, array $itemIds): void
     {
+        $this->guardWrite();
         foreach ($itemIds as $index => $id) {
             $this->rows[$galleryId][$id]['position'] = $index + 1;
         }
@@ -85,14 +116,21 @@ final class InMemoryItems implements GalleryItemRepositoryInterface, RevisionSto
     public function copyGallery(int $sourceId, int $targetId): void
     {
         foreach ($this->findPage($sourceId, 0, PHP_INT_MAX) as $item) {
-            $this->append($targetId, $item->attachmentId);
+            $copy = $this->append($targetId, $item->attachmentId);
+            $this->overrides[$targetId][$copy->id] = $item->overrides;
+            $this->settings[$targetId][$copy->id] = $this->settings[$sourceId][$item->id] ?? [];
         }
     }
 
     /** Removes every relation of a gallery (permanent gallery deletion). */
     public function removeGallery(int $galleryId): void
     {
-        unset($this->rows[$galleryId], $this->revisions[$galleryId]);
+        unset(
+            $this->rows[$galleryId],
+            $this->revisions[$galleryId],
+            $this->overrides[$galleryId],
+            $this->settings[$galleryId]
+        );
     }
 
     public function current(int $galleryId): Revision
@@ -113,5 +151,59 @@ final class InMemoryItems implements GalleryItemRepositoryInterface, RevisionSto
     public function existingImageIds(array $attachmentIds): array
     {
         return array_values(array_intersect($attachmentIds, $this->knownImages));
+    }
+
+    public function saveOverrides(int $galleryId, int $itemId, ItemOverrides $overrides): bool
+    {
+        $this->guardWrite();
+        if (!isset($this->rows[$galleryId][$itemId])) {
+            return false;
+        }
+        $this->overrides[$galleryId][$itemId] = $overrides;
+
+        return true;
+    }
+
+    public function itemSettings(int $galleryId, int $itemId): array
+    {
+        return $this->settings[$galleryId][$itemId] ?? [];
+    }
+
+    public function saveItemSettings(int $galleryId, int $itemId, array $settings): bool
+    {
+        $this->guardWrite();
+        if (!isset($this->rows[$galleryId][$itemId])) {
+            return false;
+        }
+        $this->settings[$galleryId][$itemId] = $settings;
+
+        return true;
+    }
+
+    /** Lets the next $writes item writes succeed and then throws on every further write (null disables). */
+    public function failAfterWrites(?int $writes): void
+    {
+        $this->writesBeforeFailure = $writes;
+    }
+
+    public function captureState(): mixed
+    {
+        return [$this->rows, $this->revisions, $this->overrides, $this->settings, $this->nextId];
+    }
+
+    public function restoreState(mixed $snapshot): void
+    {
+        [$this->rows, $this->revisions, $this->overrides, $this->settings, $this->nextId] = $snapshot;
+    }
+
+    private function guardWrite(): void
+    {
+        if ($this->writesBeforeFailure === null) {
+            return;
+        }
+        if ($this->writesBeforeFailure <= 0) {
+            throw new \RuntimeException('Simulated write failure.');
+        }
+        --$this->writesBeforeFailure;
     }
 }
