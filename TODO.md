@@ -147,7 +147,7 @@ Admin app (`apps/admin`, C§7)
 - [ ] M2-17 (API-client skeleton done: nonce header, abort, GET retry, 409; open: server bootstrap, Heartbeat/auth-check nonce refresh) Typed API layer: REST root/nonce/locale/capabilities from server bootstrap, error translation, cancellation, retry, 409 surface; nonce refresh via Heartbeat and core auth-check dialog on expired login, unsaved changes kept; no `fetch()` in components.
 - [ ] M2-18 (en/de catalogs, parity test, Quasar language pack done; open: RTL mode, WordPress locale/timezone formatting) i18n bridge: vue-i18n en/de, Quasar language pack follows user locale, RTL mode for RTL locales, parity test; date/number formatting per WordPress locale/timezone.
 - [ ] M2-19 (router + five placeholder pages done; open: deep-linkable editor route) Router + navigation shell (Overview, Galleries, Media Overview, Settings, System Status; nothing for unshipped features); stable deep-linkable routes (e.g. editor of gallery n) used by block and admin bar.
-- [ ] M2-20 (strict coverage script and local gate done; open: CI job and Sonar lcov wiring) Coverage script `scripts/check-coverage.mjs` (> 80 %), CI job (typecheck, lint, tests, production build, `npm audit`), Sonar lcov.
+- [x] M2-20 Coverage script `scripts/check-coverage.mjs` (> 80 %), CI job (typecheck, lint, tests, production build, `npm audit`), Sonar lcov.
 - [ ] M2-21 Shared state components: loading, empty, error, retry; confirmation dialog naming affected objects.
 - [ ] M2-22 Gallery list: grid + table, search, status filter, server paging; cover, title, count, status, modified; first-run empty state leads to "create gallery".
 - [ ] M2-23 Gallery list actions: create, duplicate, trash, restore, delete permanently (confirmation), preview, copy shortcode.
@@ -181,11 +181,11 @@ Admin app (`apps/admin`, C§7)
 - [ ] M3-12 Unknown layout → `grid` + diagnostic visible to editors only.
 - [ ] M3-13 Fragment cache: key = gallery revision + settings hash + visibility context + media epoch; only `publish` output cached (D4); works with and without persistent object cache.
 - [ ] M3-14 Invalidation: gallery/item/settings changes, attachment update/delete/regenerated sizes, plugin update; documented action `swg_gallery_changed` (gallery ID) for full-page cache/CDN purging; docs note on page caches and paging/password output.
-- [ ] M3-15 Lightbox (TypeScript, no third-party service): dialog semantics, focus trap/return, Escape/arrows (mirrored in RTL), counter, captions/alt, neighbour preloading, reduced motion.
-- [ ] M3-16 Lightbox touch swipe without hijacking scroll/pinch (direction mirrored in RTL); multiple independent instances; images remain plain links without JS.
-- [ ] M3-17 Frontend build: Vite pipeline for `assets/frontend` + `assets/lightbox` into generated `assets/build/` (gitignored) with manifest, shared `browserslist`; enqueue only on pages rendering a gallery, plugin version, no global injection; late-render strategy (detect block/shortcode in `wp_enqueue_scripts` where possible, footer fallback, minimal critical CSS against unstyled flash).
-- [ ] M3-18 Vitest for `assets/*` TypeScript; JS/TS coverage gate and Sonar include these sources (merged with `apps/admin`, still > 80 %).
-- [ ] M3-19 Lightbox/frontend strings server-localized (en/de).
+- [x] M3-15 Lightbox (TypeScript, no third-party service): dialog semantics, focus trap/return, Escape/arrows (mirrored in RTL), counter, captions/alt, neighbour preloading, reduced motion.
+- [x] M3-16 Lightbox touch swipe without hijacking scroll/pinch (direction mirrored in RTL); multiple independent instances; images remain plain links without JS.
+- [ ] M3-17 (build pipeline + manifest done: `assets/build/`, see `assets/README.md`; open: PHP enqueue only on pages with a gallery, plugin `ver`, late-render fallback, critical CSS) Frontend build: Vite pipeline for `assets/frontend` + `assets/lightbox` into generated `assets/build/` (gitignored) with manifest, shared `browserslist`; enqueue only on pages rendering a gallery, plugin version, no global injection; late-render strategy (detect block/shortcode in `wp_enqueue_scripts` where possible, footer fallback, minimal critical CSS against unstyled flash).
+- [x] M3-18 Vitest for `assets/*` TypeScript; JS/TS coverage gate and Sonar include these sources (merged with `apps/admin`, still > 80 %).
+- [ ] M3-19 (labels come from `data-swg-labels` incl. the optional `error` key — the PHP views must emit them) Lightbox/frontend strings server-localized (en/de).
 - [ ] M3-22 `POST /galleries/{id}/preview` (authorized, accepts unsaved settings, same renderer, never cached). (Was M2-12, moved per F-03.)
 - [ ] M3-23 Editor live preview in the Vue app (sandboxed, frontend CSS, debounced) using M3-22. (Was M2-31, moved per F-03.)
 - [ ] M3-20 Renderer tests: snapshot per layout, large gallery fixture (query-count budget), missing attachments, stale cache, multiple instances, feed context.
