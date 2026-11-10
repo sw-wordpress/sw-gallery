@@ -15,7 +15,7 @@ Still to decide later (not blocking 1.0): own gallery URLs before R1.1-05 (D13),
 Goal: run independent streams with sub-agents (one git worktree each, `isolation: worktree`), without conflicting edits. Max. 3–4 concurrent agents; more adds cost, not speed.
 Rules for agents are in `AGENTS.md` ("Parallel work"). The orchestrator (main session) owns `TODO.md`, `DONE.md`, merge order and the final checks.
 
-**Wave 0 — serial, orchestrator (seams first) — DONE 2026-11-10:** M1-01 to M1-04 and the interfaces of M1-13 (entities, repository, access-policy, layout and import contracts, no implementations); M1-18 registrar skeleton (`Plugin::boot` only iterates registrar classes, so features never edit the bootstrap again). Commit before any agent starts. Reusable for the adapter streams: `tests/Support/GalleryRepositoryContract.php` (run it against every `GalleryRepositoryInterface` implementation) and `InMemoryGalleries`.
+**Wave 0 — DONE 2026-11-10; Wave 1 — DONE 2026-11-10 (A, B, C, D merged). Wave 0 notes:** M1-01 to M1-04 and the interfaces of M1-13 (entities, repository, access-policy, layout and import contracts, no implementations); M1-18 registrar skeleton (`Plugin::boot` only iterates registrar classes, so features never edit the bootstrap again). Commit before any agent starts. Reusable for the adapter streams: `tests/Support/GalleryRepositoryContract.php` (run it against every `GalleryRepositoryInterface` implementation) and `InMemoryGalleries`.
 
 | Wave | Streams (parallel) | Tasks | Owns (exclusive paths) |
 |---|---|---|---|
@@ -97,16 +97,16 @@ Core domain and contracts
 - [x] M1-02 `GalleryRepositoryInterface` (find, search page, create, update, duplicate, trash, restore, delete) + in-memory test double.
 - [x] M1-03 `GalleryAccessPolicyInterface` with actor/context value objects (view, edit, delete, manage items); decision table unit-tested incl. D4 status rules.
 - [x] M1-04 Layout contracts: `GalleryLayoutInterface` (`getId`, `getLabel`, `getSettingsSchema`, `render`), `LayoutRegistryInterface` with `grid` fallback result flag; `ThumbnailResolverInterface`.
-- [ ] M1-05 Settings schema: versioned `GallerySettings`/item settings, responsive values, strict schema subset validator in core (no dependency); unknown keys from newer versions preserved; `SortMode` enum per D3; register all S§3.1 meta with schemas and auth callbacks.
+- [x] M1-05 Settings schema: versioned `GallerySettings`/item settings, responsive values, strict schema subset validator in core (no dependency); unknown keys from newer versions preserved; `SortMode` enum per D3; register all S§3.1 meta with schemas and auth callbacks.
 - [ ] M1-06 `MediaRepositoryInterface` extension: batched `MediaReference` lookup (dimensions, MIME, alt, caption, title) without N+1; allowed MIME types per decisions.md (no SVG/HEIC); `WpMediaRepository` implementation.
-- [ ] M1-07 Core `EventDispatcherInterface` + events (items assigned/removed/reordered, gallery created/updated/trashed/restored/deleted/duplicated); listener failures isolated.
+- [x] M1-07 Core `EventDispatcherInterface` + events (items assigned/removed/reordered, gallery created/updated/trashed/restored/deleted/duplicated); listener failures isolated.
 - [ ] M1-08 Core `LoggerInterface` (structured, safe context, no secrets) + WordPress adapter (`error_log` with `WP_DEBUG_LOG`, bounded ring buffer of 50 errors in a non-autoloaded option); `swg_*` hook bridge with `before_*` veto; document each hook in `docs/hooks.md`, fix its C§ reference.
-- [ ] M1-09 `TransactionRunnerInterface`; assign/reorder/remove/bulk-remove atomic incl. revision claim; rollback and non-transactional-engine fallback tested.
-- [ ] M1-10 Item use cases: bulk remove (bounded), update overrides (`NULL` inherit vs `''` blank), set item settings; typed results.
-- [ ] M1-11 Gallery use cases (`CreateGallery`, `UpdateGallery`, `DuplicateGallery`, `Trash/Restore/DeleteGallery`); every persisted change bumps `_swg_revision`, stale writes raise `RevisionConflictException`.
+- [x] M1-09 `TransactionRunnerInterface`; assign/reorder/remove/bulk-remove atomic incl. revision claim; rollback and non-transactional-engine fallback tested.
+- [x] M1-10 Item use cases: bulk remove (bounded), update overrides (`NULL` inherit vs `''` blank), set item settings; typed results.
+- [x] M1-11 Gallery use cases (`CreateGallery`, `UpdateGallery`, `DuplicateGallery`, `Trash/Restore/DeleteGallery`); every persisted change bumps `_swg_revision`, stale writes raise `RevisionConflictException`.
 - [ ] M1-12 Access policy implementation per D1 (`post` caps, `map_meta_cap`, ownership) and D11 (readable attachments may be assigned; global metadata needs `edit_post` on the attachment).
-- [ ] M1-13 (contracts and value objects done in Wave 0; open: `ImportProviderRegistry` implementation + tests) Import contracts only: `ImportSource`, `RemoteMediaObject`, `ImportResult`, `ImportCapabilities`, `FolderPage`, `RemoteMediaPage`, `MediaImportProviderInterface`, `ImportJobInterface`, provider registry; no tables, no connectors.
-- [ ] M1-14 Media Library provider implementing M1-13 (pages local attachments, "import" resolves to the existing attachment, no copy); contract test suite reusable for later providers.
+- [x] M1-13 Import contracts only: `ImportSource`, `RemoteMediaObject`, `ImportResult`, `ImportCapabilities`, `FolderPage`, `RemoteMediaPage`, `MediaImportProviderInterface`, `ImportJobInterface`, provider registry; no tables, no connectors.
+- [x] M1-14 Media Library provider implementing M1-13 (pages local attachments, "import" resolves to the existing attachment, no copy); contract test suite reusable for later providers.
 
 WordPress adapter
 - [ ] M1-15 `WpGalleryRepository` on `swg_gallery` (CRUD, duplicate copies membership/overrides only, cover = featured image, status, owner); remove `revisions` from CPT `supports` (F-09); attachments never touched.
@@ -117,10 +117,10 @@ WordPress adapter
 - [ ] M1-20 Schema migration runner: ordered versioned steps, repeatable, failure leaves version unchanged and retries; upgrade-from-v1 fixture test.
 
 Tooling and tests
-- [ ] M1-21 `bin/test-db.sh` + `tests/wp` environment (own Composer, single site + multisite, `composer test:wp`, `test:wp:ms`); integration tests for `WpdbGalleryItemRepository`, `PostMetaRevisionStore`, `Schema`, lifecycle hooks, uninstall preservation.
-- [ ] M1-22 PHP coverage: add adapter, plugin file and `uninstall.php` to `<source>`, merge unit + WordPress-suite Clover, gate > 80 %; test that header version equals `SWGALLERY_VERSION`.
-- [ ] M1-23 `bin/i18n.sh` (update/check), `bin/i18n-core-messages.php`, `languages/` (pot, de_DE po/mo), `I18nTest`; scripts copied self-contained (no runtime reference to `../sw-backupit`).
-- [ ] M1-24 `.github/workflows/tests.yml`: cs, cs:wp, stan, unit, WordPress suites (PHP × WP matrix), coverage gate, `composer audit`, Sonar upload.
+- [x] M1-21 `bin/test-db.sh` + `tests/wp` environment (own Composer, single site + multisite, `composer test:wp`, `test:wp:ms`); integration tests for `WpdbGalleryItemRepository`, `PostMetaRevisionStore`, `Schema`, lifecycle hooks, uninstall preservation.
+- [x] M1-22 PHP coverage: add adapter, plugin file and `uninstall.php` to `<source>`, merge unit + WordPress-suite Clover, gate > 80 %; test that header version equals `SWGALLERY_VERSION`.
+- [x] M1-23 `bin/i18n.sh` (update/check), `bin/i18n-core-messages.php`, `languages/` (pot, de_DE po/mo), `I18nTest`; scripts copied self-contained (no runtime reference to `../sw-backupit`).
+- [x] M1-24 `.github/workflows/tests.yml`: cs, cs:wp, stan, unit, WordPress suites (PHP × WP matrix), coverage gate, `composer audit`, Sonar upload.
 - [ ] M1-25 Repository basics: `README.md` (requirements, links), `LICENSE`. (Initial commit, worktree ignore rule and removal of doc links into `../sw-backupit` are done.)
 
 ## M2 — Management
@@ -140,14 +140,14 @@ REST API (`swg/v1`, S§8)
 - [ ] M2-13 REST test matrix: roles × routes, foreign-owned objects/attachments, nonce/auth boundaries, validation, paging limits, 409 races; test that no `swg/v1` route is reachable unauthenticated (D5); `docs/rest-api.md` (short).
 
 Admin app (`apps/admin`, C§7)
-- [ ] M2-14 Scaffold modelled on sw-backupit's admin app, copied self-contained: Vue 3, Quasar, TS strict, Vite, ESLint, Prettier, `vue-tsc`, Vitest + Vue Test Utils, `.nvmrc`, lockfile, shared `browserslist` (decisions.md).
+- [x] M2-14 Scaffold modelled on sw-backupit's admin app, copied self-contained: Vue 3, Quasar, TS strict, Vite, ESLint, Prettier, `vue-tsc`, Vitest + Vue Test Utils, `.nvmrc`, lockfile, shared `browserslist` (decisions.md).
 - [ ] M2-15 Admin page registrar: menu, mount point, assets only on sw-gallery screens, validated Vite manifest, plugin version on every asset, safe diagnostic on missing build.
 - [ ] M2-36 `tests/e2e-env` (Docker Compose, throw-away WordPress + DB), `e2e/` Playwright project, `bin/test-e2e.sh`, CI job; dev-only `bin/seed.php` (galleries with generated images, never shipped) for E2E, acceptance checks and M5-01 fixtures. (Moved here per F-02.)
-- [ ] M2-16 Quasar style isolation (`swg-` scope, no restyling of WordPress chrome); regression test on a foreign admin screen.
-- [ ] M2-17 Typed API layer: REST root/nonce/locale/capabilities from server bootstrap, error translation, cancellation, retry, 409 surface; nonce refresh via Heartbeat and core auth-check dialog on expired login, unsaved changes kept; no `fetch()` in components.
-- [ ] M2-18 i18n bridge: vue-i18n en/de, Quasar language pack follows user locale, RTL mode for RTL locales, parity test; date/number formatting per WordPress locale/timezone.
-- [ ] M2-19 Router + navigation shell (Overview, Galleries, Media Overview, Settings, System Status; nothing for unshipped features); stable deep-linkable routes (e.g. editor of gallery n) used by block and admin bar.
-- [ ] M2-20 Coverage script `scripts/check-coverage.mjs` (> 80 %), CI job (typecheck, lint, tests, production build, `npm audit`), Sonar lcov.
+- [ ] M2-16 (scoping + build-time check done; open: regression test on a foreign admin screen) Quasar style isolation (`swg-` scope, no restyling of WordPress chrome); regression test on a foreign admin screen.
+- [ ] M2-17 (API-client skeleton done: nonce header, abort, GET retry, 409; open: server bootstrap, Heartbeat/auth-check nonce refresh) Typed API layer: REST root/nonce/locale/capabilities from server bootstrap, error translation, cancellation, retry, 409 surface; nonce refresh via Heartbeat and core auth-check dialog on expired login, unsaved changes kept; no `fetch()` in components.
+- [ ] M2-18 (en/de catalogs, parity test, Quasar language pack done; open: RTL mode, WordPress locale/timezone formatting) i18n bridge: vue-i18n en/de, Quasar language pack follows user locale, RTL mode for RTL locales, parity test; date/number formatting per WordPress locale/timezone.
+- [ ] M2-19 (router + five placeholder pages done; open: deep-linkable editor route) Router + navigation shell (Overview, Galleries, Media Overview, Settings, System Status; nothing for unshipped features); stable deep-linkable routes (e.g. editor of gallery n) used by block and admin bar.
+- [ ] M2-20 (strict coverage script and local gate done; open: CI job and Sonar lcov wiring) Coverage script `scripts/check-coverage.mjs` (> 80 %), CI job (typecheck, lint, tests, production build, `npm audit`), Sonar lcov.
 - [ ] M2-21 Shared state components: loading, empty, error, retry; confirmation dialog naming affected objects.
 - [ ] M2-22 Gallery list: grid + table, search, status filter, server paging; cover, title, count, status, modified; first-run empty state leads to "create gallery".
 - [ ] M2-23 Gallery list actions: create, duplicate, trash, restore, delete permanently (confirmation), preview, copy shortcode.

@@ -26,28 +26,44 @@ msgid "Gallery"
 msgstr "Galerie"
 
 #: packages/wordpress/src/Support/CoreMessages.php:34
+msgid "The gallery is in a state that does not allow this operation."
+msgstr "Die Galerie befindet sich in einem Zustand, der diese Aktion nicht erlaubt."
+
+#: packages/wordpress/src/Support/CoreMessages.php:35
 msgid "The gallery item was not found."
 msgstr "Das Galerie-Element wurde nicht gefunden."
 
-#: packages/wordpress/src/Support/CoreMessages.php:35
+#: packages/wordpress/src/Support/CoreMessages.php:36
 msgid "The gallery was changed by someone else."
 msgstr "Die Galerie wurde von jemand anderem geändert."
 
-#: packages/wordpress/src/Support/CoreMessages.php:36
+#: packages/wordpress/src/Support/CoreMessages.php:37
 msgid "The gallery was not found."
 msgstr "Die Galerie wurde nicht gefunden."
 
-#: packages/wordpress/src/Support/CoreMessages.php:37
+#: packages/wordpress/src/Support/CoreMessages.php:38
 msgid "The import provider reported an error."
 msgstr "Der Import-Anbieter hat einen Fehler gemeldet."
 
-#: packages/wordpress/src/Support/CoreMessages.php:38
+#: packages/wordpress/src/Support/CoreMessages.php:39
 msgid "The layout is not registered."
 msgstr "Das Layout ist nicht registriert."
 
-#: packages/wordpress/src/Support/CoreMessages.php:39
+#: packages/wordpress/src/Support/CoreMessages.php:40
+msgid "The operation was prevented by an extension."
+msgstr "Die Aktion wurde von einer Erweiterung verhindert."
+
+#: packages/wordpress/src/Support/CoreMessages.php:41
 msgid "The order must contain every item of the gallery exactly once."
 msgstr "Die Reihenfolge muss jedes Element der Galerie genau einmal enthalten."
+
+#: packages/wordpress/src/Support/CoreMessages.php:42
+msgid "The settings are invalid."
+msgstr "Die Einstellungen sind ungültig."
+
+#: packages/wordpress/src/Support/CoreMessages.php:43
+msgid "You are not allowed to do this."
+msgstr "Dazu fehlt die Berechtigung."
 
 #. translators: 1: required PHP version, 2: current PHP version
 #: sw-gallery.php:36

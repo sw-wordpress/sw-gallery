@@ -26,27 +26,43 @@ msgid "Gallery"
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:34
-msgid "The gallery item was not found."
+msgid "The gallery is in a state that does not allow this operation."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:35
-msgid "The gallery was changed by someone else."
+msgid "The gallery item was not found."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:36
-msgid "The gallery was not found."
+msgid "The gallery was changed by someone else."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:37
-msgid "The import provider reported an error."
+msgid "The gallery was not found."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:38
-msgid "The layout is not registered."
+msgid "The import provider reported an error."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:39
+msgid "The layout is not registered."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:40
+msgid "The operation was prevented by an extension."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:41
 msgid "The order must contain every item of the gallery exactly once."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:42
+msgid "The settings are invalid."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:43
+msgid "You are not allowed to do this."
 msgstr ""
 
 #. translators: 1: required PHP version, 2: current PHP version

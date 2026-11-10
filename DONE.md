@@ -15,3 +15,10 @@
 - Import: provider-neutral contracts and value objects only (no tables, no connectors); honest `ImportResult` counts.
 - Test support: `InMemoryGalleries`, reusable `GalleryRepositoryContract`. Adapter: `Bootstrap` registrar skeleton.
 - Tests: 98 unit tests, core line coverage 100 %; PHPStan level 8, PSR-12, WPCS clean.
+
+## 2026-11-10 — M1 Wave 1 (parallel streams A–D)
+- A core use cases: settings schema validator, event dispatcher + logger contract, transactional item and gallery services with revision claim, access enforcement via `Actor`.
+- B tooling: i18n (en/de, `bin/i18n.sh`), throw-away test DB (`bin/test-db.sh`), WordPress integration suite (single + multisite), merged PHP coverage gate, CI workflow. Found and fixed a bug: first revision of a gallery always raised a conflict (`PostMetaRevisionStore`).
+- C admin app scaffold: Vue 3 + Quasar + strict TS + Vite, scoped CSS, API client skeleton, en/de catalogs; `window.swgAdmin` bootstrap shape documented in `apps/admin/README.md`.
+- D import: `ImportProviderRegistry`, `MediaLibraryProvider` (verified under real WordPress), reusable provider contract test.
+- State: 191 unit + 48 WordPress tests (single and multisite), merged PHP coverage 94.8 %, admin app 38 tests / 98.9 % lines.

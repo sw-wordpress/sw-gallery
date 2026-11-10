@@ -1,9 +1,8 @@
 <?php
 
 /**
- * PENDING: move to tests/wp once the WordPress integration suite (stream B) is merged; adjust the namespace and
- * bootstrap to the suite's conventions. Not run by any suite yet. The contract class is a plain PHPUnit TestCase,
- * so fixtures are created and removed by hand (no WP_UnitTestCase transaction rollback).
+ * Media Library provider against real WordPress. The shared contract is a plain PHPUnit TestCase, so fixtures are
+ * created and removed by hand (no WP_UnitTestCase transaction rollback); skips without the test database.
  *
  * @package sw-gallery
  */
@@ -25,14 +24,19 @@ final class MediaLibraryProviderTest extends MediaImportProviderContract
     protected function setUp(): void
     {
         parent::setUp();
+        if (!SWG_WP_DB_AVAILABLE) {
+            self::markTestSkipped('Test database unreachable: start it with bin/test-db.sh start.');
+        }
         $this->purge();
         wp_set_current_user($this->createUser('administrator'));
     }
 
     protected function tearDown(): void
     {
-        $this->purge();
-        wp_set_current_user(0);
+        if (SWG_WP_DB_AVAILABLE) {
+            $this->purge();
+            wp_set_current_user(0);
+        }
         parent::tearDown();
     }
 

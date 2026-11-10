@@ -23,6 +23,16 @@ Recorded decisions that fill gaps in `SPECIFICATION.md` (S§) / `CODE-STYLE.md` 
 | F-09 | 2026-11-10 | `swg_gallery` does not support WordPress post revisions (they would not contain items, order or settings). Concurrency uses `_swg_revision` only. |
 | F-10 | 2026-11-10 | Gallery description is plain text with line breaks (`sanitize_textarea_field`, rendered with `esc_html` + `nl2br`). |
 
+Decisions taken while implementing Wave 1 (2026-11-10):
+
+| Topic | Decision |
+|---|---|
+| Item settings schema | Layouts describe per-item settings under the key `x-item-settings` inside `getSettingsSchema()`; a layout without it accepts any item settings and stores them untouched. Responsive values use `"x-responsive": true` (plain value or object keyed `base`, `sm`, `md`, `lg`, `xl`). |
+| Authorization | Application services take an `Actor` and enforce `GalleryAccessPolicyInterface` themselves (REST is never the only gate). Unreadable attachments are reported as `missing`, so their existence does not leak. |
+| Gallery service rules | Creating/duplicating yields revision 1; `create` forces the owner to the actor; changing the owner needs `canEdit` and `canDelete`; permanent delete does not require the trash first; settings are validated only when changed. |
+| Transactions | Every write claims the revision first inside one transaction. On engines without transactions the runner just executes the work: a half-failed write still moves the revision, so stale clients reload. |
+| Media Library provider | Needs `upload_files` to list and `edit_post` per attachment (matches the Media Library grid); missing, malformed and unreadable ids all answer `swg_import_not_found`. |
+
 Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und Entscheidungen"); revisable without migration:
 
 | Topic | Default |

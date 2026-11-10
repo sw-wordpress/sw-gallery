@@ -31,12 +31,16 @@ final class CoreMessages {
 	 */
 	public static function catalog(): array {
 		return array(
+			__( 'The gallery is in a state that does not allow this operation.', 'sw-gallery' ),
 			__( 'The gallery item was not found.', 'sw-gallery' ),
 			__( 'The gallery was changed by someone else.', 'sw-gallery' ),
 			__( 'The gallery was not found.', 'sw-gallery' ),
 			__( 'The import provider reported an error.', 'sw-gallery' ),
 			__( 'The layout is not registered.', 'sw-gallery' ),
+			__( 'The operation was prevented by an extension.', 'sw-gallery' ),
 			__( 'The order must contain every item of the gallery exactly once.', 'sw-gallery' ),
+			__( 'The settings are invalid.', 'sw-gallery' ),
+			__( 'You are not allowed to do this.', 'sw-gallery' ),
 		);
 	}
 }
