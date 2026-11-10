@@ -25,6 +25,9 @@ Plan, waves and owned paths: `TODO.md` → "Parallelization plan". Sub-agents wo
 - run the relevant checks in their worktree and commit small and coherent there; never push, never touch the real WordPress install;
 - end with changed files, check results, open points and the German tester checklist (Workflow step 4).
 
+## Generated frontend output
+`assets/admin` (admin app) and `assets/build` (lightbox) are generated and git-ignored; never edit them. After an edit under `apps/admin/src` or `assets/*/src` the project hook (`.claude/settings.json` → `bin/rebuild-on-change.sh`) rebuilds the output and reports build errors back (exit 2). For manual edits run `bin/watch-build.sh`. The hook only builds (no type check): the normal gates (`npm run build`, `typecheck`, `lint`, `test:coverage`) stay mandatory.
+
 ## Translations
 Every change to user-facing text updates all languages (English + German minimum; PHP gettext catalogs in `languages/`, SPA catalogs in `apps/admin/src/i18n/`). Run `bin/i18n.sh update` and `bin/i18n.sh check`; the PHPUnit test `I18nTest` and the Vitest parity test enforce it. See `docs/translations.md`.
 
