@@ -1,6 +1,6 @@
 # Translations (i18n)
 
-Derived from `sw-backupit/docs/translations.md`. Languages: **English** (source) and **Deutsch (de_DE)** (minimum, CODE-STYLE §9); more locales may be added.
+Languages: **English** (source) and **Deutsch (de_DE)** (minimum, CODE-STYLE §9); more locales may be added.
 Regional WordPress locales (de_AT, de_CH, de_DE_formal, …) use the shipped language of the same family.
 
 | Part | Mechanism | Files |

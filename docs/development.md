@@ -1,6 +1,6 @@
 # Development
 
-Derived from `sw-backupit/docs/development.md`; commands below describe the **target setup** and exist only once the matching tooling is scaffolded (track in `TODO.md`).
+Commands below describe the **target setup** and exist only once the matching tooling is scaffolded (track in `TODO.md`).
 
 ## Setup
 ```bash
@@ -29,7 +29,7 @@ PHPStan covers all production PHP (core, adapter, plugin file, `uninstall.php`);
 ## Build
 `bin/build-zip.sh` creates `dist/sw-gallery-<version>.zip` (production Composer dependencies, compiled admin SPA/blocks/frontend). Build machine needs
 Composer and Node.js; the target host needs neither. Bundled PHP libraries are prefixed (Mozart, namespace `SWGallery\Dependencies\`) to avoid collisions.
-`make build` builds only the admin UI. Release/tag/signing flow: see backupit's `docs/github-updates.md` (not yet adopted, see `TODO.md`).
+Release/tag/signing flow: decision D8 in `decisions.md`, task M5-17 in `TODO.md`.
 
 ## Dependency security
 `composer audit --locked --no-dev` and `npm audit --omit=dev --audit-level=high` fail CI on advisories in shipped dependencies; a daily workflow audits
@@ -41,4 +41,4 @@ Coverage gate: line coverage **strictly above 80 %**, PHP and JS/TS separately (
 Vitest thresholds alone would accept exactly 80 %). Unmeasured production code is not excluded.
 
 ## Conventions
-See `AGENTS.md`, `CODE-STYLE.md`, `SPECIFICATION.md`, `translations.md`, `hooks.md`.
+See `AGENTS.md`, `CODE-STYLE.md`, `SPECIFICATION.md`, `decisions.md`, `translations.md`, `hooks.md`.

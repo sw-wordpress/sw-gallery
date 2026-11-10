@@ -1,6 +1,6 @@
 # Events and hooks – failure policy
 
-Pattern adopted from `sw-backupit/docs/hooks.md` (CODE-STYLE §3.2). Every public action/filter (`swg_*`) is an observation point with a **defined failure policy**.
+Failure policy per CODE-STYLE §9. Every public action/filter (`swg_*`) is an observation point with a **defined failure policy**.
 
 * Hooks fire only after persistent state is consistent (e.g. after gallery items/revision are saved), never mid-write.
 * Listener errors are isolated: caught, logged (no secrets), ignored. Exceptions: explicit `before_*` filters may veto (return `false`/`WP_Error`),

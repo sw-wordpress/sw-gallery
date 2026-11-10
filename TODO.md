@@ -1,24 +1,43 @@
 # TODO
 
-Plan derived from `SPECIFICATION.md` (S§) and `CODE-STYLE.md` (C§); finished work is in `DONE.md`.
+Plan derived from `SPECIFICATION.md` (S§) and `CODE-STYLE.md` (C§); finished work is in `DONE.md`, decisions in `docs/decisions.md`.
 Order is binding: M1 → M5 (S§14.4). No P1/P2 work before P0 (M1–M5) is complete (S§2.2).
-Every task ships with tests, i18n (en/de), docs and passes the Definition of Done (S§12). Tasks marked **[D n]** are blocked by an open decision.
+Task IDs are stable identifiers; the list order inside a milestone is the execution order.
+Every task ships with tests, i18n (en/de), docs and passes the Definition of Done (S§12). Decisions referenced as D n are recorded in `docs/decisions.md`.
 
 ## Open decisions (answer before the blocked task starts)
 
-| # | Question | Recommendation | Blocks |
+None at the moment. Decided on 2026-11-10: D1–D13, F-01 (rejected), F-02, F-03, F-09, F-10 — see `docs/decisions.md`.
+Still to decide later (not blocking 1.0): own gallery URLs before R1.1-05 (D13), wordpress.org distribution (D9).
+
+## Parallelization plan
+
+Goal: run independent streams with sub-agents (one git worktree each, `isolation: worktree`), without conflicting edits. Max. 3–4 concurrent agents; more adds cost, not speed.
+Rules for agents are in `AGENTS.md` ("Parallel work"). The orchestrator (main session) owns `TODO.md`, `DONE.md`, merge order and the final checks.
+
+**Wave 0 — serial, orchestrator (seams first):** M1-01 to M1-04 and the interfaces of M1-13 (entities, repository, access-policy, layout and import contracts, no implementations); M1-18 registrar skeleton (`Plugin::boot` only iterates registrar classes, so features never edit the bootstrap again). Commit before any agent starts.
+
+| Wave | Streams (parallel) | Tasks | Owns (exclusive paths) |
 |---|---|---|---|
-| D1 | Capability model: reuse `post` capabilities (current code) or dedicated `swg_gallery` capability type added to roles? | Keep `post` caps for 1.0 (no role-table writes, clean uninstall); authors manage own galleries, `edit_others_posts` for foreign ones. | M1-12, M2-01 |
-| D2 | Media picker: native `wp.media` modal or own Quasar picker on `GET /media`? S§6 says "media-modal picker", S§8 defines `/media`. | Native `wp.media` in the editor (Media Library compatibility); `/media` serves Media Overview and search. | M2-27 |
-| D3 | `_swg_sort_mode` values are not specified (S§3.1). | `manual` (default), `date_asc/desc`, `title_asc/desc`; non-manual modes resolved at query time, positions untouched. | M1-05, M3-03 |
-| D4 | Embedding non-public galleries (S§5.2): behaviour for `private`, password, `draft`, `trash`. | private → only with `read_post`; password → core password form; draft/trash → nothing (diagnostic for editors only); only `publish` is fragment-cached. | M3-02 |
-| D5 | Frontend paging in 1.0: P0 demands pagination + no-JS, "load-more UI" is 1.1 (S§2). | Link-based pages with a per-instance query arg in 1.0; JS load-more in 1.1. | M3-11 |
-| D6 | "Media Overview" page (S§6) has no defined scope. | Permission-filtered attachment browser with "used in n galleries"; read-only apart from "add to gallery". | M2-33 |
-| D7 | "Admin side panels" registry (S§7) is unspecified for a compiled Vue SPA. | 1.0: PHP registries for layouts/import providers + documented hooks; side-panel registry deferred to 1.1 and documented as not implemented. | M4-12 |
-| D8 | GitHub self-update / signed releases: adopt `../sw-backupit/docs/github-updates.md`? | Adopt unchanged (only if D9 = GitHub). | M5-17 |
-| D9 | Distribution channel: GitHub only, or also wordpress.org? wordpress.org forbids an own updater and needs `readme.txt` + Plugin Check. | GitHub only for 1.0; keep the code wordpress.org-compatible (updater isolated in one removable module). | M5-09, M5-17 |
-| D10 | Masonry order: CSS columns keep no-JS but run the manual order **down** each column, so visual and keyboard order differ from the editor order. | Row-ordered server markup with CSS fallback (grid-like without JS) + small JS enhancement that packs columns while keeping DOM order. | M3-09 |
-| D11 | May a user add attachments owned by others to an own gallery? | Yes if the attachment is readable in the Media Library (as with core image blocks); editing global metadata still needs `edit_post` on the attachment. | M1-12, M2-09 |
+| 1 | A core use cases | M1-05, M1-07, M1-09, M1-10, M1-11 (+ M1-02/M1-03 test doubles) | `packages/core/`, `tests/Unit/`, `tests/Support/` |
+| 1 | B tooling/CI | M1-21, M1-22, M1-23, M1-24 | `bin/`, `tests/wp/`, `.github/`, `phpunit.xml.dist`, `languages/`, `tests/coverage/` |
+| 1 | C admin scaffold | M2-14, M2-20 (then M2-15 after A+B merged) | `apps/admin/` |
+| 1 | D import provider | M1-13 implementation, M1-14 | `packages/core/src/**/Import/`, `packages/wordpress/src/Import/` |
+| 2 | A adapter | M1-06, M1-08, M1-12, M1-15 to M1-17, M1-19, M1-20 (after A merged; may split repository/lifecycle vs. migration/uninstall) | `packages/wordpress/src/` (own subfolders), `tests/wp/` |
+| 2 | B E2E env | M2-36 (needs M2-15) | `e2e/`, `tests/e2e-env/` |
+| 2 | C frontend build + lightbox | M3-17, M3-15, M3-16, M3-18 (markup contract from M3-07 draft) | `assets/frontend/`, `assets/lightbox/`, `vite` config |
+| 3 | REST per route group | galleries (M2-02–04), items/order (M2-05–07), media (M2-09), settings/status/layouts (M2-08, M2-10, M2-11) | `packages/wordpress/src/Rest/<Group>/`; shared `Rest` base (M2-01) merged first |
+| 3 | Vue features against mocks | list (M2-22/23), editor shell (M2-24), items grid + reorder (M2-25/26), picker/upload (M2-27/28), details + settings panel (M2-29/30) | `apps/admin/src/features/<feature>/` |
+| 4 | Renderer, then layouts | M3-01 to M3-07 serial; then grid, masonry, justified (M3-08–10) and every layout of `docs/layout-proposals.md` as one agent each | `packages/wordpress/src/Rendering/Layout/<Id>/`, `resources/views/layouts/<id>/` |
+| 4 | WordPress surfaces | shortcode (M4-01), PHP API (M4-02), block + glue (M4-03/04) | `Shortcode/`, `Block/`, `assets/blocks/` |
+| 5 | Hardening | M5 tasks by theme (performance, security review, a11y, docs); review agents get code, not conclusions | per task |
+
+**Merge rules**
+- Order inside a wave: tooling → core → adapter → UI. After every merge the orchestrator runs `composer check`, `composer test:coverage`, and for JS `npm run typecheck && npm run lint && npm run test:coverage`; failures go back to the owning agent.
+- Shared files are edited by one owner only: `composer.json`/lockfiles/`package.json` (stream B or C of the wave), `phpunit.xml.dist`/`phpcs*.xml.dist`/`phpstan.neon.dist` (stream B), `docs/hooks.md` (append-only, sorted at merge), `TODO.md`/`DONE.md` (orchestrator).
+- Translations: agents add strings to their own feature files/keys; the orchestrator runs `bin/i18n.sh update` + `check` once per merge.
+- Contracts change only through the orchestrator; an agent that needs an interface change stops and reports instead of editing it.
+- Each agent ends with: changed files, commands run with results, open points, and the German tester checklist required by `AGENTS.md`.
 
 ## Review findings (specification/style gaps turned into tasks)
 
@@ -37,79 +56,61 @@ Every task ships with tests, i18n (en/de), docs and passes the Definition of Don
 
 ## Findings / Open Topics
 
-Comments, uncovered topics and ideas beyond the specification. Nothing here is scheduled yet; each line names a suggested target.
-Legend: **Gap** = needed for a sound 1.0, should become a task; **Decide** = needs Stefan's answer; **Idea** = optional, do not build without approval (S§10 preamble: no invented features).
+Status after the review on 2026-11-10. Gaps were turned into acceptance criteria of the named tasks; open decisions moved to the table above; ideas moved to the post-1.0 backlog (need approval before they are built).
 
-Plan and process
-- [ ] F-01 **Gap** Walking skeleton first: S§14.4 orders the work by layer, so nothing is user-testable until late M2. Suggest a thin slice right after M1 (create gallery via REST → assign images → `[sw_gallery]` renders a plain grid) to validate the data model and access policy early. Target: between M1 and M2.
-- [ ] F-02 **Gap** E2E environment (M2-36) comes late; every admin task before it lacks browser proof. Suggest moving M2-36 directly after M2-15.
-- [ ] F-03 **Gap** Preview crosses milestones (M2-12, M2-31 depend on M3-01). Suggest moving both to M3 instead of shipping a 501 route.
-- [ ] F-04 **Gap** C§1 refers to "recorded architecture decisions" but no place exists. Suggest `docs/decisions.md` (one short entry per answered D-item).
-- [ ] F-05 **Gap** Patterns are copied from `../sw-backupit`, which is not part of this repository; docs link into it (`docs/development.md` → `github-updates.md`). CI and other contributors cannot follow these links. Copies must be self-contained. Target: M1-23, M2-14, M5-11.
-- [ ] F-06 **Gap** No compatibility policy for public contracts (hooks, PHP API, REST, layout interface): semver meaning, deprecation period, `@since`. Target: M4-14.
-- [ ] F-07 Comment: there are no runtime Composer dependencies today, so Mozart prefixing (M5-09) is only needed if one is added; keep it conditional (S§14.9).
-
-Data model and lifecycle
-- [ ] F-08 **Decide** Portability: gallery membership lives in a custom table, so the WordPress exporter (WXR) and most migration tools move galleries **without their images**, and attachment IDs change on import. Bulk export is only planned for 1.2. Options: (a) document the limitation for 1.0, (b) `wp swg export/import` with ID remapping in 1.0. Recommendation: (a) + README warning, (b) with R1.2-02.
-- [ ] F-09 **Decide** The CPT supports `revisions`, but WordPress post revisions do not contain items, order or settings; restoring one would produce an inconsistent gallery, and the name collides with `_swg_revision`. Recommendation: drop `revisions` support in 1.0. Target: M1-15.
-- [ ] F-10 **Decide** Gallery description format: plain text or limited rich text (CPT has `editor` support). Recommendation: plain text with line breaks; avoids a second HTML sanitising surface. Target: M1-01.
-- [ ] F-11 **Gap** Cover rules are undefined: must the cover be a member of the gallery, and what happens when it is removed or deleted? Recommendation: any readable image attachment; fallback to the first item when missing. Target: M1-01, M1-16.
-- [ ] F-12 **Gap** Supported media types are not listed: WebP/AVIF, animated GIF, SVG (no dimensions → CLS, security), HEIC, `-scaled` originals. Recommendation: raster image MIME types WordPress can produce sub-sizes for; SVG excluded in 1.0. Target: M1-06, M3-05.
-- [ ] F-13 **Gap** No tested upper bound per gallery. Recommendation: document and test a ceiling (e.g. 10 000 items); reorder currently rewrites every position, consider gapped positions or one `CASE` update. Target: M5-01.
-- [ ] F-14 **Gap** Settings forward compatibility: behaviour when stored settings come from a newer plugin version (downgrade) — preserve unknown keys or reset? Recommendation: preserve, render with known keys. Target: M1-05.
-- [ ] F-15 **Idea** Recovery after save: a saved bulk removal is permanent (attachments stay, order and overrides are lost). A "recently removed" list or short item history would make it reversible. Target: 1.1.
-- [ ] F-16 **Idea** Multilingual sites (WPML/Polylang duplicate attachments per language): at least verify nothing breaks; translation of galleries post-1.0.
-
-Rendering and frontend
-- [ ] F-17 **Gap** Late asset loading: shortcodes, widgets and page builders render after `<head>`, so styles enqueued at render time are printed in the footer (flash of unstyled gallery) on classic themes. Needs a strategy (detect in `wp_enqueue_scripts` where possible, footer fallback, small critical CSS). Target: M3-17.
-- [ ] F-18 **Gap** Full-page caches and CDNs: the fragment cache invalidates itself, page caches do not, and per-instance paging/password output must not be cached wrongly. Provide a documented purge hook (`swg_gallery_changed` with affected gallery ID) and a note in the docs. Target: M3-14.
-- [ ] F-19 **Gap** Output outside normal pages: RSS feeds, REST `content.rendered`, excerpts, e-mail digests have no CSS/JS. Define a simplified markup for feeds. Target: M3-07.
-- [ ] F-20 **Gap** Image sizes: justified/masonry need uncropped sizes. Recommendation: use core sizes only, crop with CSS, register no own image sizes (no regeneration burden, S§13). Target: M3-05.
-- [ ] F-21 **Gap** RTL: layouts, lightbox arrows/swipe direction and the Quasar admin (RTL mode) are not mentioned anywhere. Target: M3-15, M2-18.
-- [ ] F-22 **Gap** Supported browsers are undefined although S§6 has a "browser support" paragraph. Recommendation: `browserslist` "last 2 versions of evergreen browsers", shared by admin and frontend builds. Target: M2-14, M3-17.
-- [ ] F-23 **Gap** Theme integration: CSS custom properties for spacing/radius/colours, block `supports` (align wide/full, spacing), `swg-` class contract treated as public API. Target: M3-08, M4-03.
-- [ ] F-24 **Idea** Mobile back button closes the lightbox (history entry); fits together with deep links. Target: R1.1-05.
-- [ ] F-25 **Decide** Galleries have no own URL (`publicly_queryable` false). Needed later for deep links, sharing and SEO (image sitemap, `ImageGallery` structured data). Recommendation: keep embed-only in 1.0, decide before R1.1-05.
-
-Admin and editor
-- [ ] F-26 **Gap** Long editing sessions: the REST nonce expires and the login can time out, so "save" fails with 403 and unsaved changes are at risk. Refresh the nonce via Heartbeat and integrate the core auth-check dialog. Target: M2-17.
-- [ ] F-27 **Idea** Core post lock ("X is currently editing") via Heartbeat as an early warning in addition to the 409 handling. Target: M2-32.
-- [ ] F-28 **Gap** Native Media Library integration (S§1.1 "must remain compatible"): show "used in n galleries" on attachments and warn before deleting a used attachment; today the relation disappears silently. Target: M1-16, M2-33.
-- [ ] F-29 **Gap** Entry points into the editor: "Edit gallery" link in the admin bar on pages showing a gallery and from the block; stable deep-linkable admin routes. Target: M2-19, M4-04.
-- [ ] F-30 **Gap** Gallery list item counts must come from one grouped query, not one `COUNT` per row. Target: M2-02.
-- [ ] F-31 **Idea** "Where is this gallery used" (posts containing the block/shortcode), shown before trashing. Target: 1.1.
-- [ ] F-32 **Idea** Convert a core `core/gallery` block or `[gallery ids="…"]` shortcode into an sw-gallery (block transform creating the gallery from the IDs) — cheap adoption path. Target: 1.1 / R1.2-04.
-- [ ] F-33 **Idea** First-run empty states that lead to "create first gallery"; no separate wizard. Target: M2-22.
-- [ ] F-34 **Idea** Dev-only `bin/` seed script (galleries with n generated images) for acceptance checks, E2E and performance fixtures; never shipped. Target: M2-36, M5-01.
-
-Security, privacy, operations
-- [ ] F-35 **Gap** State and test as invariant: with link-based paging (D5) 1.0 has **no unauthenticated `swg/v1` route**; the first public route arrives with load-more (R1.1-06) and needs its own review. Target: M2-13.
-- [ ] F-36 **Gap** Logger sink and retention are undefined (C§9): where do structured events go (`error_log` only with `WP_DEBUG_LOG`? own bounded table/option?), how long, and what System Status shows. Recommendation: `error_log` + small bounded ring buffer of recent errors for System Status. Target: M1-08, M2-11.
-- [ ] F-37 **Gap** Privacy: no telemetry or external requests in 1.0 — state it in README; add suggested privacy-policy text (`wp_add_privacy_policy_content`); note that EXIF/GPS stays in files WordPress serves. Target: M5-14.
-- [ ] F-38 **Gap** If D9 includes wordpress.org: `readme.txt`, Plugin Check in CI, no own updater, name/slug availability. Target: M5.
-- [ ] F-39 Comment: explicitly list as non-goal that right-click/download protection is not provided (frequent photographer request, related to S§13 private URLs). Target: M5-14.
+| Finding | Resolution |
+|---|---|
+| F-01 walking skeleton | Rejected, order stays (decisions.md). |
+| F-02 E2E environment late | M2-36 moved directly after M2-15. |
+| F-03 preview crosses milestones | Preview route and live preview moved to M3 (M3-22, M3-23); no 501 placeholder. |
+| F-04 no decision record | `docs/decisions.md` created. |
+| F-05 links into `../sw-backupit` | Self-contained copies required in M1-23, M1-25, M2-14, M5-11. |
+| F-06 compatibility policy | M4-14. |
+| F-07 Mozart only with runtime deps | M5-09. |
+| F-08 portability | Decided as D12; M2-11, M5-14, R1.2-02. |
+| F-09 post revisions | Decided; removal of `revisions` support in M1-15. |
+| F-10 description format | Decided; M1-01. |
+| F-11 cover rules, F-12 media types, F-14 settings forward compatibility | Defaults in decisions.md; M1-01, M1-05, M1-06, M1-16. |
+| F-13 items per gallery | M2-07, M5-01. |
+| F-15, F-16, F-24, F-27, F-31, F-32 | Ideas → backlog "Ideas". |
+| F-17 late asset loading, F-22 browsers | M3-17, M2-14. |
+| F-18 page caches/CDN | M3-14. |
+| F-19 feeds/excerpts | M3-07. |
+| F-20 image sizes | Default in decisions.md; M3-05. |
+| F-21 RTL | M2-18, M3-08, M3-15. |
+| F-23 theme integration | M3-08, M4-03. |
+| F-25 own gallery URL | Decided as D13 (embed-only in 1.0). |
+| F-26 nonce/login expiry | M2-17. |
+| F-28 Media Library integration | M1-16, M2-38. |
+| F-29 editor entry points | M2-19, M4-04, M4-15. |
+| F-30 list counts | M2-02. |
+| F-33 empty states, F-34 seed script | M2-22, M2-36. |
+| F-35 no public route in 1.0 | M2-13. |
+| F-36 logger sink | Default in decisions.md; M1-08, M2-11. |
+| F-37 privacy, F-39 no download protection | M5-14. |
+| F-38 wordpress.org requirements | D9: GitHub only for 1.0; relevant only if wordpress.org is chosen later. |
 
 ## M1 — Foundation (in progress)
 
 Core domain and contracts
-- [ ] M1-01 `Gallery` entity + value objects (`GalleryStatus`, `GallerySettings`, cover, owner, description); invariants unit-tested.
+- [ ] M1-01 `Gallery` entity + value objects (`GalleryStatus`, `GallerySettings`, cover, owner, plain-text description per F-10); cover = any readable image, not necessarily a member; invariants unit-tested.
 - [ ] M1-02 `GalleryRepositoryInterface` (find, search page, create, update, duplicate, trash, restore, delete) + in-memory test double.
-- [ ] M1-03 `GalleryAccessPolicyInterface` with actor/context value objects (view, edit, delete, manage items); decision table unit-tested.
+- [ ] M1-03 `GalleryAccessPolicyInterface` with actor/context value objects (view, edit, delete, manage items); decision table unit-tested incl. D4 status rules.
 - [ ] M1-04 Layout contracts: `GalleryLayoutInterface` (`getId`, `getLabel`, `getSettingsSchema`, `render`), `LayoutRegistryInterface` with `grid` fallback result flag; `ThumbnailResolverInterface`.
-- [ ] M1-05 **[D3]** Settings schema: versioned `GallerySettings`/item settings, responsive values, strict schema subset validator in core (no dependency); register all S§3.1 meta with schemas and auth callbacks.
-- [ ] M1-06 `MediaRepositoryInterface` extension: batched `MediaReference` lookup (dimensions, MIME, alt, caption, title) without N+1; `WpMediaRepository` implementation.
+- [ ] M1-05 Settings schema: versioned `GallerySettings`/item settings, responsive values, strict schema subset validator in core (no dependency); unknown keys from newer versions preserved; `SortMode` enum per D3; register all S§3.1 meta with schemas and auth callbacks.
+- [ ] M1-06 `MediaRepositoryInterface` extension: batched `MediaReference` lookup (dimensions, MIME, alt, caption, title) without N+1; allowed MIME types per decisions.md (no SVG/HEIC); `WpMediaRepository` implementation.
 - [ ] M1-07 Core `EventDispatcherInterface` + events (items assigned/removed/reordered, gallery created/updated/trashed/restored/deleted/duplicated); listener failures isolated.
-- [ ] M1-08 Core `LoggerInterface` (structured, safe context, no secrets) + WordPress adapter; `swg_*` hook bridge with `before_*` veto; document each hook in `docs/hooks.md`, fix its C§ reference.
+- [ ] M1-08 Core `LoggerInterface` (structured, safe context, no secrets) + WordPress adapter (`error_log` with `WP_DEBUG_LOG`, bounded ring buffer of 50 errors in a non-autoloaded option); `swg_*` hook bridge with `before_*` veto; document each hook in `docs/hooks.md`, fix its C§ reference.
 - [ ] M1-09 `TransactionRunnerInterface`; assign/reorder/remove/bulk-remove atomic incl. revision claim; rollback and non-transactional-engine fallback tested.
 - [ ] M1-10 Item use cases: bulk remove (bounded), update overrides (`NULL` inherit vs `''` blank), set item settings; typed results.
 - [ ] M1-11 Gallery use cases (`CreateGallery`, `UpdateGallery`, `DuplicateGallery`, `Trash/Restore/DeleteGallery`); every persisted change bumps `_swg_revision`, stale writes raise `RevisionConflictException`.
-- [ ] M1-12 **[D1, D11]** Access policy implementation on WordPress capabilities incl. object ownership and independent attachment capabilities.
+- [ ] M1-12 Access policy implementation per D1 (`post` caps, `map_meta_cap`, ownership) and D11 (readable attachments may be assigned; global metadata needs `edit_post` on the attachment).
 - [ ] M1-13 Import contracts only: `ImportSource`, `RemoteMediaObject`, `ImportResult`, `ImportCapabilities`, `FolderPage`, `RemoteMediaPage`, `MediaImportProviderInterface`, `ImportJobInterface`, provider registry; no tables, no connectors.
 - [ ] M1-14 Media Library provider implementing M1-13 (pages local attachments, "import" resolves to the existing attachment, no copy); contract test suite reusable for later providers.
 
 WordPress adapter
-- [ ] M1-15 `WpGalleryRepository` on `swg_gallery` (CRUD, duplicate copies membership/overrides only, cover = featured image, status, owner); attachments never touched.
-- [ ] M1-16 Lifecycle hooks: `delete_attachment` removes relations + cover references; `before_delete_post` removes gallery relations; trash/untrash keeps relations.
+- [ ] M1-15 `WpGalleryRepository` on `swg_gallery` (CRUD, duplicate copies membership/overrides only, cover = featured image, status, owner); remove `revisions` from CPT `supports` (F-09); attachments never touched.
+- [ ] M1-16 Lifecycle hooks: `delete_attachment` removes relations + clears cover references (render falls back to first item); `before_delete_post` removes gallery relations; trash/untrash keeps relations.
 - [ ] M1-17 Consistency repair service + `wp swg repair` (dry-run default, bounded batches, report); no deletions during read requests.
 - [ ] M1-18 Service registry/bootstrap with constructor injection; hook registration in dedicated registrars (C§3.2).
 - [ ] M1-19 Multisite + uninstall: schema on network activation and `wp_initialize_site`, per-site prefix; uninstall bounded/batched, all sites, removes options/transients only with opt-in.
@@ -118,85 +119,84 @@ WordPress adapter
 Tooling and tests
 - [ ] M1-21 `bin/test-db.sh` + `tests/wp` environment (own Composer, single site + multisite, `composer test:wp`, `test:wp:ms`); integration tests for `WpdbGalleryItemRepository`, `PostMetaRevisionStore`, `Schema`, lifecycle hooks, uninstall preservation.
 - [ ] M1-22 PHP coverage: add adapter, plugin file and `uninstall.php` to `<source>`, merge unit + WordPress-suite Clover, gate > 80 %; test that header version equals `SWGALLERY_VERSION`.
-- [ ] M1-23 `bin/i18n.sh` (update/check), `bin/i18n-core-messages.php`, `languages/` (pot, de_DE po/mo), `I18nTest`.
+- [ ] M1-23 `bin/i18n.sh` (update/check), `bin/i18n-core-messages.php`, `languages/` (pot, de_DE po/mo), `I18nTest`; scripts copied self-contained (no runtime reference to `../sw-backupit`).
 - [ ] M1-24 `.github/workflows/tests.yml`: cs, cs:wp, stan, unit, WordPress suites (PHP × WP matrix), coverage gate, `composer audit`, Sonar upload.
-- [ ] M1-25 Repository basics: `README.md` (requirements, links), `LICENSE`, initial commit of the scaffold.
+- [ ] M1-25 Repository basics: `README.md` (requirements, links), `LICENSE`. (Initial commit, worktree ignore rule and removal of doc links into `../sw-backupit` are done.)
 
 ## M2 — Management
 
 REST API (`swg/v1`, S§8)
-- [ ] M2-01 **[D1]** REST foundation: controller base, `permission_callback` on every route, exception → `WP_Error` mapper (400/401/403/404/409/422), bounded pagination headers, schema-validated input/output.
-- [ ] M2-02 `GET/POST /galleries` (search, status/owner filter, paging, item count, cover).
+- [ ] M2-01 REST foundation: controller base, `permission_callback` on every route (D1), exception → `WP_Error` mapper (400/401/403/404/409/422), bounded pagination headers, schema-validated input/output.
+- [ ] M2-02 `GET/POST /galleries` (search, status/owner filter, paging, cover; item counts from one grouped query, not one per row).
 - [ ] M2-03 `GET/PATCH/DELETE /galleries/{id}` (`expectedRevision`, status, cover, owner change needs `edit_others_posts`; DELETE trashes, `force=true` deletes).
 - [ ] M2-04 `POST /galleries/{id}/duplicate` and `/restore`.
 - [ ] M2-05 `GET/POST /galleries/{id}/items` (paged list with resolved global + local metadata; bulk assign with added/duplicate/missing result).
 - [ ] M2-06 `PATCH/DELETE /galleries/{id}/items/{itemId}`, `POST /items/bulk-remove` (bounded batch).
-- [ ] M2-07 `PUT /galleries/{id}/order` (complete ID set, atomic); evaluate move command for large lists after M5-01 measurements.
+- [ ] M2-07 `PUT /galleries/{id}/order` (complete ID set, atomic, single `CASE` update instead of one query per item); evaluate move command for large lists after M5-01 measurements.
 - [ ] M2-08 `GET /layouts` (registered layouts + setting schemas).
-- [ ] M2-09 **[D11]** `GET /media` (permission-filtered search, images only, paged) and `POST /media` (native upload handling, `upload_files`, MIME/size errors mapped).
+- [ ] M2-09 `GET /media` (permission-filtered per D11, images only, paged) and `POST /media` (native upload handling, `upload_files`, MIME/size errors mapped).
 - [ ] M2-10 `GET/PATCH /settings` (`manage_options`): defaults for layout, page size, lightbox, image sizes, delete-data-on-uninstall with explicit confirmation.
-- [ ] M2-11 `GET /status`: schema version, cache state, counts, repair findings summary, sanitized diagnostics (no paths/secrets).
-- [ ] M2-12 `POST /galleries/{id}/preview` (authorized, accepts unsaved settings, uses the M3 renderer; stub returns 501 until M3-01 — no fake HTML).
-- [ ] M2-13 REST test matrix: roles × routes, foreign-owned objects/attachments, nonce/auth boundaries, validation, paging limits, 409 races; `docs/rest-api.md` (short).
+- [ ] M2-11 `GET /status`: schema version, cache state, counts, repair findings summary, recent errors from the logger ring buffer, export limitation hint (D12), sanitized diagnostics (no paths/secrets).
+- [ ] M2-13 REST test matrix: roles × routes, foreign-owned objects/attachments, nonce/auth boundaries, validation, paging limits, 409 races; test that no `swg/v1` route is reachable unauthenticated (D5); `docs/rest-api.md` (short).
 
 Admin app (`apps/admin`, C§7)
-- [ ] M2-14 Scaffold from `../sw-backupit/apps/admin`: Vue 3, Quasar, TS strict, Vite, ESLint, Prettier, `vue-tsc`, Vitest + Vue Test Utils, `.nvmrc`, lockfile.
+- [ ] M2-14 Scaffold modelled on sw-backupit's admin app, copied self-contained: Vue 3, Quasar, TS strict, Vite, ESLint, Prettier, `vue-tsc`, Vitest + Vue Test Utils, `.nvmrc`, lockfile, shared `browserslist` (decisions.md).
 - [ ] M2-15 Admin page registrar: menu, mount point, assets only on sw-gallery screens, validated Vite manifest, plugin version on every asset, safe diagnostic on missing build.
+- [ ] M2-36 `tests/e2e-env` (Docker Compose, throw-away WordPress + DB), `e2e/` Playwright project, `bin/test-e2e.sh`, CI job; dev-only `bin/seed.php` (galleries with generated images, never shipped) for E2E, acceptance checks and M5-01 fixtures. (Moved here per F-02.)
 - [ ] M2-16 Quasar style isolation (`swg-` scope, no restyling of WordPress chrome); regression test on a foreign admin screen.
-- [ ] M2-17 Typed API layer: REST root/nonce/locale/capabilities from server bootstrap, error translation, cancellation, retry, 409 surface; no `fetch()` in components.
-- [ ] M2-18 i18n bridge: vue-i18n en/de, Quasar language pack follows user locale, parity test; date/number formatting per WordPress locale/timezone.
-- [ ] M2-19 Router + navigation shell (Overview, Galleries, Media Overview, Settings, System Status; nothing for unshipped features).
+- [ ] M2-17 Typed API layer: REST root/nonce/locale/capabilities from server bootstrap, error translation, cancellation, retry, 409 surface; nonce refresh via Heartbeat and core auth-check dialog on expired login, unsaved changes kept; no `fetch()` in components.
+- [ ] M2-18 i18n bridge: vue-i18n en/de, Quasar language pack follows user locale, RTL mode for RTL locales, parity test; date/number formatting per WordPress locale/timezone.
+- [ ] M2-19 Router + navigation shell (Overview, Galleries, Media Overview, Settings, System Status; nothing for unshipped features); stable deep-linkable routes (e.g. editor of gallery n) used by block and admin bar.
 - [ ] M2-20 Coverage script `scripts/check-coverage.mjs` (> 80 %), CI job (typecheck, lint, tests, production build, `npm audit`), Sonar lcov.
 - [ ] M2-21 Shared state components: loading, empty, error, retry; confirmation dialog naming affected objects.
-- [ ] M2-22 Gallery list: grid + table, search, status filter, server paging; cover, title, count, status, modified.
+- [ ] M2-22 Gallery list: grid + table, search, status filter, server paging; cover, title, count, status, modified; first-run empty state leads to "create gallery".
 - [ ] M2-23 Gallery list actions: create, duplicate, trash, restore, delete permanently (confirmation), preview, copy shortcode.
-- [ ] M2-24 Editor shell: title, description, cover, status, save/publish, unsaved-change warning, revision tracking.
+- [ ] M2-24 Editor shell: title, plain-text description, cover, status, save/publish, unsaved-change warning, revision tracking.
 - [ ] M2-25 Editor image grid: server-paged/virtualized items, bulk selection, bulk remove with undo before save.
 - [ ] M2-26 Reorder: drag-and-drop (dependency license/maintenance review) plus keyboard/button alternative with screen-reader announcements.
-- [ ] M2-27 **[D2]** Media picker (existing Media Library images) with added/duplicate/missing feedback.
-- [ ] M2-28 Upload with real per-file progress, partial-failure reporting (n of m), retry.
+- [ ] M2-27 Media picker and upload via native `wp.media` modal (D2) with added/duplicate/missing feedback.
+- [ ] M2-28 Upload progress inside the picker flow: real per-file progress, partial-failure reporting (n of m), retry.
 - [ ] M2-29 Image details panel: global vs gallery-local title/alt/caption (inherit vs blank), dimensions, MIME, filesize, ID.
-- [ ] M2-30 Layout/settings panel generated from `/layouts` schemas, responsive values, validation errors.
-- [ ] M2-31 Live preview (sandboxed, frontend CSS, debounced) — completed once M3-01 exists.
+- [ ] M2-30 Layout/settings panel generated from `/layouts` schemas, responsive values, sort mode (D3), validation errors.
 - [ ] M2-32 Conflict UX for 409: show what changed, reload or re-apply local edits; tested.
-- [ ] M2-33 **[D6]** Media Overview page.
+- [ ] M2-33 Media Overview page per D6: permission-filtered attachment browser (search, server paging), "used in n galleries", only action "add to gallery" (gallery selection dialog, same bulk-assign result feedback as M2-27).
 - [ ] M2-34 Overview, Settings and System Status pages.
+- [ ] M2-38 Media Library integration: "used in n galleries" in attachment details; warning before deleting an attachment that is used in galleries (relations are still removed by M1-16).
 - [ ] M2-35 Accessibility pass of the admin app (focus, labels, contrast, reduced motion; WCAG 2.2 AA goal).
-
-E2E infrastructure
-- [ ] M2-36 `tests/e2e-env` (Docker Compose, throw-away WordPress + DB), `e2e/` Playwright project, `bin/test-e2e.sh`, CI job.
 - [ ] M2-37 Admin E2E: create gallery, upload/pick, reorder (mouse + keyboard), edit overrides, save/publish, duplicate, trash/restore, role restrictions.
 
 ## M3 — Frontend
 
-- [ ] M3-01 Core `RenderGallery` pipeline (S§5 steps 1–8) with `RenderContext` (block, shortcode, PHP API, preview) and render result (HTML, required assets, diagnostics).
-- [ ] M3-02 **[D4]** Status + access enforcement in the pipeline; identical for all entry points; bypass tests (shortcode, block, preview, paging).
-- [ ] M3-03 **[D3]** Paged item query with batched attachment/meta priming (no N+1), sort modes, skips missing/trashed attachments without deleting relations.
+- [ ] M3-01 Core `RenderGallery` pipeline (S§5 steps 1–8) with `RenderContext` (block, shortcode, PHP API, preview, feed) and render result (HTML, required assets, diagnostics).
+- [ ] M3-02 Status + access enforcement per D4 in the pipeline; identical for all entry points; bypass tests (shortcode, block, preview, paging).
+- [ ] M3-03 Paged item query with batched attachment/meta priming (no N+1), sort modes per D3, skips missing/trashed attachments without deleting relations.
 - [ ] M3-04 Override resolution (local > global, `NULL` vs `''`) without mutating attachment metadata.
-- [ ] M3-05 `ThumbnailResolver` adapter: size selection, `srcset`/`sizes` per layout, width/height, lightbox target size.
+- [ ] M3-05 `ThumbnailResolver` adapter: core/theme sizes only, CSS cropping, `srcset`/`sizes` per layout, width/height, lightbox target size.
 - [ ] M3-06 Loading strategy: first row eager/`fetchpriority`, rest lazy; CLS-safe aspect ratios.
-- [ ] M3-07 View layer `resources/views` with contextual escaping; captions restricted by a `wp_kses` policy.
-- [ ] M3-08 Layout `grid` (CSS grid, responsive columns/spacing).
-- [ ] M3-09 **[D10]** Layout `masonry` (usable without JS).
+- [ ] M3-07 View layer `resources/views` with contextual escaping; captions restricted by a `wp_kses` policy; simplified markup for feeds, excerpts and REST `content.rendered` (no CSS/JS dependency).
+- [ ] M3-08 Layout `grid` (CSS grid, responsive columns/spacing, logical properties for RTL, documented CSS custom properties and `swg-` classes as public theming contract).
+- [ ] M3-09 Layout `masonry` per D10 (row-ordered markup, grid-like without JS, JS column packing keeps DOM order).
 - [ ] M3-10 Layout `justified` (CSS-only via aspect-ratio flex rows, works without JS).
-- [ ] M3-11 **[D5]** Frontend pagination: per-instance paging, several galleries per page independent, bounded page size, no-JS.
+- [ ] M3-11 Frontend pagination per D5: link-based, per-instance query arg, several galleries per page independent, bounded page size, no JS.
 - [ ] M3-12 Unknown layout → `grid` + diagnostic visible to editors only.
-- [ ] M3-13 Fragment cache: key = gallery revision + settings hash + visibility context + media epoch; never caches non-public output; works with and without persistent object cache.
-- [ ] M3-14 Invalidation: gallery/item/settings changes, attachment update/delete/regenerated sizes, plugin update.
-- [ ] M3-15 Lightbox (TypeScript, no third-party service): dialog semantics, focus trap/return, Escape/arrows, counter, captions/alt, neighbour preloading, reduced motion.
-- [ ] M3-16 Lightbox touch swipe without hijacking scroll/pinch; multiple independent instances; images remain plain links without JS.
-- [ ] M3-17 Frontend build: Vite pipeline for `assets/frontend` + `assets/lightbox` into generated `assets/build/` (gitignored) with manifest; enqueue only on pages rendering a gallery, plugin version, no global injection.
+- [ ] M3-13 Fragment cache: key = gallery revision + settings hash + visibility context + media epoch; only `publish` output cached (D4); works with and without persistent object cache.
+- [ ] M3-14 Invalidation: gallery/item/settings changes, attachment update/delete/regenerated sizes, plugin update; documented action `swg_gallery_changed` (gallery ID) for full-page cache/CDN purging; docs note on page caches and paging/password output.
+- [ ] M3-15 Lightbox (TypeScript, no third-party service): dialog semantics, focus trap/return, Escape/arrows (mirrored in RTL), counter, captions/alt, neighbour preloading, reduced motion.
+- [ ] M3-16 Lightbox touch swipe without hijacking scroll/pinch (direction mirrored in RTL); multiple independent instances; images remain plain links without JS.
+- [ ] M3-17 Frontend build: Vite pipeline for `assets/frontend` + `assets/lightbox` into generated `assets/build/` (gitignored) with manifest, shared `browserslist`; enqueue only on pages rendering a gallery, plugin version, no global injection; late-render strategy (detect block/shortcode in `wp_enqueue_scripts` where possible, footer fallback, minimal critical CSS against unstyled flash).
 - [ ] M3-18 Vitest for `assets/*` TypeScript; JS/TS coverage gate and Sonar include these sources (merged with `apps/admin`, still > 80 %).
 - [ ] M3-19 Lightbox/frontend strings server-localized (en/de).
-- [ ] M3-20 Renderer tests: snapshot per layout, large gallery fixture (query-count budget), missing attachments, stale cache, multiple instances.
-- [ ] M3-21 Frontend E2E + axe: render, paging, lightbox keyboard/focus/touch, JS disabled.
+- [ ] M3-22 `POST /galleries/{id}/preview` (authorized, accepts unsaved settings, same renderer, never cached). (Was M2-12, moved per F-03.)
+- [ ] M3-23 Editor live preview in the Vue app (sandboxed, frontend CSS, debounced) using M3-22. (Was M2-31, moved per F-03.)
+- [ ] M3-20 Renderer tests: snapshot per layout, large gallery fixture (query-count budget), missing attachments, stale cache, multiple instances, feed context.
+- [ ] M3-21 Frontend E2E + axe: render, paging, lightbox keyboard/focus/touch, JS disabled, editor live preview.
 
 ## M4 — WordPress surfaces
 
 - [ ] M4-01 Shortcode `[sw_gallery id="123"]`: strict attribute allowlist/validation, same renderer.
 - [ ] M4-02 PHP API `swg_render_gallery( int $id, array $args = array() ): string` (returns, never echoes; PHPDoc contract, `@since`).
-- [ ] M4-03 Block `sw-gallery/gallery`: `block.json`, attributes = gallery ID + validated overrides (no media IDs), `render_callback` → same renderer.
-- [ ] M4-04 Block editor glue in `assets/blocks` (minimal TS, WordPress components as externals): gallery selector, server-rendered preview, link to the Vue editor; versioned assets.
+- [ ] M4-03 Block `sw-gallery/gallery`: `block.json`, attributes = gallery ID + validated overrides (no media IDs), `supports` for align wide/full and spacing, `render_callback` → same renderer.
+- [ ] M4-04 Block editor glue in `assets/blocks` (minimal TS, WordPress components as externals): gallery selector, server-rendered preview, deep link to the Vue editor; versioned assets.
 - [ ] M4-05 Block tests: Vitest for glue (counts towards the JS gate), PHP test that block, shortcode and PHP API produce identical output and respect visibility.
 - [ ] M4-06 Block i18n via `wp_set_script_translations()` (JSON catalogs generated by `bin/i18n.sh`).
 - [ ] M4-07 Layout registration extension point (`swg_register_layouts`), versioned contract, example in docs.
@@ -204,13 +204,14 @@ E2E infrastructure
 - [ ] M4-09 Public actions/filters for gallery/item lifecycle and render arguments, each with failure policy in `docs/hooks.md`.
 - [ ] M4-10 Listener isolation tests (throwing listener, vetoing `before_*` filter, read-only payloads).
 - [ ] M4-11 Optional integrations (sw-image-optimizer, sw-slider, sw-forms, sw-backupit, sw-cloudcalendar): verify no hard dependency; implement only where a concrete contract exists, otherwise document as not implemented.
-- [ ] M4-12 **[D7]** Admin side-panel registry.
+- [ ] M4-12 Per D7: document in `docs/extending.md` that an admin side-panel registry is not implemented in 1.0 (planned R1.1-07); no placeholder API.
+- [ ] M4-15 Admin bar "Edit gallery" entry on frontend pages rendering a gallery the user may edit (deep link from M2-19).
 - [ ] M4-13 Gutenberg E2E: insert block, select gallery, preview, publish, frontend render; shortcode in classic content.
-- [ ] M4-14 `docs/extending.md` (layouts, providers, hooks, PHP API) — short, links instead of duplication.
+- [ ] M4-14 `docs/extending.md` (layouts, providers, hooks, PHP API, theming contract) incl. compatibility policy for public contracts (semver meaning, deprecation period, `@since`) — short, links instead of duplication.
 
 ## M5 — Hardening / release
 
-- [ ] M5-01 Performance: fixtures with 1k/5k items; budgets for query count, memory, response size (REST + render); fix regressions; decide M2-07 move command.
+- [ ] M5-01 Performance: seed fixtures with 1k/5k/10k items; budgets for query count, memory, response size (REST + render); document the tested maximum per gallery; fix regressions; decide M2-07 move command.
 - [ ] M5-02 Frontend performance check: LCP image not lazy, no CLS, asset size budget for lightbox/frontend bundles.
 - [ ] M5-03 Accessibility: axe in all E2E flows + documented manual review (keyboard, screen reader, reduced motion).
 - [ ] M5-04 Security review against C§5 and S§10: authorization matrix, escaping sinks, `v-html` ban (lint rule), unserialize ban, no paths/secrets in REST/logs; regression test per finding.
@@ -218,32 +219,41 @@ E2E infrastructure
 - [ ] M5-06 Uninstall/deactivate tests: default preserves everything, opt-in removes plugin data only, attachments always preserved.
 - [ ] M5-07 Full E2E suite per S§11 incl. remove/restore and role restrictions; flake-free in CI.
 - [ ] M5-08 Supported matrix: define and test PHP × WordPress versions (min PHP 8.2 / WP 6.4 to current), MariaDB/MySQL; document in README.
-- [ ] M5-09 `bin/build-zip.sh`: production Composer deps, Mozart prefixing (`SWGallery\Dependencies\`), compiled admin/blocks/frontend, compiled `.mo`; reproducible output.
+- [ ] M5-09 `bin/build-zip.sh`: production Composer deps (Mozart prefixing `SWGallery\Dependencies\` only if runtime dependencies exist), compiled admin/blocks/frontend, compiled `.mo`; reproducible output.
 - [ ] M5-10 `bin/verify-zip.sh`: no tests, dev deps, `.env`, coverage, secrets, unintended source maps; ZIP installs and activates in the E2E environment.
-- [ ] M5-11 Release workflow: build ZIP on semver tags (optional `v`), checks must pass.
+- [ ] M5-11 Release workflow: build ZIP on semver tags (optional `v`), checks must pass; self-contained in this repository.
 - [ ] M5-12 Daily dependency audit workflow (Composer + npm), findings recorded.
 - [ ] M5-13 SonarQube quality gate green; open issues/hotspots assessed.
-- [ ] M5-14 Docs: README (features, requirements, matrix, privacy note that private galleries do not protect upload URLs), `docs/user-guide.md`, `docs/security.md`, `docs/architecture.md` — concise, no duplication.
+- [ ] M5-14 Docs: README (features, requirements, matrix; private galleries do not protect upload URLs; no right-click/download protection; no telemetry or external requests; export limitation per D12), suggested privacy-policy text via `wp_add_privacy_policy_content` (EXIF/GPS stays in served files), `docs/user-guide.md`, `docs/security.md`, `docs/architecture.md` — concise, no duplication.
 - [ ] M5-15 Release metadata: real Plugin URI, changelog, version bump procedure with single source for the version, `1.0.0` tag.
 - [ ] M5-16 Originality check (S§1): names, UI texts and assets are independent of other gallery plugins.
-- [ ] M5-17 **[D8, D9]** GitHub self-update / signed releases.
+- [ ] M5-17 GitHub self-update + signed releases per D8/D9: self-contained copy of the sw-backupit mechanism, isolated in one removable updater module; release manifest/signature verification tested; documented in `docs/github-updates.md`.
 
 ## Post-1.0 backlog (not started before M5 is done; split into tasks when scheduled)
 
 ### 1.1
 - [ ] R1.1-01 Collections: `swg_collection`, `swg_collection_galleries` table + migration, repository, REST `/collections`, admin feature, block.
 - [ ] R1.1-02 Design presets (`resources/presets`, admin page).
-- [ ] R1.1-03 Layouts carousel, focus, mosaic through the layout registry (candidates: File: "docs/layout-proposals.md").
+- [ ] R1.1-03 Layouts carousel, focus, mosaic through the layout registry (candidates: `docs/layout-proposals.md`).
 - [ ] R1.1-04 Categorization: `swg_gallery_category`, `swg_gallery_tag`; frontend filtering.
-- [ ] R1.1-05 Lightbox deep links and zoom.
-- [ ] R1.1-06 Load-more UI with access-checked public endpoint.
+- [ ] R1.1-05 Lightbox deep links and zoom; first decide whether galleries get own URLs (D13 revisit).
+- [ ] R1.1-06 Load-more UI with access-checked public endpoint (first unauthenticated route: own security review).
+- [ ] R1.1-07 Admin side-panel registry for the Vue editor (D7): design for extending a compiled SPA (e.g. registered panels rendering server-provided schema forms).
 
 ### 1.2
 - [ ] R1.2-01 Batch metadata editor.
-- [ ] R1.2-02 ZIP import (zip-bomb/resource limits) and bulk export; "Import & Export" navigation entry appears with the first working feature.
+- [ ] R1.2-02 ZIP import (zip-bomb/resource limits) and bulk export incl. `wp swg export/import` with ID remapping (D12); "Import & Export" navigation entry appears with the first working feature.
 - [ ] R1.2-03 Saved/smart queries and taxonomy-based dynamic galleries.
 - [ ] R1.2-04 Migration/import adapters for other gallery data.
 - [ ] R1.2-05 Local-folder import limited to configured safe roots (path guards).
+
+### Ideas (need approval before scheduling)
+- [ ] I-01 (F-15) "Recently removed" list / short item history so a saved bulk removal can be undone.
+- [ ] I-02 (F-16) Multilingual sites (WPML/Polylang): verify nothing breaks; gallery translation later.
+- [ ] I-03 (F-24) Mobile back button closes the lightbox (history entry); together with R1.1-05.
+- [ ] I-04 (F-27) Core post lock ("X is currently editing") via Heartbeat in addition to 409 handling.
+- [ ] I-05 (F-31) "Where is this gallery used" (posts containing block/shortcode), shown before trashing.
+- [ ] I-06 (F-32) Convert `core/gallery` blocks or `[gallery ids="…"]` into an sw-gallery (block transform); fits R1.2-04.
 
 ### External-source milestone (S§9, C§6)
 - [ ] EX-01 Security design first: `CredentialStoreInterface` strategy, deployment prerequisites, personal vs site-wide connections.
@@ -261,4 +271,3 @@ E2E infrastructure
 - [ ] R2-01 Scheduled sync and conflict policies.
 - [ ] R2-02 Private-file delivery.
 - [ ] R2-03 Watermarking, download bundles, client selections, video, remote-storage adapters.
-

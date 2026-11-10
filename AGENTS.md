@@ -19,6 +19,12 @@ Read `SPECIFICATION.md` (product/engineering contract) and `CODE-STYLE.md` (bind
 3. Document unimplemented features explicitly (no fake implementations).
 4. After each implementation, include a concise German checklist of what Stefan can/should test as a user. Give concrete steps and the expected result for each relevant feature; distinguish recommended acceptance checks from optional checks. Report automated checks separately and never treat them as Stefan's practical acceptance.
 
+## Parallel work (sub-agents)
+Plan, waves and owned paths: `TODO.md` → "Parallelization plan". Sub-agents work in their own git worktree and:
+- touch only the paths their stream owns; never edit `TODO.md`, `DONE.md`, shared config (`composer.json`, lockfiles, `phpunit.xml.dist`, `phpcs*`, `phpstan.neon.dist`) or public contracts (core interfaces) unless the brief says so — report the needed change instead;
+- run the relevant checks in their worktree and commit small and coherent there; never push, never touch the real WordPress install;
+- end with changed files, check results, open points and the German tester checklist (Workflow step 4).
+
 ## Translations
 Every change to user-facing text updates all languages (English + German minimum; PHP gettext catalogs in `languages/`, SPA catalogs in `apps/admin/src/i18n/`). Run `bin/i18n.sh update` and `bin/i18n.sh check`; the PHPUnit test `I18nTest` and the Vitest parity test enforce it. See `docs/translations.md`.
 
