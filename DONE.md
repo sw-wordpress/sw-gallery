@@ -27,3 +27,8 @@
 - `Admin/AdminRegistrar`: menu "Galleries" (capability `edit_posts`), assets only on that screen, plugin version on every asset, `window.swgAdmin` bootstrap per `apps/admin/README.md`, ES-module tag for WordPress 6.4, safe diagnostic when the build is missing.
 - `Admin/AssetManifest`: validated Vite manifest (plain relative names, extension check, realpath containment, size cap); broken or hostile manifests yield a diagnostic, never an unexpected file.
 - Tests: 23 new WordPress tests (single + multisite); merged PHP coverage 95.2 %.
+
+## 2026-11-10 — Wave 2 stream A2 + build automation
+- Adapter infrastructure: `WpTransactionRunner` (nesting-safe, non-transactional fallback), `WpLogger` (ring buffer of 50 errors), `EventBridge` (`swg_<event>` actions, veto filters), item overrides/settings stores, `Migrator` (ordered steps, lock, retry), network-aware activation and batched, per-site opt-in uninstall.
+- State: 121 WordPress tests (single + multisite), 191 unit tests, merged PHP coverage 93.6 %.
+- Build automation: PostToolUse hook rebuilds `assets/admin` and `assets/build` after edits (`bin/rebuild-on-change.sh`), `bin/watch-build.sh` for manual edits.

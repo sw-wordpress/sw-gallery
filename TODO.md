@@ -100,7 +100,7 @@ Core domain and contracts
 - [x] M1-05 Settings schema: versioned `GallerySettings`/item settings, responsive values, strict schema subset validator in core (no dependency); unknown keys from newer versions preserved; `SortMode` enum per D3; register all S§3.1 meta with schemas and auth callbacks.
 - [ ] M1-06 `MediaRepositoryInterface` extension: batched `MediaReference` lookup (dimensions, MIME, alt, caption, title) without N+1; allowed MIME types per decisions.md (no SVG/HEIC); `WpMediaRepository` implementation.
 - [x] M1-07 Core `EventDispatcherInterface` + events (items assigned/removed/reordered, gallery created/updated/trashed/restored/deleted/duplicated); listener failures isolated.
-- [ ] M1-08 Core `LoggerInterface` (structured, safe context, no secrets) + WordPress adapter (`error_log` with `WP_DEBUG_LOG`, bounded ring buffer of 50 errors in a non-autoloaded option); `swg_*` hook bridge with `before_*` veto; document each hook in `docs/hooks.md`, fix its C§ reference.
+- [x] M1-08 Core `LoggerInterface` (structured, safe context, no secrets) + WordPress adapter (`error_log` with `WP_DEBUG_LOG`, bounded ring buffer of 50 errors in a non-autoloaded option); `swg_*` hook bridge with `before_*` veto; document each hook in `docs/hooks.md`, fix its C§ reference.
 - [x] M1-09 `TransactionRunnerInterface`; assign/reorder/remove/bulk-remove atomic incl. revision claim; rollback and non-transactional-engine fallback tested.
 - [x] M1-10 Item use cases: bulk remove (bounded), update overrides (`NULL` inherit vs `''` blank), set item settings; typed results.
 - [x] M1-11 Gallery use cases (`CreateGallery`, `UpdateGallery`, `DuplicateGallery`, `Trash/Restore/DeleteGallery`); every persisted change bumps `_swg_revision`, stale writes raise `RevisionConflictException`.
@@ -113,8 +113,8 @@ WordPress adapter
 - [ ] M1-16 Lifecycle hooks: `delete_attachment` removes relations + clears cover references (render falls back to first item); `before_delete_post` removes gallery relations; trash/untrash keeps relations.
 - [ ] M1-17 Consistency repair service + `wp swg repair` (dry-run default, bounded batches, report); no deletions during read requests.
 - [ ] M1-18 (registrar skeleton done in Wave 0: `Bootstrap/RegistrarInterface`, `CoreRegistrar`, `Registrars`; open: service registry with constructor injection) Service registry/bootstrap with constructor injection; hook registration in dedicated registrars (C§3.2).
-- [ ] M1-19 Multisite + uninstall: schema on network activation and `wp_initialize_site`, per-site prefix; uninstall bounded/batched, all sites, removes options/transients only with opt-in.
-- [ ] M1-20 Schema migration runner: ordered versioned steps, repeatable, failure leaves version unchanged and retries; upgrade-from-v1 fixture test.
+- [x] M1-19 Multisite + uninstall: schema on network activation and `wp_initialize_site`, per-site prefix; uninstall bounded/batched, all sites, removes options/transients only with opt-in.
+- [x] M1-20 Schema migration runner: ordered versioned steps, repeatable, failure leaves version unchanged and retries; upgrade-from-v1 fixture test.
 
 Tooling and tests
 - [x] M1-21 `bin/test-db.sh` + `tests/wp` environment (own Composer, single site + multisite, `composer test:wp`, `test:wp:ms`); integration tests for `WpdbGalleryItemRepository`, `PostMetaRevisionStore`, `Schema`, lifecycle hooks, uninstall preservation.
