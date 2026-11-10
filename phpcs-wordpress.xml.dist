@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<ruleset name="sw-gallery WordPress adapter">
+    <description>WordPress Coding Standards for the WordPress adapter (CODE-STYLE.md section 3.2).</description>
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <arg name="cache" value=".phpcs-wp.cache"/>
+    <file>packages/wordpress/src</file>
+    <file>sw-gallery.php</file>
+    <file>uninstall.php</file>
+    <config name="minimum_wp_version" value="6.4"/>
+    <config name="testVersion" value="8.2-"/>
+    <rule ref="WordPress">
+        <!-- Documented project decision (CODE-STYLE 3.2): PSR-4 class names/files (PascalCase) in the namespaced adapter. -->
+        <exclude name="WordPress.Files.FileName"/>
+        <exclude name="Universal.Operators.DisallowShortTernary"/>
+        <!-- Core interface methods (camelCase) are implemented as dictated by the interface. -->
+        <exclude name="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName.PropertyNotSnakeCase"/>
+        <!-- Exception messages are never echoed as HTML; typed signatures carry the contract of adapter methods. -->
+        <exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped"/>
+        <exclude name="Squiz.Commenting.FunctionComment.Missing"/>
+        <exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
+        <exclude name="Squiz.Commenting.FunctionComment.MissingParamComment"/>
+        <exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop"/>
+        <exclude name="Squiz.Commenting.ClassComment.Missing"/>
+        <exclude name="Squiz.Commenting.VariableComment.Missing"/>
+        <exclude name="Generic.Commenting.DocComment.MissingShort"/>
+        <exclude name="Squiz.Commenting.FileComment.SpacingAfterOpen"/>
+    </rule>
+    <rule ref="WordPress.WP.I18n"><properties><property name="text_domain" type="array"><element value="sw-gallery"/></property></properties></rule>
+    <!-- Documented exception: CODE-STYLE 2 mandates the runtime prefix "swg_" (options, tables, meta, hooks, REST); global constants/variables use the longer "SWGALLERY_"/"$swgallery_" because WPCS treats prefixes shorter than 4 characters as
+         "not unique" (ShortPrefixPassed). The prefix is unique among sw-* plugins, so only that notice is excluded. -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <exclude name="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed"/>
+        <properties><property name="prefixes" type="array"><element value="swg"/><element value="swgallery"/><element value="SWGallery"/><element value="SWGALLERY"/></property></properties>
+    </rule>
+    <!-- Documented exception: the repositories own the custom table `swg_gallery_items` (CODE-STYLE 4), so direct prepared queries are
+         intended; ordering/pagination caches are layered above them (render cache), not inside the repository. -->
+    <rule ref="WordPress.DB.DirectDatabaseQuery">
+        <include-pattern>packages/wordpress/src/Repository/*</include-pattern>
+        <exclude name="WordPress.DB.DirectDatabaseQuery.DirectQuery"/>
+        <exclude name="WordPress.DB.DirectDatabaseQuery.NoCaching"/>
+    </rule>
+    <rule ref="PHPCompatibilityWP"/>
+</ruleset>

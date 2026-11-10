@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<ruleset name="sw-gallery">
+    <description>PSR-12 for core and tests; the WordPress adapter is checked by phpcs-wordpress.xml.dist (CODE-STYLE.md section 1).</description>
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <arg name="cache" value=".phpcs.cache"/>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <file>packages/core/src</file>
+    <file>tests</file>
+    <exclude-pattern>*/tests/wp/*</exclude-pattern>
+    <exclude-pattern>*/tests/phpstan/*</exclude-pattern>
+    <rule ref="PSR12"/>
+    <config name="testVersion" value="8.2-"/>
+    <rule ref="PHPCompatibility"><exclude-pattern>tests/*</exclude-pattern></rule>
+</ruleset>
