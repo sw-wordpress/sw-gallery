@@ -18,9 +18,13 @@ final class ConfigurableAccessPolicy implements GalleryAccessPolicyInterface
 {
     /**
      * @param list<int> $admins
+     * @param list<int> $unusableAttachments Attachment IDs nobody may use.
      */
-    public function __construct(private readonly array $admins = [1], private readonly bool $ownersMayDelete = false)
-    {
+    public function __construct(
+        private readonly array $admins = [1],
+        private readonly bool $ownersMayDelete = false,
+        private readonly array $unusableAttachments = [],
+    ) {
     }
 
     public function canCreate(Actor $actor): bool
@@ -58,7 +62,7 @@ final class ConfigurableAccessPolicy implements GalleryAccessPolicyInterface
 
     public function canUseAttachment(Actor $actor, int $attachmentId): bool
     {
-        return !$actor->isAnonymous();
+        return !$actor->isAnonymous() && !in_array($attachmentId, $this->unusableAttachments, true);
     }
 
     public function canEditAttachment(Actor $actor, int $attachmentId): bool

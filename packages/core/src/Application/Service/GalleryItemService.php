@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace SWGallery\Core\Application\Service;
 
+use SWGallery\Core\Contract\GalleryAccessPolicyInterface;
 use SWGallery\Core\Contract\GalleryItemRepositoryInterface;
+use SWGallery\Core\Contract\GalleryRepositoryInterface;
 use SWGallery\Core\Contract\MediaRepositoryInterface;
 use SWGallery\Core\Contract\RevisionStoreInterface;
 use SWGallery\Core\Contract\TransactionRunnerInterface;
+use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Gallery\AssignResult;
 use SWGallery\Core\Domain\Gallery\RemoveResult;
 use SWGallery\Core\Domain\Gallery\Revision;
@@ -15,6 +18,8 @@ use SWGallery\Core\Event\EventDispatcherInterface;
 use SWGallery\Core\Event\ItemsAssigned;
 use SWGallery\Core\Event\ItemsRemoved;
 use SWGallery\Core\Event\ItemsReordered;
+use SWGallery\Core\Exception\AccessDeniedException;
+use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\InvalidOrderException;
 use SWGallery\Core\Exception\ItemNotFoundException;
 
@@ -22,6 +27,9 @@ use SWGallery\Core\Exception\ItemNotFoundException;
  * Membership use cases. Every persisted change runs in one transaction that claims the next revision first
  * (compare-and-increment), so a stale client fails with a conflict before anything is written and a failing
  * write rolls the revision back too. Events are dispatched only after the transaction succeeded.
+ *
+ * Every method first checks that the gallery exists and the actor may edit it (before any validation, write or
+ * revision claim). Attachments the actor may not use are reported as missing, like nonexistent ones.
  */
 final class GalleryItemService
 {
@@ -33,18 +41,25 @@ final class GalleryItemService
         private readonly MediaRepositoryInterface $media,
         private readonly TransactionRunnerInterface $transactions,
         private readonly EventDispatcherInterface $events,
+        private readonly GalleryRepositoryInterface $galleries,
+        private readonly GalleryAccessPolicyInterface $access,
     ) {
     }
 
     /**
      * @param list<int> $attachmentIds
      */
-    public function assign(int $galleryId, array $attachmentIds, Revision $expected): AssignResult
+    public function assign(Actor $actor, int $galleryId, array $attachmentIds, Revision $expected): AssignResult
     {
+        $this->authorize($actor, $galleryId);
         $ids = $this->sanitizeIds($attachmentIds);
+        $usable = array_values(array_filter(
+            $ids,
+            fn (int $id): bool => $this->access->canUseAttachment($actor, $id)
+        ));
 
-        $result = $this->transactions->run(function () use ($galleryId, $ids, $expected): AssignResult {
-            $existing = $this->media->existingImageIds($ids);
+        $result = $this->transactions->run(function () use ($galleryId, $ids, $usable, $expected): AssignResult {
+            $existing = $this->media->existingImageIds($usable);
             $missing = array_values(array_diff($ids, $existing));
             $duplicates = $this->items->assignedAttachmentIds($galleryId, $existing);
             $toAdd = array_values(array_diff($existing, $duplicates));
@@ -71,8 +86,9 @@ final class GalleryItemService
     /**
      * @param list<int> $itemIds Complete ordered list of the gallery's item IDs.
      */
-    public function reorder(int $galleryId, array $itemIds, Revision $expected): Revision
+    public function reorder(Actor $actor, int $galleryId, array $itemIds, Revision $expected): Revision
     {
+        $this->authorize($actor, $galleryId);
         $revision = $this->transactions->run(function () use ($galleryId, $itemIds, $expected): Revision {
             $current = $this->items->orderedIds($galleryId);
             if (
@@ -94,8 +110,9 @@ final class GalleryItemService
         return $revision;
     }
 
-    public function remove(int $galleryId, int $itemId, Revision $expected): Revision
+    public function remove(Actor $actor, int $galleryId, int $itemId, Revision $expected): Revision
     {
+        $this->authorize($actor, $galleryId);
         $revision = $this->transactions->run(function () use ($galleryId, $itemId, $expected): Revision {
             if (!in_array($itemId, $this->items->orderedIds($galleryId), true)) {
                 throw new ItemNotFoundException();
@@ -121,8 +138,9 @@ final class GalleryItemService
      * @param list<int> $itemIds
      * @throws \InvalidArgumentException When the batch exceeds MAX_BATCH.
      */
-    public function removeMany(int $galleryId, array $itemIds, Revision $expected): RemoveResult
+    public function removeMany(Actor $actor, int $galleryId, array $itemIds, Revision $expected): RemoveResult
     {
+        $this->authorize($actor, $galleryId);
         $ids = $this->sanitizeIds($itemIds);
 
         $result = $this->transactions->run(function () use ($galleryId, $ids, $expected): RemoveResult {
@@ -150,6 +168,18 @@ final class GalleryItemService
         }
 
         return $result;
+    }
+
+    /**
+     * @throws GalleryNotFoundException
+     * @throws AccessDeniedException
+     */
+    private function authorize(Actor $actor, int $galleryId): void
+    {
+        $gallery = $this->galleries->find($galleryId) ?? throw new GalleryNotFoundException();
+        if (!$this->access->canEdit($actor, $gallery)) {
+            throw new AccessDeniedException();
+        }
     }
 
     /**

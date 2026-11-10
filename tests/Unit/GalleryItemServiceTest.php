@@ -7,13 +7,19 @@ namespace SWGallery\Tests\Unit;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use SWGallery\Core\Application\Service\GalleryItemService;
+use SWGallery\Core\Domain\Access\Actor;
+use SWGallery\Core\Domain\Gallery\NewGallery;
 use SWGallery\Core\Domain\Gallery\Revision;
+use SWGallery\Core\Exception\AccessDeniedException;
+use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\InvalidOrderException;
 use SWGallery\Core\Exception\ItemNotFoundException;
 use SWGallery\Core\Exception\RevisionConflictException;
 use SWGallery\Core\Event\EventDispatcher;
 use SWGallery\Core\Event\EventInterface;
 use SWGallery\Core\Logging\NullLogger;
+use SWGallery\Tests\Support\ConfigurableAccessPolicy;
+use SWGallery\Tests\Support\InMemoryGalleries;
 use SWGallery\Tests\Support\InMemoryItems;
 use SWGallery\Tests\Support\InMemoryTransactionRunner;
 use SWGallery\Tests\Support\VanishingItems;
@@ -23,13 +29,21 @@ final class GalleryItemServiceTest extends TestCase
     private InMemoryItems $store;
     private GalleryItemService $service;
     private InMemoryTransactionRunner $runner;
+    private InMemoryGalleries $galleries;
+    private ConfigurableAccessPolicy $policy;
+    private Actor $admin;
     private EventDispatcher $events;
     /** @var list<string> */
     private array $seen = [];
 
     protected function setUp(): void
     {
-        $this->store = new InMemoryItems([10, 11, 12]);
+        $this->store = new InMemoryItems([10, 11, 12, 13]);
+        $this->admin = new Actor(1);
+        $this->policy = new ConfigurableAccessPolicy([1], false, [13]);
+        $this->galleries = new InMemoryGalleries($this->store);
+        $this->galleries->create(new NewGallery('One', 1));
+        $this->galleries->create(new NewGallery('Two', 1));
         $this->runner = new InMemoryTransactionRunner([$this->store]);
         $this->events = new EventDispatcher(new NullLogger());
         $this->events->listen(EventInterface::class, function (EventInterface $e): void {
@@ -40,16 +54,24 @@ final class GalleryItemServiceTest extends TestCase
 
     private function serviceWith(InMemoryTransactionRunner $runner): GalleryItemService
     {
-        return new GalleryItemService($this->store, $this->store, $this->store, $runner, $this->events);
+        return new GalleryItemService(
+            $this->store,
+            $this->store,
+            $this->store,
+            $runner,
+            $this->events,
+            $this->galleries,
+            $this->policy
+        );
     }
 
     public function testAssignReportsAddedDuplicatesAndMissingHonestly(): void
     {
-        $first = $this->service->assign(1, [10, 11], new Revision(0));
+        $first = $this->service->assign($this->admin, 1, [10, 11], new Revision(0));
         self::assertSame([10, 11], $first->added);
         self::assertSame(1, $first->revision->value);
 
-        $second = $this->service->assign(1, [11, 12, 99, 12], new Revision(1));
+        $second = $this->service->assign($this->admin, 1, [11, 12, 99, 12], new Revision(1));
         self::assertSame([12], $second->added);
         self::assertSame([11], $second->alreadyAssigned);
         self::assertSame([99], $second->missing);
@@ -58,26 +80,26 @@ final class GalleryItemServiceTest extends TestCase
 
     public function testNoChangeKeepsRevision(): void
     {
-        $this->service->assign(1, [10], new Revision(0));
-        $result = $this->service->assign(1, [10], new Revision(1));
+        $this->service->assign($this->admin, 1, [10], new Revision(0));
+        $result = $this->service->assign($this->admin, 1, [10], new Revision(1));
         self::assertSame([], $result->added);
         self::assertSame(1, $result->revision->value);
     }
 
     public function testSameAttachmentMayBelongToMultipleGalleries(): void
     {
-        $this->service->assign(1, [10], new Revision(0));
-        $this->service->assign(2, [10], new Revision(0));
+        $this->service->assign($this->admin, 1, [10], new Revision(0));
+        $this->service->assign($this->admin, 2, [10], new Revision(0));
         self::assertSame(1, $this->store->count(1));
         self::assertSame(1, $this->store->count(2));
     }
 
     public function testStaleRevisionWritesNothing(): void
     {
-        $this->service->assign(1, [10], new Revision(0));
+        $this->service->assign($this->admin, 1, [10], new Revision(0));
         $this->expectException(RevisionConflictException::class);
         try {
-            $this->service->assign(1, [11], new Revision(0));
+            $this->service->assign($this->admin, 1, [11], new Revision(0));
         } finally {
             self::assertSame(1, $this->store->count(1));
         }
@@ -86,16 +108,16 @@ final class GalleryItemServiceTest extends TestCase
     public function testBatchLimit(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->service->assign(1, range(1, GalleryItemService::MAX_BATCH + 1), new Revision(0));
+        $this->service->assign($this->admin, 1, range(1, GalleryItemService::MAX_BATCH + 1), new Revision(0));
     }
 
     public function testReorderAppliesCompleteOrderAndBumpsRevision(): void
     {
-        $this->service->assign(1, [10, 11, 12], new Revision(0));
+        $this->service->assign($this->admin, 1, [10, 11, 12], new Revision(0));
         $ids = $this->store->orderedIds(1);
         $reversed = array_reverse($ids);
 
-        $revision = $this->service->reorder(1, $reversed, new Revision(1));
+        $revision = $this->service->reorder($this->admin, 1, $reversed, new Revision(1));
 
         self::assertSame(2, $revision->value);
         self::assertSame($reversed, $this->store->orderedIds(1));
@@ -107,9 +129,9 @@ final class GalleryItemServiceTest extends TestCase
     #[DataProvider('invalidOrders')]
     public function testReorderRejectsAnythingButAPermutation(array $order): void
     {
-        $this->service->assign(1, [10, 11], new Revision(0));
+        $this->service->assign($this->admin, 1, [10, 11], new Revision(0));
         $this->expectException(InvalidOrderException::class);
-        $this->service->reorder(1, $order, new Revision(1));
+        $this->service->reorder($this->admin, 1, $order, new Revision(1));
     }
 
     /** @return array<string, array{list<int>}> */
@@ -120,10 +142,10 @@ final class GalleryItemServiceTest extends TestCase
 
     public function testRemoveOnlyRemovesTheRelation(): void
     {
-        $this->service->assign(1, [10, 11], new Revision(0));
+        $this->service->assign($this->admin, 1, [10, 11], new Revision(0));
         $itemId = $this->store->orderedIds(1)[0];
 
-        $revision = $this->service->remove(1, $itemId, new Revision(1));
+        $revision = $this->service->remove($this->admin, 1, $itemId, new Revision(1));
 
         self::assertSame(2, $revision->value);
         self::assertSame(1, $this->store->count(1));
@@ -133,18 +155,18 @@ final class GalleryItemServiceTest extends TestCase
     public function testRemoveUnknownItem(): void
     {
         $this->expectException(ItemNotFoundException::class);
-        $this->service->remove(1, 42, new Revision(0));
+        $this->service->remove($this->admin, 1, 42, new Revision(0));
     }
 
     public function testEventsAreDispatchedOnlyForRealChanges(): void
     {
-        $this->service->assign(1, [10, 11], new Revision(0));
-        $this->service->assign(1, [10], new Revision(1));
+        $this->service->assign($this->admin, 1, [10, 11], new Revision(0));
+        $this->service->assign($this->admin, 1, [10], new Revision(1));
         $ids = $this->store->orderedIds(1);
-        $this->service->reorder(1, array_reverse($ids), new Revision(1));
-        $this->service->remove(1, $ids[0], new Revision(2));
-        $this->service->removeMany(1, [999], new Revision(3));
-        $this->service->removeMany(1, [$ids[1]], new Revision(3));
+        $this->service->reorder($this->admin, 1, array_reverse($ids), new Revision(1));
+        $this->service->remove($this->admin, 1, $ids[0], new Revision(2));
+        $this->service->removeMany($this->admin, 1, [999], new Revision(3));
+        $this->service->removeMany($this->admin, 1, [$ids[1]], new Revision(3));
 
         self::assertSame(['items_assigned', 'items_reordered', 'items_removed', 'items_removed'], $this->seen);
     }
@@ -154,7 +176,7 @@ final class GalleryItemServiceTest extends TestCase
         $this->store->failAfterWrites(1);
 
         try {
-            $this->service->assign(1, [10, 11, 12], new Revision(0));
+            $this->service->assign($this->admin, 1, [10, 11, 12], new Revision(0));
             self::fail('The simulated failure must surface.');
         } catch (\RuntimeException) {
             self::assertSame(0, $this->store->count(1));
@@ -166,15 +188,15 @@ final class GalleryItemServiceTest extends TestCase
 
     public function testFailingRemoveAndReorderRollBackToo(): void
     {
-        $this->service->assign(1, [10, 11], new Revision(0));
+        $this->service->assign($this->admin, 1, [10, 11], new Revision(0));
         $ids = $this->store->orderedIds(1);
 
         $this->store->failAfterWrites(0);
         foreach (
             [
-                fn () => $this->service->reorder(1, array_reverse($ids), new Revision(1)),
-                fn () => $this->service->remove(1, $ids[0], new Revision(1)),
-                fn () => $this->service->removeMany(1, $ids, new Revision(1)),
+                fn () => $this->service->reorder($this->admin, 1, array_reverse($ids), new Revision(1)),
+                fn () => $this->service->remove($this->admin, 1, $ids[0], new Revision(1)),
+                fn () => $this->service->removeMany($this->admin, 1, $ids, new Revision(1)),
             ] as $operation
         ) {
             try {
@@ -193,7 +215,7 @@ final class GalleryItemServiceTest extends TestCase
         $this->store->failAfterWrites(1);
 
         try {
-            $service->assign(1, [10, 11], new Revision(0));
+            $service->assign($this->admin, 1, [10, 11], new Revision(0));
             self::fail('The simulated failure must surface.');
         } catch (\RuntimeException) {
             self::assertSame(1, $this->store->count(1), 'partial state remains on engines without transactions');
@@ -203,10 +225,10 @@ final class GalleryItemServiceTest extends TestCase
 
     public function testRemoveManyIsHonestAndBounded(): void
     {
-        $this->service->assign(1, [10, 11, 12], new Revision(0));
+        $this->service->assign($this->admin, 1, [10, 11, 12], new Revision(0));
         $ids = $this->store->orderedIds(1);
 
-        $result = $this->service->removeMany(1, [$ids[0], $ids[2], $ids[0], 777, -1], new Revision(1));
+        $result = $this->service->removeMany($this->admin, 1, [$ids[0], $ids[2], $ids[0], 777, -1], new Revision(1));
 
         self::assertSame([$ids[0], $ids[2]], $result->removed);
         self::assertSame([777], $result->notFound);
@@ -217,7 +239,7 @@ final class GalleryItemServiceTest extends TestCase
 
     public function testRemoveManyWithNothingToRemoveKeepsTheRevision(): void
     {
-        $result = $this->service->removeMany(1, [5], new Revision(0));
+        $result = $this->service->removeMany($this->admin, 1, [5], new Revision(0));
 
         self::assertSame([], $result->removed);
         self::assertSame([5], $result->notFound);
@@ -226,42 +248,91 @@ final class GalleryItemServiceTest extends TestCase
 
     public function testRemoveManyChecksTheRevisionAndTheBatchLimit(): void
     {
-        $this->service->assign(1, [10], new Revision(0));
+        $this->service->assign($this->admin, 1, [10], new Revision(0));
         $id = $this->store->orderedIds(1)[0];
 
         try {
-            $this->service->removeMany(1, [$id], new Revision(0));
+            $this->service->removeMany($this->admin, 1, [$id], new Revision(0));
             self::fail('A stale revision must conflict.');
         } catch (RevisionConflictException) {
             self::assertSame(1, $this->store->count(1));
         }
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->service->removeMany(1, range(1, GalleryItemService::MAX_BATCH + 1), new Revision(1));
+        $this->service->removeMany($this->admin, 1, range(1, GalleryItemService::MAX_BATCH + 1), new Revision(1));
     }
 
     public function testConcurrentlyVanishedRelationIsReportedHonestly(): void
     {
-        $this->service->assign(1, [10, 11], new Revision(0));
+        $this->service->assign($this->admin, 1, [10, 11], new Revision(0));
         $ids = $this->store->orderedIds(1);
         $service = new GalleryItemService(
             new VanishingItems($this->store),
             $this->store,
             $this->store,
             $this->runner,
-            $this->events
+            $this->events,
+            $this->galleries,
+            $this->policy
         );
 
-        $result = $service->removeMany(1, [$ids[0]], new Revision(1));
+        $result = $service->removeMany($this->admin, 1, [$ids[0]], new Revision(1));
         self::assertSame([], $result->removed);
         self::assertSame([$ids[0]], $result->notFound);
 
         try {
-            $service->remove(1, $ids[0], new Revision(2));
+            $service->remove($this->admin, 1, $ids[0], new Revision(2));
             self::fail('A vanished relation must raise not found.');
         } catch (ItemNotFoundException) {
             self::assertSame(2, $this->store->current(1)->value, 'the failed removal rolled its claim back');
         }
+    }
+
+    public function testDeniedActorAndMissingGalleryFailBeforeAnyClaimOrWrite(): void
+    {
+        $this->service->assign($this->admin, 1, [10, 11], new Revision(0));
+        $ids = $this->store->orderedIds(1);
+        $stranger = new Actor(3);
+        $this->seen = [];
+
+        foreach (
+            [
+                fn () => $this->service->assign($stranger, 1, [12], new Revision(1)),
+                fn () => $this->service->reorder($stranger, 1, array_reverse($ids), new Revision(1)),
+                fn () => $this->service->remove($stranger, 1, $ids[0], new Revision(1)),
+                fn () => $this->service->removeMany($stranger, 1, $ids, new Revision(1)),
+                fn () => $this->service->removeMany(Actor::anonymous(), 1, [1], new Revision(1)),
+            ] as $operation
+        ) {
+            try {
+                $operation();
+                self::fail('Expected AccessDeniedException.');
+            } catch (AccessDeniedException $e) {
+                self::assertSame('swg_forbidden', $e->errorCode());
+            }
+        }
+        self::assertSame(1, $this->store->current(1)->value);
+        self::assertSame($ids, $this->store->orderedIds(1));
+        self::assertSame([], $this->seen);
+
+        $this->expectException(GalleryNotFoundException::class);
+        $this->service->assign($this->admin, 999, [10], new Revision(0));
+    }
+
+    public function testDenialPrecedesValidationDetails(): void
+    {
+        $this->expectException(AccessDeniedException::class);
+        $this->service->assign(new Actor(3), 1, range(1, GalleryItemService::MAX_BATCH + 1), new Revision(0));
+    }
+
+    public function testAttachmentsTheActorMayNotUseAreReportedAsMissing(): void
+    {
+        $result = $this->service->assign($this->admin, 1, [10, 13, 99], new Revision(0));
+
+        self::assertSame([10], $result->added);
+        self::assertSame([13, 99], $result->missing, 'an unreadable attachment looks like a nonexistent one');
+        self::assertSame([], $result->alreadyAssigned);
+        self::assertSame(1, $this->store->count(1));
     }
 
     public function testErrorCodesAreStable(): void

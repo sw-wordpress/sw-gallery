@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SWGallery\Core\Application\Service;
 
+use SWGallery\Core\Contract\GalleryAccessPolicyInterface;
 use SWGallery\Core\Contract\GalleryItemRepositoryInterface;
 use SWGallery\Core\Contract\GalleryRepositoryInterface;
 use SWGallery\Core\Contract\ItemOverridesStoreInterface;
@@ -11,12 +12,15 @@ use SWGallery\Core\Contract\ItemSettingsStoreInterface;
 use SWGallery\Core\Contract\LayoutRegistryInterface;
 use SWGallery\Core\Contract\RevisionStoreInterface;
 use SWGallery\Core\Contract\TransactionRunnerInterface;
+use SWGallery\Core\Domain\Access\Actor;
+use SWGallery\Core\Domain\Gallery\Gallery;
 use SWGallery\Core\Domain\Gallery\ItemOverrides;
 use SWGallery\Core\Domain\Gallery\ItemSettingsResult;
 use SWGallery\Core\Domain\Gallery\Revision;
 use SWGallery\Core\Domain\Settings\SettingsSchemaValidator;
 use SWGallery\Core\Event\EventDispatcherInterface;
 use SWGallery\Core\Event\ItemUpdated;
+use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\ItemNotFoundException;
 use SWGallery\Core\Exception\ValidationFailedException;
@@ -43,6 +47,7 @@ final class GalleryItemEditService
         private readonly SettingsSchemaValidator $validator,
         private readonly TransactionRunnerInterface $transactions,
         private readonly EventDispatcherInterface $events,
+        private readonly GalleryAccessPolicyInterface $access,
     ) {
     }
 
@@ -50,10 +55,18 @@ final class GalleryItemEditService
      * Replaces the overrides of an item. `null` means "inherit from the attachment", an empty string is an
      * intentional blank; a field that is not passed on is therefore reset to inherit.
      *
+     * @throws GalleryNotFoundException
+     * @throws AccessDeniedException
      * @throws ItemNotFoundException
      */
-    public function updateOverrides(int $galleryId, int $itemId, ItemOverrides $overrides, Revision $expected): Revision
-    {
+    public function updateOverrides(
+        Actor $actor,
+        int $galleryId,
+        int $itemId,
+        ItemOverrides $overrides,
+        Revision $expected
+    ): Revision {
+        $this->authorize($actor, $galleryId);
         $revision = $this->transactions->run(
             function () use ($galleryId, $itemId, $overrides, $expected): Revision {
                 $this->requireItem($galleryId, $itemId);
@@ -78,11 +91,17 @@ final class GalleryItemEditService
      * @param array<string, mixed> $settings
      * @throws ItemNotFoundException
      * @throws GalleryNotFoundException
+     * @throws AccessDeniedException
      * @throws ValidationFailedException
      */
-    public function setSettings(int $galleryId, int $itemId, array $settings, Revision $expected): ItemSettingsResult
-    {
-        $gallery = $this->galleries->find($galleryId) ?? throw new GalleryNotFoundException();
+    public function setSettings(
+        Actor $actor,
+        int $galleryId,
+        int $itemId,
+        array $settings,
+        Revision $expected
+    ): ItemSettingsResult {
+        $gallery = $this->authorize($actor, $galleryId);
         $schema = $this->layouts->resolve($gallery->settings->layout)->layout->getSettingsSchema();
         $itemSchema = $schema[self::ITEM_SCHEMA_KEY] ?? null;
 
@@ -110,6 +129,16 @@ final class GalleryItemEditService
         $this->events->dispatch(new ItemUpdated($galleryId, $itemId, $revision->value));
 
         return new ItemSettingsResult($values, $revision);
+    }
+
+    private function authorize(Actor $actor, int $galleryId): Gallery
+    {
+        $gallery = $this->galleries->find($galleryId) ?? throw new GalleryNotFoundException();
+        if (!$this->access->canEdit($actor, $gallery)) {
+            throw new AccessDeniedException();
+        }
+
+        return $gallery;
     }
 
     private function requireItem(int $galleryId, int $itemId): void

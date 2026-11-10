@@ -9,17 +9,20 @@ use SWGallery\Core\Application\Service\GalleryItemEditService;
 use SWGallery\Core\Application\Service\LayoutRegistry;
 use SWGallery\Core\Contract\ItemOverridesStoreInterface;
 use SWGallery\Core\Contract\ItemSettingsStoreInterface;
+use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Gallery\ItemOverrides;
 use SWGallery\Core\Domain\Gallery\NewGallery;
 use SWGallery\Core\Domain\Gallery\Revision;
 use SWGallery\Core\Domain\Settings\SettingsSchemaValidator;
 use SWGallery\Core\Event\EventDispatcher;
 use SWGallery\Core\Event\EventInterface;
+use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\ItemNotFoundException;
 use SWGallery\Core\Exception\RevisionConflictException;
 use SWGallery\Core\Exception\ValidationFailedException;
 use SWGallery\Core\Logging\NullLogger;
+use SWGallery\Tests\Support\ConfigurableAccessPolicy;
 use SWGallery\Tests\Support\InMemoryGalleries;
 use SWGallery\Tests\Support\InMemoryItems;
 use SWGallery\Tests\Support\InMemoryTransactionRunner;
@@ -30,6 +33,7 @@ final class GalleryItemEditServiceTest extends TestCase
     private InMemoryItems $store;
     private InMemoryGalleries $galleries;
     private GalleryItemEditService $service;
+    private Actor $admin;
     private int $galleryId;
     private int $itemId;
     /** @var list<array<string, scalar|list<int>>> */
@@ -37,6 +41,7 @@ final class GalleryItemEditServiceTest extends TestCase
 
     protected function setUp(): void
     {
+        $this->admin = new Actor(1);
         $this->store = new InMemoryItems([10]);
         $this->galleries = new InMemoryGalleries($this->store);
         $layouts = new LayoutRegistry();
@@ -64,7 +69,8 @@ final class GalleryItemEditServiceTest extends TestCase
             $this->store,
             new SettingsSchemaValidator(),
             new InMemoryTransactionRunner([$this->store]),
-            $events
+            $events,
+            new ConfigurableAccessPolicy([1])
         );
 
         $this->galleryId = $this->galleries->create(new NewGallery('G', 1))->id;
@@ -76,6 +82,7 @@ final class GalleryItemEditServiceTest extends TestCase
     public function testNullInheritsAndEmptyStringIsAnIntentionalBlank(): void
     {
         $revision = $this->service->updateOverrides(
+            $this->admin,
             $this->galleryId,
             $this->itemId,
             new ItemOverrides(null, '', 'Alt text'),
@@ -92,7 +99,7 @@ final class GalleryItemEditServiceTest extends TestCase
             $this->payloads
         );
 
-        $this->service->updateOverrides($this->galleryId, $this->itemId, new ItemOverrides(), new Revision(2));
+        $this->service->updateOverrides($this->admin, $this->galleryId, $this->itemId, new ItemOverrides(), new Revision(2));
         $reset = $this->store->findPage($this->galleryId, 0, 10)[0]->overrides;
         self::assertNull($reset->alt);
     }
@@ -100,14 +107,14 @@ final class GalleryItemEditServiceTest extends TestCase
     public function testOverridesRejectUnknownItemAndStaleRevisionWithoutWriting(): void
     {
         try {
-            $this->service->updateOverrides($this->galleryId, 999, new ItemOverrides('x'), new Revision(1));
+            $this->service->updateOverrides($this->admin, $this->galleryId, 999, new ItemOverrides('x'), new Revision(1));
             self::fail('Unknown item.');
         } catch (ItemNotFoundException) {
             self::assertSame(1, $this->store->current($this->galleryId)->value);
         }
 
         try {
-            $this->service->updateOverrides($this->galleryId, $this->itemId, new ItemOverrides('x'), new Revision(0));
+            $this->service->updateOverrides($this->admin, $this->galleryId, $this->itemId, new ItemOverrides('x'), new Revision(0));
             self::fail('Stale revision.');
         } catch (RevisionConflictException) {
             self::assertNull($this->store->findPage($this->galleryId, 0, 10)[0]->overrides->title);
@@ -120,7 +127,7 @@ final class GalleryItemEditServiceTest extends TestCase
         $this->store->failAfterWrites(0);
 
         try {
-            $this->service->updateOverrides($this->galleryId, $this->itemId, new ItemOverrides('x'), new Revision(1));
+            $this->service->updateOverrides($this->admin, $this->galleryId, $this->itemId, new ItemOverrides('x'), new Revision(1));
             self::fail('The simulated failure must surface.');
         } catch (\RuntimeException) {
             self::assertSame(1, $this->store->current($this->galleryId)->value);
@@ -130,6 +137,7 @@ final class GalleryItemEditServiceTest extends TestCase
     public function testSettingsAreValidatedAndStoredWithDefaultsAndUnknownKeys(): void
     {
         $result = $this->service->setSettings(
+            $this->admin,
             $this->galleryId,
             $this->itemId,
             ['zoom' => 2, 'from_future' => true],
@@ -145,6 +153,7 @@ final class GalleryItemEditServiceTest extends TestCase
     {
         try {
             $this->service->setSettings(
+                $this->admin,
                 $this->galleryId,
                 $this->itemId,
                 ['zoom' => 9, 'focus' => 'x'],
@@ -168,7 +177,7 @@ final class GalleryItemEditServiceTest extends TestCase
             (new \SWGallery\Core\Domain\Gallery\GallerySettings('free'))
         ) ?? throw new \LogicException());
 
-        $result = $this->service->setSettings($this->galleryId, $this->itemId, ['a' => ['b' => 1]], new Revision(1));
+        $result = $this->service->setSettings($this->admin, $this->galleryId, $this->itemId, ['a' => ['b' => 1]], new Revision(1));
 
         self::assertSame(['a' => ['b' => 1]], $result->settings);
     }
@@ -180,20 +189,20 @@ final class GalleryItemEditServiceTest extends TestCase
         ) ?? throw new \LogicException());
 
         $this->expectException(ValidationFailedException::class);
-        $this->service->setSettings($this->galleryId, $this->itemId, ['zoom' => 99], new Revision(1));
+        $this->service->setSettings($this->admin, $this->galleryId, $this->itemId, ['zoom' => 99], new Revision(1));
     }
 
     public function testSettingsRejectUnknownGalleryAndItem(): void
     {
         try {
-            $this->service->setSettings(999, $this->itemId, [], new Revision(0));
+            $this->service->setSettings($this->admin, 999, $this->itemId, [], new Revision(0));
             self::fail('Unknown gallery.');
         } catch (GalleryNotFoundException) {
             self::assertSame([], $this->payloads);
         }
 
         $this->expectException(ItemNotFoundException::class);
-        $this->service->setSettings($this->galleryId, 999, ['zoom' => 1], new Revision(1));
+        $this->service->setSettings($this->admin, $this->galleryId, 999, ['zoom' => 1], new Revision(1));
     }
 
     public function testItemVanishingBetweenCheckAndWriteRollsBack(): void
@@ -225,18 +234,20 @@ final class GalleryItemEditServiceTest extends TestCase
             $rejecting,
             new SettingsSchemaValidator(),
             new InMemoryTransactionRunner([$this->store]),
-            new EventDispatcher(new NullLogger())
+            new EventDispatcher(new NullLogger()),
+            new ConfigurableAccessPolicy([1])
         );
 
         foreach (
             [
                 fn () => $service->updateOverrides(
+                    $this->admin,
                     $this->galleryId,
                     $this->itemId,
                     new ItemOverrides('x'),
                     new Revision(1)
                 ),
-                fn () => $service->setSettings($this->galleryId, $this->itemId, ['a' => 1], new Revision(1)),
+                fn () => $service->setSettings($this->admin, $this->galleryId, $this->itemId, ['a' => 1], new Revision(1)),
             ] as $operation
         ) {
             try {
@@ -246,5 +257,42 @@ final class GalleryItemEditServiceTest extends TestCase
                 self::assertSame(1, $this->store->current($this->galleryId)->value);
             }
         }
+    }
+
+    public function testDeniedActorChangesNothingAndLearnsNothingAboutValidation(): void
+    {
+        $stranger = new Actor(3);
+
+        foreach (
+            [
+                fn () => $this->service->updateOverrides(
+                    $stranger,
+                    $this->galleryId,
+                    $this->itemId,
+                    new ItemOverrides('x'),
+                    new Revision(1)
+                ),
+                fn () => $this->service->setSettings(
+                    $stranger,
+                    $this->galleryId,
+                    $this->itemId,
+                    ['zoom' => 99],
+                    new Revision(1)
+                ),
+            ] as $operation
+        ) {
+            try {
+                $operation();
+                self::fail('Expected AccessDeniedException.');
+            } catch (AccessDeniedException $e) {
+                self::assertSame('swg_forbidden', $e->errorCode());
+            }
+        }
+        self::assertSame(1, $this->store->current($this->galleryId)->value);
+        self::assertSame([], $this->store->itemSettings($this->galleryId, $this->itemId));
+        self::assertSame([], $this->payloads);
+
+        $this->expectException(GalleryNotFoundException::class);
+        $this->service->updateOverrides($this->admin, 999, $this->itemId, new ItemOverrides('x'), new Revision(1));
     }
 }
