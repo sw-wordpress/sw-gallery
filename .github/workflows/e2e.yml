@@ -1,0 +1,54 @@
+name: E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: Playwright (WordPress ${{ matrix.wp }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - wp: "6.9"
+            wp_image: wordpress:6.9-php8.3-apache
+            cli_image: wordpress:cli-php8.3
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version-file: e2e/.nvmrc
+          cache: npm
+          cache-dependency-path: |
+            e2e/package-lock.json
+            apps/admin/package-lock.json
+      - name: Install Chromium system dependencies
+        run: (cd e2e && npm ci --no-audit --no-fund && npx playwright install-deps chromium)
+      - name: Run end-to-end suite
+        env:
+          CI: "true"
+          SWG_E2E_WP_IMAGE: ${{ matrix.wp_image }}
+          SWG_E2E_CLI_IMAGE: ${{ matrix.cli_image }}
+        run: bin/test-e2e.sh
+      - name: Upload Playwright report and traces
+        if: failure()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: playwright-${{ matrix.wp }}
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+            e2e/screenshots
+          retention-days: 7
+          if-no-files-found: ignore
