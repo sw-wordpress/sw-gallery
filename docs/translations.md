@@ -20,4 +20,6 @@ bin/i18n.sh check      # fails on outdated .pot, untranslated/fuzzy entries, mis
   `{placeholders}` or plural forms.
 * New string: `__( '…', 'sw-gallery' )` (add a `/* translators: */` comment for placeholders) or a key in every UI catalog; then run the commands above.
 * Adding a language: `msginit` a new .po, add the locale to `LOCALES` in `bin/i18n.sh`, add the UI catalog and register it in `apps/admin/src/i18n/`.
+* `bin/i18n-core-messages.php` (run by `pot`/`update`) generates `packages/wordpress/src/Support/CoreMessages.php` from the typed exceptions of the core
+  (`parent::__construct('…')` literals and `$message = '…'` defaults); commit the result. Programmer-error exceptions (`\InvalidArgumentException`) are not translated.
 * GNU gettext is needed on the **development** machine only; the release ZIP ships compiled `.mo` files.

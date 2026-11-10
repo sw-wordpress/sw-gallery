@@ -1,15 +1,18 @@
 # Development
 
-Commands below describe the **target setup** and exist only once the matching tooling is scaffolded (track in `TODO.md`).
+Commands exist once the matching tooling is scaffolded (track in `TODO.md`); PHP tooling, WordPress suite, i18n and CI exist, `apps/admin`, `e2e/` and the build scripts are planned.
 
 ## Setup
 ```bash
 composer install
 (cd apps/admin && npm install)
-bin/test-db.sh start                 # private throw-away MariaDB (never touches real databases)
-(cd tests/wp && composer install)    # WordPress test environment (own PHPUnit, WP core downloaded into tests/wp/vendor)
+bin/test-db.sh start                 # private throw-away MariaDB (never touches real databases); also: stop (deletes data), status, env
+(cd tests/wp && composer install)    # WordPress test environment (own PHPUnit 9.6, WP core downloaded into tests/wp/vendor)
 ```
-Tests needing a database skip themselves when the service is unreachable. Connection settings: `SWG_TEST_DB_HOST/PORT/USER/PASSWORD`.
+`bin/test-db.sh` uses a temp data directory (`SWG_TEST_DB_DIR`, default `/tmp/swg-test-db`), a random free port (kept in `$DIR/port`) and the user
+`swg`, which may only access databases `swg_*`. `tests/wp` reads `SWG_TEST_DB_HOST/PORT/USER/PASSWORD` (CI database service) and falls back to that port file.
+WordPress tests skip themselves when the database is unreachable (the coverage gate then fails, because the adapter is unmeasured).
+Needs `mariadbd`/`mariadb-install-db` on PATH and the `mysqli` extension.
 Playwright lives in `e2e/` (own `package.json`, `playwright.config.ts`, specs; plugin-wide scope: admin SPA, Gutenberg, frontend, lightbox). It runs against the throw-away WordPress of `tests/e2e-env/` (Docker Compose), never the real install. `tests/E2e/` is reserved for PHPUnit end-to-end tests.
 
 ## Checks
@@ -20,6 +23,7 @@ composer stan        # PHPStan level 8, no baseline
 composer test        # unit + integration
 composer test:wp     # WordPress integration tests (single site)
 composer test:wp:ms  # same environment as multisite
+composer test:coverage  # unit + WordPress suite Clover, merged (tests/coverage/merge.php), strict gate > 80 %
 (cd apps/admin && npm run typecheck && npm run lint && npm run test:coverage)   # vue-tsc, ESLint+Prettier, Vitest
 bin/test-e2e.sh       # starts tests/e2e-env (Docker: throw-away WordPress + DB), runs Playwright from e2e/, tears down
 ```
@@ -31,12 +35,17 @@ PHPStan covers all production PHP (core, adapter, plugin file, `uninstall.php`);
 Composer and Node.js; the target host needs neither. Bundled PHP libraries are prefixed (Mozart, namespace `SWGallery\Dependencies\`) to avoid collisions.
 Release/tag/signing flow: decision D8 in `decisions.md`, task M5-17 in `TODO.md`.
 
+## CI
+`.github/workflows/tests.yml`: style/PHPStan/unit/i18n/`composer audit`, WordPress suite (PHP 8.2-8.4 x WordPress 6.4 and 6.9, single site + multisite, MariaDB service),
+coverage gate, Sonar upload. Action versions are pinned to full tags. The Sonar job runs only when the `SONAR_TOKEN` secret exists (not for forks); the
+organisation comes from the variable `SONAR_ORGANIZATION` (default `sw-wordpress`).
+
 ## Dependency security
 `composer audit --locked --no-dev` and `npm audit --omit=dev --audit-level=high` fail CI on advisories in shipped dependencies; a daily workflow audits
 all dependencies. Node version pinned in `apps/admin/.nvmrc`.
 
 ## SonarQube Cloud
-CI uploads merged PHP Clover coverage and `apps/admin/coverage/lcov.info`; project mapping and source paths are in `sonar-project.properties`.
+CI uploads merged PHP Clover coverage (adapter, plugin file and `uninstall.php` included) and, once it exists, `apps/admin/coverage/lcov.info`; project mapping and source paths are in `sonar-project.properties`.
 Coverage gate: line coverage **strictly above 80 %**, PHP and JS/TS separately (`tests/coverage/check.php`, `apps/admin/scripts/check-coverage.mjs`;
 Vitest thresholds alone would accept exactly 80 %). Unmeasured production code is not excluded.
 
