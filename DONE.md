@@ -32,3 +32,7 @@
 - Adapter infrastructure: `WpTransactionRunner` (nesting-safe, non-transactional fallback), `WpLogger` (ring buffer of 50 errors), `EventBridge` (`swg_<event>` actions, veto filters), item overrides/settings stores, `Migrator` (ordered steps, lock, retry), network-aware activation and batched, per-site opt-in uninstall.
 - State: 121 WordPress tests (single + multisite), 191 unit tests, merged PHP coverage 93.6 %.
 - Build automation: PostToolUse hook rebuilds `assets/admin` and `assets/build` after edits (`bin/rebuild-on-change.sh`), `bin/watch-build.sh` for manual edits.
+
+## 2026-11-10 — Wave 2 stream A1
+- `WpGalleryRepository` (passes the shared repository contract), `WpGalleryAccessPolicy` (D1/D4/D11, table-tested per role), batched `MediaReference` lookup, lifecycle hooks (attachment/gallery deletion keep relations and covers consistent), `wp swg repair` (dry run by default).
+- State: 276 WordPress tests (single + multisite), 194 unit tests, merged PHP coverage 95.3 %.

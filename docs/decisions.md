@@ -33,6 +33,22 @@ Decisions taken while implementing Wave 1 (2026-11-10):
 | Transactions | Every write claims the revision first inside one transaction. On engines without transactions the runner just executes the work: a half-failed write still moves the revision, so stale clients reload. |
 | Media Library provider | Needs `upload_files` to list and `edit_post` per attachment (matches the Media Library grid); missing, malformed and unreadable ids all answer `swg_import_not_found`. |
 
+Decisions taken while implementing Wave 2 (2026-11-10):
+
+| Topic | Decision |
+|---|---|
+| Capability mapping (D1) | Evaluated for the passed-in `Actor` with `user_can()` against the stored post (never the request user, never a forged entity). `canCreate` = `create_posts`; `canEdit` = `edit_post`; `canDelete` (trash, restore, delete) = `delete_post`; `canView` = `edit_posts` and `read_post`. Anonymous gets `false` everywhere except `embedAccess` of published galleries. |
+| Publishing | `WpGalleryAccessPolicy::canPublish` (= `canEdit` and `publish_post`) is not part of the core interface: the REST layer must call it whenever a request sets status `publish`. |
+| Attachments (D11) | `canUseAttachment` = exists, not trashed, allowed MIME type, `upload_files` and `read_post`; `canEditAttachment` = `edit_post` on an attachment only. |
+| Allowed MIME types | JPEG, PNG, GIF always; WebP/AVIF only when the server image editor supports them; SVG and HEIC never (`AllowedMimeTypes`). |
+| Cover | `_thumbnail_id`, written as direct meta. Deleting the attachment clears it everywhere (also in trashed galleries) and bumps the revision of the affected galleries; rendering falls back to the first item. |
+| Status mapping | Post status; `Future` is rejected on create (galleries have no schedule); unknown statuses read as draft; updating a trashed gallery throws; `restore()` always yields a draft; with `EMPTY_TRASH_DAYS=0` the trash state is set by hand so galleries stay restorable. |
+| Search order | Modified date descending, then id descending (the contract defines none). |
+| Transactions | Nesting uses a process-wide depth: an inner failure swallowed by outer code would still commit the outer work. |
+| Event bridge | A throwing callback is logged and ignored (remaining callbacks of that hook are skipped); a failing veto filter fails open. |
+| Uninstall opt-in | Per site (multisite): each site opts in for itself. A network-wide opt-in would be a new decision. Deleting a site drops its item table. |
+| Migrations | `Schema::migrate()` forces all steps (activation/repair); `maybe_migrate()` only runs when behind, guarded by a 60 s lock option. |
+
 Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und Entscheidungen"); revisable without migration:
 
 | Topic | Default |
