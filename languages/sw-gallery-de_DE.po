@@ -1,0 +1,60 @@
+# German (de_DE) translation of sw-gallery.
+# Copyright (C) 2026 sw-gallery contributors
+# This file is distributed under the same license as the sw-gallery package.
+# Stefan Warnat, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: sw-gallery 0.1.0\n"
+"Report-Msgid-Bugs-To: https://example.com/sw-gallery\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: sw-gallery contributors\n"
+"Language-Team: German\n"
+"Language: de_DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: packages/wordpress/src/PostTypes.php:23
+msgid "Galleries"
+msgstr "Galerien"
+
+#: packages/wordpress/src/PostTypes.php:24
+msgid "Gallery"
+msgstr "Galerie"
+
+#: packages/wordpress/src/Support/CoreMessages.php:34
+msgid "The gallery item was not found."
+msgstr "Das Galerie-Element wurde nicht gefunden."
+
+#: packages/wordpress/src/Support/CoreMessages.php:35
+msgid "The gallery was changed by someone else."
+msgstr "Die Galerie wurde von jemand anderem geändert."
+
+#: packages/wordpress/src/Support/CoreMessages.php:36
+msgid "The gallery was not found."
+msgstr "Die Galerie wurde nicht gefunden."
+
+#: packages/wordpress/src/Support/CoreMessages.php:37
+msgid "The import provider reported an error."
+msgstr "Der Import-Anbieter hat einen Fehler gemeldet."
+
+#: packages/wordpress/src/Support/CoreMessages.php:38
+msgid "The layout is not registered."
+msgstr "Das Layout ist nicht registriert."
+
+#: packages/wordpress/src/Support/CoreMessages.php:39
+msgid "The order must contain every item of the gallery exactly once."
+msgstr "Die Reihenfolge muss jedes Element der Galerie genau einmal enthalten."
+
+#. translators: 1: required PHP version, 2: current PHP version
+#: sw-gallery.php:36
+#, php-format
+msgid "sw-gallery requires PHP %1$s or newer. You are running PHP %2$s."
+msgstr "sw-gallery benötigt PHP %1$s oder neuer. Es läuft PHP %2$s."
+
+#: sw-gallery.php:55
+msgid "sw-gallery: the vendor directory is missing. Install the release package or run \"composer install\"."
+msgstr "sw-gallery: Das Verzeichnis vendor fehlt. Installiere das Release-Paket oder führe „composer install“ aus."

@@ -1,0 +1,60 @@
+# sw-gallery translation template.
+# Copyright (C) YEAR sw-gallery contributors
+# This file is distributed under the same license as the sw-gallery package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: sw-gallery 0.1.0\n"
+"Report-Msgid-Bugs-To: https://example.com/sw-gallery\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: packages/wordpress/src/PostTypes.php:23
+msgid "Galleries"
+msgstr ""
+
+#: packages/wordpress/src/PostTypes.php:24
+msgid "Gallery"
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:34
+msgid "The gallery item was not found."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:35
+msgid "The gallery was changed by someone else."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:36
+msgid "The gallery was not found."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:37
+msgid "The import provider reported an error."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:38
+msgid "The layout is not registered."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:39
+msgid "The order must contain every item of the gallery exactly once."
+msgstr ""
+
+#. translators: 1: required PHP version, 2: current PHP version
+#: sw-gallery.php:36
+#, php-format
+msgid "sw-gallery requires PHP %1$s or newer. You are running PHP %2$s."
+msgstr ""
+
+#: sw-gallery.php:55
+msgid "sw-gallery: the vendor directory is missing. Install the release package or run \"composer install\"."
+msgstr ""
