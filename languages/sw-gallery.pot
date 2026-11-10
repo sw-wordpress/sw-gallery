@@ -16,6 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: packages/wordpress/src/Admin/AdminRegistrar.php:50
 #: packages/wordpress/src/Admin/AdminRegistrar.php:129
@@ -23,7 +24,7 @@ msgid "Gallery Management"
 msgstr ""
 
 #: packages/wordpress/src/Admin/AdminRegistrar.php:51
-#: packages/wordpress/src/PostTypes.php:23
+#: packages/wordpress/src/PostTypes.php:29
 msgid "Galleries"
 msgstr ""
 
@@ -39,7 +40,67 @@ msgstr ""
 msgid "The gallery administration requires JavaScript."
 msgstr ""
 
-#: packages/wordpress/src/PostTypes.php:24
+#. translators: 1: smallest batch size, 2: largest batch size
+#: packages/wordpress/src/Cli/RepairCommand.php:68
+#, php-format
+msgid "The batch size must be a whole number from %1$d to %2$d."
+msgstr ""
+
+#: packages/wordpress/src/Cli/RepairCommand.php:77
+msgid "The format must be \"text\" or \"json\"."
+msgstr ""
+
+#: packages/wordpress/src/Cli/RepairCommand.php:101
+msgid "Mode: apply (problems are removed)."
+msgstr ""
+
+#: packages/wordpress/src/Cli/RepairCommand.php:101
+msgid "Mode: dry run (nothing is changed)."
+msgstr ""
+
+#: packages/wordpress/src/Cli/RepairCommand.php:104
+msgid "Item relations of a missing gallery"
+msgstr ""
+
+#: packages/wordpress/src/Cli/RepairCommand.php:105
+msgid "Item relations of a missing attachment"
+msgstr ""
+
+#: packages/wordpress/src/Cli/RepairCommand.php:106
+msgid "Covers of a missing attachment"
+msgstr ""
+
+#: packages/wordpress/src/Cli/RepairCommand.php:107
+msgid "Duplicate item relations"
+msgstr ""
+
+#. translators: 1: kind of problem, 2: number found, 3: number fixed
+#: packages/wordpress/src/Cli/RepairCommand.php:113
+#, php-format
+msgid "%1$s: %2$d found, %3$d fixed"
+msgstr ""
+
+#: packages/wordpress/src/Cli/RepairCommand.php:121
+msgid "A safety limit stopped the scan early; run the command again to continue."
+msgstr ""
+
+#: packages/wordpress/src/Cli/RepairCommand.php:124
+msgid "No inconsistencies found."
+msgstr ""
+
+#: packages/wordpress/src/Cli/RepairCommand.php:126
+msgid "Run again with --apply to remove these problems. Attachments and galleries are never deleted."
+msgstr ""
+
+#. translators: %d: number of fixed problems
+#: packages/wordpress/src/Cli/RepairCommand.php:131
+#, php-format
+msgid "%d problem fixed."
+msgid_plural "%d problems fixed."
+msgstr[0] ""
+msgstr[1] ""
+
+#: packages/wordpress/src/PostTypes.php:30
 msgid "Gallery"
 msgstr ""
 

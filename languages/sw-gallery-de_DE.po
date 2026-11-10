@@ -23,7 +23,7 @@ msgid "Gallery Management"
 msgstr "Galerieverwaltung"
 
 #: packages/wordpress/src/Admin/AdminRegistrar.php:51
-#: packages/wordpress/src/PostTypes.php:23
+#: packages/wordpress/src/PostTypes.php:29
 msgid "Galleries"
 msgstr "Galerien"
 
@@ -39,7 +39,67 @@ msgstr "Die Galerieverwaltung ist nicht gebaut. Führe \"npm run build\" in apps
 msgid "The gallery administration requires JavaScript."
 msgstr "Die Galerieverwaltung benötigt JavaScript."
 
-#: packages/wordpress/src/PostTypes.php:24
+#. translators: 1: smallest batch size, 2: largest batch size
+#: packages/wordpress/src/Cli/RepairCommand.php:68
+#, php-format
+msgid "The batch size must be a whole number from %1$d to %2$d."
+msgstr "Die Stapelgröße muss eine ganze Zahl von %1$d bis %2$d sein."
+
+#: packages/wordpress/src/Cli/RepairCommand.php:77
+msgid "The format must be \"text\" or \"json\"."
+msgstr "Das Format muss \"text\" oder \"json\" sein."
+
+#: packages/wordpress/src/Cli/RepairCommand.php:101
+msgid "Mode: apply (problems are removed)."
+msgstr "Modus: Anwenden (Probleme werden entfernt)."
+
+#: packages/wordpress/src/Cli/RepairCommand.php:101
+msgid "Mode: dry run (nothing is changed)."
+msgstr "Modus: Probelauf (es wird nichts geändert)."
+
+#: packages/wordpress/src/Cli/RepairCommand.php:104
+msgid "Item relations of a missing gallery"
+msgstr "Bildzuordnungen zu einer fehlenden Galerie"
+
+#: packages/wordpress/src/Cli/RepairCommand.php:105
+msgid "Item relations of a missing attachment"
+msgstr "Bildzuordnungen zu einer fehlenden Mediendatei"
+
+#: packages/wordpress/src/Cli/RepairCommand.php:106
+msgid "Covers of a missing attachment"
+msgstr "Titelbilder mit fehlender Mediendatei"
+
+#: packages/wordpress/src/Cli/RepairCommand.php:107
+msgid "Duplicate item relations"
+msgstr "Doppelte Bildzuordnungen"
+
+#. translators: 1: kind of problem, 2: number found, 3: number fixed
+#: packages/wordpress/src/Cli/RepairCommand.php:113
+#, php-format
+msgid "%1$s: %2$d found, %3$d fixed"
+msgstr "%1$s: %2$d gefunden, %3$d behoben"
+
+#: packages/wordpress/src/Cli/RepairCommand.php:121
+msgid "A safety limit stopped the scan early; run the command again to continue."
+msgstr "Eine Sicherheitsgrenze hat die Prüfung vorzeitig beendet; führe den Befehl erneut aus, um fortzufahren."
+
+#: packages/wordpress/src/Cli/RepairCommand.php:124
+msgid "No inconsistencies found."
+msgstr "Keine Inkonsistenzen gefunden."
+
+#: packages/wordpress/src/Cli/RepairCommand.php:126
+msgid "Run again with --apply to remove these problems. Attachments and galleries are never deleted."
+msgstr "Mit --apply erneut ausführen, um diese Probleme zu entfernen. Mediendateien und Galerien werden nie gelöscht."
+
+#. translators: %d: number of fixed problems
+#: packages/wordpress/src/Cli/RepairCommand.php:131
+#, php-format
+msgid "%d problem fixed."
+msgid_plural "%d problems fixed."
+msgstr[0] "%d Problem behoben."
+msgstr[1] "%d Probleme behoben."
+
+#: packages/wordpress/src/PostTypes.php:30
 msgid "Gallery"
 msgstr "Galerie"
 
