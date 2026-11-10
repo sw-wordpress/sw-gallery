@@ -17,3 +17,6 @@
 /.scannerwork/
 .claude/worktrees/
 /apps/admin/coverage/
+/assets/build/
+/assets/node_modules/
+/assets/coverage/
