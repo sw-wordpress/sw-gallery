@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>sw-gallery lightbox fixture</title>
+        <style>
+            body {
+                font-family: system-ui, sans-serif;
+                margin: 1rem auto;
+                max-width: 56rem;
+                padding: 0 1rem;
+            }
+            .swg-items {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                list-style: none;
+                margin: 0 0 2rem;
+                padding: 0;
+            }
+            .swg-item {
+                width: 150px;
+            }
+            .swg-item img {
+                width: 100%;
+                height: auto;
+                display: block;
+            }
+            .swg-caption {
+                font-size: 0.8rem;
+                margin: 0.25rem 0 0;
+            }
+            .filler {
+                height: 120vh;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Lightbox fixture</h1>
+        <p>
+            Serve <code>assets/</code> over HTTP after <code>npm run build</code> (e.g.
+            <code>python3 -m http.server -d assets</code>) and open
+            <code>/lightbox/fixtures/gallery.html</code>. The page loads the hashed build files from
+            <code>build/.vite/manifest.json</code> exactly like the PHP enqueue code will.
+        </p>
+
+        <h2>Gallery 1 (5 images, one broken)</h2>
+        <div
+            class="swg-gallery"
+            id="g-main"
+            data-swg-gallery
+            data-swg-instance="swg-1-1"
+            data-swg-labels='{"dialog":"Image viewer","close":"Close","previous":"Previous image","next":"Next image","counter":"{current} of {total}","error":"The image could not be loaded."}'
+        >
+            <ul class="swg-items" role="list">
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271600%27%20height=%271067%27%20viewBox=%270%200%201600%201067%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%23b3261e%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%27213%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3EImage%201%3C/text%3E%3C/svg%3E"
+                        data-swg-full-width="1600"
+                        data-swg-full-height="1067"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27300%27%20height=%27200%27%20viewBox=%270%200%20300%20200%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%23b3261e%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%2740%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3E1%3C/text%3E%3C/svg%3E"
+                            alt="Placeholder 1"
+                            width="300"
+                            height="200"
+                    /></a>
+                    <p class="swg-caption">
+                        First image with <b>markup</b> and &lt;img src=x onerror=alert(1)&gt; as
+                        text
+                    </p>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271600%27%20height=%271067%27%20viewBox=%270%200%201600%201067%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%231b6ef3%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%27213%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3EImage%202%3C/text%3E%3C/svg%3E"
+                        data-swg-full-width="1600"
+                        data-swg-full-height="1067"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27300%27%20height=%27200%27%20viewBox=%270%200%20300%20200%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%231b6ef3%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%2740%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3E2%3C/text%3E%3C/svg%3E"
+                            alt="Placeholder 2"
+                            width="300"
+                            height="200"
+                    /></a>
+                    <p class="swg-caption">Second image</p>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271600%27%20height=%271067%27%20viewBox=%270%200%201600%201067%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%231a7f37%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%27213%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3EImage%203%3C/text%3E%3C/svg%3E"
+                        data-swg-full-width="1600"
+                        data-swg-full-height="1067"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27300%27%20height=%27200%27%20viewBox=%270%200%20300%20200%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%231a7f37%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%2740%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3E3%3C/text%3E%3C/svg%3E"
+                            alt="Placeholder 3"
+                            width="300"
+                            height="200"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/png;base64,broken"
+                        data-swg-full-width="1600"
+                        data-swg-full-height="1067"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27300%27%20height=%27200%27%20viewBox=%270%200%20300%20200%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%238250df%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%2740%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3E4%3C/text%3E%3C/svg%3E"
+                            alt="Placeholder 4"
+                            width="300"
+                            height="200"
+                    /></a>
+                    <p class="swg-caption">Broken full image (error state)</p>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271600%27%20height=%271067%27%20viewBox=%270%200%201600%201067%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%239a6700%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%27213%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3EImage%205%3C/text%3E%3C/svg%3E"
+                        data-swg-full-width="1600"
+                        data-swg-full-height="1067"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27300%27%20height=%27200%27%20viewBox=%270%200%20300%20200%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%239a6700%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%2740%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3E5%3C/text%3E%3C/svg%3E"
+                            alt="Placeholder 5"
+                            width="300"
+                            height="200"
+                    /></a>
+                    <p class="swg-caption">Fifth image</p>
+                </li>
+            </ul>
+        </div>
+
+        <h2>Gallery 2 (RTL)</h2>
+        <div
+            class="swg-gallery"
+            id="g-rtl"
+            dir="rtl"
+            lang="ar"
+            data-swg-gallery
+            data-swg-instance="swg-2-1"
+            data-swg-labels='{"dialog":"عارض الصور","close":"إغلاق","previous":"الصورة السابقة","next":"الصورة التالية","counter":"{current} من {total}"}'
+        >
+            <ul class="swg-items" role="list">
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271600%27%20height=%271067%27%20viewBox=%270%200%201600%201067%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%231b6ef3%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%27213%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3EImage%206%3C/text%3E%3C/svg%3E"
+                        data-swg-full-width="1600"
+                        data-swg-full-height="1067"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27300%27%20height=%27200%27%20viewBox=%270%200%20300%20200%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%231b6ef3%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%2740%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3E6%3C/text%3E%3C/svg%3E"
+                            alt="Placeholder 6"
+                            width="300"
+                            height="200"
+                    /></a>
+                    <p class="swg-caption">RTL: arrow keys and swipe are mirrored</p>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271600%27%20height=%271067%27%20viewBox=%270%200%201600%201067%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%231a7f37%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%27213%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3EImage%207%3C/text%3E%3C/svg%3E"
+                        data-swg-full-width="1600"
+                        data-swg-full-height="1067"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27300%27%20height=%27200%27%20viewBox=%270%200%20300%20200%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%231a7f37%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%2740%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3E7%3C/text%3E%3C/svg%3E"
+                            alt="Placeholder 7"
+                            width="300"
+                            height="200"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271600%27%20height=%271067%27%20viewBox=%270%200%201600%201067%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%238250df%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%27213%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3EImage%208%3C/text%3E%3C/svg%3E"
+                        data-swg-full-width="1600"
+                        data-swg-full-height="1067"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27300%27%20height=%27200%27%20viewBox=%270%200%20300%20200%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%238250df%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%2740%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3E8%3C/text%3E%3C/svg%3E"
+                            alt="Placeholder 8"
+                            width="300"
+                            height="200"
+                    /></a>
+                </li>
+            </ul>
+        </div>
+
+        <h2>Gallery 3 (single image)</h2>
+        <div class="swg-gallery" id="g-single" data-swg-gallery data-swg-instance="swg-3-1">
+            <ul class="swg-items" role="list">
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%271600%27%20height=%271067%27%20viewBox=%270%200%201600%201067%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%23b3261e%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%27213%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3EImage%209%3C/text%3E%3C/svg%3E"
+                        data-swg-full-width="1600"
+                        data-swg-full-height="1067"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27300%27%20height=%27200%27%20viewBox=%270%200%20300%20200%27%3E%3Crect%20width=%27100%25%27%20height=%27100%25%27%20fill=%27%23b3261e%27/%3E%3Ctext%20x=%2750%25%27%20y=%2750%25%27%20font-size=%2740%27%20fill=%27white%27%20text-anchor=%27middle%27%20dominant-baseline=%27middle%27%20font-family=%27sans-serif%27%3E9%3C/text%3E%3C/svg%3E"
+                            alt="Placeholder 9"
+                            width="300"
+                            height="200"
+                    /></a>
+                    <p class="swg-caption">Single image: no navigation buttons</p>
+                </li>
+            </ul>
+        </div>
+
+        <div class="filler">
+            Scroll filler: the page scroll position must not change while the lightbox is open.
+        </div>
+
+        <script>
+            (async () => {
+                const base = new URL('../../build/', document.currentScript.src || location.href);
+                const manifest = await (await fetch(new URL('.vite/manifest.json', base))).json();
+                const style = document.createElement('link');
+                style.rel = 'stylesheet';
+                style.href = new URL(manifest['style.css'].file, base).href;
+                document.head.append(style);
+                const script = document.createElement('script');
+                script.src = new URL(manifest['lightbox/src/main.ts'].file, base).href;
+                script.id = 'swg-lightbox-script';
+                document.body.append(script);
+            })();
+        </script>
+    </body>
+</html>
