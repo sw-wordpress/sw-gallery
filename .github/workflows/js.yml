@@ -1,0 +1,74 @@
+name: JavaScript
+
+# Admin app (apps/admin) and public frontend assets (assets/): typecheck, lint, format, tests with the strict
+# coverage gate (> 80 %), production build and dependency audit. Third-party actions are pinned to full tags.
+on:
+  pull_request: null
+  push:
+    branches:
+      - main
+  workflow_dispatch: null
+
+concurrency:
+  group: js-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  admin:
+    name: Admin app (apps/admin)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/admin
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version-file: apps/admin/.nvmrc
+          cache: npm
+          cache-dependency-path: apps/admin/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run test:coverage
+      - run: npm run build
+      - name: Audit shipped npm packages
+        run: npm audit --omit=dev --audit-level=high
+      - uses: actions/upload-artifact@v4.6.2
+        if: always()
+        with:
+          name: lcov-admin
+          path: apps/admin/coverage/lcov.info
+          if-no-files-found: warn
+
+  assets:
+    name: Frontend assets (assets)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: assets
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version-file: assets/.nvmrc
+          cache: npm
+          cache-dependency-path: assets/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run test:coverage
+      - run: npm run build
+      - name: Audit shipped npm packages
+        run: npm audit --omit=dev --audit-level=high
+      - uses: actions/upload-artifact@v4.6.2
+        if: always()
+        with:
+          name: lcov-assets
+          path: assets/coverage/lcov.info
+          if-no-files-found: warn
