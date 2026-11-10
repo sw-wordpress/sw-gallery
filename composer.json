@@ -46,6 +46,8 @@
         "cs:fix": "phpcbf",
         "cs:wp": "phpcs --standard=phpcs-wordpress.xml.dist --runtime-set ignore_warnings_on_exit 1",
         "test:coverage": "XDEBUG_MODE=coverage phpunit --testsuite unit,integration --coverage-clover coverage/clover.xml && php tests/coverage/check.php coverage/clover.xml",
+        "test:wp": "cd tests/wp && vendor/bin/phpunit -c phpunit.xml.dist",
+        "test:wp:ms": "cd tests/wp && vendor/bin/phpunit -c phpunit-ms.xml.dist",
         "check": ["@cs", "@cs:wp", "@stan", "@test"]
     }
 }
