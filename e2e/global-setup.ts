@@ -1,6 +1,13 @@
 import { mkdir, rm } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
-import { AUTH_DIR, authFile, loadGeneratedEnv, requireEnv, ROLES } from './support/env';
+import {
+  AUTH_DIR,
+  authFile,
+  loadGeneratedEnv,
+  PLUGIN_PAGE,
+  requireEnv,
+  ROLES,
+} from './support/env';
 import { login } from './support/login';
 
 /** Logs in once per role (real login form) and stores the session in the git-ignored .auth directory. */
@@ -16,6 +23,10 @@ export default async function globalSetup(): Promise<void> {
       const context = await browser.newContext();
       const page = await context.newPage();
       await login(page, baseURL, role);
+      // Warm-up: the first page loads of a fresh WordPress (opcache, translations) are slow and would make early tests flaky.
+      if (role === 'administrator' || role === 'german') {
+        await page.goto(`${baseURL}${PLUGIN_PAGE}`, { timeout: 60_000 });
+      }
       await context.storageState({ path: authFile(role) });
       await context.close();
     }

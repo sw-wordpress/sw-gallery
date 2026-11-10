@@ -12,17 +12,24 @@ for (const role of ROLES_WITH_ACCESS) {
   test.describe(`admin shell as ${role}`, () => {
     test.use({ storageState: authFile(role) });
 
-    test('menu entry opens the app with five navigation entries and honest placeholders', async ({
-      page,
-    }) => {
-      const monitor = monitorPage(page);
-
+    test('the menu entry leads to the plugin screen', async ({ page }) => {
       await page.goto('/wp-admin/');
       await page
         .locator('#adminmenu')
         .getByRole('link', { name: 'Galleries', exact: true })
         .click();
       await expect(page).toHaveURL(new RegExp(`${PLUGIN_PAGE.replace('?', '\\?')}$`));
+      await expect(
+        page.getByRole('navigation', { name: 'Gallery Management navigation' }),
+      ).toBeVisible();
+    });
+
+    test('the app shell has five navigation entries and honest placeholders, without console or network errors', async ({
+      page,
+    }) => {
+      // Monitored from the first request; nothing navigates away from the page, so aborted requests would be real problems.
+      const monitor = monitorPage(page);
+      await page.goto(PLUGIN_PAGE);
 
       const nav = page.getByRole('navigation', { name: 'Gallery Management navigation' });
       await expect(nav).toBeVisible();
@@ -39,11 +46,12 @@ for (const role of ROLES_WITH_ACCESS) {
             'This section is planned but not implemented in this version. It shows no data and offers no actions.',
           ),
         ).toBeVisible();
-        // The app marks the active entry with a class only; aria-current is missing (reported as finding, see PR notes).
+        // The app marks the active entry with a class only; aria-current is missing (reported as finding).
         await expect(nav.getByRole('link', { name: section, exact: true })).toHaveClass(
           /swg-nav__item--active/,
         );
       }
+      await page.waitForLoadState('networkidle');
 
       expect(monitor.problems, 'console errors/warnings').toEqual([]);
       expect(monitor.failedRequests, 'failed requests').toEqual([]);

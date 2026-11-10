@@ -118,6 +118,19 @@ wait_for() {
   compose logs --no-log-prefix --tail 200 2>&1 | grep -v -E ' "(GET|POST|OPTIONS|HEAD) ' | tail -30 >&2 || true
   return 1
 }
+# Chromium aborts requests with ERR_NETWORK_CHANGED when a network interface appears/disappears (e.g. the veth of the
+# finished provisioning container); wait until the interface list has been stable for a few seconds.
+wait_for_stable_interfaces() {
+  local previous="" current stable=0 i
+  for i in $(seq 1 60); do
+    current="$(ls /sys/class/net 2>/dev/null | sort | tr '\n' ' ')"
+    if [ "$current" = "$previous" ]; then stable=$((stable + 1)); else stable=0; fi
+    [ "$stable" -ge 4 ] && return 0
+    previous="$current"
+    sleep 1
+  done
+}
+wait_for_stable_interfaces
 wait_for "$SWG_E2E_BASE_URL"
 wait_for "$SWG_E2E_BASE_URL_NOBUILD"
 

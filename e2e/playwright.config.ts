@@ -8,7 +8,9 @@ export default defineConfig({
   globalSetup: './global-setup.ts',
   outputDir: './test-results',
   forbidOnly: !!process.env.CI,
-  retries: 0,
+  // One retry: Chromium aborts requests with ERR_NETWORK_CHANGED when the host's network interfaces change (Docker veth churn on busy
+  // machines). Retried tests are reported as flaky by Playwright; there is no sleep-based workaround.
+  retries: 1,
   fullyParallel: true,
   reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   timeout: 30_000,
