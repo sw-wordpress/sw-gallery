@@ -17,8 +17,26 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: packages/wordpress/src/Admin/AdminRegistrar.php:50
+#: packages/wordpress/src/Admin/AdminRegistrar.php:129
+msgid "Gallery Management"
+msgstr ""
+
+#: packages/wordpress/src/Admin/AdminRegistrar.php:51
 #: packages/wordpress/src/PostTypes.php:23
 msgid "Galleries"
+msgstr ""
+
+#: packages/wordpress/src/Admin/AdminRegistrar.php:125
+msgid "You are not allowed to access this page."
+msgstr ""
+
+#: packages/wordpress/src/Admin/AdminRegistrar.php:131
+msgid "The gallery admin app is not built. Run \"npm run build\" in apps/admin or install the release package."
+msgstr ""
+
+#: packages/wordpress/src/Admin/AdminRegistrar.php:134
+msgid "The gallery administration requires JavaScript."
 msgstr ""
 
 #: packages/wordpress/src/PostTypes.php:24

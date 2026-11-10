@@ -17,9 +17,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: packages/wordpress/src/Admin/AdminRegistrar.php:50
+#: packages/wordpress/src/Admin/AdminRegistrar.php:129
+msgid "Gallery Management"
+msgstr "Galerieverwaltung"
+
+#: packages/wordpress/src/Admin/AdminRegistrar.php:51
 #: packages/wordpress/src/PostTypes.php:23
 msgid "Galleries"
 msgstr "Galerien"
+
+#: packages/wordpress/src/Admin/AdminRegistrar.php:125
+msgid "You are not allowed to access this page."
+msgstr "Der Zugriff auf diese Seite ist nicht erlaubt."
+
+#: packages/wordpress/src/Admin/AdminRegistrar.php:131
+msgid "The gallery admin app is not built. Run \"npm run build\" in apps/admin or install the release package."
+msgstr "Die Galerieverwaltung ist nicht gebaut. Führe \"npm run build\" in apps/admin aus oder installiere das Release-Paket."
+
+#: packages/wordpress/src/Admin/AdminRegistrar.php:134
+msgid "The gallery administration requires JavaScript."
+msgstr "Die Galerieverwaltung benötigt JavaScript."
 
 #: packages/wordpress/src/PostTypes.php:24
 msgid "Gallery"

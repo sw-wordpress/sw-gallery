@@ -141,7 +141,7 @@ REST API (`swg/v1`, S§8)
 
 Admin app (`apps/admin`, C§7)
 - [x] M2-14 Scaffold modelled on sw-backupit's admin app, copied self-contained: Vue 3, Quasar, TS strict, Vite, ESLint, Prettier, `vue-tsc`, Vitest + Vue Test Utils, `.nvmrc`, lockfile, shared `browserslist` (decisions.md).
-- [ ] M2-15 Admin page registrar: menu, mount point, assets only on sw-gallery screens, validated Vite manifest, plugin version on every asset, safe diagnostic on missing build.
+- [x] M2-15 Admin page registrar: menu, mount point, assets only on sw-gallery screens, validated Vite manifest, plugin version on every asset, safe diagnostic on missing build.
 - [ ] M2-36 `tests/e2e-env` (Docker Compose, throw-away WordPress + DB), `e2e/` Playwright project, `bin/test-e2e.sh`, CI job; dev-only `bin/seed.php` (galleries with generated images, never shipped) for E2E, acceptance checks and M5-01 fixtures. (Moved here per F-02.)
 - [ ] M2-16 (scoping + build-time check done; open: regression test on a foreign admin screen) Quasar style isolation (`swg-` scope, no restyling of WordPress chrome); regression test on a foreign admin screen.
 - [ ] M2-17 (API-client skeleton done: nonce header, abort, GET retry, 409; open: server bootstrap, Heartbeat/auth-check nonce refresh) Typed API layer: REST root/nonce/locale/capabilities from server bootstrap, error translation, cancellation, retry, 409 surface; nonce refresh via Heartbeat and core auth-check dialog on expired login, unsaved changes kept; no `fetch()` in components.

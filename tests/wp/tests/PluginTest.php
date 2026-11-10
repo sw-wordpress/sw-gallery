@@ -5,6 +5,7 @@
  * @package sw-gallery
  */
 
+use SWGallery\WordPress\Admin\AdminRegistrar;
 use SWGallery\WordPress\Bootstrap\CoreRegistrar;
 use SWGallery\WordPress\Bootstrap\Registrars;
 use SWGallery\WordPress\Database\Schema;
@@ -21,7 +22,7 @@ class PluginTest extends SwgTestCase {
 	}
 
 	public function test_boot_registers_the_hooks_of_every_registrar(): void {
-		$this->assertSame( array( CoreRegistrar::class ), array_map( static fn( $r ): string => $r::class, Registrars::all() ) );
+		$this->assertSame( array( AdminRegistrar::class, CoreRegistrar::class ), array_map( static fn( $r ): string => $r::class, Registrars::all() ) );
 		$this->assertSame( Plugin::instance(), Plugin::instance() );
 		$this->assertNotFalse( has_action( 'init', array( PostTypes::class, 'register' ) ) );
 		$this->assertNotFalse( has_action( 'plugins_loaded', array( Schema::class, 'maybe_migrate' ) ) );

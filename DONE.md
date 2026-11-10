@@ -22,3 +22,8 @@
 - C admin app scaffold: Vue 3 + Quasar + strict TS + Vite, scoped CSS, API client skeleton, en/de catalogs; `window.swgAdmin` bootstrap shape documented in `apps/admin/README.md`.
 - D import: `ImportProviderRegistry`, `MediaLibraryProvider` (verified under real WordPress), reusable provider contract test.
 - State: 191 unit + 48 WordPress tests (single and multisite), merged PHP coverage 94.8 %, admin app 38 tests / 98.9 % lines.
+
+## 2026-11-10 — M2-15 admin page
+- `Admin/AdminRegistrar`: menu "Galleries" (capability `edit_posts`), assets only on that screen, plugin version on every asset, `window.swgAdmin` bootstrap per `apps/admin/README.md`, ES-module tag for WordPress 6.4, safe diagnostic when the build is missing.
+- `Admin/AssetManifest`: validated Vite manifest (plain relative names, extension check, realpath containment, size cap); broken or hostile manifests yield a diagnostic, never an unexpected file.
+- Tests: 23 new WordPress tests (single + multisite); merged PHP coverage 95.2 %.
