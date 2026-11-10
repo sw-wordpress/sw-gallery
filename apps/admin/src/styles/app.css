@@ -1,0 +1,129 @@
+/*
+ * sw-gallery admin styles. Everything is namespaced with `swg-` / `.swg-root`, so nothing
+ * leaks into wp-admin. Quasar's own CSS is scoped to `.swg-root` at build time
+ * (tools/postcssScope.ts). No global resets, no selectors on html/body/elements.
+ */
+
+.swg-root {
+  --swg-primary: #1d4ed8;
+  --swg-surface: #ffffff;
+  --swg-border: #dcdcde;
+  --swg-text: #1d2327;
+  --swg-muted: #50575e;
+  --swg-focus: #2271b1;
+
+  /* map to Quasar brand variables (set here instead of Quasar's runtime brand plugin) */
+  --q-primary: var(--swg-primary);
+
+  color-scheme: light;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--swg-text);
+  box-sizing: border-box;
+  margin: 16px 20px 0 0;
+}
+
+.swg-root[dir='rtl'] {
+  margin: 16px 0 0 20px;
+}
+
+.swg-root *,
+.swg-root *::before,
+.swg-root *::after {
+  box-sizing: border-box;
+}
+
+.swg-shell__header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.swg-shell__title {
+  font-size: 23px;
+  font-weight: 400;
+  line-height: 1.3;
+  margin: 0;
+  padding: 0;
+}
+
+.swg-shell__version {
+  color: var(--swg-muted);
+}
+
+.swg-shell__body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.swg-nav {
+  flex: 0 0 220px;
+  background: var(--swg-surface);
+  border: 1px solid var(--swg-border);
+  border-radius: 6px;
+}
+
+.swg-nav__item--active {
+  color: var(--swg-primary);
+  font-weight: 600;
+}
+
+.swg-nav__item:focus-visible {
+  outline: 2px solid var(--swg-focus);
+  outline-offset: -2px;
+}
+
+.swg-shell__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: var(--swg-surface);
+  border: 1px solid var(--swg-border);
+  border-radius: 6px;
+  padding: 24px;
+}
+
+.swg-placeholder {
+  text-align: center;
+  color: var(--swg-muted);
+  padding: 32px 0;
+}
+
+.swg-placeholder__title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 8px 0;
+  color: var(--swg-text);
+}
+
+.swg-placeholder__body {
+  margin: 0 auto;
+  max-width: 48ch;
+}
+
+@media (max-width: 782px) {
+  .swg-shell__body {
+    flex-direction: column;
+  }
+
+  .swg-nav {
+    flex-basis: auto;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swg-root *,
+  .swg-root *::before,
+  .swg-root *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
