@@ -18,6 +18,7 @@ final class RenderItem
         public readonly string $alt,
         public readonly ResolvedImage $thumbnail,
         public readonly ?ResolvedImage $full = null,
+        public readonly LoadingStrategy $loading = LoadingStrategy::Lazy,
     ) {
         if ($itemId <= 0 || $attachmentId <= 0) {
             throw new \InvalidArgumentException('Invalid render item.');
