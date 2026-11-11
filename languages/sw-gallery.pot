@@ -137,25 +137,25 @@ msgstr ""
 msgid "An unexpected error occurred."
 msgstr ""
 
-#: packages/wordpress/src/Rest/GalleryController.php:312
+#: packages/wordpress/src/Rest/GalleryController.php:321
 msgid "The request does not change anything."
 msgstr ""
 
 #. translators: %s: title of the duplicated gallery
-#: packages/wordpress/src/Rest/GalleryController.php:378
+#: packages/wordpress/src/Rest/GalleryController.php:389
 #, php-format
 msgid "%s (copy)"
 msgstr ""
 
-#: packages/wordpress/src/Rest/GalleryController.php:588
+#: packages/wordpress/src/Rest/GalleryController.php:602
 msgid "The owner does not exist."
 msgstr ""
 
-#: packages/wordpress/src/Rest/GalleryController.php:596
+#: packages/wordpress/src/Rest/GalleryController.php:610
 msgid "The cover must be an image you may use."
 msgstr ""
 
-#: packages/wordpress/src/Rest/GalleryController.php:621
+#: packages/wordpress/src/Rest/GalleryController.php:635
 msgid "You are not allowed to publish galleries."
 msgstr ""
 

@@ -51,3 +51,7 @@
 - Admin app now follows the sw-* family: identical palette (light/dark), self-hosted Inter and JetBrains Mono, rail shell with brand block, collapse and dark-mode toggle, capability-driven navigation, `NoAccess`, and the UI building blocks (PageHeader, Card, StatusChip, StatTile, EmptyState, ErrorState, DataState, ConfirmDialog, FormSheet, SideSheet, PaginationBar, SegmentedControl).
 - Review fixes by the orchestrator: strict template checking restored (scoped attribute augmentation, one real type error fixed); Quasar portal containers no longer stretch the WordPress page (E2E regression test, verified to fail without the fix).
 - State: admin app 87 unit tests / 97.5 % lines; 32 E2E tests.
+
+## 2026-11-11 — Wave 3a stream B: REST foundation and gallery routes (M2-01..M2-04)
+- `swg/v1` controllers: list/create, get/patch/delete (trash or force), duplicate, restore; error mapper for every core exception (401/403/404/409/422/400, generic 500), schema-validated input, pagination headers, `expectedRevision`, publish rule, item counts from one grouped query.
+- Tests: role matrix over all routes, existence-leak policy, anonymous refused on every route, 409 races, error mapper. 411 WordPress tests (single + multisite), merged PHP coverage 96.4 %.

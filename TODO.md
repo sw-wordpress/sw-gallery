@@ -130,20 +130,22 @@ Tooling and tests
 ## Follow-ups from Wave 1/2 (small tasks, do together with the next matching milestone)
 - [ ] FU-01 (deferred, not part of Wave 3a: needs a careful per-test cleanup) Test harness (`tests/wp/support/SwgTestCase.php`): `tear_down()` runs `TRUNCATE`/dbDelta (DDL = implicit COMMIT) before the parent rollback, so posts/users/attachments leak between tests. Several tests depend on today's behaviour (a plain reorder or `DELETE` breaks 9+ tests, tried): fix deliberately with a per-test cleanup, not by editing the base class blindly.
 - [ ] FU-02 `MediaLibraryProvider` uses `edit_post` per attachment (authors see only their own uploads) — stricter than D11 and than `WpGalleryAccessPolicy::canUseAttachment`. Align it with the policy or document why not (M4-08).
-- [ ] FU-03 REST (M2-03): call `WpGalleryAccessPolicy::canPublish` when a request sets status `publish`; `GalleryService` has no publish check.
+- [x] FU-03 (done 2026-11-11 in the REST layer; `publish` and `private` need the publish right) REST (M2-03): call `WpGalleryAccessPolicy::canPublish` when a request sets status `publish`; `GalleryService` has no publish check.
 - [x] FU-04 (done 2026-11-11: `Infrastructure/Services` builds all adapters and core services; `ServicesIntegrationTest` runs the full life cycle against the real database) Service wiring (M1-18, orchestrator): build `Services`-based registry — `WpGalleryRepository`, `WpdbGalleryRelations`, `WpGalleryAccessPolicy`, `WpMediaRepository`, `WpdbGalleryItemRepository(Services::transactions())`, `PostMetaRevisionStore`, `ConsistencyRepair`, core `GalleryService`/`GalleryItemService`/`GalleryItemEditService` with `Services::logger()`/`events()`.
 - [ ] FU-06 E2E: on this host ~1 in 3 page loads lose all requests (`net::ERR_NETWORK_CHANGED`, many Docker veth interfaces churning); `retries: 1` hides it (reported as flaky). Verified in a trace: WordPress's own scripts fail too, so not a plugin defect. Revisit on CI.
 - [ ] FU-07 Quasar creates two `#q-notify` containers on `<body>` (duplicate id, harmless, present since the scaffold; `Notify` is installed only once in `main.ts`) — find the cause (Quasar internals) and fix.
 - [ ] FU-08 Mobile (375 px): the five nav tabs overflow and scroll horizontally, the fifth is cut off at the edge (same as the siblings); consider a visible scroll affordance.
+- [ ] FU-09 Core `ValidationError` messages are not in the gettext catalog (REST returns them in English unless they match a catalog entry): route them through `CoreMessages` / a message map keyed by error code.
+- [ ] FU-10 `WpGalleryAccessPolicy::canPublishNew(Actor)`: creating a gallery with status `publish`/`private` is currently checked in the REST controller (`publish_posts`); move the rule into the policy so every entry point shares it.
 - [ ] FU-05 Docs: `docs/development.md` must mention the `assets/` project, `bin/rebuild-on-change.sh`, `bin/watch-build.sh` and the new test commands.
 
 ## M2 — Management
 
 REST API (`swg/v1`, S§8)
-- [ ] M2-01 REST foundation: controller base, `permission_callback` on every route (D1), exception → `WP_Error` mapper (400/401/403/404/409/422), bounded pagination headers, schema-validated input/output.
-- [ ] M2-02 `GET/POST /galleries` (search, status/owner filter, paging, cover; item counts from one grouped query, not one per row).
-- [ ] M2-03 `GET/PATCH/DELETE /galleries/{id}` (`expectedRevision`, status, cover, owner change needs `edit_others_posts`; DELETE trashes, `force=true` deletes).
-- [ ] M2-04 `POST /galleries/{id}/duplicate` and `/restore`.
+- [x] M2-01 REST foundation: controller base, `permission_callback` on every route (D1), exception → `WP_Error` mapper (400/401/403/404/409/422), bounded pagination headers, schema-validated input/output.
+- [x] M2-02 `GET/POST /galleries` (search, status/owner filter, paging, cover; item counts from one grouped query, not one per row).
+- [x] M2-03 `GET/PATCH/DELETE /galleries/{id}` (`expectedRevision`, status, cover, owner change needs `edit_others_posts`; DELETE trashes, `force=true` deletes).
+- [x] M2-04 `POST /galleries/{id}/duplicate` and `/restore`.
 - [ ] M2-05 `GET/POST /galleries/{id}/items` (paged list with resolved global + local metadata; bulk assign with added/duplicate/missing result).
 - [ ] M2-06 `PATCH/DELETE /galleries/{id}/items/{itemId}`, `POST /items/bulk-remove` (bounded batch).
 - [ ] M2-07 `PUT /galleries/{id}/order` (complete ID set, atomic, single `CASE` update instead of one query per item); evaluate move command for large lists after M5-01 measurements.

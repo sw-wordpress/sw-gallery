@@ -62,6 +62,17 @@ Decisions taken while implementing Wave 3a (2026-11-11):
 | Fonts and cache busting | Inter and JetBrains Mono ship as content-hashed woff2 files referenced from the CSS (no `ver` parameter); the entry script and stylesheet keep `ver=<plugin version>` from PHP. |
 | Navigation | Data-driven: sections may require a capability (settings and status need `manage_options`); without `edit_posts` the app shows "no access". The server enforces permissions, the list is a UX hint. |
 
+Decisions taken while implementing the REST gallery routes (2026-11-11, details in `docs/rest-api.md`):
+
+| Topic | Decision |
+|---|---|
+| List visibility | Only users with `edit_others_posts` and `read_private_posts` see all owners and may use `owner`; everyone else sees only their own galleries (the owner filter is forced to the caller). Trash listing needs `delete_posts` (and `delete_others_posts` for foreign trashed galleries). |
+| Existence leak | Every `{id}` route answers an identical 404 for missing and not-viewable galleries; 403 only when the user may view but not act. Viewable = `edit_posts` and `read_post`. |
+| Publish rule | Status `publish` and `private` need the publish right (as core REST does for `private`); failure is 403 `swg_cannot_publish`. PATCH uses `canPublish`; create checks `publish_posts` in the controller (FU-10). |
+| DELETE | Trashes by default (`{id, trashed, status, revision}`); `?force=true` deletes permanently (`{id, deleted}`); attachments are never touched; `expectedRevision` as query or body parameter. |
+| Status codes | 400 schema violation; 422 semantic errors (invalid cover/owner/layout/settings); 409 stale revision or invalid state (also PATCH/duplicate of a trashed gallery, restoring a live one); 401 anonymous; 500 generic `swg_internal_error` (logged with the exception class only). |
+| Misc | Empty PATCH is 400 `swg_no_changes`; PATCH `settings` replaces the whole values map; a page past the end is an empty 200 with correct totals; hand-written args need an explicit `validate_callback` for WordPress to enforce bounds. The public namespace index (`/wp-json/swg/v1`) lists route names and schemas only; every route handler refuses anonymous requests (tested). |
+
 Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und Entscheidungen"); revisable without migration:
 
 | Topic | Default |
