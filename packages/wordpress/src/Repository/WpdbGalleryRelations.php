@@ -102,6 +102,47 @@ final class WpdbGalleryRelations {
 	}
 
 	/**
+	 * Number of live galleries (not trashed) that contain each attachment, in one grouped query. Attachments that are
+	 * used nowhere are reported as 0. The count is global: it is not filtered by what the caller may see.
+	 *
+	 * @param array<int> $attachment_ids At most 1000 ids are considered.
+	 * @return array<int, int> Attachment id => number of galleries.
+	 */
+	public function count_galleries_by_attachment( array $attachment_ids ): array {
+		global $wpdb;
+		$attachment_ids = $this->clean_ids( $attachment_ids, 1000 );
+		if ( array() === $attachment_ids ) {
+			return array();
+		}
+		$counts       = array_fill_keys( $attachment_ids, 0 );
+		$table        = Schema::items_table();
+		$placeholders = implode( ',', array_fill( 0, count( $attachment_ids ), '%d' ) );
+		$sql          = "SELECT i.attachment_id, COUNT(DISTINCT i.gallery_id) AS gallery_count FROM {$table} i INNER JOIN {$wpdb->posts} g ON g.ID = i.gallery_id AND g.post_type = %s AND g.post_status <> 'trash' WHERE i.attachment_id IN ({$placeholders}) GROUP BY i.attachment_id"; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table names from prefix and core, placeholders generated.
+		$rows         = $wpdb->get_results( $wpdb->prepare( $sql, array_merge( array( PostTypes::GALLERY ), $attachment_ids ) ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- prepared above.
+		foreach ( (array) $rows as $row ) {
+			$counts[ (int) $row['attachment_id'] ] = (int) $row['gallery_count'];
+		}
+		return $counts;
+	}
+
+	/**
+	 * Number of relation rows, counted only up to a cap so the cost stays bounded on huge tables.
+	 *
+	 * @param int $cap Highest count that is still determined exactly (1 to 1000000).
+	 * @return array{count: int, capped: bool} `capped` means the real number is higher than `count`.
+	 */
+	public function count_rows_bounded( int $cap ): array {
+		global $wpdb;
+		$cap   = max( 1, min( 1000000, $cap ) );
+		$table = Schema::items_table();
+		$found = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM (SELECT 1 FROM {$table} LIMIT %d) AS bounded", $cap + 1 ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from prefix.
+		return array(
+			'count'  => min( $found, $cap ),
+			'capped' => $found > $cap,
+		);
+	}
+
+	/**
 	 * Relations whose gallery or attachment no longer exists, in id order (keyset pagination).
 	 *
 	 * @param int $after_id Only rows with a greater id are returned (0 starts at the beginning).
