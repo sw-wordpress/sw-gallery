@@ -1,133 +1,522 @@
 /*
- * sw-gallery admin styles. Everything is namespaced with `swg-` / `.swg-root`, so nothing
+ * sw-gallery admin styles. Everything is namespaced with `swg-` / `.swg-root` so nothing
  * leaks into wp-admin. Quasar's own CSS is scoped to `.swg-root` at build time
- * (tools/postcssScope.ts). No global resets, no selectors on html/body/elements.
+ * (tools/postcssScope.ts). No selector here targets html, body or anything outside the root.
  */
 
+/* ---------- design tokens ---------- */
 .swg-root {
-  --swg-primary: #1d4ed8;
+  --swg-primary: #4f46e5;
+  --swg-primary-strong: #4338ca;
+  --swg-primary-soft: #eef2ff;
+  --swg-accent: #0d9488;
+  --swg-accent-bright: #14b8a6;
+  --swg-success: #16a34a;
+  --swg-warning: #f59e0b;
+  --swg-danger: #dc2626;
+  --swg-info: #0284c7;
+
+  --swg-success-text: #166534;
+  --swg-warning-text: #92400e;
+  --swg-danger-text: #b91c1c;
+  --swg-info-text: #075985;
+  --swg-neutral-text: #334155;
+  --swg-success-bg: #dcfce7;
+  --swg-warning-bg: #fef3c7;
+  --swg-danger-bg: #fee2e2;
+  --swg-info-bg: #e0f2fe;
+  --swg-neutral-bg: #eef1f6;
+  --swg-primary-text: #3730a3;
+  --swg-primary-bg: #e0e7ff;
+
+  --swg-bg: #f3f4fa;
   --swg-surface: #ffffff;
-  --swg-border: #dcdcde;
-  --swg-text: #1d2327;
-  --swg-muted: #50575e;
-  --swg-focus: #2271b1;
+  --swg-surface-2: #f8f9fc;
+  --swg-surface-3: #eef0f7;
+  --swg-border: #e1e5ee;
+  --swg-text: #0f172a;
+  --swg-muted: #475569;
+  --swg-rail-bg: #ffffff;
+  --swg-focus: #4f46e5;
+  --swg-overlay: rgba(15, 23, 42, 0.45);
+
+  --swg-gradient: linear-gradient(135deg, #4f46e5 0%, #0d9488 100%);
+  --swg-gradient-soft: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.1) 0%,
+    rgba(20, 184, 166, 0.1) 100%
+  );
+
+  --swg-radius: 16px;
+  --swg-radius-sm: 10px;
+  --swg-shadow-1: 0 1px 2px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.04);
+  --swg-shadow-2:
+    0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.06),
+    0 18px 40px rgba(15, 23, 42, 0.05);
+  --swg-font: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --swg-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   /* map to Quasar brand variables (set here instead of Quasar's runtime brand plugin) */
   --q-primary: var(--swg-primary);
+  --q-secondary: var(--swg-accent);
+  --q-accent: var(--swg-accent-bright);
+  --q-positive: var(--swg-success);
+  --q-negative: var(--swg-danger);
+  --q-info: var(--swg-info);
+  --q-warning: var(--swg-warning);
+  --q-dark: var(--swg-surface);
+  --q-dark-page: var(--swg-bg);
 
   color-scheme: light;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
-  font-size: 14px;
+  font-family: var(--swg-font);
+  font-size: 15px;
   line-height: 1.5;
   color: var(--swg-text);
+  font-feature-settings: 'cv11', 'ss03';
+  -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
-  margin: 16px 20px 0 0;
+  text-align: start;
 }
 
-.swg-root[dir='rtl'] {
-  margin: 16px 0 0 20px;
+.swg-root.swg-dark {
+  --swg-primary: #818cf8;
+  --swg-primary-strong: #a5b4fc;
+  --swg-primary-soft: rgba(129, 140, 248, 0.14);
+  --swg-accent: #2dd4bf;
+  --swg-accent-bright: #2dd4bf;
+  --swg-success: #4ade80;
+  --swg-warning: #fbbf24;
+  --swg-danger: #f87171;
+  --swg-info: #38bdf8;
+
+  --swg-success-text: #86efac;
+  --swg-warning-text: #fcd34d;
+  --swg-danger-text: #fca5a5;
+  --swg-info-text: #7dd3fc;
+  --swg-neutral-text: #cbd5e1;
+  --swg-primary-text: #c7d2fe;
+  --swg-success-bg: rgba(74, 222, 128, 0.14);
+  --swg-warning-bg: rgba(251, 191, 36, 0.14);
+  --swg-danger-bg: rgba(248, 113, 113, 0.16);
+  --swg-info-bg: rgba(56, 189, 248, 0.14);
+  --swg-neutral-bg: rgba(148, 163, 184, 0.16);
+  --swg-primary-bg: rgba(129, 140, 248, 0.2);
+
+  --swg-bg: #0a0f1f;
+  --swg-surface: #131a2e;
+  --swg-surface-2: #182038;
+  --swg-surface-3: #1f2946;
+  --swg-border: #263250;
+  --swg-text: #e8ecf8;
+  --swg-muted: #a3aecb;
+  --swg-rail-bg: #0e1427;
+  --swg-focus: #a5b4fc;
+  --swg-overlay: rgba(2, 6, 20, 0.65);
+
+  --swg-gradient: linear-gradient(135deg, #6366f1 0%, #14b8a6 100%);
+  --swg-gradient-soft: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.18) 0%,
+    rgba(20, 184, 166, 0.14) 100%
+  );
+  --swg-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --swg-shadow-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
 }
 
+/* ---------- isolation reset (wp-admin styles bleeding in) ---------- */
 .swg-root *,
 .swg-root *::before,
 .swg-root *::after {
   box-sizing: border-box;
 }
-
-.swg-shell__header {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.swg-root .swg-shell__title {
-  font-size: 23px;
-  font-weight: 400;
-  line-height: 1.3;
-  letter-spacing: normal;
+.swg-root h1,
+.swg-root h2,
+.swg-root h3,
+.swg-root h4,
+.swg-root h5,
+.swg-root h6,
+.swg-root p,
+.swg-root ul,
+.swg-root ol,
+.swg-root dl,
+.swg-root dd,
+.swg-root figure {
   margin: 0;
   padding: 0;
-}
-
-.swg-shell__version {
-  color: var(--swg-muted);
-}
-
-.swg-shell__body {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.swg-nav {
-  flex: 0 0 220px;
-  background: var(--swg-surface);
-  border: 1px solid var(--swg-border);
-  border-radius: 6px;
-}
-
-.swg-nav__item--active {
-  color: var(--swg-primary);
-  font-weight: 600;
-}
-
-.swg-nav__item:focus-visible {
-  outline: 2px solid var(--swg-focus);
-  outline-offset: -2px;
-}
-
-.swg-shell__main {
-  flex: 1 1 auto;
-  min-width: 0;
-  background: var(--swg-surface);
-  border: 1px solid var(--swg-border);
-  border-radius: 6px;
-  padding: 24px;
-}
-
-.swg-placeholder {
-  text-align: center;
-  color: var(--swg-muted);
-  padding: 32px 0;
-}
-
-.swg-root .swg-placeholder__title {
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 1.4;
+  color: inherit;
+  font-family: inherit;
   letter-spacing: normal;
-  margin: 8px 0;
+  text-transform: none;
+  line-height: 1.35;
+}
+.swg-root ul,
+.swg-root ol {
+  list-style: none;
+}
+.swg-root a {
+  color: var(--swg-primary);
+  text-decoration: none;
+}
+.swg-root a:hover {
+  text-decoration: underline;
+}
+.swg-root button,
+.swg-root input,
+.swg-root select,
+.swg-root textarea {
+  font-family: inherit;
+}
+.swg-root table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin: 0;
+  width: 100%;
+  background: transparent;
+  border: 0;
+}
+.swg-root th,
+.swg-root td {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: start;
+  vertical-align: middle;
+}
+.swg-root code {
+  font-family: var(--swg-mono);
+  font-size: 0.9em;
+  background: var(--swg-surface-3);
+  padding: 0.1em 0.4em;
+  border-radius: 6px;
+}
+.swg-root label {
+  display: inline;
+  margin: 0;
+  font-weight: inherit;
+}
+
+/* Standalone pseudo-roots created by Quasar for dialogs/menus/notifications */
+.swg-root.q-portal--dialog,
+.swg-root.q-portal--menu {
+  font-size: 15px;
+}
+
+/* ---------- WordPress integration ---------- */
+/* The root sits inside wp-admin's content padding; pull it to the edge (own element only). */
+.swg-fullbleed {
+  margin-block: 0;
+  margin-inline: -20px 0;
+}
+@media screen and (max-width: 782px) {
+  .swg-fullbleed {
+    margin-inline: -10px 0;
+  }
+}
+/* Dialogs/menus/notifications must sit above the WP admin bar (99999) and admin menu */
+.swg-root.q-portal--dialog .q-dialog,
+.swg-root.q-portal--menu .q-menu,
+.swg-root.q-portal--dialog .q-dialog__backdrop {
+  z-index: 100100;
+}
+.swg-root .q-notifications__list {
+  z-index: 100200;
+}
+.swg-root .q-menu,
+.swg-root.q-portal--menu .q-menu {
+  z-index: 100150;
+}
+.swg-root.q-portal--tooltip .q-tooltip,
+.swg-root .q-tooltip {
+  z-index: 100300;
+}
+
+/* ---------- utilities ---------- */
+.swg-sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.swg-num {
+  font-variant-numeric: tabular-nums;
+}
+.swg-muted {
+  color: var(--swg-muted);
+}
+.swg-mono {
+  font-family: var(--swg-mono);
+  font-size: 0.88em;
+}
+.swg-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.swg-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.swg-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.swg-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+.swg-grid--wide {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+.swg-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--swg-muted);
+}
+
+/* ---------- focus ---------- */
+.swg-root :focus-visible {
+  outline: 3px solid var(--swg-focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.swg-root .q-btn:focus-visible,
+.swg-root .q-field:focus-within .q-field__control {
+  outline: 3px solid var(--swg-focus);
+  outline-offset: 1px;
+}
+.swg-root .q-field__native:focus-visible,
+.swg-root .q-field__input:focus-visible {
+  outline: none;
+}
+
+/* ---------- Quasar tuning ---------- */
+.swg-root .q-btn {
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  border-radius: 10px;
+}
+.swg-root .q-btn--standard.bg-primary,
+.swg-root .q-btn.swg-btn-gradient {
+  background: var(--swg-gradient) !important;
+}
+.swg-root .q-btn.bg-primary {
+  color: #fff !important;
+}
+.swg-root .q-field--outlined .q-field__control {
+  border-radius: 10px;
+}
+.swg-root .q-field--outlined .q-field__control:before {
+  border-color: var(--swg-border);
+}
+.swg-root .q-field--outlined:not(.q-field--readonly) .q-field__control:hover:before {
+  border-color: var(--swg-muted);
+}
+.swg-root .q-field__label,
+.swg-root .q-field__bottom {
+  color: var(--swg-muted);
+}
+.swg-root .q-field--dark .q-field__native,
+.swg-root .q-field--dark .q-field__prefix,
+.swg-root .q-field--dark .q-field__suffix,
+.swg-root .q-field--dark .q-field__input {
   color: var(--swg-text);
 }
-
-.swg-root .swg-placeholder__body {
-  margin: 0 auto;
-  max-width: 48ch;
-  text-align: center;
+.swg-root .q-card {
+  background: var(--swg-surface);
+  color: var(--swg-text);
+  box-shadow: var(--swg-shadow-2);
+  border-radius: var(--swg-radius);
+}
+.swg-root .q-menu {
+  background: var(--swg-surface);
+  color: var(--swg-text);
+  border: 1px solid var(--swg-border);
+  border-radius: 12px;
+  box-shadow: var(--swg-shadow-2);
+}
+.swg-root .q-item--active,
+.swg-root .q-item.q-router-link--active {
+  color: var(--swg-primary);
+}
+.swg-root .q-tooltip {
+  background: var(--swg-text);
+  color: var(--swg-surface);
+  font-size: 13px;
+  border-radius: 8px;
+}
+.swg-root .q-tab {
+  text-transform: none;
+  font-weight: 600;
+}
+.swg-root .q-tabs {
+  color: var(--swg-muted);
+}
+.swg-root .q-tab--active {
+  color: var(--swg-primary);
+}
+.swg-root .q-skeleton {
+  background: var(--swg-surface-3);
+}
+.swg-root .q-skeleton--type-text,
+.swg-root .q-skeleton--type-rect {
+  border-radius: 8px;
+}
+.swg-root .q-notification {
+  border-radius: 12px;
+  box-shadow: var(--swg-shadow-2);
+  font-size: 14px;
+}
+.swg-root .q-linear-progress {
+  border-radius: 999px;
+}
+.swg-root .q-toggle__label,
+.swg-root .q-checkbox__label {
+  font-size: 14px;
+}
+.swg-root .q-dialog__backdrop {
+  background: var(--swg-overlay);
+}
+.swg-root .q-drawer {
+  background: var(--swg-surface);
+}
+.swg-root .q-separator {
+  background: var(--swg-border);
 }
 
-@media (max-width: 782px) {
-  .swg-shell__body {
-    flex-direction: column;
+/* ---------- native tables that stack on small screens ---------- */
+.swg-table {
+  font-variant-numeric: tabular-nums;
+}
+.swg-table th {
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--swg-muted);
+  border-bottom: 1px solid var(--swg-border);
+  white-space: nowrap;
+}
+.swg-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--swg-border);
+  font-size: 14px;
+}
+.swg-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+.swg-table tbody tr:hover {
+  background: var(--swg-surface-2);
+}
+.swg-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+@media (max-width: 760px) {
+  .swg-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
   }
-
-  .swg-nav {
-    flex-basis: auto;
-    width: 100%;
+  .swg-table,
+  .swg-table tbody,
+  .swg-table tr,
+  .swg-table td {
+    display: block;
+  }
+  .swg-table tr {
+    padding: 10px 6px;
+    border-bottom: 1px solid var(--swg-border);
+  }
+  .swg-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+  .swg-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px;
+    border: 0;
+    text-align: end;
+  }
+  .swg-table td::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--swg-muted);
+    text-align: start;
+  }
+  .swg-table td[data-label=''] {
+    justify-content: flex-end;
+  }
+  .swg-table td[data-label='']::before {
+    display: none;
   }
 }
 
+/* ---------- motion ---------- */
+@keyframes swg-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes swg-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes swg-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.swg-fade-enter-active,
+.swg-fade-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.swg-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.swg-fade-leave-to {
+  opacity: 0;
+}
 @media (prefers-reduced-motion: reduce) {
   .swg-root *,
   .swg-root *::before,
   .swg-root *::after {
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
+}
+
+/* ---------- RTL helpers ---------- */
+.swg-root[dir='rtl'] .swg-flip-rtl {
+  transform: scaleX(-1);
 }

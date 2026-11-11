@@ -1,8 +1,10 @@
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import { Notify, Quasar } from 'quasar';
 import iconSet from 'quasar/icon-set/material-icons-round';
 import 'quasar/dist/quasar.prod.css';
 import '@quasar/extras/material-icons-round/material-icons-round.css';
+import './styles/fonts.css';
 import './styles/app.css';
 
 import App from './App.vue';
@@ -39,10 +41,11 @@ export function bootstrap(): void {
     return;
   }
 
-  el.classList.add(ROOT_CLASS);
+  el.classList.add(ROOT_CLASS, 'swg-fullbleed');
   el.setAttribute('dir', config.isRtl ? 'rtl' : 'ltr');
 
-  const app = createApp(App, { version: config.version });
+  const app = createApp(App);
+  app.use(createPinia());
   app.use(createAppRouter());
   app.use(createAppI18n(config.locale));
   app.use(Quasar, {

@@ -3,7 +3,16 @@ import type en from './en';
 const de: typeof en = {
   app: {
     title: 'Galerieverwaltung',
-    version: 'Version {version}',
+    brand: 'Galerie',
+    versionShort: 'v{version}',
+    skipToContent: 'Zum Inhalt springen',
+    darkMode: 'Dunkelmodus',
+    switchToDark: 'Zum dunklen Design wechseln',
+    switchToLight: 'Zum hellen Design wechseln',
+    themeDarkOn: 'Dunkles Design aktiv',
+    themeLightOn: 'Helles Design aktiv',
+    collapseNav: 'Navigation einklappen',
+    expandNav: 'Navigation ausklappen',
   },
   nav: {
     label: 'Navigation der Galerieverwaltung',
@@ -22,6 +31,8 @@ const de: typeof en = {
     items: 'keine Einträge | ein Eintrag | {count} Einträge',
   },
   errors: {
+    noAccessTitle: 'Kein Zugriff',
+    noAccessText: 'Dein Konto darf die Galerieverwaltung oder diesen Bereich nicht nutzen.',
     bootstrap: 'Die Admin-Anwendung konnte nicht starten: Die Serverkonfiguration fehlt.',
     generic: 'Die Anfrage ist fehlgeschlagen. Bitte erneut versuchen.',
     network: 'Der Server ist nicht erreichbar. Bitte Verbindung prüfen und erneut versuchen.',
