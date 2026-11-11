@@ -20,8 +20,6 @@ use SWGallery\WordPress\Database\Schema;
  */
 final class ItemRowReader {
 
-	private const COLUMNS = 'id, gallery_id, attachment_id, position, title_override, caption_override, alt_override, settings';
-
 	/**
 	 * One page in stored manual order (position, then id).
 	 *
@@ -35,7 +33,7 @@ final class ItemRowReader {
 		$table = Schema::items_table();
 		$rows  = $wpdb->get_results(
 			$wpdb->prepare(
-				'SELECT ' . self::COLUMNS . " FROM {$table} WHERE gallery_id = %d ORDER BY position ASC, id ASC LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from prefix, constant column list.
+				"SELECT id, gallery_id, attachment_id, position, title_override, caption_override, alt_override, settings FROM {$table} WHERE gallery_id = %d ORDER BY position ASC, id ASC LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from prefix.
 				$gallery_id,
 				max( 1, min( 500, $limit ) ),
 				max( 0, $offset )
@@ -56,7 +54,7 @@ final class ItemRowReader {
 		$table = Schema::items_table();
 		$row   = $wpdb->get_row(
 			$wpdb->prepare(
-				'SELECT ' . self::COLUMNS . " FROM {$table} WHERE gallery_id = %d AND id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from prefix, constant column list.
+				"SELECT id, gallery_id, attachment_id, position, title_override, caption_override, alt_override, settings FROM {$table} WHERE gallery_id = %d AND id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from prefix.
 				$gallery_id,
 				$item_id
 			),

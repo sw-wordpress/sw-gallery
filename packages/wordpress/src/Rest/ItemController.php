@@ -145,9 +145,9 @@ final class ItemController extends AbstractController {
 							'id'        => $id_arg,
 							'itemId'    => $item_arg,
 							'overrides' => array(
-								'description'       => 'Partial overrides; absent fields keep their stored value, null inherits, an empty string is an intentional blank.',
-								'type'              => 'object',
-								'properties'        => array(
+								'description'          => 'Partial overrides; absent fields keep their stored value, null inherits, an empty string is an intentional blank.',
+								'type'                 => 'object',
+								'properties'           => array(
 									'title'   => array(
 										'type'      => array( 'string', 'null' ),
 										'maxLength' => self::TITLE_MAX,
@@ -162,7 +162,7 @@ final class ItemController extends AbstractController {
 									),
 								),
 								'additionalProperties' => false,
-								'sanitize_callback' => array( self::class, 'sanitize_overrides' ),
+								'sanitize_callback'    => array( self::class, 'sanitize_overrides' ),
 							),
 							'settings'  => array(
 								'description' => 'Item settings map; replaces the stored map and is validated against the layout.',
@@ -175,7 +175,12 @@ final class ItemController extends AbstractController {
 					'methods'             => \WP_REST_Server::DELETABLE,
 					'callback'            => array( $this, 'delete_item' ),
 					'permission_callback' => array( $this, 'permissions_check' ),
-					'args'                => $this->validated( array( 'id' => $id_arg, 'itemId' => $item_arg ) + $revision ),
+					'args'                => $this->validated(
+						array(
+							'id'     => $id_arg,
+							'itemId' => $item_arg,
+						) + $revision
+					),
 				),
 			)
 		);
@@ -292,8 +297,8 @@ final class ItemController extends AbstractController {
 				if ( array() === $overrides && null === $settings ) {
 					return ErrorMapper::bad_request( GalleryController::CODE_NO_CHANGES, __( 'The request does not change anything.', 'sw-gallery' ) );
 				}
-				$current = $this->reader->find( $gallery->id, $item_id ) ?? throw new ItemNotFoundException();
-				$expect  = $this->expected_revision( $request );
+				$current  = $this->reader->find( $gallery->id, $item_id ) ?? throw new ItemNotFoundException();
+				$expect   = $this->expected_revision( $request );
 				$revision = $expect;
 				if ( null !== $settings ) {
 					$revision = $this->edits->setSettings( $actor, $gallery->id, $item_id, $settings, $expect )->revision;
@@ -301,10 +306,9 @@ final class ItemController extends AbstractController {
 				if ( array() !== $overrides ) {
 					$revision = $this->edits->updateOverrides( $actor, $gallery->id, $item_id, $this->merged( $current->item->overrides, $overrides ), $revision );
 				}
-				$fresh = $this->reader->find( $gallery->id, $item_id ) ?? throw new ItemNotFoundException();
 				return new \WP_REST_Response(
 					array(
-						'item'     => $this->presenter->present( $actor, $fresh ),
+						'item'     => $this->stored_item( $actor, $gallery->id, $item_id ),
 						'revision' => $revision->value,
 					),
 					200
@@ -375,7 +379,7 @@ final class ItemController extends AbstractController {
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
 				$actor   = $this->actor();
 				$gallery = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
-				$ids     = $this->id_list( $request, 'itemIds', true );
+				$ids     = $this->id_list( $request, 'itemIds' );
 				if ( $ids instanceof \WP_Error ) {
 					return $ids;
 				}
@@ -423,6 +427,20 @@ final class ItemController extends AbstractController {
 	}
 
 	/**
+	 * The item as stored after a write.
+	 *
+	 * @param Actor $actor      Requesting actor.
+	 * @param int   $gallery_id Gallery id.
+	 * @param int   $item_id    Item id.
+	 * @return array<string, mixed>
+	 * @throws ItemNotFoundException When the item vanished meanwhile.
+	 */
+	private function stored_item( Actor $actor, int $gallery_id, int $item_id ): array {
+		$row = $this->reader->find( $gallery_id, $item_id ) ?? throw new ItemNotFoundException();
+		return $this->presenter->present( $actor, $row );
+	}
+
+	/**
 	 * Applies a partial overrides map on top of the stored overrides.
 	 *
 	 * @param ItemOverrides        $current Stored overrides.
@@ -458,15 +476,14 @@ final class ItemController extends AbstractController {
 	}
 
 	/**
-	 * Reads a bounded list of positive integers; missing means 400 (see the class comment).
+	 * Reads the list parameter (bounds come from the route schema); missing means 400 (see the class comment).
 	 *
 	 * @param \WP_REST_Request $request    Request.
 	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
 	 * @param string           $name       Parameter name.
-	 * @param bool             $allow_empty Whether an empty list is valid.
 	 * @return list<int>|\WP_Error
 	 */
-	private function id_list( \WP_REST_Request $request, string $name, bool $allow_empty = false ): array|\WP_Error {
+	private function id_list( \WP_REST_Request $request, string $name ): array|\WP_Error {
 		$raw = $request->get_param( $name );
 		if ( ! is_array( $raw ) ) {
 			return new \WP_Error(
@@ -475,18 +492,14 @@ final class ItemController extends AbstractController {
 				array( 'status' => 400 )
 			);
 		}
-		$ids = array_values( array_map( 'intval', $raw ) );
-		if ( ! $allow_empty && array() === $ids ) {
-			return ErrorMapper::bad_request( 'rest_invalid_param', __( 'The list must not be empty.', 'sw-gallery' ) );
-		}
-		return $ids;
+		return array_values( array_map( 'intval', $raw ) );
 	}
 
 	/**
 	 * @return array<string, array<string, mixed>>
 	 */
 	private function items_pagination_args(): array {
-		$args                     = $this->pagination_args();
+		$args                        = $this->pagination_args();
 		$args['per_page']['default'] = self::ITEMS_PER_PAGE;
 		return $args;
 	}

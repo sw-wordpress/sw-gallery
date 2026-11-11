@@ -32,8 +32,9 @@ final class ItemPresenter {
 	}
 
 	/**
-	 * @param Actor         $actor Requesting actor.
-	 * @param list<ItemRow> $rows  Items of one page.
+	 * @param Actor     $actor Requesting actor.
+	 * @param ItemRow[] $rows  Items of one page.
+	 * @phpstan-param list<ItemRow> $rows
 	 * @return list<array<string, mixed>>
 	 */
 	public function present_many( Actor $actor, array $rows ): array {
@@ -60,7 +61,7 @@ final class ItemPresenter {
 	}
 
 	/**
-	 * @param ItemRow            $row       The item.
+	 * @param ItemRow             $row       The item.
 	 * @param MediaReference|null $reference Usable attachment metadata, null when missing.
 	 * @return array<string, mixed>
 	 */

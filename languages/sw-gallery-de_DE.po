@@ -137,6 +137,7 @@ msgid "An unexpected error occurred."
 msgstr "Es ist ein unerwarteter Fehler aufgetreten."
 
 #: packages/wordpress/src/Rest/GalleryController.php:321
+#: packages/wordpress/src/Rest/ItemController.php:298
 msgid "The request does not change anything."
 msgstr "Die Anfrage ändert nichts."
 
@@ -157,6 +158,14 @@ msgstr "Das Titelbild muss ein Bild sein, das Sie verwenden dürfen."
 #: packages/wordpress/src/Rest/GalleryController.php:635
 msgid "You are not allowed to publish galleries."
 msgstr "Sie dürfen keine Galerien veröffentlichen."
+
+#: packages/wordpress/src/Rest/ItemController.php:469
+msgid "The settings must be an object."
+msgstr "Die Einstellungen müssen ein Objekt sein."
+
+#: packages/wordpress/src/Rest/ItemController.php:491
+msgid "A required parameter is missing."
+msgstr "Ein erforderlicher Parameter fehlt."
 
 #: packages/wordpress/src/Support/CoreMessages.php:34
 msgid "The gallery is in a state that does not allow this operation."
