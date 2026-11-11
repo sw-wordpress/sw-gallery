@@ -11,6 +11,7 @@ final class ImageRequest
         public readonly int $attachmentId,
         public readonly int $displayWidth,
         public readonly string $sizes = '100vw',
+        public readonly ImageRole $role = ImageRole::Thumbnail,
     ) {
         if ($attachmentId <= 0 || $displayWidth <= 0 || $sizes === '') {
             throw new \InvalidArgumentException('Invalid image request.');

@@ -38,5 +38,6 @@ final class CliRegistrar implements RegistrarInterface {
 
 	public function register_commands(): void {
 		( $this->add_command )( 'swg repair', new RepairCommand() );
+		( $this->add_command )( 'swg render', new RenderCommand() );
 	}
 }

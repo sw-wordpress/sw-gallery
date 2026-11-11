@@ -9,15 +9,19 @@ declare(strict_types=1);
 
 namespace SWGallery\WordPress\Repository;
 
+use SWGallery\Core\Application\Render\RenderItemPage;
 use SWGallery\Core\Contract\GalleryItemRepositoryInterface;
 use SWGallery\Core\Contract\ItemOverridesStoreInterface;
 use SWGallery\Core\Contract\ItemSettingsStoreInterface;
+use SWGallery\Core\Contract\RenderItemSourceInterface;
 use SWGallery\Core\Domain\Gallery\GalleryItem;
 use SWGallery\Core\Domain\Gallery\ItemOverrides;
+use SWGallery\Core\Domain\Gallery\SortMode;
 use SWGallery\WordPress\Database\Schema;
+use SWGallery\WordPress\Media\AllowedMimeTypes;
 use SWGallery\WordPress\Infrastructure\WpTransactionRunner;
 
-final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface, ItemOverridesStoreInterface, ItemSettingsStoreInterface {
+final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface, ItemOverridesStoreInterface, ItemSettingsStoreInterface, RenderItemSourceInterface {
 
 	/** Upper bound of the stored JSON of one item's settings, in bytes. */
 	public const MAX_SETTINGS_BYTES = 65536;
@@ -38,8 +42,51 @@ final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface,
 			ARRAY_A
 		);
 
+		return $this->hydrate( (array) $rows );
+	}
+
+	/**
+	 * One page for the renderer: the items table joined with the attachment posts, so only usable images (existing,
+	 * not trashed, allowed MIME type) are counted and returned, ordered in SQL and cut with LIMIT/OFFSET. Relations of
+	 * unusable attachments stay untouched. Two queries (page, total) regardless of the page size.
+	 */
+	public function findRenderPage( int $galleryId, SortMode $sortMode, int $offset, int $limit ): RenderItemPage {
+		global $wpdb;
+		$table = Schema::items_table();
+		$mimes = AllowedMimeTypes::all();
+		$in    = implode( ',', array_fill( 0, count( $mimes ), '%s' ) );
+		// Identifiers come from this allowlist, never from input.
+		$order = match ( $sortMode ) {
+			SortMode::Manual    => 'i.position ASC, i.id ASC',
+			SortMode::DateAsc   => 'p.post_date_gmt ASC, i.id ASC',
+			SortMode::DateDesc  => 'p.post_date_gmt DESC, i.id ASC',
+			SortMode::TitleAsc  => 'p.post_title ASC, i.id ASC',
+			SortMode::TitleDesc => 'p.post_title DESC, i.id ASC',
+		};
+		$from = "FROM {$table} i INNER JOIN {$wpdb->posts} p ON p.ID = i.attachment_id AND p.post_type = 'attachment' AND p.post_status = 'inherit' AND p.post_mime_type IN ({$in}) WHERE i.gallery_id = %d";
+
+		$total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) {$from}", array_merge( $mimes, array( $galleryId ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- table name from prefix, placeholders generated.
+		if ( 0 === $total ) {
+			return new RenderItemPage( array(), 0 );
+		}
+		$rows = $wpdb->get_results(
+			$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- the placeholders are generated, the arguments are merged below.
+				"SELECT i.id, i.gallery_id, i.attachment_id, i.position, i.title_override, i.caption_override, i.alt_override {$from} ORDER BY {$order} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- table name from prefix, order from an allowlist, placeholders generated.
+				array_merge( $mimes, array( $galleryId, max( 1, min( 500, $limit ) ), max( 0, $offset ) ) )
+			),
+			ARRAY_A
+		);
+
+		return new RenderItemPage( $this->hydrate( (array) $rows ), $total );
+	}
+
+	/**
+	 * @param array<int, mixed> $rows Result rows (ARRAY_A).
+	 * @return list<GalleryItem>
+	 */
+	private function hydrate( array $rows ): array {
 		$items = array();
-		foreach ( (array) $rows as $row ) {
+		foreach ( $rows as $row ) {
 			$items[] = new GalleryItem(
 				(int) $row['id'],
 				(int) $row['gallery_id'],

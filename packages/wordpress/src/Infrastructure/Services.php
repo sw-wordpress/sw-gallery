@@ -11,14 +11,18 @@ declare(strict_types=1);
 
 namespace SWGallery\WordPress\Infrastructure;
 
+use SWGallery\Core\Application\Render\RenderGallery;
 use SWGallery\Core\Application\Service\GalleryItemEditService;
 use SWGallery\Core\Application\Service\GalleryItemService;
 use SWGallery\Core\Application\Service\GalleryService;
 use SWGallery\Core\Application\Service\LayoutRegistry;
 use SWGallery\Core\Domain\Settings\SettingsSchemaValidator;
 use SWGallery\Core\Event\EventDispatcher;
+use SWGallery\WordPress\Media\ThumbnailResolver;
 use SWGallery\WordPress\Media\WpMediaRepository;
+use SWGallery\WordPress\Rendering\GalleryRenderer;
 use SWGallery\WordPress\Rendering\Layout\GridLayout;
+use SWGallery\WordPress\Rendering\View\FeedMarkup;
 use SWGallery\WordPress\Repository\PostMetaRevisionStore;
 use SWGallery\WordPress\Repository\WpdbGalleryItemRepository;
 use SWGallery\WordPress\Repository\WpdbGalleryRelations;
@@ -42,6 +46,9 @@ final class Services {
 	private static ?GalleryService $gallery_service   = null;
 	private static ?GalleryItemService $item_service  = null;
 	private static ?GalleryItemEditService $item_edit = null;
+	private static ?ThumbnailResolver $thumbnails     = null;
+	private static ?RenderGallery $render_pipeline    = null;
+	private static ?GalleryRenderer $gallery_renderer = null;
 
 	public static function logger(): WpLogger {
 		return self::$logger ??= new WpLogger();
@@ -132,21 +139,46 @@ final class Services {
 		);
 	}
 
+	public static function thumbnails(): ThumbnailResolver {
+		return self::$thumbnails ??= new ThumbnailResolver();
+	}
+
+	/** The framework independent render pipeline wired with the adapters. */
+	public static function render_pipeline(): RenderGallery {
+		return self::$render_pipeline ??= new RenderGallery(
+			self::galleries(),
+			self::access(),
+			self::items(),
+			self::media(),
+			self::thumbnails(),
+			self::layouts(),
+			new FeedMarkup()
+		);
+	}
+
+	/** The renderer every frontend surface (shortcode, block, PHP API, preview, feed) calls. */
+	public static function gallery_renderer(): GalleryRenderer {
+		return self::$gallery_renderer ??= new GalleryRenderer( self::render_pipeline(), self::galleries(), self::access() );
+	}
+
 	/** Forgets all instances (tests). */
 	public static function reset(): void {
-		self::$logger          = null;
-		self::$transactions    = null;
-		self::$events          = null;
-		self::$layouts         = null;
-		self::$relations       = null;
-		self::$galleries       = null;
-		self::$items           = null;
-		self::$revisions       = null;
-		self::$media           = null;
-		self::$access          = null;
-		self::$settings        = null;
-		self::$gallery_service = null;
-		self::$item_service    = null;
-		self::$item_edit       = null;
+		self::$logger           = null;
+		self::$transactions     = null;
+		self::$events           = null;
+		self::$layouts          = null;
+		self::$relations        = null;
+		self::$galleries        = null;
+		self::$items            = null;
+		self::$revisions        = null;
+		self::$media            = null;
+		self::$access           = null;
+		self::$settings         = null;
+		self::$gallery_service  = null;
+		self::$item_service     = null;
+		self::$item_edit        = null;
+		self::$thumbnails       = null;
+		self::$render_pipeline  = null;
+		self::$gallery_renderer = null;
 	}
 }

@@ -40,6 +40,22 @@ msgstr ""
 msgid "The gallery administration requires JavaScript."
 msgstr ""
 
+#: packages/wordpress/src/Cli/RenderCommand.php:65
+msgid "The gallery id must be a positive whole number."
+msgstr ""
+
+#: packages/wordpress/src/Cli/RenderCommand.php:70
+msgid "The entry must be \"shortcode\" or \"feed\"."
+msgstr ""
+
+#: packages/wordpress/src/Cli/RenderCommand.php:75
+msgid "The page must be a positive whole number."
+msgstr ""
+
+#: packages/wordpress/src/Cli/RenderCommand.php:86
+msgid "Nothing to render for this gallery and user (not found, not visible or no usable images)."
+msgstr ""
+
 #. translators: 1: smallest batch size, 2: largest batch size
 #: packages/wordpress/src/Cli/RepairCommand.php:68
 #, php-format
@@ -104,28 +120,61 @@ msgstr[1] ""
 msgid "Gallery"
 msgstr ""
 
-#: packages/wordpress/src/Rendering/Layout/GridLayout.php:136
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:36
+msgid "Gallery diagnostic (visible to editors only): this gallery does not exist."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:38
+msgid "Gallery diagnostic (visible to editors only): this gallery is not published, so visitors see nothing here."
+msgstr ""
+
+#. translators: %s: layout id that is not available
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:42
+#, php-format
+msgid "Gallery diagnostic (visible to editors only): the layout \"%s\" is not available, the grid layout is used instead."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:46
+msgid "Gallery diagnostic (visible to editors only): the settings of this embed are invalid and were ignored."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:48
+msgid "Gallery diagnostic (visible to editors only): this gallery has no images yet."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:54
+#, php-format
+msgid "Gallery diagnostic (visible to editors only): %d image is missing or unusable and was skipped."
+msgid_plural "Gallery diagnostic (visible to editors only): %d images are missing or unusable and were skipped."
+msgstr[0] ""
+msgstr[1] ""
+
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:62
+msgid "Gallery diagnostic (visible to editors only)."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/View/LightboxLabels.php:21
 msgid "Image viewer"
 msgstr ""
 
-#: packages/wordpress/src/Rendering/Layout/GridLayout.php:137
+#: packages/wordpress/src/Rendering/View/LightboxLabels.php:22
 msgid "Close"
 msgstr ""
 
-#: packages/wordpress/src/Rendering/Layout/GridLayout.php:138
+#: packages/wordpress/src/Rendering/View/LightboxLabels.php:23
 msgid "Previous image"
 msgstr ""
 
-#: packages/wordpress/src/Rendering/Layout/GridLayout.php:139
+#: packages/wordpress/src/Rendering/View/LightboxLabels.php:24
 msgid "Next image"
 msgstr ""
 
 #. translators: 1: {current} placeholder, 2: {total} placeholder; keep both placeholders unchanged.
-#: packages/wordpress/src/Rendering/Layout/GridLayout.php:141
+#: packages/wordpress/src/Rendering/View/LightboxLabels.php:26
 msgid "{current} of {total}"
 msgstr ""
 
-#: packages/wordpress/src/Rendering/Layout/GridLayout.php:142
+#: packages/wordpress/src/Rendering/View/LightboxLabels.php:27
 msgid "The image could not be loaded."
 msgstr ""
 

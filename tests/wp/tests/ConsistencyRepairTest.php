@@ -369,7 +369,7 @@ class ConsistencyRepairTest extends SwgTestCase {
 		$inside->register();
 		$this->assertNotFalse( has_action( 'cli_init', array( $inside, 'register_commands' ) ) );
 		$inside->register_commands();
-		$this->assertSame( array( array( 'swg repair', RepairCommand::class ) ), $added );
+		$this->assertSame( array( array( 'swg repair', RepairCommand::class ), array( 'swg render', \SWGallery\WordPress\Cli\RenderCommand::class ) ), $added );
 	}
 
 	public function test_the_registrar_reads_the_wp_cli_constant_by_default(): void {

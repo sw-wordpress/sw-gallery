@@ -1,0 +1,237 @@
+<?php
+
+declare(strict_types=1);
+
+namespace SWGallery\Core\Application\Render;
+
+use SWGallery\Core\Contract\GalleryAccessPolicyInterface;
+use SWGallery\Core\Contract\GalleryLayoutInterface;
+use SWGallery\Core\Contract\GalleryRepositoryInterface;
+use SWGallery\Core\Contract\ImageHintsProviderInterface;
+use SWGallery\Core\Contract\LayoutRegistryInterface;
+use SWGallery\Core\Contract\MediaReferenceRepositoryInterface;
+use SWGallery\Core\Contract\RenderItemSourceInterface;
+use SWGallery\Core\Contract\SimpleMarkupRendererInterface;
+use SWGallery\Core\Contract\ThumbnailResolverInterface;
+use SWGallery\Core\Domain\Access\RenderAccess;
+use SWGallery\Core\Domain\Gallery\Gallery;
+use SWGallery\Core\Domain\Gallery\GallerySettings;
+use SWGallery\Core\Domain\Layout\ImageHints;
+use SWGallery\Core\Domain\Layout\ImageRequest;
+use SWGallery\Core\Domain\Layout\ImageRole;
+use SWGallery\Core\Domain\Layout\LayoutRenderRequest;
+use SWGallery\Core\Domain\Layout\LoadingStrategy;
+use SWGallery\Core\Domain\Layout\RenderItem;
+use SWGallery\Core\Domain\Settings\SettingsSchemaValidator;
+
+/**
+ * The one rendering pipeline (SPECIFICATION 5): every entry point calls it, so access, paging, overrides and
+ * image selection cannot differ between block, shortcode, PHP API, preview and feed.
+ *
+ * 1. load the gallery and its schema-versioned settings, 2. decide access (the policy's embedAccess is the only
+ * decision), 3. load one bounded page of items, 4. resolve texts (local override over attachment value, never
+ * written back), 5. resolve image variants and the loading strategy, 6. render through the registered layout.
+ * Diagnostics exist only for users who can edit the gallery; visitors never learn why nothing is shown.
+ */
+final class RenderGallery
+{
+    /** Display width requested for lightbox images; the resolver applies its lightbox size policy. */
+    public const LIGHTBOX_DISPLAY_WIDTH = 2560;
+
+    public function __construct(
+        private readonly GalleryRepositoryInterface $galleries,
+        private readonly GalleryAccessPolicyInterface $access,
+        private readonly RenderItemSourceInterface $items,
+        private readonly MediaReferenceRepositoryInterface $media,
+        private readonly ThumbnailResolverInterface $thumbnails,
+        private readonly LayoutRegistryInterface $layouts,
+        private readonly SimpleMarkupRendererInterface $simpleMarkup,
+        private readonly SettingsSchemaValidator $validator = new SettingsSchemaValidator(),
+    ) {
+    }
+
+    public function render(RenderContext $context): RenderResult
+    {
+        $gallery = $this->galleries->find($context->galleryId);
+        if ($gallery === null) {
+            return $this->denied(
+                RenderAccess::Nothing,
+                $context,
+                $this->access->canCreate($context->actor) ? [new RenderDiagnostic(RenderDiagnostic::GALLERY_NOT_FOUND)] : []
+            );
+        }
+
+        $decision = $this->access->embedAccess($context->actor, $gallery, $context->passwordUnlocked);
+        if ($decision !== RenderAccess::Render) {
+            $diagnostics = $decision === RenderAccess::Diagnostic
+                ? [new RenderDiagnostic(RenderDiagnostic::GALLERY_NOT_PUBLIC, ['status' => $gallery->status->value])]
+                : [];
+
+            return $this->denied($decision, $context, $diagnostics);
+        }
+
+        $diagnostics = [];
+        $canEdit = $this->access->canEdit($context->actor, $gallery);
+
+        $resolution = $this->layouts->resolve($context->layoutOverride ?? $gallery->settings->layout);
+        $layout = $resolution->layout;
+        if ($resolution->fellBack) {
+            $diagnostics[] = new RenderDiagnostic(RenderDiagnostic::UNKNOWN_LAYOUT, ['layout' => $resolution->requestedId]);
+        }
+        $settings = $this->effectiveSettings($gallery, $layout, $context, $diagnostics);
+        $diagnosticsVisible = $canEdit && $context->entryPoint->isInteractive();
+
+        $page = $this->loadPage($context, $settings);
+        $referencesByAttachment = $this->media->findReferences(
+            array_map(static fn ($item): int => $item->attachmentId, $page['items']->items)
+        );
+
+        $hints = $layout instanceof ImageHintsProviderInterface ? $layout->imageHints($settings) : ImageHints::fallback();
+        $renderItems = [];
+        $unavailable = 0;
+        foreach ($page['items']->items as $item) {
+            $reference = $referencesByAttachment[$item->attachmentId] ?? null;
+            $thumbnail = $reference === null ? null : $this->thumbnails->resolve(
+                new ImageRequest($item->attachmentId, $hints->displayWidth, $hints->sizes)
+            );
+            if ($reference === null || $thumbnail === null) {
+                ++$unavailable;
+                continue;
+            }
+            $renderItems[] = new RenderItem(
+                $item->id,
+                $item->attachmentId,
+                $item->overrides->resolveTitle($reference->title),
+                $item->overrides->resolveCaption($reference->caption),
+                $item->overrides->resolveAlt($reference->alt),
+                $thumbnail,
+                $this->thumbnails->resolve(
+                    new ImageRequest($item->attachmentId, self::LIGHTBOX_DISPLAY_WIDTH, '100vw', ImageRole::Lightbox)
+                ),
+                $this->loading(count($renderItems), $page['page'], $hints, $context),
+            );
+        }
+
+        if ($unavailable > 0) {
+            $diagnostics[] = new RenderDiagnostic(RenderDiagnostic::IMAGES_UNAVAILABLE, ['count' => $unavailable]);
+        }
+        if ($renderItems === []) {
+            if ($page['items']->total === 0 && $unavailable === 0) {
+                $diagnostics[] = new RenderDiagnostic(RenderDiagnostic::EMPTY_GALLERY);
+            }
+
+            return $this->result('', $diagnosticsVisible ? $diagnostics : [], [], $page, 0, $layout);
+        }
+
+        $request = new LayoutRenderRequest($gallery->id, $context->instanceId, $renderItems, $settings);
+        if ($context->entryPoint->isInteractive()) {
+            return $this->result(
+                $layout->render($request),
+                $diagnosticsVisible ? $diagnostics : [],
+                [RenderAsset::Lightbox],
+                $page,
+                count($renderItems),
+                $layout
+            );
+        }
+
+        return $this->result(
+            $this->simpleMarkup->render($request),
+            [],
+            [],
+            $page,
+            count($renderItems),
+            $layout
+        );
+    }
+
+    /**
+     * Applies validated per-embed overrides on top of the stored settings; invalid overrides are ignored (the stored
+     * settings are used) and reported to editors.
+     *
+     * @param list<RenderDiagnostic> $diagnostics
+     */
+    private function effectiveSettings(
+        Gallery $gallery,
+        GalleryLayoutInterface $layout,
+        RenderContext $context,
+        array &$diagnostics
+    ): GallerySettings {
+        $settings = $gallery->settings->withLayout($layout->getId());
+        if ($context->settingsOverrides === []) {
+            return $settings;
+        }
+        $merged = array_replace($settings->values, $context->settingsOverrides);
+        $result = $this->validator->validate($layout->getSettingsSchema(), $merged);
+        if (!$result->isValid()) {
+            $diagnostics[] = new RenderDiagnostic(RenderDiagnostic::INVALID_OVERRIDE);
+
+            return $settings;
+        }
+
+        return $settings->withValues($result->values);
+    }
+
+    /**
+     * Loads the requested page; a page past the end is clamped to the last page (one extra query in that case only).
+     *
+     * @return array{items: RenderItemPage, page: int, totalPages: int}
+     */
+    private function loadPage(RenderContext $context, GallerySettings $settings): array
+    {
+        $perPage = $context->perPage;
+        $page = $context->page;
+        $items = $this->items->findRenderPage($context->galleryId, $settings->sortMode, ($page - 1) * $perPage, $perPage);
+        $totalPages = (int) ceil($items->total / $perPage);
+        if ($items->items === [] && $items->total > 0 && $page > $totalPages) {
+            $page = $totalPages;
+            $items = $this->items->findRenderPage($context->galleryId, $settings->sortMode, ($page - 1) * $perPage, $perPage);
+        }
+
+        return ['items' => $items, 'page' => $page, 'totalPages' => $totalPages];
+    }
+
+    /** First row eager, the very first image with high priority (never lazy: it is the likely LCP image). */
+    private function loading(int $index, int $page, ImageHints $hints, RenderContext $context): LoadingStrategy
+    {
+        if (!$context->entryPoint->isInteractive() || !$context->eagerLoading || $page !== 1 || $index >= $hints->firstRowCount) {
+            return LoadingStrategy::Lazy;
+        }
+
+        return $index === 0 && $context->highPriority ? LoadingStrategy::Priority : LoadingStrategy::Eager;
+    }
+
+    /**
+     * @param list<RenderDiagnostic> $diagnostics
+     */
+    private function denied(RenderAccess $access, RenderContext $context, array $diagnostics): RenderResult
+    {
+        return new RenderResult('', $access, $context->entryPoint->isInteractive() ? $diagnostics : []);
+    }
+
+    /**
+     * @param list<RenderDiagnostic>                                           $diagnostics
+     * @param list<RenderAsset>                                                $assets
+     * @param array{items: RenderItemPage, page: int, totalPages: int} $page
+     */
+    private function result(
+        string $html,
+        array $diagnostics,
+        array $assets,
+        array $page,
+        int $rendered,
+        GalleryLayoutInterface $layout
+    ): RenderResult {
+        return new RenderResult(
+            $html,
+            RenderAccess::Render,
+            $diagnostics,
+            $assets,
+            $page['page'],
+            $page['totalPages'],
+            $page['items']->total,
+            $rendered,
+            $layout->getId()
+        );
+    }
+}

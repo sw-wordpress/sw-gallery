@@ -12,20 +12,36 @@ declare(strict_types=1);
 namespace SWGallery\WordPress\Rendering\Layout;
 
 use SWGallery\Core\Contract\GalleryLayoutInterface;
+use SWGallery\Core\Contract\ImageHintsProviderInterface;
+use SWGallery\Core\Domain\Gallery\GallerySettings;
+use SWGallery\Core\Domain\Layout\ImageHints;
 use SWGallery\Core\Domain\Layout\LayoutRenderRequest;
-use SWGallery\Core\Domain\Layout\RenderItem;
-use SWGallery\Core\Domain\Layout\ResolvedImage;
+use SWGallery\WordPress\Rendering\View\ImageMarkup;
+use SWGallery\WordPress\Rendering\View\LightboxLabels;
 
 /**
  * Emits the markup contract of the lightbox (assets/README.md): a list of plain links that work without JavaScript.
- * Column count and gap travel as CSS custom properties; the stylesheet and the loading strategy follow with M3-06/M3-08.
- * Everything is escaped for its context; captions pass a small inline-markup allowlist.
+ * Column count and gap travel as CSS custom properties; the stylesheet follows with M3-08. Item markup, labels and the
+ * caption allowlist live in `Rendering/View`; everything is escaped for its context.
  */
-final class GridLayout implements GalleryLayoutInterface {
+final class GridLayout implements GalleryLayoutInterface, ImageHintsProviderInterface {
 
 	public const ID = 'grid';
 
 	private const BREAKPOINTS = array( 'base', 'sm', 'md', 'lg', 'xl' );
+
+	/** Provisional minimum viewport widths of the breakpoints, in pixels (see imageHints()). */
+	private const BREAKPOINT_WIDTHS = array(
+		'sm' => 576,
+		'md' => 768,
+		'lg' => 1024,
+		'xl' => 1280,
+	);
+
+	private const DEFAULT_COLUMNS = 3;
+
+	/** Container width the thumbnail target is derived from, in pixels. */
+	private const REFERENCE_WIDTH = 1200;
 
 	public function getId(): string {
 		return self::ID;
@@ -60,87 +76,60 @@ final class GridLayout implements GalleryLayoutInterface {
 		if ( array() === $request->items ) {
 			return '';
 		}
-
 		$items = '';
 		foreach ( $request->items as $item ) {
-			$items .= $this->item( $item );
+			$items .= ImageMarkup::lightbox_item( $item );
 		}
-
 		return sprintf(
 			'<div class="swg-gallery swg-layout-grid" data-swg-gallery data-swg-instance="%1$s" data-swg-labels="%2$s" style="%3$s"><ul class="swg-items" role="list">%4$s</ul></div>',
 			esc_attr( $request->instanceId ),
-			esc_attr( (string) wp_json_encode( $this->labels() ) ),
+			LightboxLabels::attribute(),
 			esc_attr( $this->custom_properties( $request->settings->values ) ),
 			$items
 		);
 	}
 
-	private function item( RenderItem $item ): string {
-		$full = $item->full ?? $item->thumbnail;
-
-		$link  = sprintf( ' href="%s"', esc_url( $full->url ) );
-		$link .= sprintf( ' data-swg-full-width="%d" data-swg-full-height="%d"', max( 0, $full->width ), max( 0, $full->height ) );
-		if ( null !== $full->srcset && '' !== $full->srcset ) {
-			$link .= sprintf( ' data-swg-full-srcset="%s"', esc_attr( $full->srcset ) );
+	/**
+	 * Thumbnails are displayed at roughly the container width divided by the column count. The breakpoints below are
+	 * provisional until the grid stylesheet (M3-08) fixes them; `100vw / n` overestimates in narrow containers, which
+	 * only costs a slightly larger download, never a blurry image.
+	 */
+	public function imageHints( GallerySettings $settings ): ImageHints {
+		$columns = $this->responsive_columns( $settings->values );
+		$largest = max( $columns['base'], ...array_values( $columns ) );
+		$sizes   = array();
+		foreach ( array_reverse( self::BREAKPOINT_WIDTHS, true ) as $breakpoint => $min_width ) {
+			if ( isset( $columns[ $breakpoint ] ) ) {
+				$sizes[] = sprintf( '(min-width: %dpx) calc(100vw / %d)', $min_width, $columns[ $breakpoint ] );
+			}
 		}
-		if ( null !== $full->sizes && '' !== $full->sizes ) {
-			$link .= sprintf( ' data-swg-full-sizes="%s"', esc_attr( $full->sizes ) );
-		}
-
-		$caption = '' === $item->caption ? '' : sprintf( '<p class="swg-caption">%s</p>', $this->caption( $item->caption ) );
-
-		return sprintf(
-			'<li class="swg-item"><a class="swg-link"%1$s>%2$s</a>%3$s</li>',
-			$link,
-			$this->image( $item->thumbnail, $item->alt ),
-			$caption
-		);
-	}
-
-	private function image( ResolvedImage $image, string $alt ): string {
-		$attributes = sprintf( ' src="%s" alt="%s"', esc_url( $image->url ), esc_attr( $alt ) );
-		if ( $image->width > 0 && $image->height > 0 ) {
-			$attributes .= sprintf( ' width="%d" height="%d"', $image->width, $image->height );
-		}
-		if ( null !== $image->srcset && '' !== $image->srcset ) {
-			$attributes .= sprintf( ' srcset="%s"', esc_attr( $image->srcset ) );
-		}
-		if ( null !== $image->sizes && '' !== $image->sizes ) {
-			$attributes .= sprintf( ' sizes="%s"', esc_attr( $image->sizes ) );
-		}
-		return '<img' . $attributes . ' loading="lazy" decoding="async">';
-	}
-
-	private function caption( string $caption ): string {
-		return wp_kses(
-			$caption,
-			array(
-				'a'      => array(
-					'href' => true,
-					'rel'  => true,
-				),
-				'em'     => array(),
-				'strong' => array(),
-				'br'     => array(),
-			)
+		$sizes[] = sprintf( 'calc(100vw / %d)', $columns['base'] );
+		return new ImageHints(
+			(int) ceil( self::REFERENCE_WIDTH / $largest ),
+			implode( ', ', $sizes ),
+			max( 1, min( ImageHints::MAX_FIRST_ROW, $largest ) )
 		);
 	}
 
 	/**
-	 * Translated labels of the lightbox (read by the frontend script from data-swg-labels).
+	 * Column count per breakpoint that is set explicitly, `base` always present.
 	 *
-	 * @return array<string, string>
+	 * @param array<string, mixed> $values Layout settings.
+	 * @return array<string, int>
 	 */
-	private function labels(): array {
-		return array(
-			'dialog'   => __( 'Image viewer', 'sw-gallery' ),
-			'close'    => __( 'Close', 'sw-gallery' ),
-			'previous' => __( 'Previous image', 'sw-gallery' ),
-			'next'     => __( 'Next image', 'sw-gallery' ),
-			/* translators: 1: {current} placeholder, 2: {total} placeholder; keep both placeholders unchanged. */
-			'counter'  => __( '{current} of {total}', 'sw-gallery' ),
-			'error'    => __( 'The image could not be loaded.', 'sw-gallery' ),
-		);
+	private function responsive_columns( array $values ): array {
+		$columns = $values['columns'] ?? self::DEFAULT_COLUMNS;
+		$result  = array( 'base' => self::DEFAULT_COLUMNS );
+		if ( is_int( $columns ) ) {
+			$result['base'] = max( 1, min( 12, $columns ) );
+		} elseif ( is_array( $columns ) ) {
+			foreach ( self::BREAKPOINTS as $breakpoint ) {
+				if ( isset( $columns[ $breakpoint ] ) && is_int( $columns[ $breakpoint ] ) ) {
+					$result[ $breakpoint ] = max( 1, min( 12, $columns[ $breakpoint ] ) );
+				}
+			}
+		}
+		return $result;
 	}
 
 	/**
