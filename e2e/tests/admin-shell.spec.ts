@@ -53,22 +53,31 @@ for (const [role, sections] of ROLES_WITH_ACCESS) {
       for (const section of sections) {
         const link = nav.getByRole('link', { name: section, exact: true });
         await link.click();
-        // The PHP page owns the only h1; the app's page title is an h2 and the placeholder title an h3.
-        await expect(root.getByRole('heading', { level: 2 })).toHaveText(section);
-        await expect(root.getByRole('heading', { level: 3 })).toHaveText(
-          `${section}: not yet available`,
-        );
-        await expect(
-          page.getByText(
-            'This section is planned but not implemented in this version. It shows no data and offers no actions.',
-          ),
-        ).toBeVisible();
+        // The PHP page owns the only h1; the app's page title is an h2.
+        await expect(root.getByRole('heading', { level: 2 }).first()).toHaveText(section);
+        if (section === 'Galleries') {
+          // Implemented (M2-22/23, covered in galleries-list.spec.ts): the real list, no placeholder.
+          await expect(root.locator('.swg-placeholder')).toHaveCount(0);
+          await expect(root.locator('section[aria-label="Gallery list"]')).toHaveAttribute(
+            'aria-busy',
+            'false',
+          );
+        } else {
+          // Everything else is an honest placeholder: an h3 title, no data, no actions.
+          await expect(root.getByRole('heading', { level: 3 })).toHaveText(
+            `${section}: not yet available`,
+          );
+          await expect(
+            page.getByText(
+              'This section is planned but not implemented in this version. It shows no data and offers no actions.',
+            ),
+          ).toBeVisible();
+          await expect(root.locator('.swg-placeholder').getByRole('button')).toHaveCount(0);
+          await expect(root.locator('.swg-placeholder').getByRole('link')).toHaveCount(0);
+        }
         await expect(link).toHaveAttribute('aria-current', 'page');
         await expect(link).toHaveClass(/swg-nav-link--active/);
         await expect(nav.locator('[aria-current="page"]')).toHaveCount(1);
-        // No actions on placeholders.
-        await expect(root.locator('.swg-placeholder').getByRole('button')).toHaveCount(0);
-        await expect(root.locator('.swg-placeholder').getByRole('link')).toHaveCount(0);
       }
       await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
       await page.waitForLoadState('networkidle');

@@ -3,6 +3,8 @@ import { defineStore } from 'pinia';
 
 export const THEME_KEY = 'swg-theme';
 export const RAIL_KEY = 'swg-rail-collapsed';
+export const GALLERY_VIEW_KEY = 'swg-gallery-view';
+export type GalleryView = 'grid' | 'table';
 export type ThemePreference = 'light' | 'dark' | 'system';
 
 /** Per-viewer UI conveniences only. Storage may be missing, blocked or throw: the app must work without it. */
@@ -39,6 +41,9 @@ export const useAppStore = defineStore('app', () => {
   const themePreference = ref<ThemePreference>(readTheme());
   const systemDark = ref(systemPrefersDark());
   const railCollapsed = ref(readStorage(RAIL_KEY) === '1');
+  const galleryView = ref<GalleryView>(
+    readStorage(GALLERY_VIEW_KEY) === 'table' ? 'table' : 'grid',
+  );
   /** Text for the polite live region. */
   const announcement = ref('');
 
@@ -60,6 +65,10 @@ export const useAppStore = defineStore('app', () => {
   function toggleRail(): void {
     setRailCollapsed(!railCollapsed.value);
   }
+  function setGalleryView(value: GalleryView): void {
+    galleryView.value = value;
+    writeStorage(GALLERY_VIEW_KEY, value === 'table' ? 'table' : null);
+  }
   function announce(message: string): void {
     // Reset first so an identical message is announced again.
     announcement.value = '';
@@ -74,6 +83,8 @@ export const useAppStore = defineStore('app', () => {
     isDark,
     railCollapsed,
     announcement,
+    galleryView,
+    setGalleryView,
     setTheme,
     toggleTheme,
     setRailCollapsed,

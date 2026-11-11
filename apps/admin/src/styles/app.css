@@ -322,6 +322,23 @@
 .swg-root .q-btn.bg-primary {
   color: #fff !important;
 }
+/* Filled primary buttons inside dialogs and sheets are solid: a gradient under white text cannot be contrast-checked. */
+.swg-root .q-dialog .q-btn.bg-primary {
+  background: var(--swg-primary) !important;
+}
+/* Quasar fields draw their own focus border: no second outline on the native input. */
+.swg-root .q-field__native:focus-visible,
+.swg-root .q-field__input:focus-visible {
+  outline: none;
+}
+/* White on the light dark-mode indigo/teal is below 4.5:1: filled primary controls use the page colour as text. */
+.swg-root.swg-dark .q-btn.bg-primary {
+  background: var(--swg-primary) !important;
+  color: var(--swg-bg) !important;
+}
+.swg-root.swg-dark .swg-skip {
+  color: var(--swg-bg) !important;
+}
 .swg-root .q-field--outlined .q-field__control {
   border-radius: 10px;
 }

@@ -32,11 +32,16 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
 ];
 
+/** Sections that are implemented; every other one stays an honest placeholder. */
+const VIEWS: Record<string, RouteRecordRaw['component']> = {
+  galleries: () => import('@/features/galleries/GalleriesView.vue'),
+};
+
 const routes: RouteRecordRaw[] = [
   ...NAV_ITEMS.map((item): RouteRecordRaw => ({
     path: item.to,
     name: item.name,
-    component: () => import('@/views/PlaceholderView.vue'),
+    component: VIEWS[item.name] ?? (() => import('@/views/PlaceholderView.vue')),
     meta: { labelKey: item.labelKey },
   })),
   { path: '/:pathMatch(.*)*', redirect: '/' },
