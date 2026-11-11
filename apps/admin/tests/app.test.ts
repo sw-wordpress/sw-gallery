@@ -28,9 +28,10 @@ describe('app shell', () => {
     expect(wrapper.find('.swg-rail__name').text()).toContain('v1.0.0');
   });
 
-  it('shows an honest empty state on every section and offers no actions', async () => {
+  it('shows an honest empty state on every unimplemented section and offers no actions', async () => {
     const { wrapper, router } = await mountApp();
-    for (const item of NAV_ITEMS) {
+    // The galleries section is implemented (features/galleries, tested separately).
+    for (const item of NAV_ITEMS.filter((i) => i.name !== 'galleries')) {
       await router.push(item.to);
       await flushPromises();
       expect(wrapper.findAll('.swg-nav-link--active')).toHaveLength(1);
@@ -56,8 +57,8 @@ describe('app shell', () => {
   });
 
   it('follows the server locale', async () => {
-    const { wrapper } = await mountApp({ locale: 'de_DE', path: '/galleries' });
-    expect(wrapper.find('.swg-empty__title').text()).toBe('Galerien: noch nicht verfügbar');
+    const { wrapper } = await mountApp({ locale: 'de_DE', path: '/media' });
+    expect(wrapper.find('.swg-empty__title').text()).toBe('Medienübersicht: noch nicht verfügbar');
     expect(wrapper.find('nav').attributes('aria-label')).toBe('Navigation der Galerieverwaltung');
     expect(wrapper.find('.swg-rail__name').text()).toContain('Galerie');
   });

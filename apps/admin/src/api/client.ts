@@ -54,6 +54,12 @@ export function isConflictError(value: unknown): value is ConflictError {
   return value instanceof ConflictError;
 }
 
+/** A successful response with its body and headers (needed for `X-WP-Total` style paging headers). */
+export interface ApiResponse<T> {
+  data: T;
+  headers: Headers;
+}
+
 export interface RequestOptions {
   query?: Query;
   body?: unknown;
@@ -185,6 +191,15 @@ export class ApiClient {
   }
 
   async request<T>(method: string, path: string, options: RequestOptions = {}): Promise<T> {
+    return (await this.requestFull<T>(method, path, options)).data;
+  }
+
+  /** Like `request`, but also returns the response headers (e.g. `X-WP-Total`, `X-WP-TotalPages`). */
+  async requestFull<T>(
+    method: string,
+    path: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<T>> {
     const idempotent = method === 'GET' || method === 'HEAD';
     const maxAttempts = idempotent ? this.policy.retries + 1 : 1;
     let attempt = 0;
@@ -205,7 +220,11 @@ export class ApiClient {
     }
   }
 
-  private async attempt<T>(method: string, path: string, options: RequestOptions): Promise<T> {
+  private async attempt<T>(
+    method: string,
+    path: string,
+    options: RequestOptions,
+  ): Promise<ApiResponse<T>> {
     const headers: Record<string, string> = {
       Accept: 'application/json',
       'X-WP-Nonce': this.nonce,
@@ -247,7 +266,7 @@ export class ApiClient {
     }
 
     if (!response.ok) throw normaliseError(response.status, parsed);
-    return parsed as T;
+    return { data: parsed as T, headers: response.headers };
   }
 
   get<T>(path: string, query?: Query, signal?: AbortSignal): Promise<T> {
@@ -258,6 +277,9 @@ export class ApiClient {
   }
   put<T>(path: string, body: unknown, options: Omit<RequestOptions, 'body'> = {}): Promise<T> {
     return this.request<T>('PUT', path, { ...options, body });
+  }
+  patch<T>(path: string, body: unknown, options: Omit<RequestOptions, 'body'> = {}): Promise<T> {
+    return this.request<T>('PATCH', path, { ...options, body });
   }
   delete<T>(path: string, query?: Query): Promise<T> {
     return this.request<T>('DELETE', path, { query });

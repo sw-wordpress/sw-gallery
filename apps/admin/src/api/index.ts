@@ -2,7 +2,8 @@ import { getConfig } from '@/config';
 import { ApiClient } from './client';
 
 export * from './client';
-export { errorMessage } from './errorMessage';
+export { errorMessage, invalidFields } from './errorMessage';
+export * from './galleries';
 
 let client: ApiClient | null = null;
 

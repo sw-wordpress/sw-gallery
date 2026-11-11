@@ -154,7 +154,7 @@ describe('accessibility helpers', () => {
     const { wrapper, router } = await mountApp();
     await router.push('/galleries');
     await flushPromises();
-    expect(wrapper.find('[role="status"]').text()).toBe('Galleries');
+    expect(wrapper.find('.swg-shell > [role="status"]').text()).toBe('Galleries');
   });
 });
 
