@@ -11,6 +11,9 @@ export default defineConfig({
   // One retry: Chromium aborts requests with ERR_NETWORK_CHANGED when the host's network interfaces change (Docker veth churn on busy
   // machines). Retried tests are reported as flaky by Playwright; there is no sleep-based workaround.
   retries: 1,
+  // One WordPress container serves all workers; ~10 parallel workers made page loads fail on hosts with churning
+  // network interfaces (net::ERR_NETWORK_CHANGED), even after the retry. Three is a good trade-off.
+  workers: 3,
   fullyParallel: true,
   reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   timeout: 30_000,

@@ -55,3 +55,10 @@
 ## 2026-11-11 — Wave 3a stream B: REST foundation and gallery routes (M2-01..M2-04)
 - `swg/v1` controllers: list/create, get/patch/delete (trash or force), duplicate, restore; error mapper for every core exception (401/403/404/409/422/400, generic 500), schema-validated input, pagination headers, `expectedRevision`, publish rule, item counts from one grouped query.
 - Tests: role matrix over all routes, existence-leak policy, anonymous refused on every route, 409 races, error mapper. 411 WordPress tests (single + multisite), merged PHP coverage 96.4 %.
+
+## 2026-11-11 — Wave 3b (A, B1, B2, D)
+- A gallery list on real data: search, status filter, grid/table, paging with URL sync, create, edit details, duplicate, trash, restore, delete (typed confirmation), copy shortcode; 154 unit tests / 97.9 % lines; 58 E2E tests incl. axe, role matrix and screenshots.
+- B1 REST items and order (assign, list, patch overrides, remove, bulk remove, reorder); B2 REST layouts, media (search, upload), settings (confirmation rule) and status.
+- D render pipeline: `RenderGallery` use case (one access decision for every entry point), sorted bounded item query, thumbnails/srcset, loading strategy, views and feed markup, `GalleryRenderer`, `wp swg render`; query budget asserted (13 queries for 12 images, 11 for 100).
+- State: 657 WordPress tests (single + multisite), 240 unit tests, merged PHP coverage 97.1 %.
+- The terminal was closed mid-wave; all work survived in git worktrees and three agents were resumed and finished.

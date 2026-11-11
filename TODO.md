@@ -137,6 +137,12 @@ Tooling and tests
 - [ ] FU-08 Mobile (375 px): the five nav tabs overflow and scroll horizontally, the fifth is cut off at the edge (same as the siblings); consider a visible scroll affordance.
 - [ ] FU-09 Core `ValidationError` messages are not in the gettext catalog (REST returns them in English unless they match a catalog entry): route them through `CoreMessages` / a message map keyed by error code.
 - [ ] FU-10 `WpGalleryAccessPolicy::canPublishNew(Actor)`: creating a gallery with status `publish`/`private` is currently checked in the REST controller (`publish_posts`); move the rule into the policy so every entry point shares it.
+- [ ] FU-11 `GalleryController::create` does not use the `defaultLayout` plugin setting yet (settings API exists); and the renderer does not read `itemsPerPage`/`lightbox` yet.
+- [ ] FU-12 `Rest/ItemRowReader` contains prepared SQL inside the REST layer (the repository's `findPage` omits item settings); move it into `WpdbGalleryItemRepository` as a batched read.
+- [ ] FU-13 Preview of drafts: the single access decision returns `Diagnostic` for drafts even for editors; the preview task (M3-22) needs an explicit authorised-preview rule in the policy.
+- [x] FU-14 (done 2026-11-11: `workers: 3` in `e2e/playwright.config.ts`; with ~10 workers two tests failed even after the retry, with 3 workers the whole suite passes) E2E host noise.
+- [ ] FU-15 Gallery list polish: placeholder cover tile too tall (4:3 on mobile), double focus ring in the search field, 375 px rail nav slightly wider than the viewport.
+- [ ] FU-16 Contributors lack `upload_files`, so under D11 all of their items count as `missing`: decide whether contributors may use already-readable library images (D11 revisit).
 - [ ] FU-05 Docs: `docs/development.md` must mention the `assets/` project, `bin/rebuild-on-change.sh`, `bin/watch-build.sh` and the new test commands.
 
 ## M2 — Management
@@ -146,14 +152,14 @@ REST API (`swg/v1`, S§8)
 - [x] M2-02 `GET/POST /galleries` (search, status/owner filter, paging, cover; item counts from one grouped query, not one per row).
 - [x] M2-03 `GET/PATCH/DELETE /galleries/{id}` (`expectedRevision`, status, cover, owner change needs `edit_others_posts`; DELETE trashes, `force=true` deletes).
 - [x] M2-04 `POST /galleries/{id}/duplicate` and `/restore`.
-- [ ] M2-05 `GET/POST /galleries/{id}/items` (paged list with resolved global + local metadata; bulk assign with added/duplicate/missing result).
-- [ ] M2-06 `PATCH/DELETE /galleries/{id}/items/{itemId}`, `POST /items/bulk-remove` (bounded batch).
-- [ ] M2-07 `PUT /galleries/{id}/order` (complete ID set, atomic, single `CASE` update instead of one query per item); evaluate move command for large lists after M5-01 measurements.
-- [ ] M2-08 `GET /layouts` (registered layouts + setting schemas).
-- [ ] M2-09 `GET /media` (permission-filtered per D11, images only, paged) and `POST /media` (native upload handling, `upload_files`, MIME/size errors mapped).
-- [ ] M2-10 `GET/PATCH /settings` (`manage_options`): defaults for layout, page size, lightbox, image sizes, delete-data-on-uninstall with explicit confirmation.
-- [ ] M2-11 `GET /status`: schema version, cache state, counts, repair findings summary, recent errors from the logger ring buffer, export limitation hint (D12), sanitized diagnostics (no paths/secrets).
-- [ ] M2-13 REST test matrix: roles × routes, foreign-owned objects/attachments, nonce/auth boundaries, validation, paging limits, 409 races; test that no `swg/v1` route is reachable unauthenticated (D5); `docs/rest-api.md` (short).
+- [x] M2-05 `GET/POST /galleries/{id}/items` (paged list with resolved global + local metadata; bulk assign with added/duplicate/missing result).
+- [x] M2-06 `PATCH/DELETE /galleries/{id}/items/{itemId}`, `POST /items/bulk-remove` (bounded batch).
+- [x] M2-07 `PUT /galleries/{id}/order` (complete ID set, atomic, single `CASE` update instead of one query per item); evaluate move command for large lists after M5-01 measurements.
+- [x] M2-08 `GET /layouts` (registered layouts + setting schemas).
+- [x] M2-09 `GET /media` (permission-filtered per D11, images only, paged) and `POST /media` (native upload handling, `upload_files`, MIME/size errors mapped).
+- [x] M2-10 `GET/PATCH /settings` (`manage_options`): defaults for layout, page size, lightbox, image sizes, delete-data-on-uninstall with explicit confirmation.
+- [x] M2-11 `GET /status`: schema version, cache state, counts, repair findings summary, recent errors from the logger ring buffer, export limitation hint (D12), sanitized diagnostics (no paths/secrets).
+- [ ] M2-13 (role matrices and the all-routes-refuse-anonymous invariant exist for every route group; open: nonce/cookie boundary test) REST test matrix: roles × routes, foreign-owned objects/attachments, nonce/auth boundaries, validation, paging limits, 409 races; test that no `swg/v1` route is reachable unauthenticated (D5); `docs/rest-api.md` (short).
 
 Admin app (`apps/admin`, C§7)
 - [x] M2-14 Scaffold modelled on sw-backupit's admin app, copied self-contained: Vue 3, Quasar, TS strict, Vite, ESLint, Prettier, `vue-tsc`, Vitest + Vue Test Utils, `.nvmrc`, lockfile, shared `browserslist` (decisions.md).
@@ -166,8 +172,8 @@ Admin app (`apps/admin`, C§7)
 - [x] M2-20 Coverage script `scripts/check-coverage.mjs` (> 80 %), CI job (typecheck, lint, tests, production build, `npm audit`), Sonar lcov.
 - [x] M2-39 **Design alignment with the sw-* plugins (D14), Wave 3a, planned for the next working day.** Self-contained copies (prefix `swg-`, no `sw-backupit` names or runtime references) of: design tokens with **identical colour values** (indigo primary `#4f46e5`/strong/soft, teal accent, success/warning/danger incl. text and background tones, light + dark), self-hosted fonts (Inter, JetBrains Mono for numbers/code; woff2 only), `ShellLayout` (rail with brand block showing a gallery icon, product name and version, collapse, dark-mode toggle persisted per viewer, skip link, polite live region, capability-based navigation, `NoAccess`), `useTheme`/app store, and the UI building blocks PageHeader, Card, StatusChip, StatTile, EmptyState, ErrorState, DataState, ConfirmDialog, FormSheet, SideSheet, PaginationBar, SegmentedControl. Placeholder pages move to PageHeader/EmptyState. Keep CSS isolation (`.swg-root` scoping, build check) and the single PHP-owned h1. Update the E2E CSS-isolation spec (dark mode, fonts, no restyling of wp-admin) and unit tests, bundle-size note, light/dark/mobile screenshots for review against the sibling screenshots. Acceptance: Stefan compares with sw-backupit/sw-forms. Open: gallery icon/logo and display name.
 - [x] M2-21 (delivered by M2-39) Shared state components: loading, empty, error, retry; confirmation dialog naming affected objects.
-- [ ] M2-22 Gallery list: grid + table, search, status filter, server paging; cover, title, count, status, modified; first-run empty state leads to "create gallery".
-- [ ] M2-23 Gallery list actions: create, duplicate, trash, restore, delete permanently (confirmation), preview, copy shortcode.
+- [x] M2-22 Gallery list: grid + table, search, status filter, server paging; cover, title, count, status, modified; first-run empty state leads to "create gallery".
+- [x] M2-23 Gallery list actions: create, duplicate, trash, restore, delete permanently (confirmation), preview, copy shortcode.
 - [ ] M2-24 Editor shell: title, plain-text description, cover, status, save/publish, unsaved-change warning, revision tracking.
 - [ ] M2-25 Editor image grid: server-paged/virtualized items, bulk selection, bulk remove with undo before save.
 - [ ] M2-26 Reorder: drag-and-drop (dependency license/maintenance review) plus keyboard/button alternative with screen-reader announcements.
@@ -184,18 +190,18 @@ Admin app (`apps/admin`, C§7)
 
 ## M3 — Frontend
 
-- [ ] M3-01 Core `RenderGallery` pipeline (S§5 steps 1–8) with `RenderContext` (block, shortcode, PHP API, preview, feed) and render result (HTML, required assets, diagnostics).
-- [ ] M3-02 Status + access enforcement per D4 in the pipeline; identical for all entry points; bypass tests (shortcode, block, preview, paging).
-- [ ] M3-03 Paged item query with batched attachment/meta priming (no N+1), sort modes per D3, skips missing/trashed attachments without deleting relations.
-- [ ] M3-04 Override resolution (local > global, `NULL` vs `''`) without mutating attachment metadata.
-- [ ] M3-05 `ThumbnailResolver` adapter: core/theme sizes only, CSS cropping, `srcset`/`sizes` per layout, width/height, lightbox target size.
-- [ ] M3-06 Loading strategy: first row eager/`fetchpriority`, rest lazy; CLS-safe aspect ratios.
-- [ ] M3-07 View layer `resources/views` with contextual escaping; captions restricted by a `wp_kses` policy; simplified markup for feeds, excerpts and REST `content.rendered` (no CSS/JS dependency).
+- [x] M3-01 Core `RenderGallery` pipeline (S§5 steps 1–8) with `RenderContext` (block, shortcode, PHP API, preview, feed) and render result (HTML, required assets, diagnostics).
+- [x] M3-02 Status + access enforcement per D4 in the pipeline; identical for all entry points; bypass tests (shortcode, block, preview, paging).
+- [x] M3-03 Paged item query with batched attachment/meta priming (no N+1), sort modes per D3, skips missing/trashed attachments without deleting relations.
+- [x] M3-04 Override resolution (local > global, `NULL` vs `''`) without mutating attachment metadata.
+- [x] M3-05 `ThumbnailResolver` adapter: core/theme sizes only, CSS cropping, `srcset`/`sizes` per layout, width/height, lightbox target size.
+- [x] M3-06 Loading strategy: first row eager/`fetchpriority`, rest lazy; CLS-safe aspect ratios.
+- [x] M3-07 View layer `resources/views` with contextual escaping; captions restricted by a `wp_kses` policy; simplified markup for feeds, excerpts and REST `content.rendered` (no CSS/JS dependency).
 - [ ] M3-08 (done 2026-11-11: `Rendering/Layout/GridLayout` — settings schema with responsive columns and gap, lightbox markup contract, escaping, registered in `Services::layouts()`; open: stylesheet/responsive CSS from the custom properties, loading strategy M3-06, theming contract) Layout `grid` (CSS grid, responsive columns/spacing, logical properties for RTL, documented CSS custom properties and `swg-` classes as public theming contract).
 - [ ] M3-09 Layout `masonry` per D10 (row-ordered markup, grid-like without JS, JS column packing keeps DOM order).
 - [ ] M3-10 Layout `justified` (CSS-only via aspect-ratio flex rows, works without JS).
 - [ ] M3-11 Frontend pagination per D5: link-based, per-instance query arg, several galleries per page independent, bounded page size, no JS.
-- [ ] M3-12 Unknown layout → `grid` + diagnostic visible to editors only.
+- [x] M3-12 Unknown layout → `grid` + diagnostic visible to editors only.
 - [ ] M3-13 Fragment cache: key = gallery revision + settings hash + visibility context + media epoch; only `publish` output cached (D4); works with and without persistent object cache.
 - [ ] M3-14 Invalidation: gallery/item/settings changes, attachment update/delete/regenerated sizes, plugin update; documented action `swg_gallery_changed` (gallery ID) for full-page cache/CDN purging; docs note on page caches and paging/password output.
 - [x] M3-15 Lightbox (TypeScript, no third-party service): dialog semantics, focus trap/return, Escape/arrows (mirrored in RTL), counter, captions/alt, neighbour preloading, reduced motion.

@@ -1,6 +1,6 @@
 # REST API `swg/v1` – gallery routes
 
-Contract: `SPECIFICATION.md` §8, security rules `CODE-STYLE.md` §5. Code: `packages/wordpress/src/Rest/`. The admin UI does not use these routes yet. Items, order, layouts, media, settings and status routes follow in later tasks.
+Contract: `SPECIFICATION.md` §8, security rules `CODE-STYLE.md` §5. Code: `packages/wordpress/src/Rest/`. The admin UI uses the gallery routes (list view); the item, order, layout, media, settings and status routes are ready for the editor, the Media Overview, Settings and System Status pages.
 
 Every route needs a logged-in user (cookie + `X-WP-Nonce`); 1.0 has no unauthenticated route (decision D5). Permission callbacks are coarse (capability), the access policy and the core services decide per object and enforce it again.
 
