@@ -40,6 +40,11 @@ const props = withDefaults(
 const emit = defineEmits<{ (e: 'confirm'): void }>();
 
 const typed = ref('');
+
+/** QInput emits string | number | null; the confirmation text is always a string. */
+function onTyped(value: string | number | null): void {
+  typed.value = value === null ? '' : String(value);
+}
 const titleId = uid('swg-cd');
 const ready = computed(
   () => props.requireText === undefined || typed.value.trim() === props.requireText,
@@ -91,11 +96,12 @@ function confirm(): void {
         </ul>
         <q-input
           v-if="requireText !== undefined"
-          v-model="typed"
+          :model-value="typed"
           outlined
           dense
           autocomplete="off"
           :label="requireTextLabel"
+          @update:model-value="onTyped"
           @keyup.enter="confirm"
         />
         <p v-if="error" class="swg-cd__error" role="alert">
