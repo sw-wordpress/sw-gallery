@@ -16,6 +16,7 @@ use SWGallery\WordPress\Infrastructure\EventBridgeRegistrar;
 use SWGallery\WordPress\Media\WpMediaRepository;
 use SWGallery\WordPress\Plugin;
 use SWGallery\WordPress\PostTypes;
+use SWGallery\WordPress\Rest\RestRegistrar;
 use SWGallery\WordPress\Support\CoreMessages;
 
 class PluginTest extends SwgTestCase {
@@ -26,7 +27,7 @@ class PluginTest extends SwgTestCase {
 	}
 
 	public function test_boot_registers_the_hooks_of_every_registrar(): void {
-		$this->assertSame( array( AdminRegistrar::class, CliRegistrar::class, CoreRegistrar::class, EventBridgeRegistrar::class, GalleryLifecycleRegistrar::class, SchemaRegistrar::class ), array_map( static fn( $r ): string => $r::class, Registrars::all() ) );
+		$this->assertSame( array( AdminRegistrar::class, CliRegistrar::class, CoreRegistrar::class, EventBridgeRegistrar::class, GalleryLifecycleRegistrar::class, RestRegistrar::class, SchemaRegistrar::class ), array_map( static fn( $r ): string => $r::class, Registrars::all() ) );
 		$this->assertSame( Plugin::instance(), Plugin::instance() );
 		$this->assertNotFalse( has_action( 'init', array( PostTypes::class, 'register' ) ) );
 		$this->assertNotFalse( has_action( 'plugins_loaded', array( Schema::class, 'maybe_migrate' ) ) );

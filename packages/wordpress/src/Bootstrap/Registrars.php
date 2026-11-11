@@ -14,6 +14,7 @@ use SWGallery\WordPress\Cli\CliRegistrar;
 use SWGallery\WordPress\Database\SchemaRegistrar;
 use SWGallery\WordPress\Hooks\GalleryLifecycleRegistrar;
 use SWGallery\WordPress\Infrastructure\EventBridgeRegistrar;
+use SWGallery\WordPress\Rest\RestRegistrar;
 
 final class Registrars {
 
@@ -29,6 +30,7 @@ final class Registrars {
 			new CoreRegistrar(),
 			new EventBridgeRegistrar(),
 			new GalleryLifecycleRegistrar(),
+			new RestRegistrar(),
 			new SchemaRegistrar(),
 		);
 	}
