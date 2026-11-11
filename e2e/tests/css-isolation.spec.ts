@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { authFile, PLUGIN_PAGE, SCREENSHOT_DIR } from '../support/env';
+import { monitorPage } from '../support/monitor';
 
 test.use({ storageState: authFile('administrator') });
 
@@ -43,6 +44,9 @@ const CHROME = [
   '#wpadminbar #wp-admin-bar-site-name > a',
   '#wpfooter',
 ];
+
+/** Chrome whose markup must not change at all while the app switches theme or collapses its rail. */
+const CHROME_MARKUP = ['#adminmenu', '#wpadminbar', '#wpfooter'];
 
 // Bare elements injected into wp-admin content (outside the app root): any Quasar element selector that leaked would hit them.
 const PROBE_TAGS = [
@@ -96,14 +100,53 @@ async function snapshot(page: Page): Promise<Snapshot> {
   );
 }
 
+/** Restyling check: every snapshot key of the dashboard baseline must be identical in `actual`. */
+function expectSameAsDashboard(dashboard: Snapshot, actual: Snapshot, label: string): void {
+  for (const key of Object.keys(dashboard)) {
+    expect(dashboard[key], `${key} must exist on the dashboard`).not.toBe('missing');
+    expect(actual[key], `${key} (${label} vs dashboard)`).toEqual(dashboard[key]);
+  }
+}
+
+async function outsideMarkup(page: Page): Promise<Record<string, string>> {
+  return page.evaluate((selectors) => {
+    const result: Record<string, string> = {};
+    for (const selector of selectors) {
+      result[selector] = document.querySelector(selector)?.outerHTML ?? 'missing';
+    }
+    result['html class'] = document.documentElement.className;
+    // Quasar's dark plugin swaps body--dark/body--light on <body>; no stylesheet targets them outside the app.
+    result['body class (without body--dark/body--light)'] = document.body.className
+      .split(/\s+/)
+      .filter((c) => c !== 'body--dark' && c !== 'body--light')
+      .join(' ');
+    return result;
+  }, CHROME_MARKUP);
+}
+
+async function chromeFonts(page: Page): Promise<Record<string, string>> {
+  return page.evaluate((selectors) => {
+    const result: Record<string, string> = {};
+    for (const selector of selectors) {
+      const el = document.querySelector(selector);
+      result[selector] = el ? getComputedStyle(el).fontFamily : 'missing';
+    }
+    return result;
+  }, CHROME);
+}
+
+async function dashboardBaseline(page: Page): Promise<Snapshot> {
+  await page.goto('/wp-admin/');
+  await expect(page.locator('#adminmenu')).toBeVisible();
+  return snapshot(page);
+}
+
 test('Quasar does not restyle wp-admin chrome or bare elements outside the app root', async ({
   page,
 }) => {
   await mkdir(SCREENSHOT_DIR, { recursive: true });
 
-  await page.goto('/wp-admin/');
-  await expect(page.locator('#adminmenu')).toBeVisible();
-  const dashboard = await snapshot(page);
+  const dashboard = await dashboardBaseline(page);
   await page.screenshot({ path: resolve(SCREENSHOT_DIR, 'dashboard.png'), fullPage: true });
 
   await page.goto(PLUGIN_PAGE);
@@ -113,10 +156,111 @@ test('Quasar does not restyle wp-admin chrome or bare elements outside the app r
   const plugin = await snapshot(page);
   await page.screenshot({ path: resolve(SCREENSHOT_DIR, 'plugin-screen.png'), fullPage: true });
 
-  for (const key of Object.keys(dashboard)) {
-    expect(dashboard[key], `${key} must exist on the dashboard`).not.toBe('missing');
-    expect(plugin[key], `${key} (plugin screen vs dashboard)`).toEqual(dashboard[key]);
+  expectSameAsDashboard(dashboard, plugin, 'plugin screen');
+});
+
+test('dark mode on and off leaves wp-admin chrome and bare elements untouched', async ({
+  page,
+}) => {
+  const dashboard = await dashboardBaseline(page);
+  await page.goto(PLUGIN_PAGE);
+  const root = page.locator('#swg-admin-root');
+  await expect(root).toHaveClass(/swg-root/);
+  await expect(root).not.toHaveClass(/swg-dark/);
+  const markupLight = await outsideMarkup(page);
+  const shell = root.locator('.swg-shell');
+
+  const toggle = page.getByRole('button', { name: 'Dark mode' });
+  await toggle.click();
+  await expect(root).toHaveClass(/swg-dark/);
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  // The app really changed: its background is the dark token now.
+  expect(await shell.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+    'rgb(10, 15, 31)',
+  );
+  expectSameAsDashboard(dashboard, await snapshot(page), 'plugin screen, dark mode on');
+  expect(await outsideMarkup(page), 'wp-admin markup with dark mode on').toEqual(markupLight);
+
+  await toggle.click();
+  await expect(root).not.toHaveClass(/swg-dark/);
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  expect(await shell.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+    'rgb(243, 244, 250)',
+  );
+  expectSameAsDashboard(dashboard, await snapshot(page), 'plugin screen, dark mode off again');
+  expect(await outsideMarkup(page), 'wp-admin markup with dark mode off again').toEqual(
+    markupLight,
+  );
+});
+
+test.describe('system preference dark', () => {
+  test.use({ colorScheme: 'dark' });
+
+  test('the app follows the system preference, wp-admin stays as it is', async ({ page }) => {
+    const dashboard = await dashboardBaseline(page);
+    await page.goto(PLUGIN_PAGE);
+    await expect(page.locator('#swg-admin-root')).toHaveClass(/swg-dark/);
+    await expect(page.getByRole('button', { name: 'Dark mode' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expectSameAsDashboard(dashboard, await snapshot(page), 'plugin screen, system dark');
+  });
+});
+
+test('collapsing the rail does not touch anything outside the app root', async ({ page }) => {
+  const dashboard = await dashboardBaseline(page);
+  await page.goto(PLUGIN_PAGE);
+  const markup = await outsideMarkup(page);
+  await page.getByRole('button', { name: 'Collapse navigation' }).click();
+  await expect(page.locator('.swg-shell--collapsed')).toBeVisible();
+  expectSameAsDashboard(dashboard, await snapshot(page), 'plugin screen, rail collapsed');
+  expect(await outsideMarkup(page)).toEqual(markup);
+});
+
+test('the bundled fonts are used inside the app only and never restyle wp-admin', async ({
+  page,
+  baseURL,
+}) => {
+  const requests: string[] = [];
+  page.on('request', (request) => requests.push(request.url()));
+  const monitor = monitorPage(page);
+
+  await page.goto('/wp-admin/');
+  await expect(page.locator('#adminmenu')).toBeVisible();
+  const dashboardFonts = await chromeFonts(page);
+  for (const [selector, family] of Object.entries(dashboardFonts)) {
+    expect(family, `${selector} font on the dashboard`).not.toBe('missing');
+    expect(family, `${selector} font on the dashboard`).not.toMatch(/Inter|JetBrains/i);
   }
+
+  await page.goto(PLUGIN_PAGE);
+  await expect(page.locator('#swg-admin-root .swg-shell')).toBeVisible();
+  // Inside the app: Inter first, and the browser actually loaded the bundled face.
+  const family = await page
+    .locator('#swg-admin-root .swg-main')
+    .evaluate((el) => getComputedStyle(el).fontFamily);
+  expect(family).toMatch(/^"?Inter Variable"?,/);
+  await page.evaluate(() => document.fonts.load('16px "Inter Variable"', 'Galerie'));
+  const loaded = await page.evaluate(
+    () =>
+      Array.from(document.fonts).filter((f) => f.family.includes('Inter') && f.status === 'loaded')
+        .length,
+  );
+  expect(loaded, 'loaded Inter faces').toBeGreaterThan(0);
+
+  // The wp-admin chrome of the plugin page keeps its fonts.
+  expect(await chromeFonts(page)).toEqual(dashboardFonts);
+
+  // Self-hosted only: every font file comes from the plugin's own assets, none from a CDN.
+  const fonts = requests.filter((url) => /\.woff2?(\?|$)/.test(url));
+  expect(fonts.length, 'font requests').toBeGreaterThan(0);
+  const origin = new URL(baseURL ?? '').origin;
+  for (const url of fonts) {
+    expect(new URL(url).origin, url).toBe(origin);
+    expect(url, url).toContain('/plugins/sw-gallery/');
+  }
+  expect(monitor.failedRequests, 'failed requests').toEqual([]);
 });
 
 test('the app itself is styled (Quasar CSS is actually applied inside the root)', async ({
@@ -127,6 +271,6 @@ test('the app itself is styled (Quasar CSS is actually applied inside the root)'
   await expect(nav).toBeVisible();
   const item = nav.getByRole('link').first();
   expect(await item.evaluate((el) => getComputedStyle(el).display)).toBe('flex');
-  expect(await item.evaluate((el) => getComputedStyle(el).minHeight)).not.toBe('0px');
+  expect(await item.evaluate((el) => getComputedStyle(el).borderRadius)).toBe('12px');
   await expect(page.locator('#swg-admin-root')).toHaveClass(/swg-root/);
 });

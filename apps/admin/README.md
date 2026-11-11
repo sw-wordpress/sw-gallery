@@ -1,6 +1,6 @@
 # sw-gallery admin app
 
-Vue 3 (Composition API, `<script setup lang="ts">`) + Quasar (via `@quasar/vite-plugin`, no Quasar CLI) + Vite + strict TypeScript + vue-router (hash history) + vue-i18n. No React, no Pinia yet (added when shared cross-view state exists), no CDN or runtime fetch of third-party resources.
+Vue 3 (Composition API, `<script setup lang="ts">`) + Quasar (via `@quasar/vite-plugin`, no Quasar CLI) + Vite + strict TypeScript + vue-router (hash history) + vue-i18n. No React; Pinia only for shared UI state (`stores/app.ts`: theme, rail, live region); no CDN or runtime fetch of third-party resources.
 
 ## Commands (Node 22, see `.nvmrc`)
 
@@ -61,3 +61,7 @@ Components never call `fetch`. `ApiClient` adds nonce and `same-origin` credenti
 ## i18n
 
 Catalogs `src/i18n/{en,de}.ts` (typed: `de` must match `en` at compile time). `tests/config-i18n.test.ts` fails on missing/extra keys, differing `{placeholders}` and differing plural forms. Quasar's language pack follows the same locale (`quasarLang.ts`).
+
+## Design system (D14)
+
+Tokens (light/dark, palette identical to the other sw-* plugins) live in `src/styles/app.css` under `.swg-root`; dark mode is the class `swg-dark` on the root and on Quasar portals (`composables/useTheme.ts`). Fonts (Inter, JetBrains Mono; woff2, latin + latin-ext) come from `src/styles/fonts.css`. `layouts/ShellLayout.vue` holds rail, collapse, theme toggle, skip link and live region; theme and rail state persist per viewer in localStorage (`swg-theme`, `swg-rail-collapsed`), storage failures are tolerated. Building blocks: `components/ui/` (`Swg*`, props/slots only, no i18n). Nav entries carry an optional `capability` in `router` `NAV_ITEMS` (UX hint). `tsconfig` uses `strictTemplates: false` (aria attributes on Quasar components), as the sibling plugins do.

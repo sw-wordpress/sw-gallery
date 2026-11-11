@@ -3,12 +3,25 @@ import { authFile, PLUGIN_PAGE } from '../support/env';
 import type { Role } from '../support/env';
 import { monitorPage } from '../support/monitor';
 
-const SECTIONS = ['Overview', 'Galleries', 'Media Overview', 'Settings', 'System Status'] as const;
+const ALL_SECTIONS = [
+  'Overview',
+  'Galleries',
+  'Media Overview',
+  'Settings',
+  'System Status',
+] as const;
+// Settings and System Status need manage_options (UX hint from window.swgAdmin.capabilities; the server enforces).
+const WITHOUT_MANAGE = ALL_SECTIONS.filter((s) => s !== 'Settings' && s !== 'System Status');
 
 // Every role with edit_posts sees the menu entry (server capability: edit_posts).
-const ROLES_WITH_ACCESS: Role[] = ['administrator', 'editor', 'author', 'contributor'];
+const ROLES_WITH_ACCESS: Array<[Role, readonly string[]]> = [
+  ['administrator', ALL_SECTIONS],
+  ['editor', WITHOUT_MANAGE],
+  ['author', WITHOUT_MANAGE],
+  ['contributor', WITHOUT_MANAGE],
+];
 
-for (const role of ROLES_WITH_ACCESS) {
+for (const [role, sections] of ROLES_WITH_ACCESS) {
   test.describe(`admin shell as ${role}`, () => {
     test.use({ storageState: authFile(role) });
 
@@ -24,7 +37,7 @@ for (const role of ROLES_WITH_ACCESS) {
       ).toBeVisible();
     });
 
-    test('the app shell has five navigation entries and honest placeholders, without console or network errors', async ({
+    test(`the app shell offers ${sections.length} navigation entries and honest placeholders, without console or network errors`, async ({
       page,
     }) => {
       // Monitored from the first request; nothing navigates away from the page, so aborted requests would be real problems.
@@ -33,12 +46,16 @@ for (const role of ROLES_WITH_ACCESS) {
 
       const nav = page.getByRole('navigation', { name: 'Gallery Management navigation' });
       await expect(nav).toBeVisible();
-      await expect(nav.getByRole('link')).toHaveCount(SECTIONS.length);
-      await expect(nav.getByRole('link')).toHaveText(SECTIONS.map((s) => new RegExp(`${s}$`)));
+      await expect(nav.getByRole('link')).toHaveCount(sections.length);
+      await expect(nav.getByRole('link')).toHaveText(sections.map((s) => new RegExp(`${s}$`)));
 
-      for (const section of SECTIONS) {
-        await nav.getByRole('link', { name: section, exact: true }).click();
-        await expect(page.locator('#swg-admin-root').getByRole('heading', { level: 2 })).toHaveText(
+      const root = page.locator('#swg-admin-root');
+      for (const section of sections) {
+        const link = nav.getByRole('link', { name: section, exact: true });
+        await link.click();
+        // The PHP page owns the only h1; the app's page title is an h2 and the placeholder title an h3.
+        await expect(root.getByRole('heading', { level: 2 })).toHaveText(section);
+        await expect(root.getByRole('heading', { level: 3 })).toHaveText(
           `${section}: not yet available`,
         );
         await expect(
@@ -46,15 +63,27 @@ for (const role of ROLES_WITH_ACCESS) {
             'This section is planned but not implemented in this version. It shows no data and offers no actions.',
           ),
         ).toBeVisible();
-        // The app marks the active entry with a class only; aria-current is missing (reported as finding).
-        await expect(nav.getByRole('link', { name: section, exact: true })).toHaveClass(
-          /swg-nav__item--active/,
-        );
+        await expect(link).toHaveAttribute('aria-current', 'page');
+        await expect(link).toHaveClass(/swg-nav-link--active/);
+        await expect(nav.locator('[aria-current="page"]')).toHaveCount(1);
+        // No actions on placeholders.
+        await expect(root.locator('.swg-placeholder').getByRole('button')).toHaveCount(0);
+        await expect(root.locator('.swg-placeholder').getByRole('link')).toHaveCount(0);
       }
+      await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
       await page.waitForLoadState('networkidle');
 
       expect(monitor.problems, 'console errors/warnings').toEqual([]);
       expect(monitor.failedRequests, 'failed requests').toEqual([]);
     });
+
+    if (role !== 'administrator') {
+      test('a deep link into a hidden section shows the no-access state', async ({ page }) => {
+        await page.goto(`${PLUGIN_PAGE}#/settings`);
+        await expect(
+          page.locator('#swg-admin-root').getByRole('heading', { name: 'No access' }),
+        ).toBeVisible();
+      });
+    }
   });
 }
