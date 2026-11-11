@@ -129,6 +129,36 @@ msgstr ""
 msgid "The image could not be loaded."
 msgstr ""
 
+#: packages/wordpress/src/Rest/ErrorMapper.php:52
+msgid "The request contains invalid values."
+msgstr ""
+
+#: packages/wordpress/src/Rest/ErrorMapper.php:131
+msgid "An unexpected error occurred."
+msgstr ""
+
+#: packages/wordpress/src/Rest/GalleryController.php:312
+msgid "The request does not change anything."
+msgstr ""
+
+#. translators: %s: title of the duplicated gallery
+#: packages/wordpress/src/Rest/GalleryController.php:378
+#, php-format
+msgid "%s (copy)"
+msgstr ""
+
+#: packages/wordpress/src/Rest/GalleryController.php:588
+msgid "The owner does not exist."
+msgstr ""
+
+#: packages/wordpress/src/Rest/GalleryController.php:596
+msgid "The cover must be an image you may use."
+msgstr ""
+
+#: packages/wordpress/src/Rest/GalleryController.php:621
+msgid "You are not allowed to publish galleries."
+msgstr ""
+
 #: packages/wordpress/src/Support/CoreMessages.php:34
 msgid "The gallery is in a state that does not allow this operation."
 msgstr ""

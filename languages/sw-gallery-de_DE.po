@@ -128,6 +128,36 @@ msgstr "{current} von {total}"
 msgid "The image could not be loaded."
 msgstr "Das Bild konnte nicht geladen werden."
 
+#: packages/wordpress/src/Rest/ErrorMapper.php:52
+msgid "The request contains invalid values."
+msgstr "Die Anfrage enthält ungültige Werte."
+
+#: packages/wordpress/src/Rest/ErrorMapper.php:131
+msgid "An unexpected error occurred."
+msgstr "Es ist ein unerwarteter Fehler aufgetreten."
+
+#: packages/wordpress/src/Rest/GalleryController.php:312
+msgid "The request does not change anything."
+msgstr "Die Anfrage ändert nichts."
+
+#. translators: %s: title of the duplicated gallery
+#: packages/wordpress/src/Rest/GalleryController.php:378
+#, php-format
+msgid "%s (copy)"
+msgstr "%s (Kopie)"
+
+#: packages/wordpress/src/Rest/GalleryController.php:588
+msgid "The owner does not exist."
+msgstr "Der Eigentümer existiert nicht."
+
+#: packages/wordpress/src/Rest/GalleryController.php:596
+msgid "The cover must be an image you may use."
+msgstr "Das Titelbild muss ein Bild sein, das Sie verwenden dürfen."
+
+#: packages/wordpress/src/Rest/GalleryController.php:621
+msgid "You are not allowed to publish galleries."
+msgstr "Sie dürfen keine Galerien veröffentlichen."
+
 #: packages/wordpress/src/Support/CoreMessages.php:34
 msgid "The gallery is in a state that does not allow this operation."
 msgstr "Die Galerie befindet sich in einem Zustand, der diese Aktion nicht erlaubt."
