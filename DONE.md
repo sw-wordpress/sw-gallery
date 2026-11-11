@@ -41,3 +41,8 @@
 - Docker + Playwright environment (`bin/test-e2e.sh`, `tests/e2e-env`, `e2e/`, `.github/workflows/e2e.yml`): 18 tests (roles, assets only on the plugin screen with `ver=`, CSS isolation, locale, missing build, axe).
 - **Defect found by the first browser run and fixed:** `AdminRegistrar::mark_as_module()` marked the inline `window.swgAdmin` script instead of the app script as `type="module"`, so the admin page stayed blank for every role. A unit test with a single tag had missed it; now covered by a combined-tag test and a test of WordPress's real output.
 - App fixes from the browser review: oversized Quasar headings, duplicate h1 (the PHP page owns the h1), invalid list roles in the navigation (axe critical), `aria-current` on the active entry.
+
+## 2026-11-11 — Service wiring and grid layout
+- `Infrastructure/Services` wires all adapters and the core services (gallery, items, item edit) with transactions, events, access policy and the layout registry.
+- `GridLayout` (real, not a placeholder): settings schema (responsive columns, gap), markup of the lightbox contract with contextual escaping; registered as `grid`, which `GalleryService` needs to accept any gallery.
+- `ServicesIntegrationTest`: full life cycle (create, assign, reorder, overrides, conflict, trash, restore, delete) incl. permissions, events and settings validation against the real database. 289 WordPress tests, coverage 95.5 %.

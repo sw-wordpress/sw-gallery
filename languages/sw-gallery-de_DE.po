@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: packages/wordpress/src/Admin/AdminRegistrar.php:50
-#: packages/wordpress/src/Admin/AdminRegistrar.php:129
+#: packages/wordpress/src/Admin/AdminRegistrar.php:138
 msgid "Gallery Management"
 msgstr "Galerieverwaltung"
 
@@ -27,15 +27,15 @@ msgstr "Galerieverwaltung"
 msgid "Galleries"
 msgstr "Galerien"
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:125
+#: packages/wordpress/src/Admin/AdminRegistrar.php:134
 msgid "You are not allowed to access this page."
 msgstr "Der Zugriff auf diese Seite ist nicht erlaubt."
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:131
+#: packages/wordpress/src/Admin/AdminRegistrar.php:140
 msgid "The gallery admin app is not built. Run \"npm run build\" in apps/admin or install the release package."
 msgstr "Die Galerieverwaltung ist nicht gebaut. Führe \"npm run build\" in apps/admin aus oder installiere das Release-Paket."
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:134
+#: packages/wordpress/src/Admin/AdminRegistrar.php:143
 msgid "The gallery administration requires JavaScript."
 msgstr "Die Galerieverwaltung benötigt JavaScript."
 
@@ -102,6 +102,31 @@ msgstr[1] "%d Probleme behoben."
 #: packages/wordpress/src/PostTypes.php:30
 msgid "Gallery"
 msgstr "Galerie"
+
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:136
+msgid "Image viewer"
+msgstr "Bildbetrachter"
+
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:137
+msgid "Close"
+msgstr "Schließen"
+
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:138
+msgid "Previous image"
+msgstr "Vorheriges Bild"
+
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:139
+msgid "Next image"
+msgstr "Nächstes Bild"
+
+#. translators: 1: {current} placeholder, 2: {total} placeholder; keep both placeholders unchanged.
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:141
+msgid "{current} of {total}"
+msgstr "{current} von {total}"
+
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:142
+msgid "The image could not be loaded."
+msgstr "Das Bild konnte nicht geladen werden."
 
 #: packages/wordpress/src/Support/CoreMessages.php:34
 msgid "The gallery is in a state that does not allow this operation."

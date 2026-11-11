@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
 #: packages/wordpress/src/Admin/AdminRegistrar.php:50
-#: packages/wordpress/src/Admin/AdminRegistrar.php:129
+#: packages/wordpress/src/Admin/AdminRegistrar.php:138
 msgid "Gallery Management"
 msgstr ""
 
@@ -28,15 +28,15 @@ msgstr ""
 msgid "Galleries"
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:125
+#: packages/wordpress/src/Admin/AdminRegistrar.php:134
 msgid "You are not allowed to access this page."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:131
+#: packages/wordpress/src/Admin/AdminRegistrar.php:140
 msgid "The gallery admin app is not built. Run \"npm run build\" in apps/admin or install the release package."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:134
+#: packages/wordpress/src/Admin/AdminRegistrar.php:143
 msgid "The gallery administration requires JavaScript."
 msgstr ""
 
@@ -102,6 +102,31 @@ msgstr[1] ""
 
 #: packages/wordpress/src/PostTypes.php:30
 msgid "Gallery"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:136
+msgid "Image viewer"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:137
+msgid "Close"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:138
+msgid "Previous image"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:139
+msgid "Next image"
+msgstr ""
+
+#. translators: 1: {current} placeholder, 2: {total} placeholder; keep both placeholders unchanged.
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:141
+msgid "{current} of {total}"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/GridLayout.php:142
+msgid "The image could not be loaded."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:34

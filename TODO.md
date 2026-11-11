@@ -116,7 +116,7 @@ WordPress adapter
 - [x] M1-15 `WpGalleryRepository` on `swg_gallery` (CRUD, duplicate copies membership/overrides only, cover = featured image, status, owner); remove `revisions` from CPT `supports` (F-09); attachments never touched.
 - [x] M1-16 Lifecycle hooks: `delete_attachment` removes relations + clears cover references (render falls back to first item); `before_delete_post` removes gallery relations; trash/untrash keeps relations.
 - [x] M1-17 Consistency repair service + `wp swg repair` (dry-run default, bounded batches, report); no deletions during read requests.
-- [ ] M1-18 (registrar skeleton done in Wave 0: `Bootstrap/RegistrarInterface`, `CoreRegistrar`, `Registrars`; open: service registry with constructor injection) Service registry/bootstrap with constructor injection; hook registration in dedicated registrars (C§3.2).
+- [x] M1-18 Service registry/bootstrap with constructor injection; hook registration in dedicated registrars (C§3.2).
 - [x] M1-19 Multisite + uninstall: schema on network activation and `wp_initialize_site`, per-site prefix; uninstall bounded/batched, all sites, removes options/transients only with opt-in.
 - [x] M1-20 Schema migration runner: ordered versioned steps, repeatable, failure leaves version unchanged and retries; upgrade-from-v1 fixture test.
 
@@ -128,10 +128,10 @@ Tooling and tests
 - [ ] M1-25 Repository basics: `README.md` (requirements, links), `LICENSE`. (Initial commit, worktree ignore rule and removal of doc links into `../sw-backupit` are done.)
 
 ## Follow-ups from Wave 1/2 (small tasks, do together with the next matching milestone)
-- [ ] FU-01 Test harness (`tests/wp/support/SwgTestCase.php`): `tear_down()` runs `TRUNCATE`/dbDelta (DDL = implicit COMMIT) before the parent rollback, so posts/users/attachments leak between tests. Several tests depend on today's behaviour (a plain reorder or `DELETE` breaks 9+ tests, tried): fix deliberately with a per-test cleanup, not by editing the base class blindly.
+- [ ] FU-01 (deferred, not part of Wave 3a: needs a careful per-test cleanup) Test harness (`tests/wp/support/SwgTestCase.php`): `tear_down()` runs `TRUNCATE`/dbDelta (DDL = implicit COMMIT) before the parent rollback, so posts/users/attachments leak between tests. Several tests depend on today's behaviour (a plain reorder or `DELETE` breaks 9+ tests, tried): fix deliberately with a per-test cleanup, not by editing the base class blindly.
 - [ ] FU-02 `MediaLibraryProvider` uses `edit_post` per attachment (authors see only their own uploads) — stricter than D11 and than `WpGalleryAccessPolicy::canUseAttachment`. Align it with the policy or document why not (M4-08).
 - [ ] FU-03 REST (M2-03): call `WpGalleryAccessPolicy::canPublish` when a request sets status `publish`; `GalleryService` has no publish check.
-- [ ] FU-04 Service wiring (M1-18, orchestrator): build `Services`-based registry — `WpGalleryRepository`, `WpdbGalleryRelations`, `WpGalleryAccessPolicy`, `WpMediaRepository`, `WpdbGalleryItemRepository(Services::transactions())`, `PostMetaRevisionStore`, `ConsistencyRepair`, core `GalleryService`/`GalleryItemService`/`GalleryItemEditService` with `Services::logger()`/`events()`.
+- [x] FU-04 (done 2026-11-11: `Infrastructure/Services` builds all adapters and core services; `ServicesIntegrationTest` runs the full life cycle against the real database) Service wiring (M1-18, orchestrator): build `Services`-based registry — `WpGalleryRepository`, `WpdbGalleryRelations`, `WpGalleryAccessPolicy`, `WpMediaRepository`, `WpdbGalleryItemRepository(Services::transactions())`, `PostMetaRevisionStore`, `ConsistencyRepair`, core `GalleryService`/`GalleryItemService`/`GalleryItemEditService` with `Services::logger()`/`events()`.
 - [ ] FU-06 E2E: on this host ~1 in 3 page loads lose all requests (`net::ERR_NETWORK_CHANGED`, many Docker veth interfaces churning); `retries: 1` hides it (reported as flaky). Verified in a trace: WordPress's own scripts fail too, so not a plugin defect. Revisit on CI.
 - [ ] FU-05 Docs: `docs/development.md` must mention the `assets/` project, `bin/rebuild-on-change.sh`, `bin/watch-build.sh` and the new test commands.
 
@@ -187,7 +187,7 @@ Admin app (`apps/admin`, C§7)
 - [ ] M3-05 `ThumbnailResolver` adapter: core/theme sizes only, CSS cropping, `srcset`/`sizes` per layout, width/height, lightbox target size.
 - [ ] M3-06 Loading strategy: first row eager/`fetchpriority`, rest lazy; CLS-safe aspect ratios.
 - [ ] M3-07 View layer `resources/views` with contextual escaping; captions restricted by a `wp_kses` policy; simplified markup for feeds, excerpts and REST `content.rendered` (no CSS/JS dependency).
-- [ ] M3-08 Layout `grid` (CSS grid, responsive columns/spacing, logical properties for RTL, documented CSS custom properties and `swg-` classes as public theming contract).
+- [ ] M3-08 (done 2026-11-11: `Rendering/Layout/GridLayout` — settings schema with responsive columns and gap, lightbox markup contract, escaping, registered in `Services::layouts()`; open: stylesheet/responsive CSS from the custom properties, loading strategy M3-06, theming contract) Layout `grid` (CSS grid, responsive columns/spacing, logical properties for RTL, documented CSS custom properties and `swg-` classes as public theming contract).
 - [ ] M3-09 Layout `masonry` per D10 (row-ordered markup, grid-like without JS, JS column packing keeps DOM order).
 - [ ] M3-10 Layout `justified` (CSS-only via aspect-ratio flex rows, works without JS).
 - [ ] M3-11 Frontend pagination per D5: link-based, per-instance query arg, several galleries per page independent, bounded page size, no JS.
