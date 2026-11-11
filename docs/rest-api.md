@@ -90,3 +90,40 @@ Texts are plain text: `title` and `alt` go through `sanitize_text_field`, `capti
 ### Status codes
 
 400 schema violation or missing payload; 401 anonymous; 403 may view but not edit (subscribers are refused by the coarse check); 404 gallery missing or not viewable (`swg_gallery_not_found`) or item not in this gallery (`swg_item_not_found`); 409 stale revision (`swg_revision_conflict`); 422 invalid settings (`swg_validation_failed`) or order (`swg_invalid_order`).
+## Layouts
+
+`GET /layouts` (`edit_posts`): `{fallbackId: "grid", layouts: [{id, label, settingsSchema}]}`. Labels are translated when presented; `settingsSchema` is the layout's schema unchanged (including `x-responsive` and `x-item-settings`), an empty `properties` stays a JSON object. The admin app builds its forms from it.
+
+## Media
+
+`GET /media` (`upload_files`): images only (JPEG, PNG, GIF, plus WebP/AVIF when the server supports them), paged like the gallery list (`page`, `per_page` 1..100 default **40**, `X-WP-Total*`, past the end = empty 200). Query: `search` (<= 200), `orderby` (`date` default, `title`), `order` (`desc` default, `asc`), `uploadedBy` (user id; users without `edit_others_posts` always get their own uploads, the filter cannot be used to browse others).
+
+Visibility (D11) is a database predicate that mirrors `canUseAttachment`: own uploads, unattached uploads, attachments of published parents (private parents need `read_private_posts`); users with `edit_others_posts` and `read_private_posts` see all images. Trashed items and other types never appear. Every row is re-checked with the access policy. Cost: a constant number of queries (search + total, post meta, parents, one grouped usage count), never one per row.
+
+Resource: `id`, `title`, `alt`, `caption`, `mimeType`, `width`, `height`, `thumbnailUrl` (medium), `fullUrl` (both `null` when WordPress knows no file), `uploadedAt` (ISO 8601 UTC), `uploadedBy` (user id), `usedInGalleries` (number of live, non-trashed galleries, global count). No file system paths.
+
+`POST /media` (`upload_files`, multipart field `file`, optional `title` <= 200, `alt` <= 500) uploads through `wp_handle_upload` and creates attachment and sub-sizes the WordPress way; 201 with the resource. The type is checked from the bytes (`wp_check_filetype_and_ext`) against the allowed list before anything is written, and the image must be decodable by the image editor; a failure after storing removes the file again.
+
+| Status | Code | When |
+|---|---|---|
+| 400 | `swg_missing_file`, `swg_upload_failed` | no/empty/malformed file; partial upload |
+| 413 | `swg_file_too_large` | above `wp_max_upload_size()` or PHP size limit |
+| 422 | `swg_unsupported_media_type`, `swg_invalid_image` | SVG, HEIC, PDF, scripts, wrong content; not decodable |
+| 500 | `swg_upload_failed` | storage failure; the core message (may contain paths) is never passed on |
+
+## Settings
+
+`GET`/`PATCH /settings` (`manage_options`). One versioned JSON object in the non-autoloaded option `swg_settings` (`schemaVersion`); keys unknown to this version are preserved on save. Response: `defaultLayout` (registered layout id, default `grid`), `itemsPerPage` (1..200, default 24), `lightbox` (default true), `deleteDataOnUninstall` (default false), plus `schemaVersion`, `defaults` and `deleteDataNotice` (the plain statement that galleries and relations are removed but **never attachments**). Invalid or out-of-range stored values read as their default.
+
+PATCH is partial; unknown request keys are ignored, a body without a known key is 400 `swg_no_changes`. **Last write wins** (settings change rarely, no `expectedRevision`). Types and bounds are schema errors (400); an unregistered `defaultLayout` is 422 `swg_unknown_layout`.
+
+`deleteDataOnUninstall` is the existing per-site option `swg_delete_data_on_uninstall` (read by the uninstall routine). Turning it **on** needs `confirmDeleteData: true` in the same request, otherwise 422 `swg_confirmation_required` and nothing changes; repeating `true` or turning it off needs no confirmation.
+
+## Status
+
+`GET /status` (`manage_options`), no secrets, paths, hostnames or SQL:
+
+- `schema`: `stored`, `current`, `migrationPending`, `itemTablePresent`.
+- `counts.galleries` per status (`draft, pending, publish, private, future, trash`); `counts.itemRows` `{count, capped}` (exact up to 50000 rows, then `capped: true`); `counts.orphanRelations` `{count, complete}`: a read-only scan with the repair command's query, only on non-capped tables and for at most one second. Otherwise `complete: false` (`count: null` when skipped); the repair itself stays WP-CLI only.
+- `recentErrors`: the logger ring buffer, newest first, at most 20, already sanitized (`time` ISO UTC, `code`, `context`).
+- `versions` (`plugin`, `wordpress`, `php`, `database: {type, version}`), `multisite`, `cache: {state: "none"}` (until the renderer cache exists), `adminBuild` (boolean: the build manifest is valid), `hints[]` (`{key: "export_limitation", message}`, decision D12).

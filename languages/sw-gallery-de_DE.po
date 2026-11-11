@@ -138,6 +138,7 @@ msgstr "Es ist ein unerwarteter Fehler aufgetreten."
 
 #: packages/wordpress/src/Rest/GalleryController.php:321
 #: packages/wordpress/src/Rest/ItemController.php:298
+#: packages/wordpress/src/Rest/SettingsController.php:92
 msgid "The request does not change anything."
 msgstr "Die Anfrage ändert nichts."
 
@@ -166,6 +167,60 @@ msgstr "Die Einstellungen müssen ein Objekt sein."
 #: packages/wordpress/src/Rest/ItemController.php:491
 msgid "A required parameter is missing."
 msgstr "Ein erforderlicher Parameter fehlt."
+
+#: packages/wordpress/src/Rest/LayoutPresenter.php:63
+msgid "Grid"
+msgstr "Raster"
+
+#: packages/wordpress/src/Rest/MediaController.php:150
+#: packages/wordpress/src/Rest/MediaUploader.php:111
+#: packages/wordpress/src/Rest/MediaUploader.php:131
+msgid "No file was uploaded."
+msgstr "Es wurde keine Datei hochgeladen."
+
+#: packages/wordpress/src/Rest/MediaController.php:160
+#: packages/wordpress/src/Rest/MediaUploader.php:61
+#: packages/wordpress/src/Rest/MediaUploader.php:81
+#: packages/wordpress/src/Rest/MediaUploader.php:138
+msgid "The file could not be saved."
+msgstr "Die Datei konnte nicht gespeichert werden."
+
+#: packages/wordpress/src/Rest/MediaUploader.php:32
+msgid "You are not allowed to upload files."
+msgstr "Du darfst keine Dateien hochladen."
+
+#: packages/wordpress/src/Rest/MediaUploader.php:92
+#: packages/wordpress/src/Rest/MediaUploader.php:185
+msgid "The file is not a valid image."
+msgstr "Die Datei ist kein gültiges Bild."
+
+#: packages/wordpress/src/Rest/MediaUploader.php:136
+msgid "The file was only partially uploaded. Please try again."
+msgstr "Die Datei wurde nur teilweise hochgeladen. Bitte versuche es erneut."
+
+#: packages/wordpress/src/Rest/MediaUploader.php:144
+msgid "The uploaded file is empty."
+msgstr "Die hochgeladene Datei ist leer."
+
+#: packages/wordpress/src/Rest/MediaUploader.php:149
+msgid "The file is larger than the maximum upload size."
+msgstr "Die Datei ist größer als die maximal erlaubte Upload-Größe."
+
+#: packages/wordpress/src/Rest/MediaUploader.php:173
+msgid "This file type is not supported. Use a JPEG, PNG, GIF, WebP or AVIF image."
+msgstr "Dieser Dateityp wird nicht unterstützt. Verwende ein JPEG-, PNG-, GIF-, WebP- oder AVIF-Bild."
+
+#: packages/wordpress/src/Rest/SettingsController.php:100
+msgid "Confirm explicitly that galleries and their image relations may be deleted when the plugin is deleted."
+msgstr "Bestätige ausdrücklich, dass Galerien und ihre Bildzuordnungen beim Löschen des Plugins gelöscht werden dürfen."
+
+#: packages/wordpress/src/Rest/SettingsController.php:115
+msgid "When the plugin is deleted, all galleries and their image relations are removed. Images in the Media Library are never deleted."
+msgstr "Beim Löschen des Plugins werden alle Galerien und ihre Bildzuordnungen entfernt. Bilder in der Mediathek werden nie gelöscht."
+
+#: packages/wordpress/src/Rest/StatusReport.php:88
+msgid "Galleries are not exported in 1.0. WordPress export and migration tools move galleries without their images, and attachment IDs change on import. A gallery export with ID remapping is planned."
+msgstr "Galerien werden in 1.0 nicht exportiert. WordPress-Export- und Migrationswerkzeuge übertragen Galerien ohne ihre Bilder, und die Anhangs-IDs ändern sich beim Import. Ein Galerie-Export mit ID-Zuordnung ist geplant."
 
 #: packages/wordpress/src/Support/CoreMessages.php:34
 msgid "The gallery is in a state that does not allow this operation."

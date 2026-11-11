@@ -139,6 +139,7 @@ msgstr ""
 
 #: packages/wordpress/src/Rest/GalleryController.php:321
 #: packages/wordpress/src/Rest/ItemController.php:298
+#: packages/wordpress/src/Rest/SettingsController.php:92
 msgid "The request does not change anything."
 msgstr ""
 
@@ -166,6 +167,60 @@ msgstr ""
 
 #: packages/wordpress/src/Rest/ItemController.php:491
 msgid "A required parameter is missing."
+msgstr ""
+
+#: packages/wordpress/src/Rest/LayoutPresenter.php:63
+msgid "Grid"
+msgstr ""
+
+#: packages/wordpress/src/Rest/MediaController.php:150
+#: packages/wordpress/src/Rest/MediaUploader.php:111
+#: packages/wordpress/src/Rest/MediaUploader.php:131
+msgid "No file was uploaded."
+msgstr ""
+
+#: packages/wordpress/src/Rest/MediaController.php:160
+#: packages/wordpress/src/Rest/MediaUploader.php:61
+#: packages/wordpress/src/Rest/MediaUploader.php:81
+#: packages/wordpress/src/Rest/MediaUploader.php:138
+msgid "The file could not be saved."
+msgstr ""
+
+#: packages/wordpress/src/Rest/MediaUploader.php:32
+msgid "You are not allowed to upload files."
+msgstr ""
+
+#: packages/wordpress/src/Rest/MediaUploader.php:92
+#: packages/wordpress/src/Rest/MediaUploader.php:185
+msgid "The file is not a valid image."
+msgstr ""
+
+#: packages/wordpress/src/Rest/MediaUploader.php:136
+msgid "The file was only partially uploaded. Please try again."
+msgstr ""
+
+#: packages/wordpress/src/Rest/MediaUploader.php:144
+msgid "The uploaded file is empty."
+msgstr ""
+
+#: packages/wordpress/src/Rest/MediaUploader.php:149
+msgid "The file is larger than the maximum upload size."
+msgstr ""
+
+#: packages/wordpress/src/Rest/MediaUploader.php:173
+msgid "This file type is not supported. Use a JPEG, PNG, GIF, WebP or AVIF image."
+msgstr ""
+
+#: packages/wordpress/src/Rest/SettingsController.php:100
+msgid "Confirm explicitly that galleries and their image relations may be deleted when the plugin is deleted."
+msgstr ""
+
+#: packages/wordpress/src/Rest/SettingsController.php:115
+msgid "When the plugin is deleted, all galleries and their image relations are removed. Images in the Media Library are never deleted."
+msgstr ""
+
+#: packages/wordpress/src/Rest/StatusReport.php:88
+msgid "Galleries are not exported in 1.0. WordPress export and migration tools move galleries without their images, and attachment IDs change on import. A gallery export with ID remapping is planned."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:34

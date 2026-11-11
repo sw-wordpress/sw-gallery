@@ -24,6 +24,7 @@ use SWGallery\WordPress\Repository\WpdbGalleryItemRepository;
 use SWGallery\WordPress\Repository\WpdbGalleryRelations;
 use SWGallery\WordPress\Repository\WpGalleryRepository;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
+use SWGallery\WordPress\Settings\PluginSettings;
 
 final class Services {
 
@@ -37,6 +38,7 @@ final class Services {
 	private static ?PostMetaRevisionStore $revisions  = null;
 	private static ?WpMediaRepository $media          = null;
 	private static ?WpGalleryAccessPolicy $access     = null;
+	private static ?PluginSettings $settings          = null;
 	private static ?GalleryService $gallery_service   = null;
 	private static ?GalleryItemService $item_service  = null;
 	private static ?GalleryItemEditService $item_edit = null;
@@ -85,6 +87,10 @@ final class Services {
 
 	public static function access(): WpGalleryAccessPolicy {
 		return self::$access ??= new WpGalleryAccessPolicy();
+	}
+
+	public static function settings(): PluginSettings {
+		return self::$settings ??= new PluginSettings( self::layouts() );
 	}
 
 	public static function gallery_service(): GalleryService {
@@ -138,6 +144,7 @@ final class Services {
 		self::$revisions       = null;
 		self::$media           = null;
 		self::$access          = null;
+		self::$settings        = null;
 		self::$gallery_service = null;
 		self::$item_service    = null;
 		self::$item_edit       = null;

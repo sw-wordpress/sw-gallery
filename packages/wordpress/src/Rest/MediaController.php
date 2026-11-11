@@ -1,0 +1,239 @@
+<?php
+/**
+ * Media routes of swg/v1: permission-filtered image search and native upload.
+ *
+ * @package sw-gallery
+ */
+
+declare(strict_types=1);
+
+// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- the framework independent core's value objects expose camelCase properties (CODE-STYLE 3.1).
+
+namespace SWGallery\WordPress\Rest;
+
+use SWGallery\WordPress\Repository\WpdbGalleryRelations;
+use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
+
+/**
+ * Decisions D6 and D11: the Media Overview lists the images the actor may use (own uploads plus readable ones) and
+ * shows how often each is used; the only write is the upload. Attachments are never edited or deleted here.
+ */
+final class MediaController extends AbstractController {
+
+	public const DEFAULT_PER_PAGE = 40;
+
+	/**
+	 * REST base of the routes.
+	 *
+	 * @var string
+	 */
+	protected $rest_base = 'media';
+
+	public function __construct(
+		ErrorMapper $errors,
+		private readonly MediaSearch $search,
+		private readonly MediaUploader $uploader,
+		private readonly MediaPresenter $presenter,
+		private readonly WpdbGalleryRelations $relations,
+		private readonly WpGalleryAccessPolicy $access
+	) {
+		parent::__construct( $errors );
+	}
+
+	public function register_routes(): void {
+		register_rest_route(
+			self::NAMESPACE_V1,
+			'/' . $this->rest_base,
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_items' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'args'                => $this->collection_args(),
+				),
+				array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'create_item' ),
+					'permission_callback' => array( $this, 'create_item_permissions_check' ),
+					'args'                => $this->upload_args(),
+				),
+			)
+		);
+	}
+
+	/**
+	 * The Media Library audience (decision D11 requires `upload_files`).
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
+	 * @return true|\WP_Error
+	 */
+	public function get_items_permissions_check( $request ) {
+		return $this->require_capability( 'upload_files' );
+	}
+
+	/**
+	 * @param \WP_REST_Request $request Request.
+	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
+	 * @return true|\WP_Error
+	 */
+	public function create_item_permissions_check( $request ) {
+		return $this->require_capability( 'upload_files' );
+	}
+
+	/**
+	 * @param \WP_REST_Request $request Request.
+	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_items( $request ) {
+		return $this->guard(
+			function () use ( $request ): \WP_REST_Response {
+				$actor    = $this->actor();
+				$per_page = $this->int_param( $request, 'per_page', self::DEFAULT_PER_PAGE );
+				// Only users who may see everybody's uploads can filter by uploader; for everyone else the filter is the caller.
+				$uploaded_by = $this->int_param( $request, 'uploadedBy', 0 );
+				if ( $uploaded_by > 0 && ! current_user_can( 'edit_others_posts' ) ) {
+					$uploaded_by = $actor->userId;
+				}
+				$found = $this->search->search(
+					$actor->userId,
+					(string) ( $request->get_param( 'search' ) ?? '' ),
+					$this->int_param( $request, 'page', 1 ),
+					$per_page,
+					(string) ( $request->get_param( 'orderby' ) ?? 'date' ),
+					(string) ( $request->get_param( 'order' ) ?? 'desc' ),
+					$uploaded_by
+				);
+
+				$posts = array_values(
+					array_filter(
+						$found['posts'],
+						fn( \WP_Post $post ): bool => $this->access->canUseAttachment( $actor, $post->ID )
+					)
+				);
+				$ids   = array_map( static fn( \WP_Post $post ): int => $post->ID, $posts );
+				$used  = $this->relations->count_galleries_by_attachment( $ids );
+
+				$items = array();
+				foreach ( $posts as $post ) {
+					$items[] = $this->presenter->present( $post, $used[ $post->ID ] ?? 0 );
+				}
+				return $this->with_pagination_headers( new \WP_REST_Response( $items ), $found['total'], $per_page );
+			}
+		);
+	}
+
+	/**
+	 * @param \WP_REST_Request $request Request.
+	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function create_item( $request ) {
+		try {
+			return $this->upload_response( $request );
+		} catch ( MediaUploadException $error ) {
+			return new \WP_Error( $error->error_code, $error->getMessage(), array( 'status' => $error->status ) );
+		} catch ( \Throwable $error ) {
+			return $this->errors->map( $error, $this->actor() );
+		}
+	}
+
+	/**
+	 * @param \WP_REST_Request $request Request.
+	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
+	 * @throws MediaUploadException When the upload is refused or fails.
+	 */
+	private function upload_response( \WP_REST_Request $request ): \WP_REST_Response {
+		$file = $request->get_file_params()['file'] ?? null;
+		if ( ! is_array( $file ) ) {
+			throw new MediaUploadException( MediaUploadException::MISSING_FILE, __( 'No file was uploaded.', 'sw-gallery' ), 400 );
+		}
+		$id   = $this->uploader->upload(
+			$file,
+			$this->actor()->userId,
+			(string) ( $request->get_param( 'title' ) ?? '' ),
+			(string) ( $request->get_param( 'alt' ) ?? '' )
+		);
+		$post = get_post( $id );
+		if ( ! $post instanceof \WP_Post ) {
+			throw new MediaUploadException( MediaUploadException::FAILED, __( 'The file could not be saved.', 'sw-gallery' ), 500 );
+		}
+		$this->search->prime_parents( array( $post ) );
+		$response = new \WP_REST_Response( $this->presenter->present( $post, 0 ) );
+		$response->set_status( 201 );
+		return $response;
+	}
+
+	/**
+	 * @return array<string, array<string, mixed>>
+	 */
+	private function collection_args(): array {
+		$pagination                        = $this->pagination_args();
+		$pagination['per_page']['default'] = self::DEFAULT_PER_PAGE;
+
+		return $this->validated(
+			$pagination + array(
+				'search'     => array(
+					'description'       => 'Search text (title, caption, description).',
+					'type'              => 'string',
+					'maxLength'         => 200,
+					'sanitize_callback' => array( self::class, 'sanitize_line' ),
+				),
+				'orderby'    => array(
+					'description' => 'Sort field.',
+					'type'        => 'string',
+					'enum'        => array( 'date', 'title' ),
+					'default'     => 'date',
+				),
+				'order'      => array(
+					'description' => 'Sort direction.',
+					'type'        => 'string',
+					'enum'        => array( 'asc', 'desc' ),
+					'default'     => 'desc',
+				),
+				'uploadedBy' => array(
+					'description'       => 'Only images uploaded by this user (users without edit_others_posts always get their own).',
+					'type'              => 'integer',
+					'minimum'           => 1,
+					'sanitize_callback' => 'absint',
+				),
+			)
+		);
+	}
+
+	/**
+	 * The file itself travels as multipart field `file` and is not a schema argument.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	private function upload_args(): array {
+		return $this->validated(
+			array(
+				'title' => array(
+					'description'       => 'Title of the attachment (default: the file name without extension).',
+					'type'              => 'string',
+					'maxLength'         => 200,
+					'sanitize_callback' => array( self::class, 'sanitize_line' ),
+				),
+				'alt'   => array(
+					'description'       => 'Alternative text.',
+					'type'              => 'string',
+					'maxLength'         => 500,
+					'sanitize_callback' => array( self::class, 'sanitize_line' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * @param \WP_REST_Request $request Request.
+	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
+	 * @param string           $name    Parameter name.
+	 * @param int              $fallback Value when absent.
+	 */
+	private function int_param( \WP_REST_Request $request, string $name, int $fallback ): int {
+		$value = $request->get_param( $name );
+		return is_numeric( $value ) ? (int) $value : $fallback;
+	}
+}

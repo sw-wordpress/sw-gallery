@@ -55,6 +55,17 @@ final class RestRegistrar implements RegistrarInterface {
 				new ItemRowReader(),
 				new ItemPresenter( Services::media(), Services::access() )
 			),
+			new LayoutController( $errors, Services::layouts(), new LayoutPresenter() ),
+			new MediaController(
+				$errors,
+				new MediaSearch(),
+				new MediaUploader(),
+				new MediaPresenter(),
+				Services::relations(),
+				Services::access()
+			),
+			new SettingsController( $errors, Services::settings() ),
+			new StatusController( $errors, new StatusReport( Services::logger(), Services::relations(), SWGALLERY_DIR . 'assets/admin' ) ),
 		);
 	}
 }
