@@ -54,7 +54,7 @@ export function bootstrap(): void {
     lang: quasarLang(resolveUiLocale(config.locale)),
     // Quasar portals (dialogs, menus, notifications) are appended to <body>; give them the root
     // class so the scoped Quasar CSS applies there as well.
-    config: { globalNodes: { class: ROOT_CLASS } },
+    config: { globalNodes: { class: `${ROOT_CLASS} swg-portal` } },
   });
   app.mount(el);
 }

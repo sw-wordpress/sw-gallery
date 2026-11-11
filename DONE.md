@@ -46,3 +46,8 @@
 - `Infrastructure/Services` wires all adapters and the core services (gallery, items, item edit) with transactions, events, access policy and the layout registry.
 - `GridLayout` (real, not a placeholder): settings schema (responsive columns, gap), markup of the lightbox contract with contextual escaping; registered as `grid`, which `GalleryService` needs to accept any gallery.
 - `ServicesIntegrationTest`: full life cycle (create, assign, reorder, overrides, conflict, trash, restore, delete) incl. permissions, events and settings validation against the real database. 289 WordPress tests, coverage 95.5 %.
+
+## 2026-11-11 — Wave 3a stream A: design alignment (M2-39, M2-21)
+- Admin app now follows the sw-* family: identical palette (light/dark), self-hosted Inter and JetBrains Mono, rail shell with brand block, collapse and dark-mode toggle, capability-driven navigation, `NoAccess`, and the UI building blocks (PageHeader, Card, StatusChip, StatTile, EmptyState, ErrorState, DataState, ConfirmDialog, FormSheet, SideSheet, PaginationBar, SegmentedControl).
+- Review fixes by the orchestrator: strict template checking restored (scoped attribute augmentation, one real type error fixed); Quasar portal containers no longer stretch the WordPress page (E2E regression test, verified to fail without the fix).
+- State: admin app 87 unit tests / 97.5 % lines; 32 E2E tests.

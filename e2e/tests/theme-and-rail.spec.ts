@@ -77,6 +77,49 @@ test('the rail collapses and expands, shows tooltips only when collapsed and per
   await expect(root(page).locator('.swg-shell--collapsed')).toHaveCount(0);
 });
 
+test('Quasar portal containers on <body> take no part in the page layout (light and dark)', async ({
+  page,
+}) => {
+  async function measure(): Promise<{
+    docHeight: number;
+    portals: { id: string; height: number }[];
+  }> {
+    return page.evaluate(() => ({
+      docHeight: document.documentElement.scrollHeight,
+      portals: [...document.querySelectorAll<HTMLElement>('body > .swg-root')].map((el) => ({
+        id: el.id,
+        height: Math.round(el.getBoundingClientRect().height),
+      })),
+    }));
+  }
+
+  await open(page);
+  const toggle = page.getByRole('button', { name: 'Dark mode' });
+  await toggle.hover(); // opens a tooltip: Quasar creates a portal container on <body>
+  await expect(page.getByRole('tooltip')).toBeVisible();
+  const light = await measure();
+
+  await toggle.click();
+  await expect(root(page)).toHaveClass(/swg-dark/);
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await page.mouse.move(0, 0);
+  await toggle.hover(); // a fresh tooltip in dark mode
+  const dark = await measure();
+
+  // Without the swg-portal rule every container inherited the root's minimum height (and, in dark mode, its
+  // background) and stretched the WordPress page by one empty screen each.
+  expect(light.portals.length).toBeGreaterThan(0);
+  for (const portal of [...light.portals, ...dark.portals]) {
+    expect(portal.height, `portal #${portal.id} must not take up page height`).toBeLessThanOrEqual(
+      1,
+    );
+  }
+  expect(dark.docHeight).toBe(light.docHeight);
+  const viewport = page.viewportSize();
+  expect(viewport).not.toBeNull();
+  expect(light.docHeight).toBeLessThan((viewport?.height ?? 0) + 400);
+});
+
 test('the skip link moves focus to the main region', async ({ page }) => {
   await open(page);
   // WordPress prints its own skip links first; focus the app's link directly instead of counting Tab presses.

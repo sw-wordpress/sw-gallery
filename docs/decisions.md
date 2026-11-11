@@ -50,6 +50,18 @@ Decisions taken while implementing Wave 2 (2026-11-10):
 | Uninstall opt-in | Per site (multisite): each site opts in for itself. A network-wide opt-in would be a new decision. Deleting a site drops its item table. |
 | Migrations | `Schema::migrate()` forces all steps (activation/repair); `maybe_migrate()` only runs when behind, guarded by a 60 s lock option. |
 
+Decisions taken while implementing Wave 3a (2026-11-11):
+
+| Topic | Decision |
+|---|---|
+| Brand | Rail brand block: icon `r_photo_library`, name "Gallery" ("Galerie" in German), version; changeable without migration. |
+| Dark mode | Light/dark with the siblings' tokens; defaults to the system preference; the manual choice is stored per viewer in `localStorage` (`swg-theme`, `swg-rail-collapsed`, no secrets, the app works without storage). |
+| `<body>` class | Quasar's dark plugin swaps `body--dark`/`body--light` on `<body>`. Nothing outside the app targets these classes; E2E verifies that wp-admin chrome styles and html classes are unchanged. |
+| Portals | Quasar portal containers on `<body>` carry `swg-root swg-portal`; `.swg-portal` removes their minimum height, margin and background so they never take part in the page layout (found in review: they stretched the WordPress page by one empty screen each and painted navy in dark mode). Guarded by an E2E test. |
+| Strict templates | `strictTemplates` stays `true`. Fallthrough attributes of Quasar components (`aria-*`, `data-*`, `role`, `id`, `form`, `autocomplete`, `onKeyup`) are allowed by a scoped augmentation of Vue's `AllowedComponentProps` in `env.d.ts`; everything else stays strictly checked. |
+| Fonts and cache busting | Inter and JetBrains Mono ship as content-hashed woff2 files referenced from the CSS (no `ver` parameter); the entry script and stylesheet keep `ver=<plugin version>` from PHP. |
+| Navigation | Data-driven: sections may require a capability (settings and status need `manage_options`); without `edit_posts` the app shows "no access". The server enforces permissions, the list is a UX hint. |
+
 Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und Entscheidungen"); revisable without migration:
 
 | Topic | Default |

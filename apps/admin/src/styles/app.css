@@ -520,3 +520,16 @@
 .swg-root[dir='rtl'] .swg-flip-rtl {
   transform: scaleX(-1);
 }
+
+/*
+ * Quasar appends its portal containers (notifications, tooltips, dialogs, menus) directly to <body> and they carry the
+ * root class so the scoped CSS applies. They only hold fixed-position overlays and must never take part in the page
+ * layout: without this they inherit the root's minimum height and, in dark mode, its background, and stretch the
+ * WordPress page by one empty screen per container.
+ */
+.swg-root.swg-portal,
+.swg-root.swg-dark.swg-portal {
+  min-height: 0;
+  margin: 0;
+  background: transparent;
+}
