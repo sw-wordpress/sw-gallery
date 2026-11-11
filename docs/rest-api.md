@@ -55,3 +55,38 @@ JSON `{code, message, data: {status, ...}}`, messages translated (en/de), never 
 ## Cover
 
 A changed `coverAttachmentId` must pass `canUseAttachment` (D11), else 422 `swg_invalid_cover`; an unchanged one is not re-checked.
+
+## Items and order
+
+Code: `Rest/ItemController`, `ItemPresenter`, `ItemRowReader`. Same conventions as the gallery routes (errors, camelCase, `expectedRevision`, identical 404 for missing and not-viewable galleries, 403 when the user may view but not edit). Coarse check `edit_posts`; the core services enforce the access policy again.
+
+| Method, route | Body / query | Success |
+|---|---|---|
+| `GET /galleries/{id}/items` | `page`, `per_page` (1..100, default 50) | 200 array of items; headers `X-WP-Total`, `X-WP-TotalPages`, `X-SWG-Revision` (gallery revision of this snapshot) |
+| `POST /galleries/{id}/items` | `attachmentIds` (1..500 integers >= 1, deduplicated), `expectedRevision` | 200 `{added, alreadyAssigned, missing, revision}` |
+| `PATCH /galleries/{id}/items/{itemId}` | `overrides`, `settings` (at least one), `expectedRevision` | 200 `{item, revision}` |
+| `DELETE /galleries/{id}/items/{itemId}` | `expectedRevision` (query or body) | 200 `{id, removed: true, revision}` |
+| `POST /galleries/{id}/items/bulk-remove` | `itemIds` (1..500), `expectedRevision` | 200 `{removed, notFound, revision}` |
+| `PUT /galleries/{id}/order` | `itemIds` (complete ordered list, max 10000), `expectedRevision` | 200 `{itemCount, revision}` |
+
+Items are listed in stored manual order (display sort modes belong to the renderer, D3). Assign answers 200 even when ids were skipped: `alreadyAssigned` are already members, `missing` covers nonexistent, unsupported and unreadable attachments alike (existence does not leak, D11). When nothing was added the revision is unchanged. Removal deletes the relation only, never the attachment; unknown item ids of a bulk removal are `notFound`, and without a removal the revision is unchanged. A missing payload argument (`attachmentIds`, `itemIds`) is 400 `rest_missing_callback_param`; it is not declared `required` in the route schema because WordPress would then validate before the permission callback and answer anonymous requests with 400 instead of 401.
+
+### Item resource
+
+`id` (item id, **not** the attachment id), `attachmentId`, `position` (1-based), `overrides` `{title, caption, alt}` (each string or `null`: `null` = inherit, `""` = intentional blank, serialised faithfully), `effective` (the three texts after applying the overrides to the global ones), `global` (`{title, caption, alt}` of the attachment), `settings` (object, the item settings map), `media` (`{mimeType, width, height, thumbnailUrl, fullUrl}`, core `medium` size URL; no file names or paths) and `missing`.
+
+`missing: true` when the attachment no longer exists, is trashed, is not an allowed image type, or the actor may not use it (D11; contributors lack `upload_files`, so they see their items as missing). Such rows stay listed so the admin can remove them, are never deleted by a read, and expose `global: null`, `media: null` and `effective` computed against empty global texts. Metadata of a page is fetched with a bounded number of queries (independent of the page size; tested).
+
+### PATCH semantics
+
+`overrides` is partial: fields that are absent keep their stored value, `null` resets that field to inherit, `""` stores a blank. Unknown keys are 400. `settings` replaces the item's map and is validated against the layout's `x-item-settings` schema (422 `swg_validation_failed`; layouts without the key store it untouched); `{}` clears it (schema defaults apply). A PATCH without `overrides` fields and without `settings` is 400 `swg_no_changes`. With both parts the settings are validated and written first, then the overrides: the revision rises once per applied part (two steps). Bounds: `title` <= 200, `caption` <= 5000, `alt` <= 500 characters (checked before sanitising).
+
+Texts are plain text: `title` and `alt` go through `sanitize_text_field`, `caption` through `sanitize_textarea_field` (line breaks kept); markup is stripped on save (a `<script>` is never stored). Global attachment metadata is never changed. Clients must still render all texts as plain text.
+
+### Order
+
+`itemIds` must be an exact permutation of the gallery's item ids, else 422 `swg_invalid_order` (nothing written); a stale revision is 409. The adapter writes one `UPDATE` per item inside one transaction; a single `CASE` update is an open point for M5-01 measurements (a move command for large lists as well).
+
+### Status codes
+
+400 schema violation or missing payload; 401 anonymous; 403 may view but not edit (subscribers are refused by the coarse check); 404 gallery missing or not viewable (`swg_gallery_not_found`) or item not in this gallery (`swg_item_not_found`); 409 stale revision (`swg_revision_conflict`); 422 invalid settings (`swg_validation_failed`) or order (`swg_invalid_order`).

@@ -138,6 +138,7 @@ msgid "An unexpected error occurred."
 msgstr ""
 
 #: packages/wordpress/src/Rest/GalleryController.php:321
+#: packages/wordpress/src/Rest/ItemController.php:298
 msgid "The request does not change anything."
 msgstr ""
 
@@ -157,6 +158,14 @@ msgstr ""
 
 #: packages/wordpress/src/Rest/GalleryController.php:635
 msgid "You are not allowed to publish galleries."
+msgstr ""
+
+#: packages/wordpress/src/Rest/ItemController.php:469
+msgid "The settings must be an object."
+msgstr ""
+
+#: packages/wordpress/src/Rest/ItemController.php:491
+msgid "A required parameter is missing."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:34
