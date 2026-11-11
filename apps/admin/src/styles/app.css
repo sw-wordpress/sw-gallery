@@ -204,7 +204,13 @@
 
 /* ---------- WordPress integration ---------- */
 /* The root sits inside wp-admin's content padding; pull it to the edge (own element only). */
+/* The PHP page wraps the app in WordPress' `.wrap` (10px top and 20px right margin): the app owns the whole content area. */
+.swg-wrap.wrap {
+  margin: 0;
+}
+/* Quasar's scoped body rule gives the root `width: 100%`, which would only shift it by the negative margin. */
 .swg-fullbleed {
+  width: auto;
   margin-block: 0;
   margin-inline: -20px 0;
 }

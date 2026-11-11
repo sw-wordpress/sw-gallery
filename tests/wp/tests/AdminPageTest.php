@@ -195,6 +195,7 @@ class AdminPageTest extends SwgTestCase {
 		$html = (string) ob_get_clean();
 
 		$this->assertStringContainsString( 'id="swg-admin-root"', $html );
+		$this->assertStringContainsString( '<div class="wrap swg-wrap">', $html, 'The wrapper carries the class that removes the wp-admin content margin.' );
 		$this->assertStringNotContainsString( 'notice-error', $html );
 		$this->assertStringContainsString( '<noscript>', $html );
 	}

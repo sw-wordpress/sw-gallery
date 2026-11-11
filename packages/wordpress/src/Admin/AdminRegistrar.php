@@ -134,7 +134,7 @@ final class AdminRegistrar implements RegistrarInterface {
 			wp_die( esc_html__( 'You are not allowed to access this page.', 'sw-gallery' ), '', array( 'response' => 403 ) );
 		}
 
-		echo '<div class="wrap">';
+		echo '<div class="wrap swg-wrap">';
 		echo '<h1 class="screen-reader-text">' . esc_html__( 'Gallery Management', 'sw-gallery' ) . '</h1>';
 		if ( $this->build_missing ) {
 			echo '<div class="notice notice-error"><p>' . esc_html__( 'The gallery admin app is not built. Run "npm run build" in apps/admin or install the release package.', 'sw-gallery' ) . '</p></div>';
