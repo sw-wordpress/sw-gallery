@@ -66,6 +66,8 @@ const { t } = useI18n();
 
 <style scoped>
 .swg-gtable__scroll {
+  /* Positioned: the absolutely placed screen-reader texts of the cells must be clipped by this scroller too. */
+  position: relative;
   overflow-x: auto;
 }
 .swg-gtable__table {
