@@ -12,20 +12,29 @@ import { createAppRouter } from '../../src/router';
 
 export const ALL_CAPS = ['edit_posts', 'edit_others_posts', 'upload_files', 'manage_options'];
 
-export function setBootstrap(capabilities: string[] = ALL_CAPS, version = '1.0.0'): void {
+export function setBootstrap(
+  capabilities: string[] = ALL_CAPS,
+  version = '1.0.0',
+  locale = 'en_US',
+  timezone = 'UTC',
+): void {
   resetConfigForTests();
   window.swgAdmin = {
     restRoot: 'https://x.test/wp-json/swg/v1/',
     nonce: 'n',
-    locale: 'en_US',
+    locale,
     version,
     adminUrl: '',
     capabilities,
+    timezone,
   };
 }
 
 export function resetEnvironment(): void {
+  // Quasar creates the notification container once per page: keep it attached for the next test.
+  const notify = document.getElementById('q-notify');
   document.body.innerHTML = '';
+  if (notify) document.body.appendChild(notify);
   delete window.swgAdmin;
   resetConfigForTests();
   window.localStorage.clear();
@@ -37,6 +46,7 @@ export interface MountOptions {
   path?: string;
   capabilities?: string[];
   version?: string;
+  timezone?: string;
   galleriesApi?: GalleriesApi;
 }
 
@@ -63,9 +73,10 @@ export async function mountApp(options: MountOptions = {}) {
     path = '/',
     capabilities = ALL_CAPS,
     version = '1.0.0',
+    timezone = 'UTC',
     galleriesApi = emptyGalleriesApi(),
   } = options;
-  setBootstrap(capabilities, version);
+  setBootstrap(capabilities, version, locale, timezone);
   const root = document.createElement('div');
   root.id = 'swg-admin-root';
   root.className = 'swg-root';
