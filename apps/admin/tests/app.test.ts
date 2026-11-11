@@ -1,37 +1,20 @@
-import { flushPromises, mount } from '@vue/test-utils';
-import { Quasar } from 'quasar';
-import iconSet from 'quasar/icon-set/material-icons-round';
+import { flushPromises } from '@vue/test-utils';
 import { createMemoryHistory } from 'vue-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import App from '../src/App.vue';
-import { createAppI18n } from '../src/i18n';
 import { NAV_ITEMS, createAppRouter } from '../src/router';
 import { rewriteSelector, swgScope } from '../tools/postcssScope';
 import postcss from 'postcss';
-
-async function mountApp(locale = 'en_US', path = '/') {
-  const router = createAppRouter(createMemoryHistory());
-  await router.push(path);
-  await router.isReady();
-  const wrapper = mount(App, {
-    props: { version: '1.0.0' },
-    attachTo: document.body,
-    global: { plugins: [router, createAppI18n(locale), [Quasar, { iconSet }]] as never[] },
-  });
-  await flushPromises();
-  return { wrapper, router };
-}
+import { mountApp, resetEnvironment } from './support/mountApp';
 
 afterEach(() => {
-  document.body.innerHTML = '';
-  delete window.swgAdmin;
+  resetEnvironment();
   vi.resetModules();
 });
 
 describe('app shell', () => {
   it('renders exactly the planned navigation entries, no more', async () => {
     const { wrapper } = await mountApp();
-    const labels = wrapper.findAll('.swg-nav__item .q-item__section--main').map((n) => n.text());
+    const labels = wrapper.findAll('.swg-nav-link__label').map((n) => n.text());
     expect(labels).toEqual([
       'Overview',
       'Galleries',
@@ -41,7 +24,8 @@ describe('app shell', () => {
     ]);
     expect(NAV_ITEMS).toHaveLength(5);
     expect(wrapper.find('nav').attributes('aria-label')).toBe('Gallery Management navigation');
-    expect(wrapper.text()).toContain('Version 1.0.0');
+    expect(wrapper.find('.swg-rail__name').text()).toContain('Gallery');
+    expect(wrapper.find('.swg-rail__name').text()).toContain('v1.0.0');
   });
 
   it('shows an honest empty state on every section and offers no actions', async () => {
@@ -49,42 +33,43 @@ describe('app shell', () => {
     for (const item of NAV_ITEMS) {
       await router.push(item.to);
       await flushPromises();
-      const label = wrapper
-        .findAll('.swg-nav__item')
-        .find((n) => n.classes('swg-nav__item--active'));
-      expect(label).toBeDefined();
+      expect(wrapper.findAll('.swg-nav-link--active')).toHaveLength(1);
       const section = wrapper.find('.swg-placeholder');
       expect(section.text()).toContain('not yet available');
       expect(section.find('button, a').exists()).toBe(false);
     }
   });
 
-  it('marks only the active entry with aria-current and keeps the page heading in PHP', async () => {
+  it('marks only the active entry with aria-current and keeps the single h1 in PHP', async () => {
     const { wrapper, router } = await mountApp();
     for (const item of NAV_ITEMS) {
       await router.push(item.to);
       await flushPromises();
-      const current = wrapper.findAll('.swg-nav__item[aria-current="page"]');
+      const current = wrapper.findAll('.swg-nav-link[aria-current="page"]');
       expect(current).toHaveLength(1);
-      expect(current[0]?.classes()).toContain('swg-nav__item--active');
+      expect(current[0]?.classes()).toContain('swg-nav-link--active');
     }
     // The h1 is printed by the PHP admin page; the app must not add a second one.
     expect(wrapper.find('h1').exists()).toBe(false);
-    expect(wrapper.find('.swg-shell__title').attributes('aria-hidden')).toBe('true');
-    expect(wrapper.find('nav [role="list"]').exists()).toBe(false);
+    const headings = wrapper.findAll('h2, h3').map((h) => h.element.tagName);
+    expect(headings).toEqual(['H2', 'H3']);
   });
 
   it('follows the server locale', async () => {
-    const { wrapper } = await mountApp('de_DE', '/galleries');
-    expect(wrapper.find('.swg-placeholder__title').text()).toBe('Galerien: noch nicht verfügbar');
+    const { wrapper } = await mountApp({ locale: 'de_DE', path: '/galleries' });
+    expect(wrapper.find('.swg-empty__title').text()).toBe('Galerien: noch nicht verfügbar');
     expect(wrapper.find('nav').attributes('aria-label')).toBe('Navigation der Galerieverwaltung');
+    expect(wrapper.find('.swg-rail__name').text()).toContain('Galerie');
   });
 
   it('redirects unknown routes to the overview and hides the version when empty', async () => {
-    const { wrapper, router } = await mountApp('en_US', '/nope');
+    const { wrapper, router } = await mountApp({ path: '/nope', version: '' });
     expect(router.currentRoute.value.path).toBe('/');
-    await wrapper.setProps({ version: '' });
-    expect(wrapper.find('.swg-shell__version').exists()).toBe(false);
+    expect(wrapper.find('.swg-rail__name small').exists()).toBe(false);
+  });
+
+  it('creates a router that is ready for memory history', () => {
+    expect(createAppRouter(createMemoryHistory())).toBeDefined();
   });
 });
 
@@ -105,7 +90,9 @@ describe('bootstrap (main.ts)', () => {
     const root = document.getElementById('swg-admin-root');
     expect(root?.classList.contains('swg-root')).toBe(true);
     expect(root?.getAttribute('dir')).toBe('rtl');
-    expect(root?.textContent).toContain('Gallery Management');
+    expect(root?.classList.contains('swg-fullbleed')).toBe(true);
+    expect(root?.textContent).toContain('Gallery');
+    expect(root?.textContent).toContain('v9.9.9');
   });
 
   it('shows a translated fatal message when the bootstrap is missing', async () => {

@@ -52,7 +52,7 @@ describe('translation catalogs', () => {
     expect(i18n.global.t('common.items', 0)).toBe('keine Einträge');
     expect(i18n.global.t('common.items', 1)).toBe('ein Eintrag');
     expect(i18n.global.t('common.items', 4)).toBe('4 Einträge');
-    expect(i18n.global.t('app.version', { version: '1.2' })).toBe('Version 1.2');
+    expect(i18n.global.t('app.versionShort', { version: '1.2' })).toBe('v1.2');
   });
 
   it('maps WordPress locales to the supported UI languages and Quasar packs', () => {

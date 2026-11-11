@@ -1,7 +1,16 @@
 export default {
   app: {
     title: 'Gallery Management',
-    version: 'Version {version}',
+    brand: 'Gallery',
+    versionShort: 'v{version}',
+    skipToContent: 'Skip to content',
+    darkMode: 'Dark mode',
+    switchToDark: 'Switch to dark theme',
+    switchToLight: 'Switch to light theme',
+    themeDarkOn: 'Dark theme on',
+    themeLightOn: 'Light theme on',
+    collapseNav: 'Collapse navigation',
+    expandNav: 'Expand navigation',
   },
   nav: {
     label: 'Gallery Management navigation',
@@ -20,6 +29,8 @@ export default {
     items: 'no items | one item | {count} items',
   },
   errors: {
+    noAccessTitle: 'No access',
+    noAccessText: 'Your account is not allowed to use the gallery management or this section.',
     bootstrap: 'The admin application could not start: the server configuration is missing.',
     generic: 'The request failed. Please try again.',
     network: 'The server could not be reached. Check your connection and try again.',

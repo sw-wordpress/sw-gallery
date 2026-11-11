@@ -12,19 +12,19 @@ test.describe('user with locale de_DE', () => {
 
     const nav = page.getByRole('navigation', { name: 'Navigation der Galerieverwaltung' });
     await expect(nav).toBeVisible();
-    await expect(nav.getByRole('link')).toHaveText([
-      /Übersicht$/,
-      /Galerien$/,
-      /Medienübersicht$/,
-      /Einstellungen$/,
-      /Systemstatus$/,
-    ]);
+    // This user has no manage_options: Settings and System Status are hidden (capability-based navigation).
+    await expect(nav.getByRole('link')).toHaveText([/Übersicht$/, /Galerien$/, /Medienübersicht$/]);
     // One h1 per page: printed by the PHP admin page (screen-reader text), translated by gettext.
     await expect(page.getByRole('heading', { level: 1, name: 'Galerieverwaltung' })).toHaveCount(1);
-    await expect(page.locator('#swg-admin-root .swg-shell__title')).toHaveText('Galerieverwaltung');
+    await expect(page.locator('#swg-admin-root .swg-rail__name strong')).toHaveText('Galerie');
     await expect(page.locator('#swg-admin-root').getByRole('heading', { level: 2 })).toHaveText(
+      'Übersicht',
+    );
+    await expect(page.locator('#swg-admin-root').getByRole('heading', { level: 3 })).toHaveText(
       'Übersicht: noch nicht verfügbar',
     );
+    await expect(page.getByRole('button', { name: 'Dunkelmodus' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Navigation einklappen' })).toBeVisible();
   });
 
   test('the English user is unaffected', async ({ browser, baseURL }) => {
@@ -34,9 +34,7 @@ test.describe('user with locale de_DE', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Gallery Management' })).toHaveCount(
       1,
     );
-    await expect(page.locator('#swg-admin-root .swg-shell__title')).toHaveText(
-      'Gallery Management',
-    );
+    await expect(page.locator('#swg-admin-root .swg-rail__name strong')).toHaveText('Gallery');
     await context.close();
   });
 });

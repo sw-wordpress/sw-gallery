@@ -4,11 +4,8 @@ import { authFile, PLUGIN_PAGE } from '../support/env';
 
 test.use({ storageState: authFile('administrator') });
 
-/** Rule ids waived for serious/critical violations; every entry needs a justification. */
-const WAIVED: Record<string, string> = {
-  'aria-required-children':
-    'Known defect in apps/admin App.vue: <q-list role="list"> contains <a> items without role=listitem. Reported to the admin-app stream; remove this waiver when fixed.',
-};
+/** Rule ids waived for serious/critical violations; every entry needs a justification. Currently none. */
+const WAIVED: Record<string, string> = {};
 
 test('axe: no serious or critical violations inside the app root', async ({ page }, testInfo) => {
   await page.goto(PLUGIN_PAGE);
