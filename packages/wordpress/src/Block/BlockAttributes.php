@@ -34,6 +34,16 @@ final class BlockAttributes {
 	}
 
 	/**
+	 * The HTML anchor (`id`) of the block wrapper: a conservative subset of valid ids, otherwise null.
+	 *
+	 * @param array<mixed> $attributes Raw block attributes.
+	 */
+	public static function anchor( array $attributes ): ?string {
+		$anchor = $attributes['anchor'] ?? null;
+		return is_string( $anchor ) && 1 === preg_match( '/^[A-Za-z][A-Za-z0-9_:.-]{0,99}$/', $anchor ) ? $anchor : null;
+	}
+
+	/**
 	 * Render options for `GalleryRenderer`: `layout`, `eager` and the `settings` overrides `columns` and `gap`.
 	 *
 	 * @param array<mixed> $attributes Raw block attributes.

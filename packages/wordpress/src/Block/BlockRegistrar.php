@@ -42,15 +42,22 @@ final class BlockRegistrar implements RegistrarInterface {
 	private string $block_url;
 	private string $languages_dir;
 
+	/** @var callable():bool */
+	private $is_editor_preview;
+
 	/**
 	 * @param string|null $block_dir     Directory with block.json and build/; defaults to the plugin's assets/blocks.
 	 * @param string|null $block_url     Public URL of that directory.
 	 * @param string|null $languages_dir Directory with the script translation catalogs.
+	 * @param callable|null $is_editor_preview Tells whether the current request renders the editor preview (a REST
+	 *                                         request of an editor); defaults to the REST_REQUEST check.
 	 */
-	public function __construct( ?string $block_dir = null, ?string $block_url = null, ?string $languages_dir = null ) {
+	public function __construct( ?string $block_dir = null, ?string $block_url = null, ?string $languages_dir = null, ?callable $is_editor_preview = null ) {
 		$this->block_dir     = rtrim( $block_dir ?? SWGALLERY_DIR . 'assets/blocks', '/\\' );
 		$this->block_url     = rtrim( $block_url ?? SWGALLERY_URL . 'assets/blocks', '/' );
 		$this->languages_dir = rtrim( $languages_dir ?? SWGALLERY_DIR . 'languages', '/\\' );
+
+		$this->is_editor_preview = $is_editor_preview ?? static fn (): bool => defined( 'REST_REQUEST' ) && REST_REQUEST;
 	}
 
 	public function register(): void {
@@ -118,11 +125,14 @@ final class BlockRegistrar implements RegistrarInterface {
 		if ( '' === $html ) {
 			return '';
 		}
-		return sprintf( '<div %s>%s</div>', get_block_wrapper_attributes(), $html );
+		// Dynamic blocks must print the anchor themselves; core only adds it to saved markup.
+		$anchor  = BlockAttributes::anchor( $attributes );
+		$wrapper = get_block_wrapper_attributes( null === $anchor ? array() : array( 'id' => $anchor ) );
+		return sprintf( '<div %s>%s</div>', $wrapper, $html );
 	}
 
 	private function editor_hint(): string {
-		if ( ! defined( 'REST_REQUEST' ) || ! REST_REQUEST || ! current_user_can( 'edit_posts' ) ) {
+		if ( ! ( $this->is_editor_preview )() || ! current_user_can( 'edit_posts' ) ) {
 			return '';
 		}
 		return '<p class="swg-block-hint">' . esc_html__( 'No gallery selected. Choose one in the block settings.', 'sw-gallery' ) . '</p>';

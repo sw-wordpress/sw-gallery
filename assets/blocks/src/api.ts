@@ -1,6 +1,5 @@
 import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
-import { TEXT_DOMAIN } from './attributes';
 
 /** The few fields of a gallery the selector needs (docs/rest-api.md). */
 export interface GallerySummary {
@@ -111,17 +110,20 @@ export function describeError(error: unknown, what: 'galleries' | 'layouts'): st
   const code = errorCode(error);
   const status = errorStatus(error);
   if (code === 'rest_cookie_invalid_nonce') {
-    return __('Your session has expired. Reload the editor and try again.', TEXT_DOMAIN);
+    return __('Your session has expired. Reload the editor and try again.', 'sw-gallery');
   }
   if (status === 401 || status === 403 || code === 'rest_forbidden') {
     return what === 'galleries'
-      ? __('You are not allowed to list galleries.', TEXT_DOMAIN)
-      : __('You are not allowed to list layouts.', TEXT_DOMAIN);
+      ? __('You are not allowed to list galleries.', 'sw-gallery')
+      : __('You are not allowed to list layouts.', 'sw-gallery');
   }
   if (code === 'fetch_error' || code === 'offline') {
-    return __('The server could not be reached. Check your connection and try again.', TEXT_DOMAIN);
+    return __(
+      'The server could not be reached. Check your connection and try again.',
+      'sw-gallery',
+    );
   }
   return what === 'galleries'
-    ? __('The galleries could not be loaded.', TEXT_DOMAIN)
-    : __('The layouts could not be loaded.', TEXT_DOMAIN);
+    ? __('The galleries could not be loaded.', 'sw-gallery')
+    : __('The layouts could not be loaded.', 'sw-gallery');
 }

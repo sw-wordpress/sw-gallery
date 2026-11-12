@@ -28,6 +28,9 @@
     },
     "eager": {
       "type": "boolean"
+    },
+    "anchor": {
+      "type": "string"
     }
   },
   "supports": {

@@ -4,7 +4,6 @@
  * again on the server: this module only keeps the editor from storing values the server would drop.
  */
 export const BLOCK_NAME = 'sw-gallery/gallery';
-export const TEXT_DOMAIN = 'sw-gallery';
 
 export const LIMITS = {
   columns: { min: 1, max: 12 },

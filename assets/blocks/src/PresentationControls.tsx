@@ -4,7 +4,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import type { Fetcher, LayoutSummary } from './api';
 import { describeError, listLayouts } from './api';
 import type { BlockAttributes } from './attributes';
-import { integerInRange, isLayoutId, LIMITS, TEXT_DOMAIN } from './attributes';
+import { integerInRange, isLayoutId, LIMITS } from './attributes';
 import { useLoadable } from './hooks';
 
 export interface PresentationControlsProps {
@@ -20,14 +20,14 @@ export function layoutOptions(
     current: string | undefined,
 ): { value: string; label: string }[] {
     const options = [
-        { value: '', label: __('Gallery default', TEXT_DOMAIN) },
+        { value: '', label: __('Gallery default', 'sw-gallery') },
         ...layouts.map((layout) => ({ value: layout.id, label: layout.label })),
     ];
     if (current !== undefined && !layouts.some((layout) => layout.id === current)) {
         /* translators: %s: layout id */
         options.push({
             value: current,
-            label: sprintf(__('%s (not available)', TEXT_DOMAIN), current),
+            label: sprintf(__('%s (not available)', 'sw-gallery'), current),
         });
     }
     return options;
@@ -53,8 +53,8 @@ export function PresentationControls({
                 </Notice>
             ) : null}
             <SelectControl
-                label={__('Layout', TEXT_DOMAIN)}
-                help={__('Overrides the layout of the gallery for this block only.', TEXT_DOMAIN)}
+                label={__('Layout', 'sw-gallery')}
+                help={__('Overrides the layout of the gallery for this block only.', 'sw-gallery')}
                 value={attributes.layout ?? ''}
                 disabled={layouts.kind !== 'ready'}
                 options={layoutOptions(
@@ -66,8 +66,8 @@ export function PresentationControls({
                 }
             />
             <RangeControl
-                label={__('Columns', TEXT_DOMAIN)}
-                help={__('Leave unset to use the gallery setting.', TEXT_DOMAIN)}
+                label={__('Columns', 'sw-gallery')}
+                help={__('Leave unset to use the gallery setting.', 'sw-gallery')}
                 value={attributes.columns}
                 min={LIMITS.columns.min}
                 max={LIMITS.columns.max}
@@ -79,8 +79,8 @@ export function PresentationControls({
                 }
             />
             <RangeControl
-                label={__('Gap between images (px)', TEXT_DOMAIN)}
-                help={__('Leave unset to use the gallery setting.', TEXT_DOMAIN)}
+                label={__('Gap between images (px)', 'sw-gallery')}
+                help={__('Leave unset to use the gallery setting.', 'sw-gallery')}
                 value={attributes.gap}
                 min={LIMITS.gap.min}
                 max={LIMITS.gap.max}
@@ -90,8 +90,8 @@ export function PresentationControls({
                 }
             />
             <ToggleControl
-                label={__('Load the first images eagerly', TEXT_DOMAIN)}
-                help={__('Turn off when the gallery is far down the page.', TEXT_DOMAIN)}
+                label={__('Load the first images eagerly', 'sw-gallery')}
+                help={__('Turn off when the gallery is far down the page.', 'sw-gallery')}
                 checked={attributes.eager !== false}
                 onChange={(next: boolean) => setAttributes({ eager: next ? undefined : false })}
             />

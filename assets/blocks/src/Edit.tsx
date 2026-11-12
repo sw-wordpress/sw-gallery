@@ -5,7 +5,7 @@ import { __ } from '@wordpress/i18n';
 import ServerSideRender from '@wordpress/server-side-render';
 import type { Fetcher } from './api';
 import type { BlockAttributes } from './attributes';
-import { BLOCK_NAME, sanitizeAttributes, TEXT_DOMAIN } from './attributes';
+import { BLOCK_NAME, sanitizeAttributes } from './attributes';
 import type { BlockConfig } from './config';
 import { GallerySelector } from './GallerySelector';
 import { editGalleryUrl, galleryListUrl } from './links';
@@ -25,12 +25,12 @@ function GalleryLinks({ galleryId, config }: { galleryId: number; config: BlockC
         <div className="swg-block-links">
             {edit !== null ? (
                 <p>
-                    <ExternalLink href={edit}>{__('Edit this gallery', TEXT_DOMAIN)}</ExternalLink>
+                    <ExternalLink href={edit}>{__('Edit this gallery', 'sw-gallery')}</ExternalLink>
                 </p>
             ) : null}
             <p>
                 <ExternalLink href={galleryListUrl(config.galleriesUrl)}>
-                    {__('Create a new gallery', TEXT_DOMAIN)}
+                    {__('Create a new gallery', 'sw-gallery')}
                 </ExternalLink>
             </p>
         </div>
@@ -49,7 +49,7 @@ export function Edit({ attributes, setAttributes, config, fetcher }: EditProps) 
     return (
         <div {...blockProps}>
             <InspectorControls>
-                <PanelBody title={__('Gallery', TEXT_DOMAIN)} initialOpen>
+                <PanelBody title={__('Gallery', 'sw-gallery')} initialOpen>
                     <GallerySelector
                         value={clean.galleryId}
                         onChange={selectGallery}
@@ -57,7 +57,7 @@ export function Edit({ attributes, setAttributes, config, fetcher }: EditProps) 
                     />
                     <GalleryLinks galleryId={clean.galleryId} config={config} />
                 </PanelBody>
-                <PanelBody title={__('Presentation', TEXT_DOMAIN)} initialOpen>
+                <PanelBody title={__('Presentation', 'sw-gallery')} initialOpen>
                     <PresentationControls
                         attributes={clean}
                         setAttributes={setAttributes}
@@ -68,8 +68,8 @@ export function Edit({ attributes, setAttributes, config, fetcher }: EditProps) 
             {clean.galleryId === 0 ? (
                 <Placeholder
                     icon="format-gallery"
-                    label={__('SW Gallery', TEXT_DOMAIN)}
-                    instructions={__('Choose one of your galleries to show it here.', TEXT_DOMAIN)}
+                    label={__('SW Gallery', 'sw-gallery')}
+                    instructions={__('Choose one of your galleries to show it here.', 'sw-gallery')}
                 >
                     <GallerySelector value={0} onChange={selectGallery} fetcher={fetcher} />
                     <GalleryLinks galleryId={0} config={config} />
@@ -82,13 +82,13 @@ export function Edit({ attributes, setAttributes, config, fetcher }: EditProps) 
                         <p className="swg-block-note">
                             {__(
                                 'This gallery has nothing to show for visitors yet: it may be a draft, empty or private.',
-                                TEXT_DOMAIN,
+                                'sw-gallery',
                             )}
                         </p>
                     )}
                     ErrorResponsePlaceholder={() => (
                         <p className="swg-block-note" role="alert">
-                            {__('The preview could not be loaded.', TEXT_DOMAIN)}
+                            {__('The preview could not be loaded.', 'sw-gallery')}
                         </p>
                     )}
                 />

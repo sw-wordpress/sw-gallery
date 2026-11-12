@@ -3,7 +3,6 @@ import { createElement, Fragment, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import type { Fetcher, GallerySummary } from './api';
 import { describeError, getGallery, listGalleries } from './api';
-import { TEXT_DOMAIN } from './attributes';
 import { useDebounced, useLoadable } from './hooks';
 
 export const SEARCH_DELAY_MS = 300;
@@ -18,19 +17,19 @@ export interface GallerySelectorProps {
 
 /** The option label: the title, marked when visitors cannot see the gallery yet. */
 export function optionLabel(gallery: GallerySummary): string {
-    const title = gallery.title === '' ? __('(no title)', TEXT_DOMAIN) : gallery.title;
+    const title = gallery.title === '' ? __('(no title)', 'sw-gallery') : gallery.title;
     switch (gallery.status) {
         case 'publish':
             return title;
         case 'private':
             /* translators: %s: gallery title */
-            return sprintf(__('%s (private)', TEXT_DOMAIN), title);
+            return sprintf(__('%s (private)', 'sw-gallery'), title);
         case 'pending':
             /* translators: %s: gallery title */
-            return sprintf(__('%s (pending review)', TEXT_DOMAIN), title);
+            return sprintf(__('%s (pending review)', 'sw-gallery'), title);
         default:
             /* translators: %s: gallery title */
-            return sprintf(__('%s (draft)', TEXT_DOMAIN), title);
+            return sprintf(__('%s (draft)', 'sw-gallery'), title);
     }
 }
 
@@ -71,8 +70,8 @@ export function GallerySelector({ value, onChange, fetcher }: GallerySelectorPro
     return (
         <div className="swg-block-selector">
             <ComboboxControl
-                label={__('Gallery', TEXT_DOMAIN)}
-                help={__('Type to search your galleries.', TEXT_DOMAIN)}
+                label={__('Gallery', 'sw-gallery')}
+                help={__('Type to search your galleries.', 'sw-gallery')}
                 value={value > 0 ? String(value) : null}
                 options={options}
                 onChange={(next: string | null | undefined) => {
@@ -83,23 +82,23 @@ export function GallerySelector({ value, onChange, fetcher }: GallerySelectorPro
             />
             {list.kind === 'loading' ? (
                 <p role="status" className="swg-block-note">
-                    {__('Loading galleries…', TEXT_DOMAIN)}
+                    {__('Loading galleries…', 'sw-gallery')}
                 </p>
             ) : null}
             {list.kind === 'error' ? (
                 <Notice status="error" isDismissible={false}>
                     <p>{list.message}</p>
                     <Button variant="secondary" onClick={retry}>
-                        {__('Try again', TEXT_DOMAIN)}
+                        {__('Try again', 'sw-gallery')}
                     </Button>
                 </Notice>
             ) : null}
             {list.kind === 'ready' && galleries.length === 0 ? (
                 <p role="status" className="swg-block-note">
                     {term.trim() === ''
-                        ? __('There are no galleries yet. Create one first.', TEXT_DOMAIN)
+                        ? __('There are no galleries yet. Create one first.', 'sw-gallery')
                         : /* translators: %s: search text */ sprintf(
-                              __('No gallery matches "%s".', TEXT_DOMAIN),
+                              __('No gallery matches "%s".', 'sw-gallery'),
                               term.trim(),
                           )}
                 </p>
@@ -112,13 +111,13 @@ export function GallerySelector({ value, onChange, fetcher }: GallerySelectorPro
                             {sprintf(
                                 __(
                                     'Gallery #%d is not available. It may have been deleted or you may not view it.',
-                                    TEXT_DOMAIN,
+                                    'sw-gallery',
                                 ),
                                 value,
                             )}
                         </p>
                         <Button variant="secondary" onClick={() => onChange(0)}>
-                            {__('Clear selection', TEXT_DOMAIN)}
+                            {__('Clear selection', 'sw-gallery')}
                         </Button>
                     </Notice>
                 </Fragment>
