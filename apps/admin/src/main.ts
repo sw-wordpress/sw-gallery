@@ -30,6 +30,8 @@ export function bootstrap(): void {
     console.error(`sw-gallery: mount node #${MOUNT_ID} not found`);
     return;
   }
+  // Idempotent: a second evaluation of this module (e.g. the entry imported under another URL) must never remount the app.
+  if (el.dataset.swgBooted === '1') return;
   let config;
   try {
     config = getConfig();
@@ -56,6 +58,7 @@ export function bootstrap(): void {
     // class so the scoped Quasar CSS applies there as well.
     config: { globalNodes: { class: `${ROOT_CLASS} swg-portal` } },
   });
+  el.dataset.swgBooted = '1';
   app.mount(el);
 }
 

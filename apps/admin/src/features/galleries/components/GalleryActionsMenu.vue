@@ -10,6 +10,7 @@ const emit = defineEmits<{ (e: 'action', kind: GalleryActionKind, gallery: Galle
 const { t } = useI18n();
 
 const ICONS: Record<GalleryActionKind, string> = {
+  editImages: 'r_photo_library',
   edit: 'r_edit',
   duplicate: 'r_content_copy',
   copy: 'r_code',

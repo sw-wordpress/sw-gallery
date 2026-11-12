@@ -39,6 +39,9 @@
   --swg-rail-bg: #ffffff;
   --swg-focus: #4f46e5;
   --swg-overlay: rgba(15, 23, 42, 0.45);
+  /* Chips drawn on top of photos: fixed colours in both themes so they stay readable on any image. */
+  --swg-on-media: #ffffff;
+  --swg-media-scrim: rgba(15, 23, 42, 0.78);
 
   --swg-gradient: linear-gradient(135deg, #4f46e5 0%, #0d9488 100%);
   --swg-gradient-soft: linear-gradient(

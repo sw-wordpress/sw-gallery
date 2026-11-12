@@ -66,6 +66,20 @@ export interface RequestOptions {
   signal?: AbortSignal;
 }
 
+export interface UploadProgress {
+  loaded: number;
+  /** `null` when the browser cannot compute the total (never faked). */
+  total: number | null;
+}
+
+export interface UploadOptions {
+  /** Extra multipart text fields (e.g. `title`, `alt`). */
+  fields?: Record<string, string>;
+  /** Real byte progress reported by `XMLHttpRequest.upload`. */
+  onProgress?: (progress: UploadProgress) => void;
+  signal?: AbortSignal;
+}
+
 export interface RetryPolicy {
   /** Extra attempts after the first one. Bounded: never above MAX_RETRIES. */
   retries: number;
@@ -78,6 +92,8 @@ export interface ClientOptions {
   nonce: string;
   fetchImpl?: typeof fetch;
   retry?: Partial<RetryPolicy>;
+  /** Injectable for tests: creates the request used by `upload()`. */
+  xhrFactory?: () => XMLHttpRequest;
   /** Injectable for tests; must reject with an AbortError-like DOMException when aborted. */
   sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
 }
@@ -159,8 +175,10 @@ export class ApiClient {
   private readonly fetchImpl: typeof fetch;
   private readonly policy: RetryPolicy;
   private readonly sleep: (ms: number, signal?: AbortSignal) => Promise<void>;
+  private readonly xhrFactory: () => XMLHttpRequest;
 
   constructor(options: ClientOptions) {
+    this.xhrFactory = options.xhrFactory ?? (() => new XMLHttpRequest());
     this.root = options.restRoot.endsWith('/') ? options.restRoot : `${options.restRoot}/`;
     this.nonce = options.nonce;
     this.fetchImpl = options.fetchImpl ?? ((...args) => fetch(...args));
@@ -267,6 +285,70 @@ export class ApiClient {
 
     if (!response.ok) throw normaliseError(response.status, parsed);
     return { data: parsed as T, headers: response.headers };
+  }
+
+  /**
+   * Multipart upload of one file (field `file`) with real progress. `fetch` cannot report upload
+   * progress, so this is the one place that uses `XMLHttpRequest`. Never retried (a write).
+   */
+  upload<T>(path: string, file: Blob, options: UploadOptions = {}): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const { signal } = options;
+      if (signal?.aborted) {
+        reject(new ApiError('swg_aborted', 'Request aborted', 0));
+        return;
+      }
+      const xhr = this.xhrFactory();
+      const form = new FormData();
+      form.append('file', file, file instanceof File ? file.name : 'upload');
+      for (const [key, value] of Object.entries(options.fields ?? {})) form.append(key, value);
+
+      const onAbort = (): void => xhr.abort();
+      const done = (): void => signal?.removeEventListener('abort', onAbort);
+
+      xhr.open('POST', this.url(path));
+      xhr.setRequestHeader('X-WP-Nonce', this.nonce);
+      xhr.setRequestHeader('Accept', 'application/json');
+      xhr.withCredentials = true;
+      xhr.upload.onprogress = (event: ProgressEvent): void => {
+        options.onProgress?.({
+          loaded: event.loaded,
+          total: event.lengthComputable ? event.total : null,
+        });
+      };
+      xhr.onload = (): void => {
+        done();
+        const refreshed = xhr.getResponseHeader('X-WP-Nonce');
+        if (refreshed) this.nonce = refreshed;
+        let parsed: unknown = null;
+        if (xhr.responseText !== '') {
+          try {
+            parsed = JSON.parse(xhr.responseText);
+          } catch {
+            parsed = null;
+          }
+        }
+        if (xhr.status >= 200 && xhr.status < 300) {
+          if (parsed === null) {
+            reject(new ApiError('swg_invalid_response', 'Invalid JSON response', xhr.status));
+          } else {
+            resolve(parsed as T);
+          }
+          return;
+        }
+        reject(normaliseError(xhr.status, parsed));
+      };
+      xhr.onerror = (): void => {
+        done();
+        reject(new ApiError('swg_network', 'Network error', 0));
+      };
+      xhr.onabort = (): void => {
+        done();
+        reject(new ApiError('swg_aborted', 'Request aborted', 0));
+      };
+      signal?.addEventListener('abort', onAbort, { once: true });
+      xhr.send(form);
+    });
   }
 
   get<T>(path: string, query?: Query, signal?: AbortSignal): Promise<T> {

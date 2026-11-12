@@ -44,6 +44,12 @@ const routes: RouteRecordRaw[] = [
     component: VIEWS[item.name] ?? (() => import('@/views/PlaceholderView.vue')),
     meta: { labelKey: item.labelKey },
   })),
+  {
+    path: '/galleries/:id(\\d+)',
+    name: 'gallery-editor',
+    component: () => import('@/features/editor/GalleryEditorView.vue'),
+    meta: { labelKey: 'editor.title' },
+  },
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 

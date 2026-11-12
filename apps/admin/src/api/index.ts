@@ -4,6 +4,9 @@ import { ApiClient } from './client';
 export * from './client';
 export { errorMessage, invalidFields } from './errorMessage';
 export * from './galleries';
+export * from './items';
+export * from './layouts';
+export * from './media';
 
 let client: ApiClient | null = null;
 

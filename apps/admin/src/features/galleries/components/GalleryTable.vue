@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n';
 import type { Gallery } from '@/api/galleries';
 import SwgCard from '@/components/ui/SwgCard.vue';
+import { editorPath } from '../format';
 import type { GalleryActionKind } from '../format';
 import GalleryActionsMenu from './GalleryActionsMenu.vue';
 import GalleryCover from './GalleryCover.vue';
@@ -43,7 +44,13 @@ const { t } = useI18n();
           >
             <td class="swg-gtable__cover"><GalleryCover :url="gallery.coverUrl" small /></td>
             <th scope="row" class="swg-gtable__title">
-              <span class="swg-gtable__name">{{
+              <router-link
+                v-if="editorPath(gallery)"
+                :to="editorPath(gallery) ?? ''"
+                class="swg-gtable__name"
+                >{{ gallery.title || t('galleries.card.untitled') }}</router-link
+              >
+              <span v-else class="swg-gtable__name">{{
                 gallery.title || t('galleries.card.untitled')
               }}</span>
             </th>

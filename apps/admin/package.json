@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build && node scripts/check-css-scope.mjs",
+    "build": "vue-tsc --noEmit && vite build && node scripts/check-css-scope.mjs && node scripts/check-chunks.mjs",
     "build:only": "vite build",
     "build:watch": "vite build --watch",
     "typecheck": "vue-tsc --noEmit",

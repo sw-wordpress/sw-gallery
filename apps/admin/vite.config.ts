@@ -37,6 +37,15 @@ export default defineConfig({
     rolldownOptions: {
       input: { app: resolve(import.meta.dirname, 'src/main.ts') },
       output: {
+        // Code shared by the entry and lazy views goes into its own chunk. Otherwise lazy chunks import the ENTRY
+        // (`../app-<hash>.js`): PHP loads the entry as `app-<hash>.js?ver=<plugin version>`, so the browser would
+        // evaluate it a second time under the unversioned URL (a second Vue runtime and a second `bootstrap()`).
+        advancedChunks: {
+          groups: [
+            { name: 'vendor', test: /node_modules/ },
+            { name: 'core', minShareCount: 2 },
+          ],
+        },
         entryFileNames: 'app-[hash].js',
         chunkFileNames: 'chunks/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash][extname]',

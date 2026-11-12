@@ -2,10 +2,32 @@
 
 import type { SwgAdminBootstrap } from './src/types/bootstrap';
 
+/** The small part of WordPress' `wp.media` (Backbone based media modal) the picker uses. */
+interface WpMediaSelection {
+  map<T>(callback: (attachment: { id: number }) => T): T[];
+}
+interface WpMediaState {
+  get(key: 'selection'): WpMediaSelection;
+}
+interface WpMediaFrame {
+  on(event: 'select' | 'close', callback: () => void): WpMediaFrame;
+  open(): WpMediaFrame;
+  close(): void;
+  state(): WpMediaState;
+}
+interface WpMediaOptions {
+  title?: string;
+  button?: { text?: string };
+  library?: { type?: string };
+  multiple?: boolean | 'add' | 'toggle';
+}
+
 declare global {
   interface Window {
     /** Bootstrap object printed by the PHP admin page before the module script. */
     swgAdmin?: SwgAdminBootstrap;
+    /** Present when the PHP page called `wp_enqueue_media()` (plugin screen only). */
+    wp?: { media?: (options: WpMediaOptions) => WpMediaFrame };
   }
 }
 

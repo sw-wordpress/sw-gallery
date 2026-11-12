@@ -96,6 +96,28 @@ describe('bootstrap (main.ts)', () => {
     expect(root?.textContent).toContain('v9.9.9');
   });
 
+  it('does not remount when the entry runs a second time (idempotent bootstrap)', async () => {
+    document.body.innerHTML = '<div id="swg-admin-root"></div>';
+    window.swgAdmin = {
+      restRoot: 'https://x.test/wp-json/swg/v1/',
+      nonce: 'n',
+      locale: 'en_US',
+      version: '1.0.0',
+      adminUrl: '',
+      capabilities: [],
+    };
+    const { bootstrap } = await import('../src/main');
+    bootstrap();
+    await flushPromises();
+    const root = document.getElementById('swg-admin-root') as HTMLElement;
+    expect(root.dataset.swgBooted).toBe('1');
+    const rail = root.querySelector('.swg-rail') as HTMLElement;
+    rail.setAttribute('data-touched', 'yes');
+    bootstrap();
+    await flushPromises();
+    expect(root.querySelector('.swg-rail')?.getAttribute('data-touched')).toBe('yes');
+  });
+
   it('shows a translated fatal message when the bootstrap is missing', async () => {
     document.body.innerHTML = '<div id="swg-admin-root"></div>';
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});

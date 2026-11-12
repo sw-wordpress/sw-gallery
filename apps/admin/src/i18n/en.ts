@@ -1,4 +1,7 @@
+import editor from './editor.en';
+
 export default {
+  editor,
   app: {
     title: 'Gallery Management',
     brand: 'Gallery',
@@ -119,6 +122,7 @@ export default {
       showAll: 'Show all galleries',
     },
     menu: {
+      editImages: 'Edit images',
       edit: 'Edit details',
       duplicate: 'Duplicate',
       copyShortcode: 'Copy shortcode',

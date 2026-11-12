@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Gallery } from '@/api/galleries';
 import SwgCard from '@/components/ui/SwgCard.vue';
+import { editorPath } from '../format';
 import type { GalleryActionKind } from '../format';
 import GalleryActionsMenu from './GalleryActionsMenu.vue';
 import GalleryCover from './GalleryCover.vue';
@@ -12,6 +13,7 @@ const props = defineProps<{ gallery: Gallery; modified: string }>();
 const emit = defineEmits<{ (e: 'action', kind: GalleryActionKind, gallery: Gallery): void }>();
 const { t } = useI18n();
 const title = computed(() => props.gallery.title || t('galleries.card.untitled'));
+const link = computed(() => editorPath(props.gallery));
 </script>
 
 <template>
@@ -19,7 +21,10 @@ const title = computed(() => props.gallery.title || t('galleries.card.untitled')
     <GalleryCover :url="gallery.coverUrl" />
     <div class="swg-gcard__body">
       <div class="swg-gcard__head">
-        <h3 class="swg-gcard__title" :title="title">{{ title }}</h3>
+        <h3 class="swg-gcard__title" :title="title">
+          <router-link v-if="link" :to="link" class="swg-gcard__link">{{ title }}</router-link>
+          <template v-else>{{ title }}</template>
+        </h3>
         <GalleryActionsMenu :gallery="gallery" @action="(k, g) => emit('action', k, g)" />
       </div>
       <GalleryStatusChip :gallery="gallery" />

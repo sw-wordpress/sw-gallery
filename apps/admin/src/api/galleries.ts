@@ -58,6 +58,10 @@ export interface UpdateGalleryInput {
   description?: string;
   status?: WritableGalleryStatus;
   coverAttachmentId?: number | null;
+  layout?: string;
+  sortMode?: string;
+  /** Replaces the WHOLE settings values map: always send the complete merged map. */
+  settings?: Record<string, unknown>;
 }
 
 export interface TrashResult {

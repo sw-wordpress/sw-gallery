@@ -1,6 +1,8 @@
 import type en from './en';
+import editor from './editor.de';
 
 const de: typeof en = {
+  editor,
   app: {
     title: 'Galerieverwaltung',
     brand: 'Galerie',
@@ -126,6 +128,7 @@ const de: typeof en = {
       showAll: 'Alle Galerien anzeigen',
     },
     menu: {
+      editImages: 'Bilder bearbeiten',
       edit: 'Details bearbeiten',
       duplicate: 'Duplizieren',
       copyShortcode: 'Shortcode kopieren',
