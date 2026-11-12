@@ -9,10 +9,14 @@ import type { FreshState, RebaseNotices, ServerDiff } from './conflict';
 import type { EditorApi } from './injection';
 import {
   buildPlan,
+  changedDetailKeys,
+  changedOverrideIds,
   countChanges,
   deepEqual,
+  detailsOf,
   effectiveTexts,
   initialWorking,
+  orderChanged,
   removedIds,
 } from './model';
 import type { Base, DetailKey, Details, SaveStep, Working } from './model';
@@ -188,7 +192,9 @@ export function createEditorSession(galleryId: number, api: EditorApi) {
     } catch (error) {
       if (isApiError(error) && error.isAborted) return;
       loadError.value = error;
-      gone.value = classifyFailure(error) === 'gone';
+      // Missing and not-viewable galleries look identical (existence-leak policy), so 403 reads as "not found" too.
+      const kind = classifyFailure(error);
+      gone.value = kind === 'gone' || kind === 'forbidden';
       phase.value = 'error';
     }
   }
@@ -645,6 +651,16 @@ export function createEditorSession(galleryId: number, api: EditorApi) {
     addAttachments,
     resolveConflict,
     openConflict,
+    /** What is currently staged, by kind (details keys, edited item ids, order, removed count). */
+    stagedSummary: () =>
+      base.value !== null && working.value !== null
+        ? {
+            details: changedDetailKeys(detailsOf(base.value.gallery), working.value.details),
+            overrides: changedOverrideIds(base.value, working.value),
+            order: orderChanged(base.value, working.value),
+            removed: removedIds(base.value, working.value).length,
+          }
+        : null,
   };
 }
 

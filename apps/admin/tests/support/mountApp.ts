@@ -6,6 +6,8 @@ import { createMemoryHistory } from 'vue-router';
 import App from '../../src/App.vue';
 import { resetConfigForTests } from '../../src/config';
 import { createAppI18n } from '../../src/i18n';
+import { EDITOR_API } from '../../src/features/editor/injection';
+import type { EditorApi } from '../../src/features/editor/injection';
 import { GALLERIES_API } from '../../src/features/galleries/injection';
 import type { GalleriesApi } from '../../src/api/galleries';
 import { createAppRouter } from '../../src/router';
@@ -48,6 +50,7 @@ export interface MountOptions {
   version?: string;
   timezone?: string;
   galleriesApi?: GalleriesApi;
+  editorApi?: EditorApi;
 }
 
 /** Default for tests that do not care about the list: the server has no galleries. */
@@ -75,6 +78,7 @@ export async function mountApp(options: MountOptions = {}) {
     version = '1.0.0',
     timezone = 'UTC',
     galleriesApi = emptyGalleriesApi(),
+    editorApi,
   } = options;
   setBootstrap(capabilities, version, locale, timezone);
   const root = document.createElement('div');
@@ -93,7 +97,10 @@ export async function mountApp(options: MountOptions = {}) {
         createAppI18n(locale),
         [Quasar, { iconSet, plugins: { Notify } }],
       ] as never[],
-      provide: { [GALLERIES_API as symbol]: galleriesApi },
+      provide: {
+        [GALLERIES_API as symbol]: galleriesApi,
+        ...(editorApi === undefined ? {} : { [EDITOR_API as symbol]: editorApi }),
+      },
     },
   });
   await flushPromises();

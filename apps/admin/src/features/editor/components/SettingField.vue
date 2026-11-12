@@ -90,8 +90,10 @@ function errorAt(bp: Breakpoint | null): string | null {
     const issue = validateValue(props.def, live);
     if (issue !== null) return issueText(issue);
   }
+  // An issue without a breakpoint concerns the whole value, which the base row (or the single control) shows.
   const server = props.serverIssues.find(
-    (s) => s.breakpoint === bp || (bp === null && s.breakpoint === null),
+    (issue) =>
+      issue.breakpoint === bp || (issue.breakpoint === null && (bp === null || bp === 'base')),
   );
   return server === undefined ? null : t('editor.settings.issue.server');
 }

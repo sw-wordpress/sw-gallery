@@ -41,6 +41,9 @@ import { useUnsavedGuard } from './useUnsavedGuard';
 import { useUploads } from './useUploads';
 import type { MoveMode } from './reorder';
 
+/** Pause after the last change before the unsaved count is announced. */
+const UNSAVED_ANNOUNCE_DELAY_MS = 1500;
+
 const props = defineProps<{ galleryId: number }>();
 const { t } = useI18n();
 const app = useAppStore();
@@ -117,10 +120,17 @@ const uploads = useUploads(
 const isDirty = (): boolean => session.dirty.value || uploads.busy.value;
 const guard = useUnsavedGuard(isDirty);
 
+// The count is announced once the user paused: an immediate announcement would overwrite the
+// message of the action itself ("moved to position 3 of 12") in the single live region.
+let announceTimer: ReturnType<typeof setTimeout> | undefined;
 watch(session.changeCount, (now, before) => {
-  if (now > 0) app.announce(t('editor.status.unsaved', { count: now }, now));
-  else if (before > 0 && !session.saving.value) app.announce(t('editor.status.saved'));
+  clearTimeout(announceTimer);
+  announceTimer = setTimeout(() => {
+    if (now > 0) app.announce(t('editor.status.unsaved', { count: now }, now));
+    else if (before > 0 && !session.saving.value) app.announce(t('editor.status.saved'));
+  }, UNSAVED_ANNOUNCE_DELAY_MS);
 });
+onBeforeUnmount(() => clearTimeout(announceTimer));
 
 // ---- save / publish / discard
 const failureKey: Record<FailureKind, string> = {

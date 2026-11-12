@@ -55,7 +55,11 @@ export function invalidFields(error: unknown): string[] {
     if (Array.isArray(list)) {
       for (const entry of list) {
         const path = (entry as { path?: unknown } | null)?.path;
-        if (typeof path === 'string' && path !== '') names.add(path.split(/[.[]/)[0] ?? path);
+        if (typeof path === 'string' && path !== '') {
+          // `title`, `settings.columns[0]` and JSON pointers (`/columns/md`) all name their first segment.
+          const first = path.split(/[./[]/).find((part) => part !== '');
+          if (first !== undefined) names.add(first);
+        }
       }
     }
   }
