@@ -96,13 +96,13 @@ const notices = computed(() => {
       </q-card-section>
       <q-card-section class="swg-conf__body">
         <section>
-          <h3 class="swg-eyebrow">{{ t('editor.conflict.serverChanges') }}</h3>
+          <h3 class="swg-conf__h">{{ t('editor.conflict.serverChanges') }}</h3>
           <ul class="swg-conf__list">
             <li v-for="line in server" :key="line">{{ line }}</li>
           </ul>
         </section>
         <section>
-          <h3 class="swg-eyebrow">{{ t('editor.conflict.yours') }}</h3>
+          <h3 class="swg-conf__h">{{ t('editor.conflict.yours') }}</h3>
           <p>{{ t('editor.conflict.staged', { count: state.stagedCount }, state.stagedCount) }}</p>
           <ul v-if="notices.length > 0" class="swg-conf__list swg-conf__notes">
             <li v-for="line in notices" :key="line">{{ line }}</li>
@@ -170,6 +170,14 @@ const notices = computed(() => {
   flex-direction: column;
   gap: 14px;
   padding-block-start: 0;
+}
+.swg-conf__h {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--swg-muted);
 }
 .swg-conf__list {
   margin: 4px 0 0;

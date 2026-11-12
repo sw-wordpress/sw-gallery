@@ -966,7 +966,7 @@ const reportAlert = computed(() => {
 }
 .swg-ed__cols {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: minmax(0, 1fr) 330px;
   gap: 20px;
   align-items: start;
 }

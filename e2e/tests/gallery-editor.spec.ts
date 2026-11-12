@@ -90,15 +90,19 @@ async function attachmentOrder(id: number): Promise<number[]> {
   return (await admin.items(id)).map((item) => item.attachmentId);
 }
 
-async function shot(page: Page, name: string): Promise<void> {
+async function shot(page: Page, name: string, fullPage = true): Promise<void> {
   await mkdir(SCREENSHOT_DIR, { recursive: true });
-  await page.evaluate(() => document.fonts.ready);
-  await page.screenshot({ path: resolve(SCREENSHOT_DIR, `${name}.png`), fullPage: true });
+  await page.evaluate(() => {
+    window.scrollTo(0, 0);
+    return document.fonts.ready;
+  });
+  await page.screenshot({ path: resolve(SCREENSHOT_DIR, `${name}.png`), fullPage });
 }
 
-async function axe(page: Page, include: string): Promise<string[]> {
-  const results = await new AxeBuilder({ page })
-    .include(include)
+async function axe(page: Page, include: string, skipContrast = false): Promise<string[]> {
+  const builder = new AxeBuilder({ page }).include(include);
+  if (skipContrast) builder.disableRules('color-contrast');
+  const results = await builder
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
     .analyze();
   for (const v of results.violations) {
@@ -109,6 +113,64 @@ async function axe(page: Page, include: string): Promise<string[]> {
   return results.violations
     .filter((v) => v.impact === 'serious' || v.impact === 'critical')
     .map((v) => `${v.id}: ${v.help}`);
+}
+
+/**
+ * Text/background contrast (WCAG AA, 4.5:1) of the enabled buttons and text in a dialog, computed from the real styles.
+ * axe's colour-contrast rule mis-resolves the background of Quasar dialogs (it ignores the card and sheet layers below
+ * the `pointer-events: none` dialog containers and measures against the backdrop), so dialogs are checked here instead.
+ */
+async function dialogContrastProblems(page: Page, selector: string): Promise<string[]> {
+  return page.evaluate((sel) => {
+    const parse = (value: string): [number, number, number, number] => {
+      const m = /rgba?\(([^)]+)\)/.exec(value);
+      const parts = (m?.[1] ?? '0,0,0,0').split(',').map((x) => Number.parseFloat(x));
+      return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0, parts[3] ?? 1];
+    };
+    const channel = (v: number): number => {
+      const c = v / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = (c: [number, number, number, number]): number =>
+      0.2126 * channel(c[0]) + 0.7152 * channel(c[1]) + 0.0722 * channel(c[2]);
+    const background = (element: Element): [number, number, number, number] => {
+      let alpha = 1;
+      let rgb: [number, number, number] = [0, 0, 0];
+      for (let node: Element | null = element; node; node = node.parentElement) {
+        const c = parse(getComputedStyle(node).backgroundColor);
+        if (c[3] > 0) {
+          rgb = [
+            rgb[0] + (c[0] - rgb[0]) * c[3] * alpha,
+            rgb[1] + (c[1] - rgb[1]) * c[3] * alpha,
+            rgb[2] + (c[2] - rgb[2]) * c[3] * alpha,
+          ];
+          alpha *= 1 - c[3];
+          if (alpha < 0.01) break;
+        }
+      }
+      return [rgb[0], rgb[1], rgb[2], 1];
+    };
+    const problems: string[] = [];
+    for (const el of Array.from(
+      document.querySelectorAll(
+        `${sel} button, ${sel} p, ${sel} h2, ${sel} h3, ${sel} dd, ${sel} dt`,
+      ),
+    )) {
+      if ((el as HTMLButtonElement).disabled || el.getAttribute('aria-disabled') === 'true')
+        continue;
+      if ((el.textContent ?? '').trim() === '') continue;
+      const fg = parse(getComputedStyle(el).color);
+      const bg = background(el);
+      const a = luminance(fg);
+      const b = luminance(bg);
+      const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      if (ratio < 4.5)
+        problems.push(
+          `${el.tagName} "${(el.textContent ?? '').trim().slice(0, 30)}" ${ratio.toFixed(2)}`,
+        );
+    }
+    return problems;
+  }, selector);
 }
 
 /** Quasar slides dialogs in; axe must not measure colours halfway through the transition. */
@@ -376,7 +438,8 @@ test.describe('as administrator', () => {
     await expect(sheet.getByText('nothing is shown in this gallery')).toBeVisible();
     await toggle('Caption').click();
     await sheet.getByLabel('Gallery-specific Caption').fill('Local caption');
-    await shot(page, 'gallery-editor-details-panel');
+    await dialogSettled(page);
+    await shot(page, 'gallery-editor-details-panel', false);
     await sheet.getByRole('button', { name: 'Done' }).click();
     await expect(tiles(page).nth(0)).toHaveAttribute('aria-label', /^Local title/);
     await save(page).click();
@@ -545,7 +608,8 @@ test.describe('as administrator', () => {
     await expect(dialog.getByText('Details changed: description.')).toBeVisible();
     await expect(dialog.getByText('One image was added.')).toBeVisible();
     await expect(dialog.getByText('You have 2 unsaved changes.')).toBeVisible();
-    await shot(page, 'gallery-editor-conflict');
+    await dialogSettled(page);
+    await shot(page, 'gallery-editor-conflict', false);
     await dialog.getByRole('button', { name: 'Reload and re-apply my changes' }).click();
     await expect(dialog).toHaveCount(0);
     await expect(title(page)).toHaveText(`${gallery.title} mine`);
@@ -603,7 +667,11 @@ test.describe('accessibility and screenshots', () => {
     await root(page).locator('.swg-seg').getByText('Details', { exact: true }).click();
 
     await openFirstDetails(page);
-    expect(await axe(page, '.q-dialog'), 'details sheet, light').toEqual([]);
+    expect(await axe(page, '.q-dialog', true), 'details sheet, light').toEqual([]);
+    expect(
+      await dialogContrastProblems(page, '.q-dialog'),
+      'details sheet contrast, light',
+    ).toEqual([]);
     await page.keyboard.press('Escape');
 
     await page.getByRole('button', { name: 'Dark mode' }).click();
@@ -613,8 +681,11 @@ test.describe('accessibility and screenshots', () => {
     await showLayoutPanel(page);
     expect(await axe(page, '#swg-admin-root'), 'settings, dark').toEqual([]);
     await openFirstDetails(page);
-    expect(await axe(page, '.q-dialog'), 'details sheet, dark').toEqual([]);
-    await shot(page, 'gallery-editor-details-dark');
+    expect(await axe(page, '.q-dialog', true), 'details sheet, dark').toEqual([]);
+    expect(await dialogContrastProblems(page, '.q-dialog'), 'details sheet contrast, dark').toEqual(
+      [],
+    );
+    await shot(page, 'gallery-editor-details-dark', false);
   });
 
   test('screenshot: the editor on a 375 px phone does not scroll horizontally', async ({

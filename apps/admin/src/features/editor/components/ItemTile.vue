@@ -157,7 +157,11 @@ watch(
 .swg-tile__badges:empty {
   display: none;
 }
+.swg-tile__label > span {
+  display: block;
+}
 .swg-tile__label {
+  min-inline-size: 0;
   font-size: 13px;
   line-height: 1.3;
   min-block-size: 1.3em;
