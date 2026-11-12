@@ -96,6 +96,38 @@ class AdminPageTest extends SwgTestCase {
 		$this->assertSame( 'https://example.test/build/style-abc.css', $style->src );
 	}
 
+	/** The script queue is global and survives between tests; start from an empty one. */
+	private function reset_script_queue(): void {
+		$GLOBALS['wp_scripts'] = new \WP_Scripts();
+	}
+
+	public function test_the_media_modal_scripts_load_only_on_the_plugin_screen_and_only_for_uploaders(): void {
+		$this->reset_script_queue();
+		$this->write_build();
+		$registrar = $this->registrar();
+		$suffix    = $this->open_screen( $registrar );
+
+		$registrar->enqueue( 'edit.php' );
+		$this->assertFalse( wp_script_is( 'media-views', 'enqueued' ) );
+		$this->assertFalse( wp_script_is( 'media-editor', 'enqueued' ) );
+
+		$registrar->enqueue( $suffix );
+		$this->assertTrue( wp_script_is( 'media-views', 'enqueued' ), 'wp.media is needed by the image picker (D2).' );
+		$this->assertTrue( wp_script_is( 'media-editor', 'enqueued' ) );
+	}
+
+	public function test_a_contributor_gets_the_app_but_not_the_media_modal_scripts(): void {
+		$this->reset_script_queue();
+		$this->write_build();
+		$registrar = $this->registrar();
+		$suffix    = $this->open_screen( $registrar );
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'contributor' ) ) );
+
+		$registrar->enqueue( $suffix );
+		$this->assertTrue( wp_script_is( AdminRegistrar::ASSET_HANDLE, 'enqueued' ) );
+		$this->assertFalse( wp_script_is( 'media-views', 'enqueued' ) );
+	}
+
 	public function test_the_script_tag_becomes_a_module_without_a_second_type_attribute(): void {
 		$registrar = $this->registrar();
 		$tag       = $registrar->mark_as_module( "<script type='text/javascript' src='a.js?ver=1'></script>", AdminRegistrar::ASSET_HANDLE );

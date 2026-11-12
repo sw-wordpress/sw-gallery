@@ -81,6 +81,12 @@ final class AdminRegistrar implements RegistrarInterface {
 			'window.swgAdmin = ' . wp_json_encode( $this->bootstrap() ) . ';',
 			'before'
 		);
+
+		// Decision D2: the editor picks images with the native `wp.media` modal. Plugin screen only (guard above);
+		// users who may not upload (contributors) cannot use the media modal, so they do not get its scripts.
+		if ( current_user_can( 'upload_files' ) ) {
+			wp_enqueue_media();
+		}
 	}
 
 	/**
