@@ -30,7 +30,10 @@ export class BlockFixtures {
 
   static async forPage(page: Page): Promise<BlockFixtures> {
     await page.goto(PLUGIN_PAGE);
-    await expect(page.locator('#swg-admin-root .swg-shell')).toBeVisible({ timeout: 30_000 });
+    // Only the bootstrap data is needed, not a rendered view of the admin app.
+    await page.waitForFunction(
+      () => (window as unknown as { swgAdmin?: unknown }).swgAdmin !== undefined,
+    );
     const bootstrap = await page.evaluate(() => {
       const value = (window as unknown as { swgAdmin?: { restRoot: string; nonce: string } })
         .swgAdmin;
