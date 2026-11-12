@@ -115,6 +115,20 @@ msgid_plural "%d problems fixed."
 msgstr[0] "%d Problem behoben."
 msgstr[1] "%d Probleme behoben."
 
+#: packages/wordpress/src/Frontend/AdminBar.php:54
+msgid "Edit gallery"
+msgstr "Galerie bearbeiten"
+
+#. translators: %s: gallery title
+#: packages/wordpress/src/Frontend/AdminBar.php:56
+#, php-format
+msgid "Edit gallery: %s"
+msgstr "Galerie bearbeiten: %s"
+
+#: packages/wordpress/src/Frontend/FrontendAssets.php:78
+msgid "Gallery diagnostic (visible to editors only): the gallery frontend assets are missing or invalid. Run \"npm run build\" in assets or install the release package."
+msgstr "Galerie-Diagnose (nur für Redakteure sichtbar): Die Frontend-Dateien der Galerie fehlen oder sind ungültig. Führe \"npm run build\" in assets aus oder installiere das Release-Paket."
+
 #: packages/wordpress/src/PostTypes.php:30
 msgid "Gallery"
 msgstr "Galerie"
@@ -217,27 +231,27 @@ msgstr "Die Anfrage enthält ungültige Werte."
 msgid "An unexpected error occurred."
 msgstr "Es ist ein unerwarteter Fehler aufgetreten."
 
-#: packages/wordpress/src/Rest/GalleryController.php:321
+#: packages/wordpress/src/Rest/GalleryController.php:322
 #: packages/wordpress/src/Rest/ItemController.php:298
 #: packages/wordpress/src/Rest/SettingsController.php:92
 msgid "The request does not change anything."
 msgstr "Die Anfrage ändert nichts."
 
 #. translators: %s: title of the duplicated gallery
-#: packages/wordpress/src/Rest/GalleryController.php:389
+#: packages/wordpress/src/Rest/GalleryController.php:390
 #, php-format
 msgid "%s (copy)"
 msgstr "%s (Kopie)"
 
-#: packages/wordpress/src/Rest/GalleryController.php:602
+#: packages/wordpress/src/Rest/GalleryController.php:603
 msgid "The owner does not exist."
 msgstr "Der Eigentümer existiert nicht."
 
-#: packages/wordpress/src/Rest/GalleryController.php:610
+#: packages/wordpress/src/Rest/GalleryController.php:611
 msgid "The cover must be an image you may use."
 msgstr "Das Titelbild muss ein Bild sein, das Sie verwenden dürfen."
 
-#: packages/wordpress/src/Rest/GalleryController.php:635
+#: packages/wordpress/src/Rest/GalleryController.php:636
 msgid "You are not allowed to publish galleries."
 msgstr "Sie dürfen keine Galerien veröffentlichen."
 
@@ -302,6 +316,10 @@ msgstr "Beim Löschen des Plugins werden alle Galerien und ihre Bildzuordnungen 
 #: packages/wordpress/src/Rest/StatusReport.php:88
 msgid "Galleries are not exported in 1.0. WordPress export and migration tools move galleries without their images, and attachment IDs change on import. A gallery export with ID remapping is planned."
 msgstr "Galerien werden in 1.0 nicht exportiert. WordPress-Export- und Migrationswerkzeuge übertragen Galerien ohne ihre Bilder, und die Anhangs-IDs ändern sich beim Import. Ein Galerie-Export mit ID-Zuordnung ist geplant."
+
+#: packages/wordpress/src/Shortcode/GalleryShortcode.php:68
+msgid "Gallery diagnostic (visible to editors only): the shortcode needs a valid gallery id, for example [sw_gallery id=\"123\"]."
+msgstr "Galerie-Diagnose (nur für Redakteure sichtbar): Der Shortcode braucht eine gültige Galerie-ID, zum Beispiel [sw_gallery id=\"123\"]."
 
 #: packages/wordpress/src/Support/CoreMessages.php:34
 msgid "The gallery is in a state that does not allow this operation."

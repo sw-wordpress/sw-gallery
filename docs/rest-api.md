@@ -127,3 +127,9 @@ PATCH is partial; unknown request keys are ignored, a body without a known key i
 - `counts.galleries` per status (`draft, pending, publish, private, future, trash`); `counts.itemRows` `{count, capped}` (exact up to 50000 rows, then `capped: true`); `counts.orphanRelations` `{count, complete}`: a read-only scan with the repair command's query, only on non-capped tables and for at most one second. Otherwise `complete: false` (`count: null` when skipped); the repair itself stays WP-CLI only.
 - `recentErrors`: the logger ring buffer, newest first, at most 20, already sanitized (`time` ISO UTC, `code`, `context`).
 - `versions` (`plugin`, `wordpress`, `php`, `database: {type, version}`), `multisite`, `cache: {state: "none"}` (until the renderer cache exists), `adminBuild` (boolean: the build manifest is valid), `hints[]` (`{key: "export_limitation", message}`, decision D12).
+
+## Preview
+
+`POST /galleries/{id}/preview` (`edit_posts`; the actor must be able to edit the gallery: 404 when it is not viewable, 403 when viewable but not editable, 401 anonymous). Body, all optional and **never persisted**: `layout` (registered id, else 422 `swg_unknown_layout`), `sortMode`, `settings` (object; replaces the stored map, validated against the layout schema, else 422 `swg_validation_failed`), `page` (>= 1), `perPage` (1..200). Malformed values are 400. Drafts, pending, private and password-protected galleries render for their editors; the trash renders nothing (`html: ""`).
+
+Response 200 (`Cache-Control: no-store`): `{ html, layoutId, page, totalPages, totalItems, diagnostics: [{code, message}], assets: { css: [url], js: [url] } }`. `html` is the renderer's markup without the editor diagnostics (they are in `diagnostics`). `assets` are the validated build files with `?ver=<plugin version>` (empty arrays when the build is missing; the lightbox files only when the `lightbox` setting is on) for the editor's sandboxed iframe.

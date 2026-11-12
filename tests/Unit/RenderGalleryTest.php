@@ -136,6 +136,32 @@ final class RenderGalleryTest extends TestCase
         yield 'trash visitor' => [GalleryStatus::Trash, false, false, 0, RenderAccess::Nothing, false];
     }
 
+    /**
+     * @return iterable<string, array{GalleryStatus, bool, int, RenderAccess}>
+     */
+    public static function previewTable(): iterable
+    {
+        yield 'draft owner' => [GalleryStatus::Draft, false, self::OWNER, RenderAccess::Render];
+        yield 'private admin' => [GalleryStatus::Private, false, self::ADMIN, RenderAccess::Render];
+        yield 'published password owner ignores the password' => [GalleryStatus::Publish, true, self::OWNER, RenderAccess::Render];
+        yield 'pending owner' => [GalleryStatus::Pending, false, self::OWNER, RenderAccess::Render];
+        yield 'trash owner' => [GalleryStatus::Trash, false, self::OWNER, RenderAccess::Nothing];
+        yield 'draft stranger' => [GalleryStatus::Draft, false, self::STRANGER, RenderAccess::Nothing];
+        yield 'published visitor' => [GalleryStatus::Publish, false, 0, RenderAccess::Nothing];
+        yield 'password visitor' => [GalleryStatus::Publish, true, 0, RenderAccess::Nothing];
+    }
+
+    #[DataProvider('previewTable')]
+    public function testPreviewUsesTheExplicitPreviewRule(GalleryStatus $status, bool $password, int $user, RenderAccess $expected): void
+    {
+        $result = $this->pipeline($this->gallery($status, $password))
+            ->render($this->context($user, EntryPoint::Preview, unlocked: false));
+
+        self::assertSame($expected, $result->access);
+        self::assertSame($expected === RenderAccess::Render, $result->html !== '');
+        self::assertFalse($result->needsPasswordForm());
+    }
+
     #[DataProvider('decisionTable')]
     public function testEveryEntryPointFollowsTheSameDecisionTable(
         GalleryStatus $status,
@@ -146,6 +172,9 @@ final class RenderGalleryTest extends TestCase
         bool $diagnostic
     ): void {
         foreach (EntryPoint::cases() as $entry) {
+            if ($entry === EntryPoint::Preview) {
+                continue; // The authorised preview has its own rule (previewAccess, tested below).
+            }
             $pipeline = $this->pipeline($this->gallery($status, $password));
             $result = $pipeline->render($this->context($user, $entry, unlocked: $unlocked));
 

@@ -12,10 +12,12 @@ namespace SWGallery\WordPress\Bootstrap;
 use SWGallery\WordPress\Admin\AdminRegistrar;
 use SWGallery\WordPress\Cli\CliRegistrar;
 use SWGallery\WordPress\Database\SchemaRegistrar;
+use SWGallery\WordPress\Frontend\FrontendRegistrar;
 use SWGallery\WordPress\Hooks\CacheInvalidationRegistrar;
 use SWGallery\WordPress\Hooks\GalleryLifecycleRegistrar;
 use SWGallery\WordPress\Infrastructure\EventBridgeRegistrar;
 use SWGallery\WordPress\Rest\RestRegistrar;
+use SWGallery\WordPress\Shortcode\ShortcodeRegistrar;
 
 final class Registrars {
 
@@ -31,9 +33,11 @@ final class Registrars {
 			new CliRegistrar(),
 			new CoreRegistrar(),
 			new EventBridgeRegistrar(),
+			new FrontendRegistrar(),
 			new GalleryLifecycleRegistrar(),
 			new RestRegistrar(),
 			new SchemaRegistrar(),
+			new ShortcodeRegistrar(),
 		);
 	}
 }

@@ -19,6 +19,13 @@ interface GalleryAccessPolicyInterface
     /** Decides what an embed may output (decision D4); implementations delegate to StatusAccessRules. */
     public function embedAccess(Actor $actor, Gallery $gallery, bool $passwordUnlocked = false): RenderAccess;
 
+    /**
+     * Authorised preview (FU-13): what the preview entry point may output for an actor. Users who can edit the gallery
+     * see any non-trashed gallery regardless of status or password; everybody else gets nothing. Never used for the
+     * public entry points, which stay on embedAccess.
+     */
+    public function previewAccess(Actor $actor, Gallery $gallery): RenderAccess;
+
     /** View in the admin app, including drafts of one's own galleries. */
     public function canView(Actor $actor, Gallery $gallery): bool;
 

@@ -136,10 +136,10 @@ Tooling and tests
 - [ ] FU-07 Quasar creates two `#q-notify` containers on `<body>` (duplicate id, harmless, present since the scaffold; `Notify` is installed only once in `main.ts`) — find the cause (Quasar internals) and fix.
 - [ ] FU-08 Mobile (375 px): the five nav tabs overflow and scroll horizontally, the fifth is cut off at the edge (same as the siblings); consider a visible scroll affordance.
 - [ ] FU-09 Core `ValidationError` messages are not in the gettext catalog (REST returns them in English unless they match a catalog entry): route them through `CoreMessages` / a message map keyed by error code.
-- [ ] FU-10 `WpGalleryAccessPolicy::canPublishNew(Actor)`: creating a gallery with status `publish`/`private` is currently checked in the REST controller (`publish_posts`); move the rule into the policy so every entry point shares it.
-- [ ] FU-11 `GalleryController::create` does not use the `defaultLayout` plugin setting yet (settings API exists); and the renderer does not read `itemsPerPage`/`lightbox` yet.
+- [x] FU-10 (done 2026-11-12: `canPublishNew`) `WpGalleryAccessPolicy::canPublishNew(Actor)`: creating a gallery with status `publish`/`private` is currently checked in the REST controller (`publish_posts`); move the rule into the policy so every entry point shares it.
+- [x] FU-11 (done 2026-11-12: `defaultLayout` on create, `itemsPerPage` in the renderer; `lightbox` read by the asset enqueue) `GalleryController::create` does not use the `defaultLayout` plugin setting yet (settings API exists); and the renderer does not read `itemsPerPage`/`lightbox` yet.
 - [ ] FU-12 `Rest/ItemRowReader` contains prepared SQL inside the REST layer (the repository's `findPage` omits item settings); move it into `WpdbGalleryItemRepository` as a batched read.
-- [ ] FU-13 Preview of drafts: the single access decision returns `Diagnostic` for drafts even for editors; the preview task (M3-22) needs an explicit authorised-preview rule in the policy.
+- [x] FU-13 (done 2026-11-12: `previewAccess`) Preview of drafts: the single access decision returns `Diagnostic` for drafts even for editors; the preview task (M3-22) needs an explicit authorised-preview rule in the policy.
 - [x] FU-14 (done 2026-11-11: `workers: 3` in `e2e/playwright.config.ts`; with ~10 workers two tests failed even after the retry, with 3 workers the whole suite passes) E2E host noise.
 - [ ] FU-15 Gallery list polish: placeholder cover tile too tall (4:3 on mobile), double focus ring in the search field, 375 px rail nav slightly wider than the viewport.
 - [ ] FU-16 Contributors lack `upload_files`, so under D11 all of their items count as `missing`: decide whether contributors may use already-readable library images (D11 revisit).
@@ -199,27 +199,27 @@ Admin app (`apps/admin`, C§7)
 - [x] M3-05 `ThumbnailResolver` adapter: core/theme sizes only, CSS cropping, `srcset`/`sizes` per layout, width/height, lightbox target size.
 - [x] M3-06 Loading strategy: first row eager/`fetchpriority`, rest lazy; CLS-safe aspect ratios.
 - [x] M3-07 View layer `resources/views` with contextual escaping; captions restricted by a `wp_kses` policy; simplified markup for feeds, excerpts and REST `content.rendered` (no CSS/JS dependency).
-- [ ] M3-08 (done 2026-11-11: `Rendering/Layout/GridLayout` — settings schema with responsive columns and gap, lightbox markup contract, escaping, registered in `Services::layouts()`; open: stylesheet/responsive CSS from the custom properties, loading strategy M3-06, theming contract) Layout `grid` (CSS grid, responsive columns/spacing, logical properties for RTL, documented CSS custom properties and `swg-` classes as public theming contract).
+- [x] M3-08 (grid layout, CSS, aspect setting, theming contract; done in Waves 3a/4) Layout `grid` (CSS grid, responsive columns/spacing, logical properties for RTL, documented CSS custom properties and `swg-` classes as public theming contract).
 - [ ] M3-09 Layout `masonry` per D10 (row-ordered markup, grid-like without JS, JS column packing keeps DOM order).
 - [ ] M3-10 Layout `justified` (CSS-only via aspect-ratio flex rows, works without JS).
-- [ ] M3-11 Frontend pagination per D5: link-based, per-instance query arg, several galleries per page independent, bounded page size, no JS.
+- [x] M3-11 Frontend pagination per D5: link-based, per-instance query arg, several galleries per page independent, bounded page size, no JS.
 - [x] M3-12 Unknown layout → `grid` + diagnostic visible to editors only.
-- [ ] M3-13 Fragment cache: key = gallery revision + settings hash + visibility context + media epoch; only `publish` output cached (D4); works with and without persistent object cache.
-- [ ] M3-14 Invalidation: gallery/item/settings changes, attachment update/delete/regenerated sizes, plugin update; documented action `swg_gallery_changed` (gallery ID) for full-page cache/CDN purging; docs note on page caches and paging/password output.
+- [x] M3-13 Fragment cache: key = gallery revision + settings hash + visibility context + media epoch; only `publish` output cached (D4); works with and without persistent object cache.
+- [x] M3-14 Invalidation: gallery/item/settings changes, attachment update/delete/regenerated sizes, plugin update; documented action `swg_gallery_changed` (gallery ID) for full-page cache/CDN purging; docs note on page caches and paging/password output.
 - [x] M3-15 Lightbox (TypeScript, no third-party service): dialog semantics, focus trap/return, Escape/arrows (mirrored in RTL), counter, captions/alt, neighbour preloading, reduced motion.
 - [x] M3-16 Lightbox touch swipe without hijacking scroll/pinch (direction mirrored in RTL); multiple independent instances; images remain plain links without JS.
-- [ ] M3-17 (build pipeline + manifest done: `assets/build/`, see `assets/README.md`; open: PHP enqueue only on pages with a gallery, plugin `ver`, late-render fallback, critical CSS) Frontend build: Vite pipeline for `assets/frontend` + `assets/lightbox` into generated `assets/build/` (gitignored) with manifest, shared `browserslist`; enqueue only on pages rendering a gallery, plugin version, no global injection; late-render strategy (detect block/shortcode in `wp_enqueue_scripts` where possible, footer fallback, minimal critical CSS against unstyled flash).
+- [x] M3-17 (build + manifest + PHP enqueue with ver, only where rendered, late-render strategy) Frontend build: Vite pipeline for `assets/frontend` + `assets/lightbox` into generated `assets/build/` (gitignored) with manifest, shared `browserslist`; enqueue only on pages rendering a gallery, plugin version, no global injection; late-render strategy (detect block/shortcode in `wp_enqueue_scripts` where possible, footer fallback, minimal critical CSS against unstyled flash).
 - [x] M3-18 Vitest for `assets/*` TypeScript; JS/TS coverage gate and Sonar include these sources (merged with `apps/admin`, still > 80 %).
 - [ ] M3-19 (labels come from `data-swg-labels` incl. the optional `error` key — the PHP views must emit them) Lightbox/frontend strings server-localized (en/de).
-- [ ] M3-22 `POST /galleries/{id}/preview` (authorized, accepts unsaved settings, same renderer, never cached). (Was M2-12, moved per F-03.)
+- [x] M3-22 `POST /galleries/{id}/preview` (authorized, accepts unsaved settings, same renderer, never cached). (Was M2-12, moved per F-03.)
 - [ ] M3-23 Editor live preview in the Vue app (sandboxed, frontend CSS, debounced) using M3-22. (Was M2-31, moved per F-03.)
 - [ ] M3-20 Renderer tests: snapshot per layout, large gallery fixture (query-count budget), missing attachments, stale cache, multiple instances, feed context.
 - [ ] M3-21 Frontend E2E + axe: render, paging, lightbox keyboard/focus/touch, JS disabled, editor live preview.
 
 ## M4 — WordPress surfaces
 
-- [ ] M4-01 Shortcode `[sw_gallery id="123"]`: strict attribute allowlist/validation, same renderer.
-- [ ] M4-02 PHP API `swg_render_gallery( int $id, array $args = array() ): string` (returns, never echoes; PHPDoc contract, `@since`).
+- [x] M4-01 Shortcode `[sw_gallery id="123"]`: strict attribute allowlist/validation, same renderer.
+- [x] M4-02 PHP API `swg_render_gallery( int $id, array $args = array() ): string` (returns, never echoes; PHPDoc contract, `@since`).
 - [ ] M4-03 Block `sw-gallery/gallery`: `block.json`, attributes = gallery ID + validated overrides (no media IDs), `supports` for align wide/full and spacing, `render_callback` → same renderer.
 - [ ] M4-04 Block editor glue in `assets/blocks` (minimal TS, WordPress components as externals): gallery selector, server-rendered preview, deep link to the Vue editor; versioned assets.
 - [ ] M4-05 Block tests: Vitest for glue (counts towards the JS gate), PHP test that block, shortcode and PHP API produce identical output and respect visibility.
@@ -230,7 +230,7 @@ Admin app (`apps/admin`, C§7)
 - [ ] M4-10 Listener isolation tests (throwing listener, vetoing `before_*` filter, read-only payloads).
 - [ ] M4-11 Optional integrations (sw-image-optimizer, sw-slider, sw-forms, sw-backupit, sw-cloudcalendar): verify no hard dependency; implement only where a concrete contract exists, otherwise document as not implemented.
 - [ ] M4-12 Per D7: document in `docs/extending.md` that an admin side-panel registry is not implemented in 1.0 (planned R1.1-07); no placeholder API.
-- [ ] M4-15 Admin bar "Edit gallery" entry on frontend pages rendering a gallery the user may edit (deep link from M2-19).
+- [x] M4-15 Admin bar "Edit gallery" entry on frontend pages rendering a gallery the user may edit (deep link from M2-19).
 - [ ] M4-13 Gutenberg E2E: insert block, select gallery, preview, publish, frontend render; shortcode in classic content.
 - [ ] M4-14 `docs/extending.md` (layouts, providers, hooks, PHP API, theming contract) incl. compatibility policy for public contracts (semver meaning, deprecation period, `@since`) — short, links instead of duplication.
 

@@ -16,8 +16,15 @@ use SWGallery\Core\Application\Service\GalleryItemEditService;
 use SWGallery\Core\Application\Service\GalleryItemService;
 use SWGallery\Core\Application\Service\GalleryService;
 use SWGallery\Core\Application\Service\LayoutRegistry;
+use SWGallery\Core\Domain\Gallery\Gallery;
 use SWGallery\Core\Domain\Settings\SettingsSchemaValidator;
 use SWGallery\Core\Event\EventDispatcher;
+use SWGallery\WordPress\Frontend\AssetCollector;
+use SWGallery\WordPress\Frontend\EmbedArguments;
+use SWGallery\WordPress\Frontend\EmbedRenderer;
+use SWGallery\WordPress\Frontend\FrontendAssets;
+use SWGallery\WordPress\Frontend\FrontendManifest;
+use SWGallery\WordPress\Frontend\PreviewGalleries;
 use SWGallery\WordPress\Media\ThumbnailResolver;
 use SWGallery\WordPress\Media\WpMediaRepository;
 use SWGallery\WordPress\Rendering\GalleryRenderer;
@@ -53,6 +60,10 @@ final class Services {
 	private static ?GalleryRenderer $gallery_renderer = null;
 	private static ?MediaEpoch $media_epoch           = null;
 	private static ?RenderCache $render_cache         = null;
+	private static ?AssetCollector $asset_collector   = null;
+	private static ?EmbedRenderer $embed_renderer     = null;
+	private static ?EmbedArguments $embed_arguments   = null;
+	private static ?FrontendAssets $frontend_assets   = null;
 
 	public static function logger(): WpLogger {
 		return self::$logger ??= new WpLogger();
@@ -175,6 +186,49 @@ final class Services {
 		return self::$render_cache ??= new RenderCache( self::settings(), self::revisions(), self::media_epoch() );
 	}
 
+	/**
+	 * A renderer that sees one unsaved gallery state instead of the stored one (authorised preview, never persisted).
+	 *
+	 * @param Gallery $previewed Stored identity and status with the unsaved layout, sort mode and settings.
+	 */
+	public static function preview_renderer( Gallery $previewed ): GalleryRenderer {
+		$galleries = new PreviewGalleries( self::galleries(), $previewed );
+		$pipeline  = new RenderGallery(
+			$galleries,
+			self::access(),
+			self::items(),
+			self::media(),
+			self::thumbnails(),
+			self::layouts(),
+			new FeedMarkup()
+		);
+		// Previews are never cached (the renderer skips the cache for EntryPoint::Preview).
+		return new GalleryRenderer( $pipeline, $galleries, self::access(), self::settings(), self::render_cache() );
+	}
+
+	/** Request-scoped record of the galleries printed so far; every output surface reports to it. */
+	public static function asset_collector(): AssetCollector {
+		return self::$asset_collector ??= new AssetCollector();
+	}
+
+	/** Renderer plus collector bookkeeping, the call of the shortcode, the PHP API and the block. */
+	public static function embed_renderer(): EmbedRenderer {
+		return self::$embed_renderer ??= new EmbedRenderer( self::gallery_renderer(), self::asset_collector() );
+	}
+
+	public static function embed_arguments(): EmbedArguments {
+		return self::$embed_arguments ??= new EmbedArguments( self::layouts() );
+	}
+
+	public static function frontend_assets(): FrontendAssets {
+		return self::$frontend_assets ??= new FrontendAssets(
+			new FrontendManifest( SWGALLERY_DIR . 'assets/build' ),
+			self::asset_collector(),
+			self::settings(),
+			SWGALLERY_URL . 'assets/build'
+		);
+	}
+
 	/** Forgets all instances (tests). */
 	public static function reset(): void {
 		self::$logger           = null;
@@ -196,5 +250,9 @@ final class Services {
 		self::$gallery_renderer = null;
 		self::$media_epoch      = null;
 		self::$render_cache     = null;
+		self::$asset_collector  = null;
+		self::$embed_renderer   = null;
+		self::$embed_arguments  = null;
+		self::$frontend_assets  = null;
 	}
 }

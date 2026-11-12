@@ -61,7 +61,9 @@ final class RenderGallery
             );
         }
 
-        $decision = $this->access->embedAccess($context->actor, $gallery, $context->passwordUnlocked);
+        $decision = $context->entryPoint === EntryPoint::Preview
+            ? $this->access->previewAccess($context->actor, $gallery)
+            : $this->access->embedAccess($context->actor, $gallery, $context->passwordUnlocked);
         if ($decision !== RenderAccess::Render) {
             $diagnostics = $decision === RenderAccess::Diagnostic
                 ? [new RenderDiagnostic(RenderDiagnostic::GALLERY_NOT_PUBLIC, ['status' => $gallery->status->value])]

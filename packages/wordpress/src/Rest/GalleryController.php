@@ -27,6 +27,7 @@ use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\InvalidStateException;
 use SWGallery\WordPress\Repository\WpdbGalleryRelations;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
+use SWGallery\WordPress\Settings\PluginSettings;
 
 /**
  * Thin HTTP adapter over {@see GalleryService}. Every `{id}` route first loads the gallery and answers 404 when the
@@ -52,7 +53,8 @@ final class GalleryController extends AbstractController {
 		private readonly RevisionStoreInterface $revisions,
 		private readonly WpdbGalleryRelations $relations,
 		private readonly WpGalleryAccessPolicy $access,
-		private readonly GalleryPresenter $presenter
+		private readonly GalleryPresenter $presenter,
+		private readonly PluginSettings $settings
 	) {
 		parent::__construct( $errors );
 		$this->rest_base = 'galleries';
@@ -278,12 +280,11 @@ final class GalleryController extends AbstractController {
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
 				$actor  = $this->actor();
 				$status = $this->status_param( $request ) ?? GalleryStatus::Draft;
-				// A new gallery has no id yet, so the publish right is checked at post-type level (`publish_posts`).
-				if ( $this->needs_publish_right( $status ) && ! user_can( $actor->userId, 'publish_posts' ) ) {
+				if ( $this->needs_publish_right( $status ) && ! $this->access->canPublishNew( $actor ) ) {
 					return $this->cannot_publish();
 				}
 				$settings = new GallerySettings(
-					$this->string_param( $request, 'layout' ) ?? GallerySettings::DEFAULT_LAYOUT,
+					$this->string_param( $request, 'layout' ) ?? $this->settings->get()['defaultLayout'],
 					SortMode::from( $this->string_param( $request, 'sortMode' ) ?? SortMode::Manual->value ),
 					$this->settings_param( $request )
 				);
