@@ -457,9 +457,9 @@ class BlockTest extends SwgTestCase {
 		unset( $registrar );
 		add_filter( 'locale', static fn (): string => 'de_DE' );
 		// The catalog is keyed by the md5 of the script path relative to the plugin; WordPress derives it from the URL, so use an installed-plugin URL.
-		$handle = BlockRegistrar::EDITOR_HANDLE;
+		$handle                                  = BlockRegistrar::EDITOR_HANDLE;
 		wp_scripts()->registered[ $handle ]->src = content_url( 'plugins/sw-gallery/assets/blocks/build/index.js' );
-		$json = load_script_textdomain( $handle, 'sw-gallery', SWGALLERY_DIR . 'languages' );
+		$json                                    = load_script_textdomain( $handle, 'sw-gallery', SWGALLERY_DIR . 'languages' );
 		$this->assertIsString( $json );
 		$data = json_decode( $json, true );
 		$this->assertIsArray( $data );

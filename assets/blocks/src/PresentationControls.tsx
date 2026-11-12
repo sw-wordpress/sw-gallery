@@ -53,6 +53,8 @@ export function PresentationControls({
                 </Notice>
             ) : null}
             <SelectControl
+                __nextHasNoMarginBottom
+                __next40pxDefaultSize
                 label={__('Layout', 'sw-gallery')}
                 help={__('Overrides the layout of the gallery for this block only.', 'sw-gallery')}
                 value={attributes.layout ?? ''}
@@ -66,6 +68,8 @@ export function PresentationControls({
                 }
             />
             <RangeControl
+                __nextHasNoMarginBottom
+                __next40pxDefaultSize
                 label={__('Columns', 'sw-gallery')}
                 help={__('Leave unset to use the gallery setting.', 'sw-gallery')}
                 value={attributes.columns}
@@ -79,6 +83,8 @@ export function PresentationControls({
                 }
             />
             <RangeControl
+                __nextHasNoMarginBottom
+                __next40pxDefaultSize
                 label={__('Gap between images (px)', 'sw-gallery')}
                 help={__('Leave unset to use the gallery setting.', 'sw-gallery')}
                 value={attributes.gap}
@@ -90,6 +96,7 @@ export function PresentationControls({
                 }
             />
             <ToggleControl
+                __nextHasNoMarginBottom
                 label={__('Load the first images eagerly', 'sw-gallery')}
                 help={__('Turn off when the gallery is far down the page.', 'sw-gallery')}
                 checked={attributes.eager !== false}

@@ -21,3 +21,17 @@ Interactive markup follows the contract in `assets/README.md` (`Rendering/View/I
 ## Tools
 
 `wp swg render <galleryId> [--entry=shortcode|feed] [--page=<n>]` prints the HTML for the CLI user (`--user=<login>`).
+
+## Block
+
+`sw-gallery/gallery` (`Block/BlockRegistrar`, metadata in `assets/blocks/block.json`) is dynamic: `save` stores nothing, `render_callback` validates the attributes (`Block/BlockAttributes`) and calls `Services::gallery_renderer()->html( $galleryId, EntryPoint::Block, $options )`, wrapped in `get_block_wrapper_attributes()` (align wide/full, margin, class, anchor). Access is the renderer's single decision; nothing renders for visitors without a visible gallery.
+
+| Attribute | Rule | Render option |
+|---|---|---|
+| `galleryId` | integer 1..2147483647, else 0 (nothing rendered; editors get a hint only in the REST editor preview) | gallery id |
+| `layout` | layout id pattern `^[a-z][a-z0-9_-]{0,63}$` | `layout` |
+| `columns` / `gap` | integers 1..12 / 0..64 | `settings.columns` / `settings.gap` |
+| `eager` | boolean | `eager` |
+| `anchor` | id subset `^[A-Za-z][A-Za-z0-9_:.-]{0,99}$` (dynamic blocks print the anchor themselves) | wrapper `id` |
+
+Anything else (media id lists, unknown keys, out-of-range or hostile values) is dropped, never echoed. Editor script and style (`swg-block-editor`, built to `assets/blocks/build/index.js|css`, stable names) are registered with explicit dependencies and `SWGALLERY_VERSION`; WordPress loads them only in the block editor. Without a build the block still renders on the frontend. Frontend assets are not enqueued by the block: the caller must feed `RenderResult::$assets` to the asset collector (the callback currently uses `html()`, which drops them).

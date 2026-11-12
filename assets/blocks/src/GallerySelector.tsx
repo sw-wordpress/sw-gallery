@@ -70,6 +70,8 @@ export function GallerySelector({ value, onChange, fetcher }: GallerySelectorPro
     return (
         <div className="swg-block-selector">
             <ComboboxControl
+                __nextHasNoMarginBottom
+                __next40pxDefaultSize
                 label={__('Gallery', 'sw-gallery')}
                 help={__('Type to search your galleries.', 'sw-gallery')}
                 value={value > 0 ? String(value) : null}

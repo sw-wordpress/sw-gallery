@@ -46,9 +46,9 @@ final class BlockRegistrar implements RegistrarInterface {
 	private $is_editor_preview;
 
 	/**
-	 * @param string|null $block_dir     Directory with block.json and build/; defaults to the plugin's assets/blocks.
-	 * @param string|null $block_url     Public URL of that directory.
-	 * @param string|null $languages_dir Directory with the script translation catalogs.
+	 * @param string|null   $block_dir     Directory with block.json and build/; defaults to the plugin's assets/blocks.
+	 * @param string|null   $block_url     Public URL of that directory.
+	 * @param string|null   $languages_dir Directory with the script translation catalogs.
 	 * @param callable|null $is_editor_preview Tells whether the current request renders the editor preview (a REST
 	 *                                         request of an editor); defaults to the REST_REQUEST check.
 	 */
