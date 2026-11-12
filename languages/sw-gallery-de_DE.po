@@ -17,6 +17,169 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: assets/blocks/block.json
+msgctxt "block title"
+msgid "SW Gallery"
+msgstr "SW Gallery"
+
+#: assets/blocks/block.json
+msgctxt "block description"
+msgid "Shows a gallery from the SW Gallery plugin. The gallery is managed in the plugin, not in the editor."
+msgstr "Zeigt eine Galerie des SW-Gallery-Plugins. Die Galerie wird im Plugin verwaltet, nicht im Editor."
+
+#: assets/blocks/block.json
+msgctxt "block keyword"
+msgid "gallery"
+msgstr "Galerie"
+
+#: assets/blocks/block.json
+msgctxt "block keyword"
+msgid "images"
+msgstr "Bilder"
+
+#: assets/blocks/block.json
+msgctxt "block keyword"
+msgid "photos"
+msgstr "Fotos"
+
+#: assets/blocks/src/Edit.tsx:28
+msgid "Edit this gallery"
+msgstr "Diese Galerie bearbeiten"
+
+#: assets/blocks/src/Edit.tsx:33
+msgid "Create a new gallery"
+msgstr "Neue Galerie erstellen"
+
+#: assets/blocks/src/Edit.tsx:52 assets/blocks/src/GallerySelector.tsx:75
+#: packages/wordpress/src/PostTypes.php:30
+msgid "Gallery"
+msgstr "Galerie"
+
+#: assets/blocks/src/Edit.tsx:60
+msgid "Presentation"
+msgstr "Darstellung"
+
+#: assets/blocks/src/Edit.tsx:71
+msgid "SW Gallery"
+msgstr "SW Gallery"
+
+#: assets/blocks/src/Edit.tsx:72
+msgid "Choose one of your galleries to show it here."
+msgstr "Wähle eine deiner Galerien, um sie hier anzuzeigen."
+
+#: assets/blocks/src/Edit.tsx:83
+msgid "This gallery has nothing to show for visitors yet: it may be a draft, empty or private."
+msgstr "Diese Galerie hat für Besucher noch nichts anzuzeigen: Sie ist möglicherweise ein Entwurf, leer oder privat."
+
+#: assets/blocks/src/Edit.tsx:91
+msgid "The preview could not be loaded."
+msgstr "Die Vorschau konnte nicht geladen werden."
+
+#: assets/blocks/src/GallerySelector.tsx:20
+msgid "(no title)"
+msgstr "(ohne Titel)"
+
+#: assets/blocks/src/GallerySelector.tsx:26
+msgid "%s (private)"
+msgstr "%s (privat)"
+
+#: assets/blocks/src/GallerySelector.tsx:29
+msgid "%s (pending review)"
+msgstr "%s (zur Prüfung ausstehend)"
+
+#: assets/blocks/src/GallerySelector.tsx:32
+msgid "%s (draft)"
+msgstr "%s (Entwurf)"
+
+#: assets/blocks/src/GallerySelector.tsx:76
+msgid "Type to search your galleries."
+msgstr "Tippe, um deine Galerien zu durchsuchen."
+
+#: assets/blocks/src/GallerySelector.tsx:87
+msgid "Loading galleries…"
+msgstr "Galerien werden geladen …"
+
+#: assets/blocks/src/GallerySelector.tsx:94
+msgid "Try again"
+msgstr "Erneut versuchen"
+
+#: assets/blocks/src/GallerySelector.tsx:101
+msgid "There are no galleries yet. Create one first."
+msgstr "Es gibt noch keine Galerien. Erstelle zuerst eine."
+
+#: assets/blocks/src/GallerySelector.tsx:103
+msgid "No gallery matches \"%s\"."
+msgstr "Keine Galerie passt zu „%s“."
+
+#: assets/blocks/src/GallerySelector.tsx:114
+msgid "Gallery #%d is not available. It may have been deleted or you may not view it."
+msgstr "Galerie #%d ist nicht verfügbar. Sie wurde möglicherweise gelöscht oder du darfst sie nicht ansehen."
+
+#: assets/blocks/src/GallerySelector.tsx:122
+msgid "Clear selection"
+msgstr "Auswahl aufheben"
+
+#: assets/blocks/src/PresentationControls.tsx:23
+msgid "Gallery default"
+msgstr "Standard der Galerie"
+
+#: assets/blocks/src/PresentationControls.tsx:30
+msgid "%s (not available)"
+msgstr "%s (nicht verfügbar)"
+
+#: assets/blocks/src/PresentationControls.tsx:58
+msgid "Layout"
+msgstr "Layout"
+
+#: assets/blocks/src/PresentationControls.tsx:59
+msgid "Overrides the layout of the gallery for this block only."
+msgstr "Überschreibt das Layout der Galerie nur für diesen Block."
+
+#: assets/blocks/src/PresentationControls.tsx:73
+msgid "Columns"
+msgstr "Spalten"
+
+#: assets/blocks/src/PresentationControls.tsx:74
+#: assets/blocks/src/PresentationControls.tsx:89
+msgid "Leave unset to use the gallery setting."
+msgstr "Leer lassen, um die Einstellung der Galerie zu verwenden."
+
+#: assets/blocks/src/PresentationControls.tsx:88
+msgid "Gap between images (px)"
+msgstr "Abstand zwischen Bildern (px)"
+
+#: assets/blocks/src/PresentationControls.tsx:100
+msgid "Load the first images eagerly"
+msgstr "Erste Bilder sofort laden"
+
+#: assets/blocks/src/PresentationControls.tsx:101
+msgid "Turn off when the gallery is far down the page."
+msgstr "Ausschalten, wenn die Galerie weit unten auf der Seite steht."
+
+#: assets/blocks/src/api.ts:113
+msgid "Your session has expired. Reload the editor and try again."
+msgstr "Deine Sitzung ist abgelaufen. Lade den Editor neu und versuche es erneut."
+
+#: assets/blocks/src/api.ts:117
+msgid "You are not allowed to list galleries."
+msgstr "Du darfst keine Galerien auflisten."
+
+#: assets/blocks/src/api.ts:118
+msgid "You are not allowed to list layouts."
+msgstr "Du darfst keine Layouts auflisten."
+
+#: assets/blocks/src/api.ts:121
+msgid "The server could not be reached. Check your connection and try again."
+msgstr "Der Server ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut."
+
+#: assets/blocks/src/api.ts:127
+msgid "The galleries could not be loaded."
+msgstr "Die Galerien konnten nicht geladen werden."
+
+#: assets/blocks/src/api.ts:128
+msgid "The layouts could not be loaded."
+msgstr "Die Layouts konnten nicht geladen werden."
+
 #: packages/wordpress/src/Admin/AdminRegistrar.php:50
 #: packages/wordpress/src/Admin/AdminRegistrar.php:138
 msgid "Gallery Management"
@@ -38,6 +201,10 @@ msgstr "Die Galerieverwaltung ist nicht gebaut. Führe \"npm run build\" in apps
 #: packages/wordpress/src/Admin/AdminRegistrar.php:143
 msgid "The gallery administration requires JavaScript."
 msgstr "Die Galerieverwaltung benötigt JavaScript."
+
+#: packages/wordpress/src/Block/BlockRegistrar.php:138
+msgid "No gallery selected. Choose one in the block settings."
+msgstr "Keine Galerie ausgewählt. Wähle in den Blockeinstellungen eine aus."
 
 #: packages/wordpress/src/Cli/RenderCommand.php:65
 msgid "The gallery id must be a positive whole number."
@@ -128,10 +295,6 @@ msgstr "Galerie bearbeiten: %s"
 #: packages/wordpress/src/Frontend/FrontendAssets.php:78
 msgid "Gallery diagnostic (visible to editors only): the gallery frontend assets are missing or invalid. Run \"npm run build\" in assets or install the release package."
 msgstr "Galerie-Diagnose (nur für Redakteure sichtbar): Die Frontend-Dateien der Galerie fehlen oder sind ungültig. Führe \"npm run build\" in assets aus oder installiere das Release-Paket."
-
-#: packages/wordpress/src/PostTypes.php:30
-msgid "Gallery"
-msgstr "Galerie"
 
 #: packages/wordpress/src/Rendering/DiagnosticMarkup.php:36
 msgid "Gallery diagnostic (visible to editors only): this gallery does not exist."

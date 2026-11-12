@@ -1,0 +1,14 @@
+.swg-block .swg-block-note {
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.swg-block .swg-block-selector {
+  width: 100%;
+}
+
+.swg-block .swg-block-hint {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed currentcolor;
+}

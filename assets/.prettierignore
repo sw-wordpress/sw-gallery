@@ -1,4 +1,6 @@
 node_modules
 coverage
 build
+admin
+blocks
 package-lock.json

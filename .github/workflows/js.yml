@@ -1,6 +1,6 @@
 name: JavaScript
 
-# Admin app (apps/admin) and public frontend assets (assets/): typecheck, lint, format, tests with the strict
+# Admin app (apps/admin), public frontend assets (assets/) and the block editor glue (assets/blocks): typecheck, lint, format, tests with the strict
 # coverage gate (> 80 %), production build and dependency audit. Third-party actions are pinned to full tags.
 on:
   pull_request: null
@@ -71,4 +71,32 @@ jobs:
         with:
           name: lcov-assets
           path: assets/coverage/lcov.info
+          if-no-files-found: warn
+
+  blocks:
+    name: Block editor glue (assets/blocks)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: assets/blocks
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version-file: assets/blocks/.nvmrc
+          cache: npm
+          cache-dependency-path: assets/blocks/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run test:coverage
+      - run: npm run build
+      - name: Audit shipped npm packages
+        run: npm audit --omit=dev --audit-level=high
+      - uses: actions/upload-artifact@v4.6.2
+        if: always()
+        with:
+          name: lcov-blocks
+          path: assets/blocks/coverage/lcov.info
           if-no-files-found: warn

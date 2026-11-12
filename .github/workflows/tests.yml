@@ -153,11 +153,12 @@ jobs:
         if: env.SONAR_TOKEN != ''
         with:
           node-version-file: apps/admin/.nvmrc
-      - name: JavaScript coverage for SonarQube (admin app and frontend assets)
+      - name: JavaScript coverage for SonarQube (admin app, frontend assets and block)
         if: env.SONAR_TOKEN != ''
         run: |
           (cd apps/admin && npm ci --no-audit --no-fund && npm run test:coverage)
           (cd assets && npm ci --no-audit --no-fund && npm run test:coverage)
+          (cd assets/blocks && npm ci --no-audit --no-fund && npm run test:coverage)
       - name: Analyze code and import coverage
         if: env.SONAR_TOKEN != ''
         # SonarSource/sonarqube-scan-action pinned by commit (tag v5.x).

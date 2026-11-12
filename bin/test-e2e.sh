@@ -7,7 +7,7 @@
 # --headed  show the browser
 #
 # Environment (all optional): SWG_E2E_PLUGIN_DIR (plugin copy to mount), SWG_E2E_WP_IMAGE (e.g. wordpress:6.4-php8.2-apache), SWG_E2E_CLI_IMAGE (matching wordpress:cli-phpX.Y),
-# SWG_E2E_REBUILD=1 (force admin build / composer install). Never touches a real WordPress install or database:
+# SWG_E2E_REBUILD=1 (force admin, block and frontend build / composer install). Never touches a real WordPress install or database:
 # everything runs in containers and volumes of a unique compose project that is removed again, also on failure and CTRL-C.
 set -euo pipefail
 
@@ -71,6 +71,15 @@ fi
 if [ ! -f "$ROOT/assets/admin/.vite/manifest.json" ] || [ "${SWG_E2E_REBUILD:-0}" = 1 ]; then
   echo "Building the admin app ..."
   (cd "$ROOT/apps/admin" && { [ -d node_modules ] || npm ci; } && npm run build)
+fi
+# The block editor script and the frontend assets (layout CSS, lightbox) are generated as well and are mounted read-only.
+if [ ! -f "$ROOT/assets/blocks/build/index.js" ] || [ "${SWG_E2E_REBUILD:-0}" = 1 ]; then
+  echo "Building the block editor script ..."
+  (cd "$ROOT/assets/blocks" && { [ -d node_modules ] || npm ci; } && npm run build)
+fi
+if [ ! -f "$ROOT/assets/build/.vite/manifest.json" ] || [ "${SWG_E2E_REBUILD:-0}" = 1 ]; then
+  echo "Building the frontend assets ..."
+  (cd "$ROOT/assets" && { [ -d node_modules ] || npm ci; } && npm run build)
 fi
 echo "Preparing the Playwright project ..."
 (cd "$ROOT/e2e" && npm ci --no-audit --no-fund && npx playwright install chromium)

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "sw-gallery/gallery",
+  "title": "SW Gallery",
+  "category": "media",
+  "icon": "format-gallery",
+  "description": "Shows a gallery from the SW Gallery plugin. The gallery is managed in the plugin, not in the editor.",
+  "keywords": ["gallery", "images", "photos"],
+  "textdomain": "sw-gallery",
+  "attributes": {
+    "galleryId": {
+      "type": "integer",
+      "default": 0
+    },
+    "layout": {
+      "type": "string"
+    },
+    "columns": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 12
+    },
+    "gap": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 64
+    },
+    "eager": {
+      "type": "boolean"
+    },
+    "anchor": {
+      "type": "string"
+    }
+  },
+  "supports": {
+    "align": ["wide", "full"],
+    "spacing": {
+      "margin": true
+    },
+    "html": false,
+    "anchor": true
+  },
+  "editorScript": "swg-block-editor",
+  "editorStyle": "swg-block-editor"
+}

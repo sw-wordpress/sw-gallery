@@ -9,7 +9,7 @@ const htmlSinks = ['innerHTML', 'outerHTML', 'insertAdjacentHTML'].map((property
 }));
 
 export default tseslint.config(
-  { ignores: ['node_modules/**', 'coverage/**', 'build/**', 'admin/**'] },
+  { ignores: ['node_modules/**', 'coverage/**', 'build/**', 'admin/**', 'blocks/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
