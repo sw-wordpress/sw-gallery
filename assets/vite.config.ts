@@ -2,38 +2,46 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
 /**
- * Public frontend assets. Each entry is a classic (non-module) script: an IIFE bundle without
- * runtime dependencies. rolldown cannot emit several IIFE entries in one build, so the config
- * builds one entry per run, selected by SWG_ENTRY (see `entries`); add further entries
- * (e.g. `frontend`) only together with real code and a build loop in scripts/build-all.mjs.
+ * Public frontend assets, built in two runs that scripts/build-all.mjs merges into one manifest
+ * (rolldown cannot emit several IIFE entries in one build, hence one run per entry, selected by SWG_ENTRY):
+ * - `lightbox`: a classic (non-module) script, an IIFE bundle without runtime dependencies, plus its stylesheet;
+ * - `layouts`: the CSS-only layout stylesheet (`frontend/src/layouts.css`), no script.
  */
 const entries: Record<string, string> = {
   lightbox: resolve(import.meta.dirname, 'lightbox/src/main.ts'),
+  layouts: resolve(import.meta.dirname, 'frontend/src/layouts.css'),
 };
 const name = process.env.SWG_ENTRY ?? 'lightbox';
 const input = entries[name];
 if (!input) throw new Error(`Unknown SWG_ENTRY "${name}"`);
+const cssOnly = name === 'layouts';
 
 export default defineConfig({
   root: import.meta.dirname,
   base: './',
   build: {
     outDir: resolve(import.meta.dirname, 'build'),
-    emptyOutDir: true,
+    // The first run of scripts/build-all.mjs empties the directory, later runs add to it.
+    emptyOutDir: process.env.SWG_KEEP_OUT !== '1',
     manifest: true,
-    cssCodeSplit: false,
+    cssCodeSplit: cssOnly,
     sourcemap: false,
     // Matches the shared browserslist (package.json): evergreen browsers, Safari >= 16.
     target: ['es2021', 'chrome100', 'edge100', 'firefox100', 'safari16', 'ios16'],
     modulePreload: false,
     // Library mode (IIFE) keeps the CSS as a separate file instead of injecting it from the script.
-    lib: {
-      entry: { [name]: input },
-      formats: ['iife'],
-      name: `swg_${name}`,
-      cssFileName: name,
-    },
+    ...(cssOnly
+      ? {}
+      : {
+          lib: {
+            entry: { [name]: input },
+            formats: ['iife' as const],
+            name: `swg_${name}`,
+            cssFileName: name,
+          },
+        }),
     rolldownOptions: {
+      ...(cssOnly ? { input } : {}),
       output: {
         entryFileNames: '[name]-[hash].js',
         assetFileNames: '[name]-[hash][extname]',

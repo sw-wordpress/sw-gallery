@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>sw-gallery grid fixture</title>
+        <!-- Source stylesheet, no build needed. Review: resize (1/2/3/4 columns), add dir="rtl" to html, switch the OS colour scheme, Tab through the links. -->
+        <link rel="stylesheet" href="../src/layouts.css" />
+        <style>
+            :root {
+                color-scheme: light dark;
+            }
+            body {
+                font-family: system-ui, sans-serif;
+                margin: 1rem auto;
+                max-width: 64rem;
+                padding: 0 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Grid (1 / 2 / 3 / 4 columns, 16:9)</h1>
+        <div
+            class="swg-gallery swg-layout-grid"
+            data-swg-gallery
+            style="
+                --swg-columns: 1;
+                --swg-columns-sm: 2;
+                --swg-columns-md: 3;
+                --swg-columns-xl: 4;
+                --swg-gap: 12px;
+                --swg-aspect: 16/9;
+            "
+        >
+            <ul class="swg-items" role="list">
+                <li class="swg-item">
+                    <a class="swg-link" href="#a"
+                        ><img
+                            alt="Red"
+                            width="300"
+                            height="200"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='300' height='200' fill='%23c0392b'/%3E%3C/svg%3E"
+                    /></a>
+                    <p class="swg-caption">A caption below the thumbnail</p>
+                </li>
+                <li class="swg-item">
+                    <a class="swg-link" href="#b"
+                        ><img
+                            alt="Green"
+                            width="200"
+                            height="300"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300'%3E%3Crect width='200' height='300' fill='%2327ae60'/%3E%3C/svg%3E"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a class="swg-link" href="#c"
+                        ><img
+                            alt="Blue"
+                            width="300"
+                            height="300"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect width='300' height='300' fill='%232980b9'/%3E%3C/svg%3E"
+                    /></a>
+                    <p class="swg-caption">
+                        A longer caption to check wrapping inside a narrow column.
+                    </p>
+                </li>
+                <li class="swg-item">
+                    <a class="swg-link" href="#d"
+                        ><img
+                            alt="Yellow"
+                            width="400"
+                            height="200"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Crect width='400' height='200' fill='%23f1c40f'/%3E%3C/svg%3E"
+                    /></a>
+                </li>
+            </ul>
+        </div>
+
+        <nav class="swg-pagination" aria-label="Gallery pages">
+            <ul class="swg-pagination__list">
+                <li class="swg-pagination__item">
+                    <span class="swg-pagination__disabled" aria-disabled="true">Previous</span>
+                </li>
+                <li class="swg-pagination__item">
+                    <span class="swg-pagination__current" aria-current="page">1</span>
+                </li>
+                <li class="swg-pagination__item">
+                    <a class="swg-pagination__link" href="#p2">2</a>
+                </li>
+                <li class="swg-pagination__item">
+                    <a class="swg-pagination__link" href="#p3">3</a>
+                </li>
+                <li class="swg-pagination__item">
+                    <span class="swg-pagination__gap" aria-hidden="true">&hellip;</span>
+                </li>
+                <li class="swg-pagination__item">
+                    <a class="swg-pagination__link" href="#p9" rel="next">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </body>
+</html>
