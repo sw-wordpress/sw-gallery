@@ -12,6 +12,8 @@ namespace SWGallery\WordPress;
 use SWGallery\WordPress\Database\Migrator;
 use SWGallery\WordPress\Database\Schema;
 use SWGallery\WordPress\Infrastructure\WpLogger;
+use SWGallery\WordPress\Rendering\MediaEpoch;
+use SWGallery\WordPress\Settings\PluginSettings;
 
 final class Lifecycle {
 
@@ -64,7 +66,7 @@ final class Lifecycle {
 				$wpdb->esc_like( '_transient_timeout_swg_' ) . '%'
 			)
 		);
-		foreach ( array( Schema::OPTION, Migrator::LOCK_OPTION, WpLogger::OPTION, self::OPTION_DELETE_ON_UNINSTALL ) as $option ) {
+		foreach ( array( Schema::OPTION, Migrator::LOCK_OPTION, WpLogger::OPTION, PluginSettings::OPTION, MediaEpoch::OPTION, self::OPTION_DELETE_ON_UNINSTALL ) as $option ) {
 			delete_option( $option );
 		}
 	}

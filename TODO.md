@@ -143,6 +143,8 @@ Tooling and tests
 - [x] FU-14 (done 2026-11-11: `workers: 3` in `e2e/playwright.config.ts`; with ~10 workers two tests failed even after the retry, with 3 workers the whole suite passes) E2E host noise.
 - [ ] FU-15 Gallery list polish: placeholder cover tile too tall (4:3 on mobile), double focus ring in the search field, 375 px rail nav slightly wider than the viewport.
 - [ ] FU-16 Contributors lack `upload_files`, so under D11 all of their items count as `missing`: decide whether contributors may use already-readable library images (D11 revisit).
+- [ ] FU-17 `swg_gallery_changed` fires only from core events: `RevisionBump` (attachment deleted, cover cleared, repair run) bumps revisions without an event, so full-page caches/CDNs are not purged in those cases (the object-cache fragment cache stays correct through the media epoch) — emit the action from `GalleryLifecycleRegistrar`/repair too.
+- [ ] FU-18 Pagination arg `swg_page_<galleryId>` is shared by two embeds of the same gallery on one page (documented); the shortcode/block must omit `page` unless the embed really sets it, otherwise the URL arg never takes effect.
 - [ ] FU-05 Docs: `docs/development.md` must mention the `assets/` project, `bin/rebuild-on-change.sh`, `bin/watch-build.sh` and the new test commands.
 
 ## M2 — Management

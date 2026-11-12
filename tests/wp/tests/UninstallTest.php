@@ -11,6 +11,8 @@ use SWGallery\WordPress\Database\SchemaRegistrar;
 use SWGallery\WordPress\Infrastructure\WpLogger;
 use SWGallery\WordPress\Lifecycle;
 use SWGallery\WordPress\PostTypes;
+use SWGallery\WordPress\Rendering\MediaEpoch;
+use SWGallery\WordPress\Settings\PluginSettings;
 use SWGallery\WordPress\Repository\WpdbGalleryItemRepository;
 
 class UninstallTest extends SwgTestCase {
@@ -53,6 +55,8 @@ class UninstallTest extends SwgTestCase {
 		update_option( Lifecycle::OPTION_DELETE_ON_UNINSTALL, '1' );
 		update_option( WpLogger::OPTION, array( 'x' ), false );
 		add_option( Migrator::LOCK_OPTION, time() + 60, '', false );
+		update_option( PluginSettings::OPTION, '{"schemaVersion":1,"itemsPerPage":60}', false );
+		update_option( MediaEpoch::OPTION, 'abc123', false );
 		set_transient( 'swg_test_transient', 'v', 600 );
 		set_transient( 'other_transient', 'keep', 600 );
 		$this->use_real_ddl();
@@ -63,7 +67,7 @@ class UninstallTest extends SwgTestCase {
 			$this->assertNull( get_post( $id ), 'Every gallery of every status is deleted.' );
 		}
 		$this->assertFalse( $this->table_exists( Schema::items_table() ) );
-		foreach ( array( Schema::OPTION, WpLogger::OPTION, Migrator::LOCK_OPTION, Lifecycle::OPTION_DELETE_ON_UNINSTALL ) as $option ) {
+		foreach ( array( Schema::OPTION, WpLogger::OPTION, Migrator::LOCK_OPTION, PluginSettings::OPTION, MediaEpoch::OPTION, Lifecycle::OPTION_DELETE_ON_UNINSTALL ) as $option ) {
 			$this->assertFalse( get_option( $option ), $option );
 		}
 		$this->assertSame( 0, (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE '\\_transient\\_%swg\\_%'" ) ); // phpcs:ignore WordPress.DB
