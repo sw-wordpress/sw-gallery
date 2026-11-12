@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace SWGallery\WordPress\Bootstrap;
 
 use SWGallery\WordPress\Admin\AdminRegistrar;
+use SWGallery\WordPress\Block\BlockRegistrar;
 use SWGallery\WordPress\Cli\CliRegistrar;
 use SWGallery\WordPress\Database\SchemaRegistrar;
 use SWGallery\WordPress\Hooks\GalleryLifecycleRegistrar;
@@ -26,6 +27,7 @@ final class Registrars {
 	public static function all(): array {
 		return array(
 			new AdminRegistrar(),
+			new BlockRegistrar(),
 			new CliRegistrar(),
 			new CoreRegistrar(),
 			new EventBridgeRegistrar(),
