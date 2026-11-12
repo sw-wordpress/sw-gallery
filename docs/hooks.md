@@ -44,3 +44,12 @@ add_action( 'swg_items_assigned', static function ( array $payload ): void {
 	// $payload['gallery_id'], $payload['attachment_ids'], $payload['revision']
 } );
 ```
+
+## `swg_gallery_changed` (cache purge)
+`do_action( 'swg_gallery_changed', int $gallery_id )` fires after every persisted gallery change (`gallery_created|updated|trashed|restored|deleted|duplicated`, `items_assigned|removed|reordered`, `item_updated`), once per change, after the revision was saved; vetoable `before_*` events never fire it. Use it to purge page caches/CDN for pages embedding the gallery. Payload: the gallery id only; no veto. A throwing callback is caught, logged as `swg_listener_failed` (event, hook, exception class) and ignored. Attachment edits do not fire it (they change the media epoch of the fragment cache, see `docs/rendering.md`).
+
+```php
+add_action( 'swg_gallery_changed', static function ( int $gallery_id ): void {
+	my_cache_purge_gallery( $gallery_id );
+} );
+```

@@ -21,6 +21,8 @@ use SWGallery\Core\Event\EventDispatcher;
 use SWGallery\WordPress\Media\ThumbnailResolver;
 use SWGallery\WordPress\Media\WpMediaRepository;
 use SWGallery\WordPress\Rendering\GalleryRenderer;
+use SWGallery\WordPress\Rendering\MediaEpoch;
+use SWGallery\WordPress\Rendering\RenderCache;
 use SWGallery\WordPress\Rendering\Layout\GridLayout;
 use SWGallery\WordPress\Rendering\View\FeedMarkup;
 use SWGallery\WordPress\Repository\PostMetaRevisionStore;
@@ -49,6 +51,8 @@ final class Services {
 	private static ?ThumbnailResolver $thumbnails     = null;
 	private static ?RenderGallery $render_pipeline    = null;
 	private static ?GalleryRenderer $gallery_renderer = null;
+	private static ?MediaEpoch $media_epoch           = null;
+	private static ?RenderCache $render_cache         = null;
 
 	public static function logger(): WpLogger {
 		return self::$logger ??= new WpLogger();
@@ -158,7 +162,17 @@ final class Services {
 
 	/** The renderer every frontend surface (shortcode, block, PHP API, preview, feed) calls. */
 	public static function gallery_renderer(): GalleryRenderer {
-		return self::$gallery_renderer ??= new GalleryRenderer( self::render_pipeline(), self::galleries(), self::access() );
+		return self::$gallery_renderer ??= new GalleryRenderer( self::render_pipeline(), self::galleries(), self::access(), self::settings(), self::render_cache() );
+	}
+
+	/** The token that invalidates cached fragments when media change (shared with the cache invalidation hooks). */
+	public static function media_epoch(): MediaEpoch {
+		return self::$media_epoch ??= new MediaEpoch();
+	}
+
+	/** Fragment cache of the public render output. */
+	public static function render_cache(): RenderCache {
+		return self::$render_cache ??= new RenderCache( self::settings(), self::revisions(), self::media_epoch() );
 	}
 
 	/** Forgets all instances (tests). */
@@ -180,5 +194,7 @@ final class Services {
 		self::$thumbnails       = null;
 		self::$render_pipeline  = null;
 		self::$gallery_renderer = null;
+		self::$media_epoch      = null;
+		self::$render_cache     = null;
 	}
 }

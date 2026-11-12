@@ -22,7 +22,8 @@ use SWGallery\WordPress\Rendering\View\LightboxLabels;
 /**
  * Emits the markup contract of the lightbox (assets/README.md): a list of plain links that work without JavaScript.
  * Column count and gap travel as CSS custom properties; the stylesheet follows with M3-08. Item markup, labels and the
- * caption allowlist live in `Rendering/View`; everything is escaped for its context.
+ * caption allowlist live in `Rendering/View`; everything is escaped for its context. The stylesheet is
+ * `assets/frontend/src/layouts.css`.
  */
 final class GridLayout implements GalleryLayoutInterface, ImageHintsProviderInterface {
 
@@ -30,7 +31,7 @@ final class GridLayout implements GalleryLayoutInterface, ImageHintsProviderInte
 
 	private const BREAKPOINTS = array( 'base', 'sm', 'md', 'lg', 'xl' );
 
-	/** Provisional minimum viewport widths of the breakpoints, in pixels (see imageHints()). */
+	/** Minimum viewport widths of the breakpoints, in pixels; identical to the media queries of assets/frontend/src/layouts.css. */
 	private const BREAKPOINT_WIDTHS = array(
 		'sm' => 576,
 		'md' => 768,
@@ -39,6 +40,9 @@ final class GridLayout implements GalleryLayoutInterface, ImageHintsProviderInte
 	);
 
 	private const DEFAULT_COLUMNS = 3;
+
+	/** Thumbnail aspect ratios; `auto` keeps the natural ratio, the others crop with `object-fit: cover`. */
+	private const ASPECTS = array( 'auto', '1:1', '4:3', '3:2', '16:9' );
 
 	/** Container width the thumbnail target is derived from, in pixels. */
 	private const REFERENCE_WIDTH = 1200;
@@ -68,6 +72,11 @@ final class GridLayout implements GalleryLayoutInterface, ImageHintsProviderInte
 					'maximum' => 64,
 					'default' => 8,
 				),
+				'aspect'  => array(
+					'type'    => 'string',
+					'enum'    => self::ASPECTS,
+					'default' => 'auto',
+				),
 			),
 		);
 	}
@@ -91,7 +100,7 @@ final class GridLayout implements GalleryLayoutInterface, ImageHintsProviderInte
 
 	/**
 	 * Thumbnails are displayed at roughly the container width divided by the column count. The breakpoints below are
-	 * provisional until the grid stylesheet (M3-08) fixes them; `100vw / n` overestimates in narrow containers, which
+	 * the media queries of the grid stylesheet; `100vw / n` overestimates in narrow containers, which
 	 * only costs a slightly larger download, never a blurry image.
 	 */
 	public function imageHints( GallerySettings $settings ): ImageHints {
@@ -140,6 +149,7 @@ final class GridLayout implements GalleryLayoutInterface, ImageHintsProviderInte
 	private function custom_properties( array $values ): string {
 		$columns = $values['columns'] ?? 3;
 		$gap     = $values['gap'] ?? 8;
+		$aspect  = $values['aspect'] ?? 'auto';
 		$css     = '';
 
 		if ( is_array( $columns ) ) {
@@ -155,6 +165,10 @@ final class GridLayout implements GalleryLayoutInterface, ImageHintsProviderInte
 			$css = '--swg-columns:3;';
 		}
 
-		return $css . sprintf( '--swg-gap:%dpx', is_int( $gap ) ? max( 0, min( 64, $gap ) ) : 8 );
+		$css .= sprintf( '--swg-gap:%dpx', is_int( $gap ) ? max( 0, min( 64, $gap ) ) : 8 );
+		if ( is_string( $aspect ) && 'auto' !== $aspect && in_array( $aspect, self::ASPECTS, true ) ) {
+			$css .= sprintf( ';--swg-aspect:%s', str_replace( ':', '/', $aspect ) );
+		}
+		return $css;
 	}
 }

@@ -18,8 +18,11 @@ use SWGallery\Core\Application\Render\RenderResult;
 use SWGallery\Core\Contract\GalleryRepositoryInterface;
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Access\RenderAccess;
+use SWGallery\Core\Domain\Gallery\Gallery;
 use SWGallery\Core\Domain\Gallery\GallerySettings;
+use SWGallery\WordPress\Rendering\View\PaginationMarkup;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
+use SWGallery\WordPress\Settings\PluginSettings;
 
 /**
  * Builds the {@see RenderContext} from the current request (user, password cookie, instance numbering), runs the pipeline
@@ -27,7 +30,13 @@ use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
  * before the gallery. It enqueues nothing; callers read {@see RenderResult::$assets}.
  *
  * Options (all optional, all untrusted and sanitised here): `page`, `per_page`, `layout`, `settings` (array),
- * `eager` (bool, default true).
+ * `eager` (bool, default true). Without `page` the page comes from the request argument `swg_page_<galleryId>`
+ * (shortcode, block and PHP API only; previews and feeds always start at page 1). Without `per_page` the plugin
+ * setting `itemsPerPage` applies.
+ *
+ * Output paths: published, password-free output for users who cannot edit the gallery is served from the fragment
+ * cache ({@see RenderCache}); everything else is rendered fresh. Paging controls are appended after the cache,
+ * because the links depend on the request URL.
  */
 final class GalleryRenderer {
 
@@ -39,7 +48,9 @@ final class GalleryRenderer {
 	public function __construct(
 		private readonly RenderGallery $pipeline,
 		private readonly GalleryRepositoryInterface $galleries,
-		private readonly WpGalleryAccessPolicy $access
+		private readonly WpGalleryAccessPolicy $access,
+		private readonly PluginSettings $settings,
+		private readonly RenderCache $cache
 	) {
 	}
 
@@ -52,19 +63,60 @@ final class GalleryRenderer {
 		if ( $gallery_id <= 0 ) {
 			return new RenderResult( '', RenderAccess::Nothing );
 		}
-		$context = $this->context( $gallery_id, $entry, $options );
-		$result  = $this->pipeline->render( $context );
+		$gallery = $this->galleries->find( $gallery_id );
+		$context = $this->context( $gallery_id, $entry, $options, $gallery );
+		$result  = $this->cached_or_fresh( $context, $gallery );
 
 		if ( ! $entry->isInteractive() ) {
-			return $result->needsPasswordForm() ? $result->withHtml( '' ) : $result;
+			return $result->needsPasswordForm() ? $result->withHtml( '' ) : $this->with_paging( $result, $context, $gallery );
 		}
 		if ( $result->needsPasswordForm() ) {
 			return $result->withHtml( get_the_password_form( $gallery_id ) );
 		}
+		$result = $this->with_paging( $result, $context, $gallery );
 		if ( array() === $result->diagnostics ) {
 			return $result;
 		}
 		return $result->withHtml( DiagnosticMarkup::render( $result->diagnostics ) . $result->html );
+	}
+
+	/**
+	 * Serves public output from the fragment cache and fills it on a miss; everything else bypasses the cache.
+	 *
+	 * @param RenderContext $context Render context.
+	 * @param Gallery|null  $gallery The gallery as loaded for this request.
+	 */
+	private function cached_or_fresh( RenderContext $context, ?Gallery $gallery ): RenderResult {
+		if ( null === $gallery || ! $this->cache->is_cacheable( $gallery, $context->entryPoint, $this->access->canEdit( $context->actor, $gallery ) ) ) {
+			return $this->pipeline->render( $context );
+		}
+		$key = $this->cache->key( $context, $context->page );
+		$hit = $this->cache->lookup( $key, $context->instanceId );
+		if ( null !== $hit ) {
+			return $hit;
+		}
+		$result = $this->pipeline->render( $context );
+		// A page past the end is stored under the clamped page only, so arbitrary page numbers cannot fill the cache.
+		$this->cache->store( $result->page === $context->page ? $key : $this->cache->key( $context, $result->page ), $result, $context->instanceId );
+		return $result;
+	}
+
+	/**
+	 * Appends the paging controls: links for the frontend surfaces, a plain "page n of m" text for feeds and previews.
+	 *
+	 * @param RenderResult  $result  Result of the pipeline.
+	 * @param RenderContext $context Render context.
+	 * @param Gallery|null  $gallery The gallery as loaded for this request.
+	 */
+	private function with_paging( RenderResult $result, RenderContext $context, ?Gallery $gallery ): RenderResult {
+		if ( RenderAccess::Render !== $result->access || '' === $result->html || $result->totalPages < 2 ) {
+			return $result;
+		}
+		$links  = in_array( $context->entryPoint, array( EntryPoint::Shortcode, EntryPoint::Block, EntryPoint::PhpApi ), true );
+		$paging = $links
+			? PaginationMarkup::nav( $context->galleryId, null === $gallery ? '' : $gallery->title, $result->page, $result->totalPages, PaginationMarkup::current_url() )
+			: PaginationMarkup::status( $result->page, $result->totalPages );
+		return $result->withHtml( $result->html . $paging );
 	}
 
 	/**
@@ -82,10 +134,10 @@ final class GalleryRenderer {
 	 * @param int                  $gallery_id Gallery id.
 	 * @param EntryPoint           $entry      The calling surface.
 	 * @param array<string, mixed> $options    Untrusted embed options.
+	 * @param Gallery|null         $gallery    The gallery as loaded for this request.
 	 */
-	private function context( int $gallery_id, EntryPoint $entry, array $options ): RenderContext {
+	private function context( int $gallery_id, EntryPoint $entry, array $options, ?Gallery $gallery ): RenderContext {
 		$user     = get_current_user_id();
-		$gallery  = $this->galleries->find( $gallery_id );
 		$unlocked = null === $gallery || $this->access->isPasswordUnlocked( $gallery );
 
 		$number                         = ( $this->instances[ $gallery_id ] ?? 0 ) + 1;
@@ -106,14 +158,19 @@ final class GalleryRenderer {
 			$entry,
 			new Actor( max( 0, $user ) ),
 			sprintf( 'swg-%d-%d', $gallery_id, $number ),
-			max( 1, $this->int_option( $options, 'page', 1 ) ),
-			max( 1, min( RenderContext::MAX_PER_PAGE, $this->int_option( $options, 'per_page', RenderContext::DEFAULT_PER_PAGE ) ) ),
+			max( 1, min( PaginationMarkup::MAX_PAGE, $this->int_option( $options, 'page', $this->request_page( $gallery_id, $entry ) ) ) ),
+			max( PluginSettings::MIN_ITEMS_PER_PAGE, min( PluginSettings::MAX_ITEMS_PER_PAGE, $this->int_option( $options, 'per_page', $this->settings->get()['itemsPerPage'] ) ) ),
 			$layout,
 			$settings,
 			$unlocked,
 			! isset( $options['eager'] ) || (bool) $options['eager'],
 			$first_embed
 		);
+	}
+
+	/** The page requested through the URL; previews and feeds never read the request. */
+	private function request_page( int $gallery_id, EntryPoint $entry ): int {
+		return EntryPoint::Preview === $entry || ! $entry->isInteractive() ? 1 : PaginationMarkup::requested_page( $gallery_id );
 	}
 
 	/**

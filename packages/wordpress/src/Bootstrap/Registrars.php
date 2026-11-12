@@ -12,6 +12,7 @@ namespace SWGallery\WordPress\Bootstrap;
 use SWGallery\WordPress\Admin\AdminRegistrar;
 use SWGallery\WordPress\Cli\CliRegistrar;
 use SWGallery\WordPress\Database\SchemaRegistrar;
+use SWGallery\WordPress\Hooks\CacheInvalidationRegistrar;
 use SWGallery\WordPress\Hooks\GalleryLifecycleRegistrar;
 use SWGallery\WordPress\Infrastructure\EventBridgeRegistrar;
 use SWGallery\WordPress\Rest\RestRegistrar;
@@ -26,6 +27,7 @@ final class Registrars {
 	public static function all(): array {
 		return array(
 			new AdminRegistrar(),
+			new CacheInvalidationRegistrar(),
 			new CliRegistrar(),
 			new CoreRegistrar(),
 			new EventBridgeRegistrar(),

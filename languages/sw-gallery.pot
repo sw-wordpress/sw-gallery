@@ -178,6 +178,38 @@ msgstr ""
 msgid "The image could not be loaded."
 msgstr ""
 
+#: packages/wordpress/src/Rendering/View/PaginationMarkup.php:108
+msgid "Gallery pages"
+msgstr ""
+
+#. translators: %s: gallery title.
+#: packages/wordpress/src/Rendering/View/PaginationMarkup.php:110
+#, php-format
+msgid "Pages of gallery \"%s\""
+msgstr ""
+
+#: packages/wordpress/src/Rendering/View/PaginationMarkup.php:113
+#: packages/wordpress/src/Rendering/View/PaginationMarkup.php:114
+msgid "Previous page"
+msgstr ""
+
+#. translators: %d: page number.
+#: packages/wordpress/src/Rendering/View/PaginationMarkup.php:124
+#, php-format
+msgid "Page %d"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/View/PaginationMarkup.php:129
+#: packages/wordpress/src/Rendering/View/PaginationMarkup.php:130
+msgid "Next page"
+msgstr ""
+
+#. translators: 1: current page, 2: number of pages.
+#: packages/wordpress/src/Rendering/View/PaginationMarkup.php:147
+#, php-format
+msgid "Page %1$d of %2$d"
+msgstr ""
+
 #: packages/wordpress/src/Rest/ErrorMapper.php:52
 msgid "The request contains invalid values."
 msgstr ""
