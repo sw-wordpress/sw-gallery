@@ -99,6 +99,9 @@ class RenderPipelineTest extends SwgTestCase {
 		$gallery = $this->gallery_with_images( 2, $status, $password );
 
 		foreach ( EntryPoint::cases() as $entry ) {
+			if ( EntryPoint::Preview === $entry ) {
+				continue; // The authorised preview has its own rule, see PreviewAccessTest.
+			}
 			$result = $this->render( $gallery, $ids[ $user ], $entry );
 			$label  = "$status/$password/$user/{$entry->value}";
 			switch ( $expected ) {

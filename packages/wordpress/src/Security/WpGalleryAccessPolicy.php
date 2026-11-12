@@ -16,6 +16,7 @@ use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Access\RenderAccess;
 use SWGallery\Core\Domain\Access\StatusAccessRules;
 use SWGallery\Core\Domain\Gallery\Gallery;
+use SWGallery\Core\Domain\Gallery\GalleryStatus;
 use SWGallery\WordPress\Media\AllowedMimeTypes;
 use SWGallery\WordPress\PostTypes;
 
@@ -42,6 +43,18 @@ final class WpGalleryAccessPolicy implements GalleryAccessPolicyInterface {
 	}
 
 	/**
+	 * Authorised preview (FU-13): users who can edit the stored gallery see it in every non-trashed status (draft,
+	 * pending, future, private, published) and without the password; everybody else, and every trashed gallery, gets
+	 * nothing. Only the preview entry point asks this; the public embeds use embedAccess().
+	 */
+	public function previewAccess( Actor $actor, Gallery $gallery ): RenderAccess {
+		if ( GalleryStatus::Trash === $gallery->status || ! $this->canEdit( $actor, $gallery ) ) {
+			return RenderAccess::Nothing;
+		}
+		return RenderAccess::Render;
+	}
+
+	/**
 	 * The admin app is for users who can write posts; within it a gallery is visible when the user may read it
 	 * (own drafts, published, private only for owners or users with `read_private_posts`).
 	 */
@@ -64,6 +77,14 @@ final class WpGalleryAccessPolicy implements GalleryAccessPolicyInterface {
 	 */
 	public function canPublish( Actor $actor, Gallery $gallery ): bool {
 		return $this->canEdit( $actor, $gallery ) && $this->can( $actor, 'publish_post', $gallery->id );
+	}
+
+	/**
+	 * Creating a gallery directly as `publish` or `private` (FU-10): a new gallery has no id yet, so the right is the
+	 * post type's `publish_posts` capability. Updates use {@see self::canPublish()}.
+	 */
+	public function canPublishNew( Actor $actor ): bool {
+		return $this->can( $actor, $this->capabilities()->publish_posts ?? 'publish_posts' );
 	}
 
 	/**
@@ -106,7 +127,10 @@ final class WpGalleryAccessPolicy implements GalleryAccessPolicyInterface {
 
 	private function capabilities(): \stdClass {
 		$type = get_post_type_object( PostTypes::GALLERY );
-		return null === $type ? (object) array( 'create_posts' => 'edit_posts' ) : $type->cap;
+		return null === $type ? (object) array(
+			'create_posts'  => 'edit_posts',
+			'publish_posts' => 'publish_posts',
+		) : $type->cap;
 	}
 
 	private function attachment( int $attachment_id ): ?\WP_Post {

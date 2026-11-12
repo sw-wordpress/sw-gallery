@@ -20,6 +20,7 @@ final class Plugin {
 	}
 
 	public function boot(): void {
+		require_once __DIR__ . '/Api/functions.php';
 		foreach ( Registrars::all() as $registrar ) {
 			$registrar->register();
 		}

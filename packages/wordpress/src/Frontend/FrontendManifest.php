@@ -1,0 +1,103 @@
+<?php
+/**
+ * Validated reader of the Vite build manifest of the frontend assets.
+ *
+ * @package sw-gallery
+ */
+
+declare(strict_types=1);
+
+namespace SWGallery\WordPress\Frontend;
+
+/**
+ * Resolves the hashed lightbox script and the stylesheets of `assets/build`. Everything read from the manifest is
+ * untrusted: only plain relative file names below the build directory that exist on disk (after resolving symlinks),
+ * carry the expected extension and are not symlinks themselves are accepted. A missing or hostile manifest yields
+ * null entries, so nothing is enqueued and no path ever reaches the output.
+ */
+final class FrontendManifest {
+
+	public const SCRIPT_KEY = 'lightbox/src/main.ts';
+	public const STYLE_KEY  = 'style.css';
+	/** Optional: the layout stylesheet (frontend CSS stream). */
+	public const LAYOUT_KEY = 'frontend/src/layouts.css';
+
+	private const MAX_MANIFEST_BYTES = 262144;
+	private const FILE_PATTERN       = '#^[A-Za-z0-9_][A-Za-z0-9_./-]*\.(js|css)$#';
+
+	private string $build_dir;
+
+	/** @var array{script: ?string, style: ?string, layout: ?string}|null */
+	private ?array $resolved = null;
+
+	public function __construct( string $build_dir ) {
+		$this->build_dir = rtrim( $build_dir, '/\\' );
+	}
+
+	/**
+	 * Build-relative file names; an entry is null when it is absent or not trustworthy.
+	 *
+	 * @return array{script: ?string, style: ?string, layout: ?string}
+	 */
+	public function resolve(): array {
+		if ( null !== $this->resolved ) {
+			return $this->resolved;
+		}
+		$manifest = $this->read();
+		if ( null === $manifest ) {
+			$this->resolved = array(
+				'script' => null,
+				'style'  => null,
+				'layout' => null,
+			);
+			return $this->resolved;
+		}
+		$this->resolved = array(
+			'script' => $this->entry_file( $manifest, self::SCRIPT_KEY, 'js' ),
+			'style'  => $this->entry_file( $manifest, self::STYLE_KEY, 'css' ),
+			'layout' => $this->entry_file( $manifest, self::LAYOUT_KEY, 'css' ),
+		);
+		return $this->resolved;
+	}
+
+	/**
+	 * @return array<mixed>|null
+	 */
+	private function read(): ?array {
+		$file = $this->build_dir . '/.vite/manifest.json';
+		$base = realpath( $this->build_dir );
+		$real = realpath( $file );
+		if ( false === $base || false === $real || is_link( $file ) || ! is_file( $real ) || ! str_starts_with( $real, $base . DIRECTORY_SEPARATOR ) ) {
+			return null;
+		}
+		$size = filesize( $real );
+		if ( false === $size || $size > self::MAX_MANIFEST_BYTES ) {
+			return null;
+		}
+		// Local build file, size capped above. wp_json_file_decode() would raise a notice on broken JSON.
+		$content  = file_get_contents( $real ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$manifest = false === $content ? null : json_decode( $content, true );
+		return is_array( $manifest ) ? $manifest : null;
+	}
+
+	/**
+	 * @param array<mixed> $manifest Decoded manifest.
+	 */
+	private function entry_file( array $manifest, string $key, string $extension ): ?string {
+		$entry = $manifest[ $key ] ?? null;
+		$file  = is_array( $entry ) ? ( $entry['file'] ?? null ) : null;
+		if ( ! is_string( $file ) || 1 !== preg_match( self::FILE_PATTERN, $file ) ) {
+			return null;
+		}
+		if ( ! str_ends_with( $file, '.' . $extension ) || str_contains( $file, '..' ) || str_contains( $file, '//' ) ) {
+			return null;
+		}
+
+		$base = realpath( $this->build_dir );
+		$path = realpath( $this->build_dir . '/' . $file );
+		if ( false === $base || false === $path || ! is_file( $path ) || is_link( $this->build_dir . '/' . $file ) ) {
+			return null;
+		}
+		return str_starts_with( $path, $base . DIRECTORY_SEPARATOR ) ? $file : null;
+	}
+}

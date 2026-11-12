@@ -9,6 +9,7 @@ use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Access\RenderAccess;
 use SWGallery\Core\Domain\Access\StatusAccessRules;
 use SWGallery\Core\Domain\Gallery\Gallery;
+use SWGallery\Core\Domain\Gallery\GalleryStatus;
 
 /**
  * Access policy double: grants everything to the listed user IDs (default: user 1 is the only admin) and
@@ -43,6 +44,13 @@ final class ConfigurableAccessPolicy implements GalleryAccessPolicyInterface
             $canView,
             $canView
         );
+    }
+
+    public function previewAccess(Actor $actor, Gallery $gallery): RenderAccess
+    {
+        return $gallery->status !== GalleryStatus::Trash && $this->canEdit($actor, $gallery)
+            ? RenderAccess::Render
+            : RenderAccess::Nothing;
     }
 
     public function canView(Actor $actor, Gallery $gallery): bool

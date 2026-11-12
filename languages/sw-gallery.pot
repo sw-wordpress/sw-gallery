@@ -116,6 +116,20 @@ msgid_plural "%d problems fixed."
 msgstr[0] ""
 msgstr[1] ""
 
+#: packages/wordpress/src/Frontend/AdminBar.php:54
+msgid "Edit gallery"
+msgstr ""
+
+#. translators: %s: gallery title
+#: packages/wordpress/src/Frontend/AdminBar.php:56
+#, php-format
+msgid "Edit gallery: %s"
+msgstr ""
+
+#: packages/wordpress/src/Frontend/FrontendAssets.php:78
+msgid "Gallery diagnostic (visible to editors only): the gallery frontend assets are missing or invalid. Run \"npm run build\" in assets or install the release package."
+msgstr ""
+
 #: packages/wordpress/src/PostTypes.php:30
 msgid "Gallery"
 msgstr ""
@@ -186,27 +200,27 @@ msgstr ""
 msgid "An unexpected error occurred."
 msgstr ""
 
-#: packages/wordpress/src/Rest/GalleryController.php:321
+#: packages/wordpress/src/Rest/GalleryController.php:322
 #: packages/wordpress/src/Rest/ItemController.php:298
 #: packages/wordpress/src/Rest/SettingsController.php:92
 msgid "The request does not change anything."
 msgstr ""
 
 #. translators: %s: title of the duplicated gallery
-#: packages/wordpress/src/Rest/GalleryController.php:389
+#: packages/wordpress/src/Rest/GalleryController.php:390
 #, php-format
 msgid "%s (copy)"
 msgstr ""
 
-#: packages/wordpress/src/Rest/GalleryController.php:602
+#: packages/wordpress/src/Rest/GalleryController.php:603
 msgid "The owner does not exist."
 msgstr ""
 
-#: packages/wordpress/src/Rest/GalleryController.php:610
+#: packages/wordpress/src/Rest/GalleryController.php:611
 msgid "The cover must be an image you may use."
 msgstr ""
 
-#: packages/wordpress/src/Rest/GalleryController.php:635
+#: packages/wordpress/src/Rest/GalleryController.php:636
 msgid "You are not allowed to publish galleries."
 msgstr ""
 
@@ -270,6 +284,10 @@ msgstr ""
 
 #: packages/wordpress/src/Rest/StatusReport.php:88
 msgid "Galleries are not exported in 1.0. WordPress export and migration tools move galleries without their images, and attachment IDs change on import. A gallery export with ID remapping is planned."
+msgstr ""
+
+#: packages/wordpress/src/Shortcode/GalleryShortcode.php:68
+msgid "Gallery diagnostic (visible to editors only): the shortcode needs a valid gallery id, for example [sw_gallery id=\"123\"]."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:34

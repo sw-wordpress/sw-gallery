@@ -234,7 +234,8 @@ class RestSecurityTest extends SwgTestCase {
 			Services::revisions(),
 			Services::relations(),
 			Services::access(),
-			new GalleryPresenter( Services::access() )
+			new GalleryPresenter( Services::access() ),
+			Services::settings()
 		);
 		$admin      = $this->makeUser( 'administrator' );
 		wp_set_current_user( $admin );
