@@ -203,8 +203,7 @@ const editor: Shape<typeof editorEn> = {
     assign: 'Zur Galerie hinzufügen',
     unassigned:
       'Ein hochgeladenes Bild ist noch nicht in der Galerie. | {count} hochgeladene Bilder sind noch nicht in der Galerie.',
-    summary:
-      '{added} von {total} hochgeladenen Bildern zur Galerie hinzugefügt. Fehlgeschlagen: {failed}.',
+    summary: '{added} von {total} Dateien zur Galerie hinzugefügt. Fehlgeschlagen: {failed}.',
     status: {
       queued: 'Wartet',
       uploading: '{percent} %',

@@ -53,6 +53,31 @@ describe('media picker (wp.media)', () => {
     expect(result).toEqual({ status: 'selected', attachmentIds: [4, 9] });
   });
 
+  it('accepts the selection that WordPress triggers right after closing the modal', async () => {
+    const handlers = new Map<string, () => void>();
+    const frame = {
+      on: (event: string, cb: () => void) => {
+        handlers.set(event, cb);
+        return frame;
+      },
+      // like the real toolbar: close() first, then trigger('select')
+      open: () => {
+        handlers.get('close')?.();
+        handlers.get('select')?.();
+        return frame;
+      },
+      close: () => {},
+      state: () => ({
+        get: () => ({ map: <T>(cb: (a: { id: number }) => T) => [7, 8].map((id) => cb({ id })) }),
+      }),
+    };
+    window.wp = { media: (() => frame) as never };
+    expect(await useMediaPicker().open({ title: 'T', button: 'B' })).toEqual({
+      status: 'selected',
+      attachmentIds: [7, 8],
+    });
+  });
+
   it('treats closing without a selection as cancelled', async () => {
     window.wp = { media: (() => fakeFrame([])) as never };
     expect(await useMediaPicker().open({ title: 'T', button: 'B' })).toEqual({

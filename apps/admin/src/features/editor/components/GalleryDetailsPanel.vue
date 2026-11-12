@@ -64,7 +64,6 @@ const coverIsAuto = computed(() => details.value?.coverAttachmentId === null);
     />
     <q-input
       outlined
-      dense
       type="textarea"
       autogrow
       maxlength="10000"

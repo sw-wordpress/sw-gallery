@@ -591,11 +591,15 @@ const reportAlert = computed(() => {
             @click="session.report.value = null"
           />
         </div>
-        <div v-if="rebaseLines.length > 0" class="swg-ed__alert is-warning" role="status">
+        <div
+          v-if="session.rebaseNotices.value !== null"
+          class="swg-ed__alert is-warning"
+          role="status"
+        >
           <q-icon name="r_info" size="20px" aria-hidden="true" />
           <div>
             <strong>{{ t('editor.conflict.reappliedTitle') }}</strong>
-            <ul>
+            <ul v-if="rebaseLines.length > 0">
               <li v-for="line in rebaseLines" :key="line">{{ line }}</li>
             </ul>
           </div>

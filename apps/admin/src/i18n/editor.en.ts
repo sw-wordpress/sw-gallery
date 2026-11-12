@@ -196,7 +196,7 @@ export default {
     assign: 'Add them to the gallery',
     unassigned:
       'One uploaded image is not in the gallery yet. | {count} uploaded images are not in the gallery yet.',
-    summary: '{added} of {total} uploaded images added to the gallery. Failed: {failed}.',
+    summary: '{added} of {total} files added to the gallery. Failed: {failed}.',
     status: {
       queued: 'Waiting',
       uploading: '{percent} %',

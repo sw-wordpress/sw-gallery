@@ -133,7 +133,7 @@ const isCover = computed(
         <template v-if="isOwn(f.field)">
           <q-input
             outlined
-            dense
+            :dense="!f.textarea"
             counter
             :type="f.textarea ? 'textarea' : 'text'"
             :autogrow="f.textarea"

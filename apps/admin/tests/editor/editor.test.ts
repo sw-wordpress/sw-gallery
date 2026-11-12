@@ -826,7 +826,7 @@ describe('adding images', () => {
     await settle();
     expect(upload).toHaveBeenCalledTimes(1);
     expect(server.ids()).toHaveLength(5);
-    expect(toast('1 of 1 uploaded images added')).toBeDefined();
+    expect(toast('1 of 1 files added')).toBeDefined();
     expect($('.swg-up__row')?.getAttribute('data-upload-status')).toBe('added');
     // item drags (no files) are ignored by the drop zone
     const internal = new Event('drop', { bubbles: true, cancelable: true });

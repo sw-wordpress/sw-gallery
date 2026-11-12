@@ -48,7 +48,11 @@ export function useMediaPicker() {
           ids.length > 0 ? { status: 'selected', attachmentIds: ids } : { status: 'cancelled' },
         );
       });
-      frame.on('close', () => finish({ status: 'cancelled' }));
+      // WordPress closes the modal BEFORE it triggers `select` (toolbar click: close(), then trigger('select')),
+      // so a close only counts as "cancelled" once the same tick had no selection.
+      frame.on('close', () => {
+        setTimeout(() => finish({ status: 'cancelled' }), 0);
+      });
       frame.open();
     });
   }

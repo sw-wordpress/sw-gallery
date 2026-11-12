@@ -1,3 +1,4 @@
+import { deflateSync } from 'node:zlib';
 import type { APIRequestContext, APIResponse, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 import { PLUGIN_PAGE } from './env';
@@ -15,6 +16,29 @@ export interface GalleryInput {
   title: string;
   description?: string;
   status?: 'draft' | 'pending' | 'publish' | 'private';
+}
+
+/** Item of a gallery as the REST API returns it (docs/rest-api.md, "Item resource"); only what the tests assert. */
+export interface ItemRecord {
+  id: number;
+  attachmentId: number;
+  position: number;
+  overrides: { title: string | null; caption: string | null; alt: string | null };
+  missing: boolean;
+}
+
+export interface GalleryDetail extends GalleryRecord {
+  description: string;
+  layout: string;
+  sortMode: string;
+  settings: Record<string, unknown>;
+  coverAttachmentId: number | null;
+  itemCount: number;
+}
+
+export interface MediaRecord {
+  id: number;
+  title: string;
 }
 
 interface Bootstrap {
@@ -116,6 +140,76 @@ export class GalleryFixtures {
     await this.json(response, [200]);
   }
 
+  async detail(id: number): Promise<GalleryDetail> {
+    return this.json<GalleryDetail>(await this.get(id), [200]);
+  }
+
+  /** The items of a gallery in stored order (all pages of 100). */
+  async items(galleryId: number): Promise<ItemRecord[]> {
+    const all: ItemRecord[] = [];
+    for (let page = 1; ; page += 1) {
+      const response = await this.request.get(
+        joinUrl(this.bootstrap.restRoot, `galleries/${galleryId}/items`, { page, per_page: 100 }),
+        { headers: this.headers() },
+      );
+      all.push(...(await this.json<ItemRecord[]>(response, [200])));
+      if (page >= Number(response.headers()['x-wp-totalpages'] ?? 1)) return all;
+    }
+  }
+
+  /** Adds attachments to a gallery with the current revision (fixtures only: the editor under test never uses this). */
+  async assign(galleryId: number, attachmentIds: number[]): Promise<void> {
+    const gallery = await this.detail(galleryId);
+    const response = await this.request.post(
+      joinUrl(this.bootstrap.restRoot, `galleries/${galleryId}/items`),
+      { headers: this.headers(), data: { attachmentIds, expectedRevision: gallery.revision } },
+    );
+    await this.json(response, [200]);
+  }
+
+  /** Uploads a tiny real image through `POST /media` (type and decodability are checked by the server). */
+  async uploadImage(title: string, buffer: Buffer, filename = 'e2e.png'): Promise<MediaRecord> {
+    const response = await this.request.post(joinUrl(this.bootstrap.restRoot, 'media'), {
+      headers: this.headers(),
+      multipart: { file: { name: filename, mimeType: 'image/png', buffer }, title },
+    });
+    const media = await this.json<{ id: number; title: string }>(response, [201]);
+    return { id: media.id, title: media.title };
+  }
+
+  private wpRoot(): string {
+    return this.bootstrap.restRoot.replace('swg/v1', 'wp/v2');
+  }
+
+  /** True while the attachment exists (core REST). */
+  async mediaExists(id: number): Promise<boolean> {
+    const response = await this.request.get(joinUrl(this.wpRoot(), `media/${id}`), {
+      headers: this.headers(),
+    });
+    return response.status() === 200;
+  }
+
+  async deleteMedia(id: number): Promise<void> {
+    await this.request.delete(joinUrl(this.wpRoot(), `media/${id}`, { force: 'true' }), {
+      headers: this.headers(),
+    });
+  }
+
+  /** Permanently deletes the uploaded fixtures whose title starts with the prefix. */
+  async purgeMedia(prefix: string): Promise<void> {
+    const response = await this.request.get(
+      joinUrl(this.bootstrap.restRoot, 'media', { search: prefix, per_page: 100 }),
+      { headers: this.headers() },
+    );
+    if (response.status() !== 200) return;
+    for (const media of (await response.json()) as MediaRecord[]) {
+      if (!media.title.startsWith(prefix)) continue;
+      await this.request.delete(joinUrl(this.wpRoot(), `media/${media.id}`, { force: 'true' }), {
+        headers: this.headers(),
+      });
+    }
+  }
+
   /** Permanently deletes everything whose title starts with the prefix (live and trashed). */
   async purge(prefix: string): Promise<void> {
     const all = await this.list({
@@ -142,4 +236,42 @@ export class GalleryFixtures {
 /** Unique title prefix per test run: parallel files and repeated runs never see each other's data. */
 export function uniquePrefix(label: string): string {
   return `E2E ${label} ${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+}
+
+function crc32(buffer: Buffer): number {
+  let crc = ~0;
+  for (const byte of buffer) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1) crc = crc & 1 ? (crc >>> 1) ^ 0xedb88320 : crc >>> 1;
+  }
+  return ~crc >>> 0;
+}
+
+function chunk(type: string, data: Buffer): Buffer {
+  const length = Buffer.alloc(4);
+  length.writeUInt32BE(data.length);
+  const body = Buffer.concat([Buffer.from(type, 'ascii'), data]);
+  const crc = Buffer.alloc(4);
+  crc.writeUInt32BE(crc32(body));
+  return Buffer.concat([length, body, crc]);
+}
+
+/** A valid single-colour PNG (default 24x24, a few hundred bytes): fixtures stay tiny but decodable. */
+export function tinyPng(rgb: [number, number, number], size = 24): Buffer {
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(size, 0);
+  header.writeUInt32BE(size, 4);
+  header[8] = 8; // bit depth
+  header[9] = 2; // truecolour
+  const row = Buffer.concat([
+    Buffer.from([0]),
+    Buffer.from(Array.from({ length: size }, () => rgb).flat()),
+  ]);
+  const raw = Buffer.concat(Array.from({ length: size }, () => row));
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', header),
+    chunk('IDAT', deflateSync(raw)),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
 }
