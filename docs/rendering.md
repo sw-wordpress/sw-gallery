@@ -21,3 +21,28 @@ Interactive markup follows the contract in `assets/README.md` (`Rendering/View/I
 ## Tools
 
 `wp swg render <galleryId> [--entry=shortcode|feed] [--page=<n>]` prints the HTML for the CLI user (`--user=<login>`).
+
+## Shortcode and PHP API
+
+Both call `Services::embed_renderer()` (the one renderer plus the asset collector) and return their markup, never echo.
+
+- `[sw_gallery id="123"]`: `id` is a required positive integer. Allowlisted overrides: `layout` (registered id), `columns` (1..12), `gap` (0..64), `page` (>= 1). Unknown attributes are ignored, invalid values dropped silently and never echoed. A missing/invalid `id` prints nothing for visitors and a short note for users with `edit_posts`. In feeds the `Feed` entry point is used. The current page comes from the request argument `swg_page_<galleryId>` (digits only, wins over `page`); the pagination links are built by the renderer.
+- `swg_render_gallery( int $gallery_id, array $args = array() ): string` (`Api/functions.php`, `@since 0.1.0`): same overrides plus `eager` (bool); entry point `PhpApi`; returns escaped HTML, `''` when nothing may be shown. Print it as is: `echo swg_render_gallery( 123, array( 'columns' => 4 ) );`.
+
+Sanitising lives in `Frontend/EmbedArguments`; access is the renderer's (D4), so draft/private/password galleries behave exactly like the other surfaces.
+
+## Frontend assets and the collector
+
+`Frontend/AssetCollector` (`Services::asset_collector()`) records every printed gallery. Any surface that prints a gallery must report it: either call `Services::embed_renderer()->render( $id, $entry, $options ): string` (renders and records) or `Services::asset_collector()->record( $id, $renderResult )` after `GalleryRenderer::render()`. Results without assets (nothing rendered, password form, feed) are not recorded. The admin bar and the asset loader read the collector.
+
+`Frontend/FrontendAssets` reads the validated `assets/build/.vite/manifest.json` (`Frontend/FrontendManifest`: relative names, `js`/`css` allowlist, realpath containment, no symlinks, 256 KB cap; a bad entry is dropped, a bad manifest yields nothing). Optional key `frontend/src/layouts.css` is the layout stylesheet (skipped when absent). Rules:
+
+- Handles are registered on `wp_enqueue_scripts` (priority 5) with `SWGALLERY_VERSION`; never on admin screens or feeds.
+- When a queried post contains the shortcode or the block `sw-gallery/gallery`, the stylesheets are enqueued right away (printed in `<head>`).
+- Otherwise `wp_print_footer_scripts` (priority 1) enqueues from the collector: stylesheets then print late in the footer. Accepted trade-off (F-17): a short flash of an unstyled gallery for embeds in widgets, templates or the PHP API. Pages without a rendered gallery load nothing.
+- The lightbox script is classic, `defer`, in the footer; script and lightbox stylesheet need the plugin setting `lightbox`.
+- A missing or invalid build enqueues nothing; editors get a footer note without paths.
+
+## Preview
+
+`Rest/PreviewController` (`POST /galleries/{id}/preview`, see `docs/rest-api.md`) renders with `EntryPoint::Preview`. The pipeline asks `GalleryAccessPolicyInterface::previewAccess` instead of `embedAccess` (FU-13): users who can edit the gallery get `Render` for every non-trashed status (draft, pending, future, private, publish) and ignore a password; everybody else and the trash get `Nothing`. Unsaved `layout`, `sortMode` and `settings` are applied in memory through `Frontend/PreviewGalleries` (a read-only repository decorator); nothing is persisted. A render cache must never read or write `Preview` output.
