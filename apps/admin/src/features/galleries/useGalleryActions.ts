@@ -1,5 +1,6 @@
 import { computed, ref, shallowRef } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 import { errorMessage, invalidFields } from '@/api/errorMessage';
 import { isApiError } from '@/api/client';
 import type { Gallery, GalleriesApi } from '@/api/galleries';
@@ -24,6 +25,7 @@ interface FailureUi {
  */
 export function useGalleryActions(api: GalleriesApi, reload: () => Promise<void>) {
   const { t } = useI18n();
+  const router = useRouter();
   const feedback = useFeedback();
 
   // --- create / edit sheet
@@ -290,6 +292,9 @@ export function useGalleryActions(api: GalleriesApi, reload: () => Promise<void>
   /** Entry point for the row menus. */
   function run(kind: GalleryActionKind, gallery: Gallery): void {
     switch (kind) {
+      case 'editImages':
+        void router.push(`/galleries/${gallery.id}`);
+        break;
       case 'edit':
         formMode.value = 'edit';
         formTarget.value = gallery;

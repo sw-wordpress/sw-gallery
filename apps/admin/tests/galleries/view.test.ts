@@ -815,7 +815,7 @@ describe('copy shortcode', () => {
 });
 
 describe('server hints and the row menu', () => {
-  it('shows only the actions the hints allow, never editor/preview/open features', async () => {
+  it('shows only the actions the hints allow, plus the editor entry, never preview/open features', async () => {
     const api = mockApi({
       list: vi.fn(async () =>
         pageOf([
@@ -843,7 +843,7 @@ describe('server hints and the row menu', () => {
     await settle();
     expect(
       $$('[role="menuitem"] .q-item__section--main').map((i) => i.textContent?.trim()),
-    ).toEqual(['Edit details', 'Duplicate', 'Copy shortcode', 'Move to trash']);
+    ).toEqual(['Edit images', 'Edit details', 'Duplicate', 'Copy shortcode', 'Move to trash']);
     expect(wrapper.find('[data-gallery-id="3"] .swg-actions-btn').exists()).toBe(false);
   });
 

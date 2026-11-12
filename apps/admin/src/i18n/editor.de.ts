@@ -1,0 +1,315 @@
+import type editorEn from './editor.en';
+
+/** Katalog des Galerie-Editors (Deutsch); muss strukturell `editor.en.ts` entsprechen. */
+type Shape<T> = { [K in keyof T]: T[K] extends string ? string : Shape<T[K]> };
+
+const editor: Shape<typeof editorEn> = {
+  title: 'Galerie bearbeiten',
+  breadcrumb: 'Brotkrumennavigation',
+  loading: 'Galerie wird geladen',
+  loadError: 'Die Galerie konnte nicht geladen werden',
+  notFound: {
+    title: 'Galerie nicht gefunden',
+    text: 'Diese Galerie existiert nicht oder Sie dürfen sie nicht sehen.',
+    back: 'Zurück zu den Galerien',
+  },
+  truncated:
+    'Diese Galerie enthält {total} Bilder; nur die ersten {loaded} sind geladen. Das Umsortieren ist bei dieser Größe deaktiviert.',
+  readonly: {
+    text: 'Sie können diese Galerie ansehen, aber nicht ändern.',
+    state:
+      'Diese Galerie hat einen anderen Zustand (z. B. im Papierkorb) und kann nicht bearbeitet werden. Stellen Sie sie zuerst in der Liste wieder her.',
+    short: 'Diese Galerie ist schreibgeschützt.',
+  },
+  actions: {
+    label: 'Editor-Aktionen',
+    undo: 'Rückgängig',
+    redo: 'Wiederholen',
+    discard: 'Änderungen verwerfen',
+    save: 'Speichern',
+    publish: 'Veröffentlichen',
+    add: 'Bilder hinzufügen',
+  },
+  status: {
+    saved: 'Alle Änderungen gespeichert',
+    unsaved:
+      'Keine ungespeicherten Änderungen | Eine ungespeicherte Änderung | {count} ungespeicherte Änderungen',
+    saving: 'Speichern …',
+    uploading: 'Bilder werden hochgeladen …',
+    discarded: 'Ungespeicherte Änderungen verworfen',
+    undone: 'Änderung rückgängig gemacht',
+    redone: 'Änderung wiederholt',
+  },
+  save: {
+    done: 'Galerie gespeichert.',
+    published: 'Galerie veröffentlicht.',
+    progress: 'Speichere {done} von {total}',
+    progressLabel: 'Speicherfortschritt',
+    dismiss: 'Schließen',
+    nothing: 'nichts',
+    blockedTitle: 'Zum Speichern einen Titel eingeben.',
+    blockedSettings: 'Zum Speichern ungültige Einstellungen korrigieren.',
+    partial:
+      'Das Speichern wurde unterbrochen. Gespeichert: {saved}. Nicht gespeichert: {failed} ({reason}). Die übrigen Änderungen bleiben vorgemerkt; der Editor zeigt den aktuellen Serverstand.',
+    step: {
+      remove: 'entfernte Bilder',
+      override: 'Bildtexte',
+      order: 'neue Reihenfolge',
+      details: 'Galeriedetails',
+    },
+    reason: {
+      conflict: 'jemand anderes hat die Galerie geändert',
+      gone: 'die Galerie existiert nicht mehr',
+      itemGone: 'ein Bild wurde von jemand anderem entfernt',
+      invalidState: 'die Galerie hat einen anderen Zustand, z. B. im Papierkorb',
+      forbidden: 'Sie dürfen das nicht',
+      invalid: 'einige Werte sind ungültig',
+      network: 'der Server ist nicht erreichbar',
+      other: 'der Server meldete einen Fehler',
+    },
+  },
+  panel: {
+    label: 'Galerieeinstellungen',
+    legend: 'Einstellungsbereich',
+    details: 'Details',
+    layout: 'Layout & Einstellungen',
+  },
+  details: {
+    title: 'Titel',
+    description: 'Beschreibung',
+    descriptionHint: 'Reiner Text; Zeilenumbrüche bleiben erhalten. Keine Formatierung.',
+    cover: 'Titelbild',
+    coverAuto: 'Automatisch (erstes Bild)',
+    coverAutoHint: 'Ohne Titelbild wird das erste Bild der Galerie verwendet.',
+    coverOther: 'Anhang {id} (nicht in dieser Galerie)',
+    coverSet: 'Titelbild geändert (ungespeichert)',
+    status: 'Status',
+    cannotPublish:
+      'Sie können Entwürfe speichern und zur Prüfung einreichen; zum Veröffentlichen fehlt das Recht.',
+    imageTitle: 'Bild {position}',
+    ids: 'Eintrag {item} · Anhang {attachment}',
+    close: 'Bilddetails schließen',
+    done: 'Fertig',
+    remove: 'Aus Galerie entfernen',
+    useAsCover: 'Als Titelbild verwenden',
+    isCover: 'Ist das Titelbild',
+    missing:
+      'Dieses Bild ist nicht mehr verfügbar (gelöscht, kein erlaubter Typ oder Sie dürfen es nicht verwenden). Sie können es aus der Galerie entfernen.',
+    dimensions: 'Abmessungen (px)',
+    type: 'Dateityp',
+    itemId: 'Eintrags-ID',
+    attachmentId: 'Anhangs-ID',
+    intro:
+      'Globale Texte stammen aus der Mediathek und sind hier schreibgeschützt. Galeriespezifische Texte gelten nur in dieser Galerie.',
+    global: 'Global (Mediathek)',
+    globalEmpty: 'Kein Text gesetzt',
+    field: { title: 'Titel', alt: 'Alternativtext', caption: 'Bildunterschrift' },
+    useOwn: 'Galeriespezifischen Text verwenden',
+    ownLabel: 'Galeriespezifisch: {field}',
+    inherits: 'Verwendet den globalen Text.',
+    blankHint:
+      'Absichtlich leer: In dieser Galerie wird nichts angezeigt, auch nicht der globale Text.',
+    altHint:
+      'Beschreiben Sie, was das Bild zeigt, für Menschen, die es nicht sehen können. Nur bei rein dekorativen Bildern leer lassen.',
+  },
+  grid: {
+    label: 'Bilder in dieser Galerie ({count})',
+    keyboardHelp:
+      'Pfeiltasten wechseln zwischen Bildern, die Leertaste wählt aus, Strg oder Befehl plus A wählt alle aus, Eingabe öffnet die Details, Entf entfernt die ausgewählten Bilder. Strg oder Befehl plus Pfeiltasten, Pos1 oder Ende verschiebt die ausgewählten Bilder.',
+    untitled: 'Bild {id}',
+    unavailable: 'Bild nicht mehr verfügbar',
+    unavailableHint: 'kann nur entfernt werden',
+    isCover: 'Titelbild',
+    edited: 'ungespeicherte Textänderungen',
+  },
+  images: {
+    region: 'Galeriebilder',
+    unavailableCount: '{count} nicht verfügbar',
+  },
+  selection: {
+    toolbar: 'Aktionen für die Auswahl',
+    count: 'Keine Bilder ausgewählt | Ein Bild ausgewählt | {count} Bilder ausgewählt',
+    all: 'Alle auswählen',
+    allSelected: 'Alle {count} Bilder ausgewählt',
+    clear: 'Auswahl aufheben',
+    details: 'Details',
+    cover: 'Als Titelbild',
+    remove: 'Entfernen',
+  },
+  reorder: {
+    start: 'An den Anfang',
+    earlier: 'Früher',
+    later: 'Später',
+    end: 'Ans Ende',
+    movedTo: 'Auf Position {position} von {total} verschoben',
+    dropped: '{count} Bilder verschoben',
+    disabled: 'Das Umsortieren ist bei Galerien mit mehr als 10.000 Bildern deaktiviert.',
+    group: {
+      start: '{count} Bilder an den Anfang verschoben',
+      end: '{count} Bilder ans Ende verschoben',
+      earlier: '{count} Bilder nach vorn verschoben',
+      later: '{count} Bilder nach hinten verschoben',
+    },
+  },
+  remove: {
+    title: 'Bilder entfernen? | Ein Bild entfernen? | {count} Bilder entfernen?',
+    message: 'Die Bilder werden beim Speichern aus dieser Galerie entfernt.',
+    affects: 'Betrifft',
+    more: 'und weitere | und ein weiteres | und {count} weitere',
+    imagesStay: 'Die Bilder bleiben in der Mediathek.',
+    staged: 'Das ist vorgemerkt: Bis zum Speichern können Sie es rückgängig machen.',
+    confirm: 'Entfernen | Bild entfernen | {count} Bilder entfernen',
+    done: 'Keine Bilder entfernt | Ein Bild entfernt (ungespeichert) | {count} Bilder entfernt (ungespeichert)',
+  },
+  discard: {
+    title: 'Alle ungespeicherten Änderungen verwerfen?',
+    message: 'Alles, was Sie seit dem letzten Speichern geändert haben, wird zurückgesetzt.',
+    affects: 'Galerie',
+    count: 'Keine Änderungen | Eine Änderung wird verworfen | {count} Änderungen werden verworfen',
+    confirm: 'Änderungen verwerfen',
+  },
+  leave: {
+    title: 'Ohne Speichern verlassen?',
+    message: 'In dieser Galerie gibt es ungespeicherte Änderungen oder laufende Uploads.',
+    confirm: 'Ohne Speichern verlassen',
+    stay: 'Weiter bearbeiten',
+  },
+  empty: {
+    title: 'Diese Galerie enthält noch keine Bilder',
+    text: 'Fügen Sie Bilder aus der Mediathek hinzu oder laden Sie neue hoch, indem Sie Dateien hierher ziehen.',
+  },
+  picker: {
+    title: 'Bilder zur Galerie hinzufügen',
+    button: 'Zur Galerie hinzufügen',
+    unavailable:
+      'Die WordPress-Mediathek ist auf dieser Seite nicht verfügbar. Laden Sie die Seite neu und versuchen Sie es erneut.',
+    noRight: 'Ihr Konto darf die Mediathek nicht verwenden und keine Dateien hochladen.',
+    added: 'Keine Bilder hinzugefügt | Ein Bild hinzugefügt | {count} Bilder hinzugefügt',
+    already: 'bereits in der Galerie: {count}',
+    missing: 'nicht verwendbar: {count}',
+  },
+  upload: {
+    zone: 'Bilder zum Hochladen hierher ziehen',
+    dropNow: 'Zum Hochladen loslassen',
+    hint: 'JPEG, PNG, GIF, WebP oder AVIF. Der Server prüft jede Datei erneut.',
+    button: 'Bilder hochladen',
+    list: 'Uploads',
+    progressFor: 'Upload-Fortschritt von {name}',
+    cancel: 'Upload von {name} abbrechen',
+    retry: 'Erneut versuchen',
+    retryFor: 'Upload von {name} erneut versuchen',
+    dismiss: '{name} aus der Liste entfernen',
+    clear: 'Fertige entfernen',
+    assign: 'Zur Galerie hinzufügen',
+    unassigned:
+      'Ein hochgeladenes Bild ist noch nicht in der Galerie. | {count} hochgeladene Bilder sind noch nicht in der Galerie.',
+    summary:
+      '{added} von {total} hochgeladenen Bildern zur Galerie hinzugefügt. Fehlgeschlagen: {failed}.',
+    status: {
+      queued: 'Wartet',
+      uploading: '{percent} %',
+      uploadingUnknown: 'Wird hochgeladen',
+      done: 'Hochgeladen',
+      added: 'Zur Galerie hinzugefügt',
+      cancelled: 'Abgebrochen',
+    },
+    problem: {
+      type: 'Kein unterstützter Bildtyp',
+      size: 'Größer als 64 MB, der Server lehnt die Datei sehr wahrscheinlich ab',
+      empty: 'Die Datei ist leer',
+      tooLarge: 'Der Server hat die Datei als zu groß abgelehnt',
+      unsupported: 'Der Server akzeptiert diesen Dateityp nicht',
+      invalid: 'Das Bild konnte nicht gelesen werden',
+      network: 'Der Server ist nicht erreichbar',
+      forbidden: 'Sie dürfen nichts hochladen',
+      other: 'Upload fehlgeschlagen',
+    },
+  },
+  sort: {
+    label: 'Reihenfolge auf der Website',
+    manual: 'Manuelle Reihenfolge',
+    date_asc: 'Datum, älteste zuerst',
+    date_desc: 'Datum, neueste zuerst',
+    title_asc: 'Titel A–Z',
+    title_desc: 'Titel Z–A',
+    note: 'Ihre manuelle Reihenfolge bleibt gespeichert, auch wenn die Website eine andere Reihenfolge zeigt.',
+    activeNote:
+      'Die Website zeigt derzeit eine andere Reihenfolge; die hier festgelegte Reihenfolge bleibt als manuelle Reihenfolge erhalten.',
+  },
+  settings: {
+    heading: 'Layout-Einstellungen',
+    loading: 'Layouts werden geladen',
+    layout: 'Layout',
+    fallbackNote: 'Galerien mit einem nicht verfügbaren Layout verwenden das Layout „{fallback}“.',
+    unknownLayout:
+      'Das Layout „{layout}“ ist nicht verfügbar. Die Website verwendet stattdessen „{fallback}“, bis Sie ein anderes Layout wählen.',
+    none: 'Dieses Layout hat keine Einstellungen.',
+    default: 'Standard: {value}',
+    reset: 'Auf Standard zurücksetzen',
+    override: 'Abweichen',
+    unsupported: 'Diese Einstellung kann hier nicht bearbeitet werden und bleibt unverändert.',
+    serverIssues:
+      'Der Server hat eine Einstellung abgelehnt. | Der Server hat {count} Einstellungen abgelehnt.',
+    otherIssues: 'Weitere abgelehnte Werte: {count}.',
+    field: { columns: 'Spalten', gap: 'Abstand (px)' },
+    breakpoint: {
+      base: 'Alle Größen',
+      sm: 'Klein',
+      md: 'Mittel',
+      lg: 'Groß',
+      xl: 'Sehr groß',
+    },
+    issue: {
+      min: 'Muss mindestens {min} sein.',
+      max: 'Darf höchstens {max} sein.',
+      integer: 'Muss eine ganze Zahl sein.',
+      enum: 'Wählen Sie eine der Optionen.',
+      length: 'Darf höchstens {max} Zeichen lang sein.',
+      type: 'Geben Sie einen gültigen Wert ein.',
+      server: 'Der Server hat diesen Wert abgelehnt.',
+    },
+  },
+  conflict: {
+    title: 'Die Galerie wurde anderswo geändert',
+    message:
+      'Jemand anderes hat „{title}“ gespeichert, während Sie bearbeitet haben. Von Ihren Änderungen ist noch nichts verloren.',
+    serverChanges: 'Auf dem Server geändert',
+    yours: 'Ihre ungespeicherten Änderungen',
+    staged:
+      'Sie haben keine ungespeicherten Änderungen. | Sie haben eine ungespeicherte Änderung. | Sie haben {count} ungespeicherte Änderungen.',
+    nothing: 'Nur der Revisionszähler hat sich geändert.',
+    details: 'Details geändert: {fields}.',
+    added: 'Ein Bild wurde hinzugefügt. | {count} Bilder wurden hinzugefügt.',
+    removed: 'Ein Bild wurde entfernt. | {count} Bilder wurden entfernt.',
+    moved:
+      'Die Position eines Bildes hat sich geändert. | Die Positionen von {count} Bildern haben sich geändert.',
+    texts:
+      'Die Texte eines Bildes wurden geändert. | Die Texte von {count} Bildern wurden geändert.',
+    field: {
+      title: 'Titel',
+      description: 'Beschreibung',
+      status: 'Status',
+      coverAttachmentId: 'Titelbild',
+      layout: 'Layout',
+      sortMode: 'Sortierung',
+      settings: 'Einstellungen',
+    },
+    droppedOrder:
+      'Ihre neue Reihenfolge kann nicht angewendet werden, weil die Reihenfolge inzwischen geändert wurde. Sie wird verworfen.',
+    droppedTexts:
+      'Textänderungen eines Bildes, das nicht mehr existiert, werden verworfen. | Textänderungen von {count} Bildern, die nicht mehr existieren, werden verworfen.',
+    overwritten: 'Ihre Werte für {fields} ersetzen die anderen Änderungen.',
+    overwrittenTexts:
+      'Ihre Texte für ein Bild ersetzen andere Änderungen. | Ihre Texte für {count} Bilder ersetzen andere Änderungen.',
+    reapply: 'Neu laden und meine Änderungen erneut anwenden',
+    discard: 'Meine Änderungen verwerfen',
+    notNow: 'Jetzt nicht',
+    reapplied:
+      'Neu geladen. Ihre Änderungen wurden erneut angewendet und sind noch nicht gespeichert.',
+    reappliedTitle:
+      'Ihre Änderungen wurden auf die aktuelle Version angewendet. Sie sind noch nicht gespeichert.',
+    discarded: 'Neu geladen. Ihre ungespeicherten Änderungen wurden verworfen.',
+  },
+};
+
+export default editor;

@@ -193,7 +193,13 @@ describe('format helpers', () => {
   });
 
   it('derives the row actions from the status and the server hints', () => {
-    expect(availableActions(makeGallery())).toEqual(['edit', 'duplicate', 'copy', 'trash']);
+    expect(availableActions(makeGallery())).toEqual([
+      'editImages',
+      'edit',
+      'duplicate',
+      'copy',
+      'trash',
+    ]);
     expect(availableActions(makeGallery({ canEdit: false, canDelete: false }))).toEqual([
       'duplicate',
       'copy',
