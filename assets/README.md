@@ -2,15 +2,17 @@
 
 Public frontend assets (npm project, vanilla TypeScript, no runtime dependencies). `assets/admin/` is the generated output of `apps/admin` and is not touched here.
 
-| Path                   | Content                                                                              |
-| ---------------------- | ------------------------------------------------------------------------------------ |
-| `lightbox/src`         | Accessible progressive-enhancement lightbox (`main.ts` entry, `lightbox.css`)        |
-| `lightbox/tests`       | Vitest + jsdom tests                                                                 |
-| `lightbox/fixtures`    | `gallery.html`, static sample of the markup contract for browser tests               |
-| `frontend/src`         | Reserved for further entries (created together with real code, e.g. masonry packing) |
-| `build/` (git-ignored) | Generated output with `.vite/manifest.json`                                          |
+| Path                   | Content                                                                             |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| `lightbox/src`         | Accessible progressive-enhancement lightbox (`main.ts` entry, `lightbox.css`)       |
+| `lightbox/tests`       | Vitest + jsdom tests                                                                |
+| `lightbox/fixtures`    | `gallery.html`, static sample of the markup contract for browser tests              |
+| `frontend/src`         | `layouts.css`: layout stylesheet (grid, captions, pagination), no JavaScript        |
+| `frontend/tests`       | Vitest checks of the stylesheet (namespacing, logical properties, breakpoints)      |
+| `frontend/fixtures`    | `grid.html`, hand-written review page (links `../src/layouts.css`, no build needed) |
+| `build/` (git-ignored) | Generated output with `.vite/manifest.json`                                         |
 
-Commands (Node from `.nvmrc`): `npm ci`, `npm run typecheck | lint | format:check | test:coverage | build`. `test:coverage` fails unless line coverage is strictly > 80 %; `build` also checks the manifest, that the script is classic, that no sourcemap exists and that the JS stays below 12 KB gzip.
+Commands (Node from `.nvmrc`): `npm ci`, `npm run typecheck | lint | format:check | test:coverage | build`. `test:coverage` fails unless line coverage is strictly > 80 %; `build` (`scripts/build-all.mjs`: one Vite run per entry, manifests merged) also checks the manifest, that the script is classic, that no sourcemap exists and the budgets (JS 12 KB gzip, each CSS 4 KB gzip). `build:only` builds without the checks.
 
 ## Build output and manifest (read by the PHP enqueue code)
 
@@ -26,14 +28,42 @@ Release build without sourcemaps, target from the shared browserslist (evergreen
         "src": "lightbox/src/main.ts",
         "isEntry": true
     },
-    "style.css": { "file": "lightbox-<hash>.css", "src": "style.css" }
+    "style.css": { "file": "lightbox-<hash>.css", "src": "style.css" },
+    "frontend/src/layouts.css": {
+        "file": "layouts-<hash>.css",
+        "name": "layouts",
+        "src": "frontend/src/layouts.css",
+        "isEntry": true
+    }
 }
 ```
 
 - Script: `manifest["lightbox/src/main.ts"].file`, a **classic** script (IIFE, no `type="module"`), loadable in the footer or `defer`. It sets only `window.swgLightbox = { init(root?) }` and initializes on `DOMContentLoaded` (immediately if the DOM is ready).
 - Style: `manifest["style.css"].file` (the lightbox stylesheet, ~1.4 KB gzip). Paths are relative to `assets/build/`.
+- Layout style: `manifest["frontend/src/layouts.css"].file` (~0.9 KB gzip), enqueue it together with the gallery markup; the lightbox script and style only when the lightbox is on.
 - Enqueue only on pages that render a gallery. After inserting galleries dynamically call `window.swgLightbox.init(containerOrRoot)`; `init` is idempotent.
 - Theming via CSS custom properties on an ancestor or `:root`: `--swg-lightbox-bg`, `--swg-lightbox-fg`, `--swg-lightbox-button-bg`, `--swg-lightbox-focus`.
+
+## Layout CSS and theming contract
+
+`frontend/src/layouts.css` is static and driven by custom properties; no layout JavaScript. Every selector starts with `.swg-`, only logical properties are used (RTL), colours inherit from the theme (light/dark work without integration), `:focus-visible` is styled and hover motion only runs under `prefers-reduced-motion: no-preference`.
+
+Breakpoints (min-width): sm 576 px, md 768 px, lg 1024 px, xl 1280 px; the image-size hints of `GridLayout` use the same values and a 1200 px reference width (a Vitest check compares CSS and PHP).
+
+Public custom properties (set them on `.swg-gallery`, an ancestor or `:root`):
+
+| Property                                                 | Default                          | Set by                                            |
+| -------------------------------------------------------- | -------------------------------- | ------------------------------------------------- |
+| `--swg-columns`, `--swg-columns-sm`, `-md`, `-lg`, `-xl` | 3, each inherits the smaller one | layout (`columns` setting)                        |
+| `--swg-gap`                                              | 8px                              | layout (`gap` setting)                            |
+| `--swg-aspect`                                           | `auto` (natural ratio)           | layout (`aspect` setting, not emitted for `auto`) |
+| `--swg-radius`                                           | 4px                              | theme                                             |
+| `--swg-caption-color`, `--swg-caption-size`              | inherit, 0.875em                 | theme                                             |
+| `--swg-focus-ring`                                       | 3px solid Highlight              | theme                                             |
+| `--swg-hover-transform`                                  | scale(1.03)                      | theme                                             |
+| `--swg-pagination-gap`                                   | 0.25rem                          | theme                                             |
+
+`--swg-col-<n>` are internal. Pagination classes: `.swg-pagination`, `__list`, `__item`, `__link`, `__current`, `__disabled`, `__gap`, `__status`.
 
 ## Markup contract (emitted by the PHP views)
 
