@@ -30,7 +30,7 @@ use SWGallery\WordPress\Media\WpMediaRepository;
 use SWGallery\WordPress\Rendering\GalleryRenderer;
 use SWGallery\WordPress\Rendering\MediaEpoch;
 use SWGallery\WordPress\Rendering\RenderCache;
-use SWGallery\WordPress\Rendering\Layout\GridLayout;
+use SWGallery\WordPress\Rendering\Layout\BuiltInLayouts;
 use SWGallery\WordPress\Rendering\View\FeedMarkup;
 use SWGallery\WordPress\Repository\PostMetaRevisionStore;
 use SWGallery\WordPress\Repository\WpdbGalleryItemRepository;
@@ -82,7 +82,7 @@ final class Services {
 	public static function layouts(): LayoutRegistry {
 		if ( null === self::$layouts ) {
 			self::$layouts = new LayoutRegistry();
-			self::$layouts->register( new GridLayout() );
+			BuiltInLayouts::register( self::$layouts );
 		}
 		return self::$layouts;
 	}
