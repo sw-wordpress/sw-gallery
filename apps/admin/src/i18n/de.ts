@@ -1,11 +1,18 @@
 import type en from './en';
 import editor from './editor.de';
 import media from './media.de';
+import overview from './overview.de';
+import settings from './settings.de';
+import status from './status.de';
 
 const de: typeof en = {
   editor,
   media,
+  overview,
+  settings,
+  status,
   app: {
+    content: 'Inhalt der Galerieverwaltung',
     title: 'Galerieverwaltung',
     brand: 'Galerie',
     versionShort: 'v{version}',
@@ -26,15 +33,16 @@ const de: typeof en = {
     settings: 'Einstellungen',
     status: 'Systemstatus',
   },
-  placeholder: {
-    title: '{section}: noch nicht verfügbar',
-    body: 'Dieser Bereich ist geplant, aber in dieser Version nicht umgesetzt. Er zeigt keine Daten und bietet keine Aktionen.',
-  },
   common: {
     retry: 'Erneut versuchen',
     items: 'keine Einträge | ein Eintrag | {count} Einträge',
   },
   errors: {
+    loadFailureTitle: 'Dieser Bereich konnte nicht geladen werden',
+    loadFailureText:
+      'Ein Teil der Anwendung konnte nicht geladen werden. Vielleicht ist die Verbindung abgebrochen, oder das Plugin wurde aktualisiert, während diese Seite offen war.',
+    loadFailureRetry: 'Erneut versuchen',
+    loadFailureReload: 'Seite neu laden',
     noAccessTitle: 'Kein Zugriff',
     noAccessText: 'Dein Konto darf die Galerieverwaltung oder diesen Bereich nicht nutzen.',
     bootstrap: 'Die Admin-Anwendung konnte nicht starten: Die Serverkonfiguration fehlt.',

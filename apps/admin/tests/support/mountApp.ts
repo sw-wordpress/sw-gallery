@@ -12,6 +12,13 @@ import { GALLERIES_API } from '../../src/features/galleries/injection';
 import type { GalleriesApi } from '../../src/api/galleries';
 import { MEDIA_API } from '../../src/features/media/injection';
 import type { MediaFeatureApi } from '../../src/features/media/injection';
+import { SETTINGS_API } from '../../src/features/settings/useSettingsForm';
+import type { SettingsFeatureApi } from '../../src/features/settings/useSettingsForm';
+import { STATUS_API } from '../../src/features/status/useStatusReport';
+import type { StatusApi } from '../../src/api/status';
+import { mockMediaApi } from '../media/support';
+import { fakeSettingsApi } from '../settings/support';
+import { fakeStatusApi } from '../status/support';
 import { createAppRouter } from '../../src/router';
 
 export const ALL_CAPS = ['edit_posts', 'edit_others_posts', 'upload_files', 'manage_options'];
@@ -54,6 +61,10 @@ export interface MountOptions {
   galleriesApi?: GalleriesApi;
   editorApi?: EditorApi;
   mediaApi?: MediaFeatureApi;
+  settingsApi?: SettingsFeatureApi;
+  statusApi?: StatusApi;
+  /** Replaces the lazy view loaders (chunk-failure tests). */
+  views?: Parameters<typeof createAppRouter>[1];
 }
 
 /** Default for tests that do not care about the list: the server has no galleries. */
@@ -82,16 +93,23 @@ export async function mountApp(options: MountOptions = {}) {
     timezone = 'UTC',
     galleriesApi = emptyGalleriesApi(),
     editorApi,
-    mediaApi,
+    mediaApi = mockMediaApi(),
+    settingsApi = fakeSettingsApi(),
+    statusApi = fakeStatusApi(),
+    views,
   } = options;
   setBootstrap(capabilities, version, locale, timezone);
   const root = document.createElement('div');
   root.id = 'swg-admin-root';
   root.className = 'swg-root';
   document.body.appendChild(root);
-  const router = createAppRouter(createMemoryHistory());
-  await router.push(path);
-  await router.isReady();
+  const router = createAppRouter(createMemoryHistory(), views);
+  // A failed lazy view is reported through `router.onError` (and shown by the shell), not thrown here.
+  const navigated = await router.push(path).then(
+    () => true,
+    () => false,
+  );
+  if (navigated) await router.isReady();
   const wrapper = mount(App, {
     attachTo: root,
     global: {
@@ -104,7 +122,9 @@ export async function mountApp(options: MountOptions = {}) {
       provide: {
         [GALLERIES_API as symbol]: galleriesApi,
         ...(editorApi === undefined ? {} : { [EDITOR_API as symbol]: editorApi }),
-        ...(mediaApi === undefined ? {} : { [MEDIA_API as symbol]: mediaApi }),
+        [MEDIA_API as symbol]: mediaApi,
+        [SETTINGS_API as symbol]: settingsApi,
+        [STATUS_API as symbol]: statusApi,
       },
     },
   });

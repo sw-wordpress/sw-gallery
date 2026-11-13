@@ -28,16 +28,16 @@ describe('app shell', () => {
     expect(wrapper.find('.swg-rail__name').text()).toContain('v1.0.0');
   });
 
-  it('shows an honest empty state on every unimplemented section and offers no actions', async () => {
+  it('renders a real page for every section (no placeholders)', async () => {
     const { wrapper, router } = await mountApp();
-    // The galleries section is implemented (features/galleries, tested separately).
-    for (const item of NAV_ITEMS.filter((i) => !['galleries', 'media'].includes(i.name))) {
+    for (const item of NAV_ITEMS) {
       await router.push(item.to);
       await flushPromises();
       expect(wrapper.findAll('.swg-nav-link--active')).toHaveLength(1);
-      const section = wrapper.find('.swg-placeholder');
-      expect(section.text()).toContain('not yet available');
-      expect(section.find('button, a').exists()).toBe(false);
+      expect(wrapper.find('.swg-placeholder').exists()).toBe(false);
+      expect(wrapper.find('.swg-page-header__title').text()).toBe(
+        wrapper.find('.swg-nav-link--active .swg-nav-link__label').text(),
+      );
     }
   });
 
@@ -52,13 +52,16 @@ describe('app shell', () => {
     }
     // The h1 is printed by the PHP admin page; the app must not add a second one.
     expect(wrapper.find('h1').exists()).toBe(false);
-    const headings = wrapper.findAll('h2, h3').map((h) => h.element.tagName);
-    expect(headings).toEqual(['H2', 'H3']);
+    await flushPromises();
+    const headings = wrapper.findAll('h2, h3, h4').map((h) => h.element.tagName);
+    // The page title is the first heading (h2); card and section titles nest below it.
+    expect(headings[0]).toBe('H2');
+    expect(headings.filter((h) => h === 'H2')).toHaveLength(1);
   });
 
   it('follows the server locale', async () => {
     const { wrapper } = await mountApp({ locale: 'de_DE', path: '/settings' });
-    expect(wrapper.find('.swg-empty__title').text()).toBe('Einstellungen: noch nicht verfügbar');
+    expect(wrapper.find('.swg-page-header__title').text()).toBe('Einstellungen');
     expect(wrapper.find('nav').attributes('aria-label')).toBe('Navigation der Galerieverwaltung');
     expect(wrapper.find('.swg-rail__name').text()).toContain('Galerie');
   });
@@ -94,6 +97,29 @@ describe('bootstrap (main.ts)', () => {
     expect(root?.classList.contains('swg-fullbleed')).toBe(true);
     expect(root?.textContent).toContain('Gallery');
     expect(root?.textContent).toContain('v9.9.9');
+  });
+
+  it('keeps every id in the DOM unique, with exactly one #q-notify, also after toasts and a second bootstrap (FU-07)', async () => {
+    document.body.innerHTML = '<div id="swg-admin-root"></div>';
+    window.swgAdmin = {
+      restRoot: 'https://x.test/wp-json/swg/v1/',
+      nonce: 'n',
+      locale: 'en_US',
+      version: '1.0.0',
+      adminUrl: '',
+      capabilities: ['edit_posts', 'upload_files', 'manage_options'],
+    };
+    const { bootstrap } = await import('../src/main');
+    const { useFeedback } = await import('../src/features/galleries/feedback');
+    await flushPromises();
+    useFeedback().notify('one');
+    useFeedback().notify('two');
+    bootstrap(); // a second evaluation of the entry must not create anything again
+    await flushPromises();
+    expect(document.querySelectorAll('#q-notify')).toHaveLength(1);
+    const ids = Array.from(document.querySelectorAll('[id]')).map((el) => el.id);
+    expect(ids.filter((id, index) => ids.indexOf(id) !== index)).toEqual([]);
+    expect(document.querySelectorAll('.q-notification')).toHaveLength(2);
   });
 
   it('does not remount when the entry runs a second time (idempotent bootstrap)', async () => {
