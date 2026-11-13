@@ -154,8 +154,9 @@ Tooling and tests
 - [ ] FU-25 Link names: an image with empty alt text yields a link without accessible name (axe `link-name`, serious); renderer should fall back to the title or an `aria-label` (product decision).
 - [ ] FU-26 Admin: gallery editor `GalleryEditor.vue` still uses `<header>`/`<aside>` (moderate axe waiver `landmark-*-is-top-level` in `a11y.spec.ts`): turn into divs and delete the waiver; editor settings form shows raw enum values (`left`/`justify`) — needs enum titles in the schema renderer.
 - [ ] FU-27 Media Library: no delete warning in the grid-view media modal (needs Backbone code).
-- [ ] FU-28 Editor live preview: below 1100 px the settings panel stacks under the preview; a title-only save re-renders the preview; `diagnostics[].message` is shown untranslated; staged order/removals are not previewed (server has no staged-items input).
+- [ ] FU-28 Editor live preview: the preview is a modal now (settings unreachable while open); a title-only save re-renders the preview; `diagnostics[].message` is shown untranslated; staged order/removals are not previewed (server has no staged-items input).
 - [ ] FU-29 Media Overview: uploader filter is a numeric user id (no users endpoint); justified layout breaks rows greedily (a very narrow image may stretch alone on a narrow container).
+- [ ] FU-31 Editor items grid keeps its fixed tile size: at 2560 px six tiles leave much empty space on the right (consider larger tiles or a size slider).
 - [ ] FU-30 Public API: `@since` tags only on the layout interface; add them to all public hooks/classes. Flaky E2E on first attempt under host load (admin-shell, theme-and-rail, justified 768) — keep watching.
 - [x] FU-05 Docs: `docs/development.md` must mention the `assets/` project, `bin/rebuild-on-change.sh`, `bin/watch-build.sh` and the new test commands.
 

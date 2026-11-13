@@ -85,3 +85,5 @@ One lazy chunk per route (`router/index.ts`, `VIEWS`). Each feature injects its 
 ## Design system (D14)
 
 Tokens (light/dark, palette identical to the other sw-* plugins) live in `src/styles/app.css` under `.swg-root`; dark mode is the class `swg-dark` on the root and on Quasar portals (`composables/useTheme.ts`). Fonts (Inter, JetBrains Mono; woff2, latin + latin-ext) come from `src/styles/fonts.css`. `layouts/ShellLayout.vue` holds rail, collapse, theme toggle, skip link and live region; theme and rail state persist per viewer in localStorage (`swg-theme`, `swg-rail-collapsed`), storage failures are tolerated. Building blocks: `components/ui/` (`Swg*`, props/slots only, no i18n). Nav entries carry an optional `capability` in `router` `NAV_ITEMS` (UX hint). `tsconfig` keeps `strictTemplates: true`; fallthrough attributes of Quasar components (`aria-*`, `data-*`, `role`, `id`, `form`, `autocomplete`, `onKeyup`) are allowed by a scoped augmentation in `env.d.ts`.
+
+The live preview opens from the Preview button in a full-viewport dialog and only renders while it is open.
