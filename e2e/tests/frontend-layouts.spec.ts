@@ -291,14 +291,7 @@ for (const width of [375, 768, 1280]) {
     await page.goto(urls.justified as string);
     await loadAll(page);
 
-    await expect
-      .poll(async () => (await geometry(page)).rows.length, {
-        message: await page.evaluate(
-          () =>
-            `DEBUG ${document.querySelector('.swg-items') ? getComputedStyle(document.querySelector('.swg-items') as Element).display : 'none'} ${document.documentElement.clientWidth} ${JSON.stringify(Array.from(document.querySelectorAll('.swg-link img')).map((i) => [i.getBoundingClientRect().width, i.getBoundingClientRect().height]))}`,
-        ),
-      })
-      .toBeGreaterThan(1);
+    await expect.poll(async () => (await geometry(page)).rows.length).toBeGreaterThan(1);
     const result = await geometry(page);
     expect(result.overflow, 'no horizontal overflow').toBe(false);
     expect(result.rows.length).toBeGreaterThan(1);
