@@ -77,7 +77,8 @@ function buildRoutes(views: Record<string, Loader>): RouteRecordRaw[] {
       path: '/galleries/:id(\\d+)',
       name: 'gallery-editor',
       component: loaderFor(views, 'gallery-editor'),
-      meta: { labelKey: 'editor.title' },
+      /* fullWidth: the editor drops the shell's content-width cap (ShellLayout.vue). */
+      meta: { labelKey: 'editor.title', fullWidth: true },
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ];

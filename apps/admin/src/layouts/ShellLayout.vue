@@ -14,6 +14,7 @@ const ACCESS_CAPABILITY = 'edit_posts';
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
+const fullWidth = computed(() => route.meta.fullWidth === true);
 const app = useAppStore();
 const can = (capability: string): boolean => hasCapability(getConfig(), capability);
 const version = getConfig().version;
@@ -184,6 +185,7 @@ watch(
       id="swg-main"
       ref="main"
       class="swg-main"
+      :class="{ 'swg-main--full': fullWidth }"
       role="region"
       :aria-label="t('app.content')"
       tabindex="-1"
@@ -362,6 +364,10 @@ watch(
 .swg-main > * {
   max-width: 1320px;
   margin-inline: auto;
+}
+/* Routes with meta.fullWidth (the gallery editor) use the whole content width; the side padding stays. */
+.swg-main--full > * {
+  max-width: none;
 }
 
 @media (max-width: 860px) {
