@@ -68,3 +68,9 @@ Sanitising lives in `Frontend/EmbedArguments`; access is the renderer's (D4), so
 | `anchor` | id subset `^[A-Za-z][A-Za-z0-9_:.-]{0,99}$` (dynamic blocks print the anchor themselves) | wrapper `id` |
 
 Anything else (media id lists, unknown keys, out-of-range or hostile values) is dropped, never echoed. Editor script and style (`swg-block-editor`, built to `assets/blocks/build/index.js|css`, stable names) are registered with explicit dependencies and `SWGALLERY_VERSION`; WordPress loads them only in the block editor. Without a build the block still renders on the frontend. Frontend assets are not enqueued by the block: the caller must feed `RenderResult::$assets` to the asset collector (the callback currently uses `html()`, which drops them).
+
+## Justified and masonry
+
+- Both reuse the lightbox markup contract. `justified` is CSS only (per-item `--swg-ar`, flex rows); `masonry` is a plain grid plus `assets/frontend/src/masonry.ts` (decision D10, see `assets/README.md`). Image hints: justified assumes thumbnails of about `rowHeight * 2` px (`min(100vw, ...)`), masonry like the grid (`100vw / columns`).
+- A layout may implement `LayoutAssetsProviderInterface` to report extra `RenderAsset`s (masonry: `RenderAsset::Masonry`); they are cached with the result and enqueued by `FrontendAssets` (manifest key `frontend/src/masonry.ts`).
+

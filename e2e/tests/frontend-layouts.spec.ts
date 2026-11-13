@@ -136,6 +136,11 @@ async function loadAll(page: Page): Promise<void> {
     const imgs = Array.from(document.querySelectorAll<HTMLImageElement>('.swg-link img'));
     for (const img of imgs) img.loading = 'eager';
     await Promise.all(imgs.map((img) => img.decode().catch(() => undefined)));
+    // `sizes`/lazy loading may pick another candidate after switching to eager: wait until each image really has pixels.
+    const deadline = Date.now() + 8000;
+    while (Date.now() < deadline && !imgs.every((img) => img.complete && img.naturalWidth > 0)) {
+      await new Promise((resolveWait) => setTimeout(resolveWait, 50));
+    }
     await document.fonts.ready;
   });
 }

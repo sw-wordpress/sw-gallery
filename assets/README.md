@@ -2,17 +2,17 @@
 
 Public frontend assets (npm project, vanilla TypeScript, no runtime dependencies). `assets/admin/` is the generated output of `apps/admin` and is not touched here.
 
-| Path                   | Content                                                                             |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| `lightbox/src`         | Accessible progressive-enhancement lightbox (`main.ts` entry, `lightbox.css`)       |
-| `lightbox/tests`       | Vitest + jsdom tests                                                                |
-| `lightbox/fixtures`    | `gallery.html`, static sample of the markup contract for browser tests              |
-| `frontend/src`         | `layouts.css`: layout stylesheet (grid, captions, pagination), no JavaScript        |
-| `frontend/tests`       | Vitest checks of the stylesheet (namespacing, logical properties, breakpoints)      |
-| `frontend/fixtures`    | `grid.html`, hand-written review page (links `../src/layouts.css`, no build needed) |
-| `build/` (git-ignored) | Generated output with `.vite/manifest.json`                                         |
+| Path                   | Content                                                                                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lightbox/src`         | Accessible progressive-enhancement lightbox (`main.ts` entry, `lightbox.css`)                                                                      |
+| `lightbox/tests`       | Vitest + jsdom tests                                                                                                                               |
+| `lightbox/fixtures`    | `gallery.html`, static sample of the markup contract for browser tests                                                                             |
+| `frontend/src`         | `layouts.css`: stylesheet of grid, justified, masonry, captions, pagination (no JS); `masonry.ts`: masonry packing script                          |
+| `frontend/tests`       | Vitest checks of the stylesheet (namespacing, logical properties, breakpoints)                                                                     |
+| `frontend/fixtures`    | `grid.html`, `justified.html` (CSS only, no build needed), `masonry.html` (needs `npx vite --open /frontend/fixtures/masonry.html` for the script) |
+| `build/` (git-ignored) | Generated output with `.vite/manifest.json`                                                                                                        |
 
-Commands (Node from `.nvmrc`): `npm ci`, `npm run typecheck | lint | format:check | test:coverage | build`. `test:coverage` fails unless line coverage is strictly > 80 %; `build` (`scripts/build-all.mjs`: one Vite run per entry, manifests merged) also checks the manifest, that the script is classic, that no sourcemap exists and the budgets (JS 12 KB gzip, each CSS 4 KB gzip). `build:only` builds without the checks.
+Commands (Node from `.nvmrc`): `npm ci`, `npm run typecheck | lint | format:check | test:coverage | build`. `test:coverage` fails unless line coverage is strictly > 80 %; `build` (`scripts/build-all.mjs`: one Vite run per entry, manifests merged) also checks the manifest, that the script is classic, that no sourcemap exists and the budgets (lightbox JS 12 KB gzip, masonry JS 2 KB gzip, each CSS 4 KB gzip). `build:only` builds without the checks.
 
 ## Build output and manifest (read by the PHP enqueue code)
 
@@ -29,6 +29,12 @@ Release build without sourcemaps, target from the shared browserslist (evergreen
         "isEntry": true
     },
     "style.css": { "file": "lightbox-<hash>.css", "src": "style.css" },
+    "frontend/src/masonry.ts": {
+        "file": "masonry-<hash>.js",
+        "name": "masonry",
+        "src": "frontend/src/masonry.ts",
+        "isEntry": true
+    },
     "frontend/src/layouts.css": {
         "file": "layouts-<hash>.css",
         "name": "layouts",
@@ -40,6 +46,7 @@ Release build without sourcemaps, target from the shared browserslist (evergreen
 
 - Script: `manifest["lightbox/src/main.ts"].file`, a **classic** script (IIFE, no `type="module"`), loadable in the footer or `defer`. It sets only `window.swgLightbox = { init(root?) }` and initializes on `DOMContentLoaded` (immediately if the DOM is ready).
 - Style: `manifest["style.css"].file` (the lightbox stylesheet, ~1.4 KB gzip). Paths are relative to `assets/build/`.
+- Masonry script: `manifest["frontend/src/masonry.ts"].file` (~0.7 KB gzip), a classic IIFE like the lightbox; sets `window.swgMasonry = { init(root?), destroy(container) }`. Enqueued only when a masonry gallery rendered (`RenderAsset::Masonry`), independent of the lightbox setting. Without it masonry is a plain grid.
 - Layout style: `manifest["frontend/src/layouts.css"].file` (~0.9 KB gzip), enqueue it together with the gallery markup; the lightbox script and style only when the lightbox is on.
 - Enqueue only on pages that render a gallery. After inserting galleries dynamically call `window.swgLightbox.init(containerOrRoot)`; `init` is idempotent.
 - Theming via CSS custom properties on an ancestor or `:root`: `--swg-lightbox-bg`, `--swg-lightbox-fg`, `--swg-lightbox-button-bg`, `--swg-lightbox-focus`.
@@ -112,3 +119,9 @@ Rules:
 ## Behaviour summary
 
 Dialog (`role="dialog"`, `aria-modal`, no native `<dialog>`), siblings of the portal made `inert`, focus into the dialog / trapped / returned to the opening link, scroll lock without layout shift, Esc, arrows (mirrored in RTL), Home/End, backdrop click, modified/middle clicks left to the browser, one image: no navigation. Touch swipe via Pointer Events (touch/pen, 50 px threshold, axis lock, `touch-action: pan-y pinch-zoom`). Neighbour preloading, loading and error state, `prefers-reduced-motion` honoured (CSS media query plus `swg-lightbox--reduced`).
+
+## Justified and masonry
+
+- `justified` (CSS only): `li` flex items, `--swg-ar` (ratio, set per item by PHP from validated numbers) drives `flex-grow` and `flex-basis = ratio * row height`; a zero-width filler keeps the last row at its natural height unless `.swg-last-justify`. Settings become `--swg-row-height[-sm|md|lg|xl]`, `--swg-gap`. Rows break greedily, so a very narrow item can end up alone in a row on narrow containers and then fills the width.
+- `masonry`: grid in editor order; `masonry.ts` adds `.swg-masonry-active` (1px rows) and `grid-row-end: span N` per item from the measured height plus gap. DOM order is never changed; a `ResizeObserver` re-packs. Ratios come from the `width`/`height` attributes, so nothing shifts while images load.
+- `aspect-ratio` is only set by CSS when the layout emitted `--swg-aspect` (an author `auto` would disable the attribute-derived ratio).
