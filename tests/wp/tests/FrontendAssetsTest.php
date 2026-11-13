@@ -53,7 +53,7 @@ class FrontendAssetsTest extends SwgTestCase {
 		set_current_screen( 'front' );
 	}
 
-	private function write_build( bool $with_layout = true ): void {
+	private function write_build( bool $with_layout = true, bool $with_masonry = false ): void {
 		$manifest = array(
 			FrontendManifest::SCRIPT_KEY => array( 'file' => 'lightbox-abc.js' ),
 			FrontendManifest::STYLE_KEY  => array( 'file' => 'lightbox-abc.css' ),
@@ -63,6 +63,10 @@ class FrontendAssetsTest extends SwgTestCase {
 		if ( $with_layout ) {
 			$manifest[ FrontendManifest::LAYOUT_KEY ] = array( 'file' => 'layouts-abc.css' );
 			file_put_contents( $this->build . '/layouts-abc.css', '/* layouts */' );
+		}
+		if ( $with_masonry ) {
+			$manifest[ FrontendManifest::MASONRY_KEY ] = array( 'file' => 'masonry-abc.js' );
+			file_put_contents( $this->build . '/masonry-abc.js', '/* masonry */' );
 		}
 		file_put_contents( $this->build . '/.vite/manifest.json', (string) wp_json_encode( $manifest ) );
 	}
@@ -233,6 +237,58 @@ class FrontendAssetsTest extends SwgTestCase {
 		$GLOBALS['wp_styles']  = new WP_Styles();
 	}
 
+	public function test_the_masonry_script_loads_only_when_a_masonry_gallery_rendered(): void {
+		$this->write_build( true, true );
+		$this->rendered();
+		$assets = $this->assets();
+		$assets->enqueue_collected();
+		$this->assertTrue( wp_script_is( FrontendAssets::HANDLE_SCRIPT, 'enqueued' ) );
+		$this->assertFalse( wp_script_is( FrontendAssets::HANDLE_MASONRY, 'enqueued' ), 'A grid gallery needs no masonry script.' );
+
+		$this->collector->record( 7, new RenderResult( '<div></div>', RenderAccess::Render, array(), array( RenderAsset::Lightbox, RenderAsset::Masonry ), 1, 1, 1, 1, 'masonry' ) );
+		$assets->enqueue_collected();
+		$this->assertTrue( wp_script_is( FrontendAssets::HANDLE_MASONRY, 'enqueued' ) );
+		$registered = wp_scripts()->registered[ FrontendAssets::HANDLE_MASONRY ];
+		$this->assertSame( SWGALLERY_VERSION, $registered->ver );
+		$this->assertSame( 1, wp_scripts()->get_data( FrontendAssets::HANDLE_MASONRY, 'group' ), 'footer' );
+		ob_start();
+		wp_scripts()->do_item( FrontendAssets::HANDLE_MASONRY, 1 );
+		$tag = (string) ob_get_clean();
+		$this->assertStringContainsString( 'masonry-abc.js?ver=' . SWGALLERY_VERSION, $tag );
+		$this->assertStringContainsString( 'defer', $tag );
+		$this->assertStringNotContainsString( 'type="module"', $tag );
+	}
+
+	public function test_the_masonry_script_does_not_depend_on_the_lightbox_setting(): void {
+		$this->write_build( true, true );
+		Services::settings()->update( array( 'lightbox' => false ) );
+		$this->collector->record( 7, new RenderResult( '<div></div>', RenderAccess::Render, array(), array( RenderAsset::Lightbox, RenderAsset::Masonry ), 1, 1, 1, 1, 'masonry' ) );
+		$this->assets()->enqueue_collected();
+
+		$this->assertFalse( wp_script_is( FrontendAssets::HANDLE_SCRIPT, 'enqueued' ) );
+		$this->assertTrue( wp_script_is( FrontendAssets::HANDLE_MASONRY, 'enqueued' ) );
+	}
+
+	public function test_a_masonry_gallery_without_a_masonry_build_still_renders_without_errors(): void {
+		$this->write_build();
+		$this->collector->record( 7, new RenderResult( '<div></div>', RenderAccess::Render, array(), array( RenderAsset::Masonry ), 1, 1, 1, 1, 'masonry' ) );
+		$this->assets()->enqueue_collected();
+
+		$this->assertFalse( wp_script_is( FrontendAssets::HANDLE_MASONRY, 'registered' ) );
+		$this->assertTrue( wp_style_is( FrontendAssets::HANDLE_LAYOUT, 'enqueued' ) );
+	}
+
+	public function test_a_hostile_masonry_manifest_entry_enqueues_nothing(): void {
+		$this->write_build();
+		$manifest                                  = json_decode( (string) file_get_contents( $this->build . '/.vite/manifest.json' ), true );
+		$manifest[ FrontendManifest::MASONRY_KEY ] = array( 'file' => '../../etc/passwd.js' );
+		file_put_contents( $this->build . '/.vite/manifest.json', (string) wp_json_encode( $manifest ) );
+		$this->collector->record( 7, new RenderResult( '<div></div>', RenderAccess::Render, array(), array( RenderAsset::Masonry ), 1, 1, 1, 1, 'masonry' ) );
+		$this->assets()->enqueue_collected();
+
+		$this->assertFalse( wp_script_is( FrontendAssets::HANDLE_MASONRY, 'registered' ) );
+	}
+
 	public function test_feeds_are_skipped(): void {
 		$this->write_build();
 		$post = self::factory()->post->create( array( 'post_content' => '[sw_gallery id="3"]' ) );
@@ -259,6 +315,10 @@ class FrontendAssetsTest extends SwgTestCase {
 			$preview['css']
 		);
 		$this->assertSame( array( 'https://assets.example.test/build/lightbox-abc.js?ver=' . SWGALLERY_VERSION ), $preview['js'] );
+
+		$this->write_build( true, true );
+		$with_masonry = ( new FrontendAssets( new FrontendManifest( $this->build ), $this->collector, Services::settings(), 'https://assets.example.test/build/' ) )->preview_assets();
+		$this->assertSame( 'https://assets.example.test/build/masonry-abc.js?ver=' . SWGALLERY_VERSION, $with_masonry['js'][1] );
 	}
 
 	public function test_the_registrar_hooks_are_in_place(): void {

@@ -13,6 +13,8 @@ use SWGallery\Core\Application\Render\RenderDiagnostic;
 use SWGallery\Core\Application\Render\RenderGallery;
 use SWGallery\Core\Application\Render\RenderResult;
 use SWGallery\Core\Application\Service\LayoutRegistry;
+use SWGallery\Core\Contract\GalleryLayoutInterface;
+use SWGallery\Core\Contract\LayoutAssetsProviderInterface;
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Access\RenderAccess;
 use SWGallery\Core\Domain\Gallery\Gallery;
@@ -22,6 +24,7 @@ use SWGallery\Core\Domain\Gallery\GalleryStatus;
 use SWGallery\Core\Domain\Gallery\ItemOverrides;
 use SWGallery\Core\Domain\Gallery\SortMode;
 use SWGallery\Core\Domain\Layout\ImageRole;
+use SWGallery\Core\Domain\Layout\LayoutRenderRequest;
 use SWGallery\Core\Domain\Layout\LoadingStrategy;
 use SWGallery\Core\Domain\Media\MediaReference;
 use SWGallery\Tests\Support\ConfigurableAccessPolicy;
@@ -235,6 +238,50 @@ final class RenderGalleryTest extends TestCase
         self::assertSame('https://example.test/101-lightbox.jpg', $first->full?->url);
         self::assertSame('swg-7-1', $this->grid->last->instanceId);
         self::assertSame(1, $this->media->calls(), 'All attachments are looked up in one batch.');
+    }
+
+    public function testALayoutCanReportAdditionalAssets(): void
+    {
+        $pipeline = $this->pipeline($this->gallery());
+        $registry = new LayoutRegistry();
+        $registry->register(new class implements GalleryLayoutInterface, LayoutAssetsProviderInterface {
+            public function getId(): string
+            {
+                return 'grid';
+            }
+
+            public function getLabel(): string
+            {
+                return 'Assets';
+            }
+
+            public function getSettingsSchema(): array
+            {
+                return ['type' => 'object'];
+            }
+
+            public function render(LayoutRenderRequest $request): string
+            {
+                return '<div></div>';
+            }
+
+            public function renderAssets(): array
+            {
+                return [RenderAsset::Masonry];
+            }
+        });
+        $withAssets = new RenderGallery(
+            new FixedGalleries($this->gallery()),
+            new ConfigurableAccessPolicy([self::ADMIN]),
+            $this->source,
+            $this->media,
+            $this->thumbnails,
+            $registry,
+            $this->simple
+        );
+
+        self::assertSame([RenderAsset::Lightbox], $pipeline->render($this->context())->assets);
+        self::assertSame([RenderAsset::Lightbox, RenderAsset::Masonry], $withAssets->render($this->context())->assets);
     }
 
     public function testImageRequestsUseTheLayoutHintsAndTheLightboxRole(): void

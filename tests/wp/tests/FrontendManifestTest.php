@@ -69,9 +69,10 @@ class FrontendManifestTest extends SwgTestCase {
 
 		$this->assertSame(
 			array(
-				'script' => 'lightbox-abc.js',
-				'style'  => 'lightbox-abc.css',
-				'layout' => 'layouts-abc.css',
+				'script'  => 'lightbox-abc.js',
+				'style'   => 'lightbox-abc.css',
+				'layout'  => 'layouts-abc.css',
+				'masonry' => null,
 			),
 			( new FrontendManifest( $this->build ) )->resolve()
 		);
@@ -89,11 +90,26 @@ class FrontendManifestTest extends SwgTestCase {
 		$this->assertSame( 'lightbox-abc.css', $files['style'] );
 	}
 
+	public function test_the_masonry_script_is_resolved_and_validated_like_the_others(): void {
+		$this->touch_build( 'lightbox-abc.js', 'lightbox-abc.css', 'layouts-abc.css', 'masonry-abc.js', 'masonry-abc.css' );
+		$manifest                                  = $this->entries();
+		$manifest[ FrontendManifest::MASONRY_KEY ] = array( 'file' => 'masonry-abc.js' );
+		$this->write_manifest( $manifest );
+		$this->assertSame( 'masonry-abc.js', ( new FrontendManifest( $this->build ) )->resolve()['masonry'] );
+
+		foreach ( array( '../masonry-abc.js', 'masonry-abc.css', 'masonry-missing.js', '/etc/passwd', 'a//b.js', 'masonry-abc.js?x=1' ) as $hostile ) {
+			$manifest[ FrontendManifest::MASONRY_KEY ] = array( 'file' => $hostile );
+			$this->write_manifest( $manifest );
+			$this->assertNull( ( new FrontendManifest( $this->build ) )->resolve()['masonry'], $hostile );
+		}
+	}
+
 	public function test_a_missing_build_or_manifest_yields_nothing(): void {
 		$none = array(
-			'script' => null,
-			'style'  => null,
-			'layout' => null,
+			'script'  => null,
+			'style'   => null,
+			'layout'  => null,
+			'masonry' => null,
 		);
 		$this->assertSame( $none, ( new FrontendManifest( $this->root . '/does-not-exist' ) )->resolve() );
 		$this->assertSame( $none, ( new FrontendManifest( $this->build ) )->resolve() );
@@ -114,16 +130,16 @@ class FrontendManifestTest extends SwgTestCase {
 	public function test_a_broken_manifest_yields_nothing( string $content ): void {
 		file_put_contents( $this->build . '/.vite/manifest.json', $content );
 
-		$this->assertSame( array( null, null, null ), array_values( ( new FrontendManifest( $this->build ) )->resolve() ) );
+		$this->assertSame( array( null, null, null, null ), array_values( ( new FrontendManifest( $this->build ) )->resolve() ) );
 	}
 
 	public function test_an_oversized_manifest_is_refused(): void {
 		$this->touch_build( 'lightbox-abc.js', 'lightbox-abc.css', 'layouts-abc.css' );
-		$manifest             = $this->entries();
-		$manifest['padding']  = array( 'file' => str_repeat( 'a', 300000 ) );
+		$manifest            = $this->entries();
+		$manifest['padding'] = array( 'file' => str_repeat( 'a', 300000 ) );
 		$this->write_manifest( $manifest );
 
-		$this->assertSame( array( null, null, null ), array_values( ( new FrontendManifest( $this->build ) )->resolve() ) );
+		$this->assertSame( array( null, null, null, null ), array_values( ( new FrontendManifest( $this->build ) )->resolve() ) );
 	}
 
 	/**
@@ -160,7 +176,7 @@ class FrontendManifestTest extends SwgTestCase {
 		$this->touch_build( 'lightbox-abc.js', 'lightbox-abc.css', 'layouts-abc.css' );
 		$this->write_manifest( $this->entries( 'lightbox-abc.css', 'lightbox-abc.js', 'lightbox-abc.js' ) );
 
-		$this->assertSame( array( null, null, null ), array_values( ( new FrontendManifest( $this->build ) )->resolve() ) );
+		$this->assertSame( array( null, null, null, null ), array_values( ( new FrontendManifest( $this->build ) )->resolve() ) );
 	}
 
 	public function test_a_symlink_leaving_the_build_directory_is_refused(): void {
@@ -193,7 +209,7 @@ class FrontendManifestTest extends SwgTestCase {
 		file_put_contents( $this->root . '/evil-manifest.json', (string) wp_json_encode( $this->entries() ) );
 		symlink( $this->root . '/evil-manifest.json', $this->build . '/.vite/manifest.json' );
 
-		$this->assertSame( array( null, null, null ), array_values( ( new FrontendManifest( $this->build ) )->resolve() ) );
+		$this->assertSame( array( null, null, null, null ), array_values( ( new FrontendManifest( $this->build ) )->resolve() ) );
 	}
 
 	public function test_the_result_is_memoised(): void {

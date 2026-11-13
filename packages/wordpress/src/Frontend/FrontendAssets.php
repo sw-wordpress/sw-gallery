@@ -1,6 +1,6 @@
 <?php
 /**
- * Registers and enqueues the frontend stylesheets and the lightbox script.
+ * Registers and enqueues the frontend stylesheets and the lightbox and masonry scripts.
  *
  * @package sw-gallery
  */
@@ -26,11 +26,12 @@ use SWGallery\WordPress\Settings\PluginSettings;
  */
 final class FrontendAssets {
 
-	public const HANDLE_LAYOUT = 'swg-frontend-layouts';
-	public const HANDLE_STYLE  = 'swg-lightbox';
-	public const HANDLE_SCRIPT = 'swg-lightbox';
-	public const SHORTCODE     = 'sw_gallery';
-	public const BLOCK         = 'sw-gallery/gallery';
+	public const HANDLE_LAYOUT  = 'swg-frontend-layouts';
+	public const HANDLE_STYLE   = 'swg-lightbox';
+	public const HANDLE_SCRIPT  = 'swg-lightbox';
+	public const HANDLE_MASONRY = 'swg-masonry';
+	public const SHORTCODE      = 'sw_gallery';
+	public const BLOCK          = 'sw-gallery/gallery';
 
 	private const MAX_SCANNED_POSTS = 50;
 
@@ -66,6 +67,10 @@ final class FrontendAssets {
 		if ( $this->lightbox_enabled() && $this->collector->needs( RenderAsset::Lightbox ) ) {
 			wp_enqueue_script( self::HANDLE_SCRIPT );
 		}
+		// Independent of the lightbox setting: without it a masonry gallery would stay a plain grid.
+		if ( $this->collector->needs( RenderAsset::Masonry ) && wp_script_is( self::HANDLE_MASONRY, 'registered' ) ) {
+			wp_enqueue_script( self::HANDLE_MASONRY );
+		}
 	}
 
 	/** Editor-only note when galleries were rendered but the build is unusable. No paths are printed. */
@@ -99,6 +104,9 @@ final class FrontendAssets {
 				$js[] = $this->versioned_url( $files['script'] );
 			}
 		}
+		if ( null !== $files['masonry'] ) {
+			$js[] = $this->versioned_url( $files['masonry'] );
+		}
 		return array(
 			'css' => $css,
 			'js'  => $js,
@@ -114,17 +122,28 @@ final class FrontendAssets {
 			wp_register_style( self::HANDLE_STYLE, $this->build_url . '/' . $files['style'], array(), SWGALLERY_VERSION );
 		}
 		if ( null !== $files['script'] && ! wp_script_is( self::HANDLE_SCRIPT, 'registered' ) ) {
-			wp_register_script(
-				self::HANDLE_SCRIPT,
-				$this->build_url . '/' . $files['script'],
-				array(),
-				SWGALLERY_VERSION,
-				array(
-					'in_footer' => true,
-					'strategy'  => 'defer',
-				)
-			);
+			$this->register_script( self::HANDLE_SCRIPT, $files['script'] );
 		}
+		if ( null !== $files['masonry'] && ! wp_script_is( self::HANDLE_MASONRY, 'registered' ) ) {
+			$this->register_script( self::HANDLE_MASONRY, $files['masonry'] );
+		}
+	}
+
+	/**
+	 * @param non-empty-string $handle Script handle.
+	 * @param string           $file   Build-relative file name from the validated manifest.
+	 */
+	private function register_script( string $handle, string $file ): void {
+		wp_register_script(
+			$handle,
+			$this->build_url . '/' . $file,
+			array(),
+			SWGALLERY_VERSION,
+			array(
+				'in_footer' => true,
+				'strategy'  => 'defer',
+			)
+		);
 	}
 
 	private function enqueue_styles(): void {
@@ -142,7 +161,7 @@ final class FrontendAssets {
 
 	private function build_usable(): bool {
 		$files = $this->manifest->resolve();
-		return null !== $files['layout'] || null !== $files['style'] || null !== $files['script'];
+		return null !== $files['layout'] || null !== $files['style'] || null !== $files['script'] || null !== $files['masonry'];
 	}
 
 	private function versioned_url( string $file ): string {

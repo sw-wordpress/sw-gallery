@@ -39,8 +39,13 @@ final class ImageMarkup {
 		return '<img' . $attributes . ' decoding="async">';
 	}
 
-	/** `<li class="swg-item">` with the lightbox link, the thumbnail and the optional caption. */
-	public static function lightbox_item( RenderItem $item ): string {
+	/**
+	 * `<li class="swg-item">` with the lightbox link, the thumbnail and the optional caption.
+	 *
+	 * @param RenderItem $item       The item.
+	 * @param string     $item_style Optional style attribute value of the `li`; callers pass validated numbers only.
+	 */
+	public static function lightbox_item( RenderItem $item, string $item_style = '' ): string {
 		$full = $item->full ?? $item->thumbnail;
 		$link = sprintf( ' href="%s"', esc_url( $full->url ) );
 		if ( $full->width > 0 && $full->height > 0 ) {
@@ -54,10 +59,11 @@ final class ImageMarkup {
 		}
 		$caption = '' === $item->caption ? '' : sprintf( '<p class="swg-caption">%s</p>', CaptionPolicy::html( $item->caption ) );
 		return sprintf(
-			'<li class="swg-item"><a class="swg-link"%1$s>%2$s</a>%3$s</li>',
+			'<li class="swg-item"%4$s><a class="swg-link"%1$s>%2$s</a>%3$s</li>',
 			$link,
 			self::image( $item->thumbnail, $item->alt, $item->loading ),
-			$caption
+			$caption,
+			'' === $item_style ? '' : sprintf( ' style="%s"', esc_attr( $item_style ) )
 		);
 	}
 }
