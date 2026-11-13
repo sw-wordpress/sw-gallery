@@ -69,12 +69,18 @@ test.describe('as administrator', () => {
     await openOverview(page);
     const rows = root(page).locator('.swg-overview__recent li');
     await expect(rows).toHaveCount(5);
-    // The site is shared with parallel specs: compare with what the API reports as newest right now.
+    // The site is shared with parallel specs that create galleries all the time: compare the page with what the
+    // API reports as newest at that moment and retry with a fresh page when another spec got in between.
     const fx = await GalleryFixtures.forPage(await page.context().newPage());
-    const newest = await fx.list({ per_page: 5 });
-    for (const [index, gallery] of newest.entries()) {
-      await expect(rows.nth(index)).toContainText(gallery.title);
-    }
+    let newest = await fx.list({ per_page: 5 });
+    await expect(async () => {
+      await openOverview(page);
+      await expect(rows).toHaveCount(5);
+      newest = await fx.list({ per_page: 5 });
+      for (const [index, gallery] of newest.entries()) {
+        await expect(rows.nth(index)).toContainText(gallery.title, { timeout: 1000 });
+      }
+    }).toPass({ timeout: 45_000 });
     await rows.first().getByRole('link').click();
     await expect(page).toHaveURL(new RegExp(`#/galleries/${newest[0]?.id}$`));
     await expect(root(page).locator('.swg-ed')).toBeVisible();

@@ -66,6 +66,13 @@ class BlockEditorLayoutStyleTest extends SwgTestCase {
 		$this->assertTrue( wp_style_is( BlockRegistrar::LAYOUT_STYLE_HANDLE, 'enqueued' ) );
 	}
 
+	public function test_other_admin_screens_do_not_get_the_editor_stylesheet(): void {
+		wp_set_current_user( $this->makeUser( 'administrator' ) );
+		set_current_screen( 'upload' );
+		$this->build()->enqueue_editor_layout_styles();
+		$this->assertFalse( wp_style_is( BlockRegistrar::LAYOUT_STYLE_HANDLE, 'enqueued' ) );
+	}
+
 	public function test_nothing_is_enqueued_on_the_frontend_without_the_build_or_for_visitors(): void {
 		wp_set_current_user( $this->makeUser( 'author' ) );
 		set_current_screen( 'front' );

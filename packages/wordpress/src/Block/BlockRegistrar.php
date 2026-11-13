@@ -85,6 +85,11 @@ final class BlockRegistrar implements RegistrarInterface {
 		if ( ! is_admin() || ! current_user_can( 'edit_posts' ) ) {
 			return;
 		}
+		// WordPress fires enqueue_block_assets on every admin page: only the block editor screens need the styles.
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( null === $screen || ! $screen->is_block_editor() ) {
+			return;
+		}
 		$file = $this->layout_manifest->resolve()['layout'];
 		if ( null === $file ) {
 			return;

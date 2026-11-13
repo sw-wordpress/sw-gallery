@@ -9,12 +9,18 @@ test('plugin assets are not loaded outside the plugin screen', async ({ page }) 
   for (const path of ['/wp-admin/', '/wp-admin/upload.php', '/wp-admin/edit.php']) {
     await page.goto(path);
     await expect(page.locator('#wpadminbar')).toBeVisible();
-    await expect(page.locator('script[src*="sw-gallery"], link[href*="sw-gallery"]')).toHaveCount(
-      0,
-    );
+    // The Media Library screen loads the one small delete-warning script (M2-38) and nothing else.
+    const allowed = path === '/wp-admin/upload.php' ? 'script[src*="media-library.js"]' : null;
+    const own = page.locator('script[src*="sw-gallery"], link[href*="sw-gallery"]');
+    if (allowed === null) await expect(own).toHaveCount(0);
+    else await expect(own.and(page.locator(`:not(${allowed})`))).toHaveCount(0);
     await expect(page.locator('#swg-admin-root')).toHaveCount(0);
   }
-  expect(monitor.requests.filter((url) => url.includes('/plugins/sw-gallery/'))).toEqual([]);
+  expect(
+    monitor.requests.filter(
+      (url) => url.includes('/plugins/sw-gallery/') && !url.includes('/media-library/'),
+    ),
+  ).toEqual([]);
 });
 
 test('every plugin script and stylesheet on its screen carries ver=<plugin version>', async ({
