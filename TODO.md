@@ -145,6 +145,12 @@ Tooling and tests
 - [ ] FU-16 Contributors lack `upload_files`, so under D11 all of their items count as `missing`: decide whether contributors may use already-readable library images (D11 revisit).
 - [ ] FU-17 `swg_gallery_changed` fires only from core events: `RevisionBump` (attachment deleted, cover cleared, repair run) bumps revisions without an event, so full-page caches/CDNs are not purged in those cases (the object-cache fragment cache stays correct through the media epoch) — emit the action from `GalleryLifecycleRegistrar`/repair too.
 - [ ] FU-18 Pagination arg `swg_page_<galleryId>` is shared by two embeds of the same gallery on one page (documented); the shortcode/block must omit `page` unless the embed really sets it, otherwise the URL arg never takes effect.
+- [ ] FU-19 Admin app: a lazy chunk that fails to load (flaky network) fails silently; add a router `onError` message with retry.
+- [ ] FU-20 Block editor preview is unstyled (no gallery stylesheet in the editor): load the layout stylesheet via `editorStyle`/`enqueue_block_assets`.
+- [ ] FU-21 Release packaging (M5-09/M5-10): the ZIP must ship `assets/blocks/block.json` and `assets/blocks/build/`, `assets/build/`, `assets/admin/`, the compiled `.mo` and the block JSON catalog; the build script must run all three npm builds.
+- [ ] FU-22 Docs: `docs/development.md` must describe the `assets/` and `assets/blocks` projects, `bin/rebuild-on-change.sh` and the `COMPOSER_PROCESS_TIMEOUT=0` need of the long WordPress suites.
+- [ ] FU-23 Shortcode output is not width-constrained by block themes (full width in Twenty Twenty-Five inside constrained post content, the block version gets alignment support): decide whether the shortcode wrapper should carry the theme's content-width class (F-23).
+- [ ] FU-24 Keyboard-only reorder was not tested with a real screen reader; touch drag-and-drop is untested (keys and buttons are the alternative).
 - [ ] FU-05 Docs: `docs/development.md` must mention the `assets/` project, `bin/rebuild-on-change.sh`, `bin/watch-build.sh` and the new test commands.
 
 ## M2 — Management
@@ -176,19 +182,19 @@ Admin app (`apps/admin`, C§7)
 - [x] M2-21 (delivered by M2-39) Shared state components: loading, empty, error, retry; confirmation dialog naming affected objects.
 - [x] M2-22 Gallery list: grid + table, search, status filter, server paging; cover, title, count, status, modified; first-run empty state leads to "create gallery".
 - [x] M2-23 Gallery list actions: create, duplicate, trash, restore, delete permanently (confirmation), preview, copy shortcode.
-- [ ] M2-24 Editor shell: title, plain-text description, cover, status, save/publish, unsaved-change warning, revision tracking.
-- [ ] M2-25 Editor image grid: server-paged/virtualized items, bulk selection, bulk remove with undo before save.
-- [ ] M2-26 Reorder: drag-and-drop (dependency license/maintenance review) plus keyboard/button alternative with screen-reader announcements.
-- [ ] M2-27 Media picker and upload via native `wp.media` modal (D2) with added/duplicate/missing feedback.
-- [ ] M2-28 Upload progress inside the picker flow: real per-file progress, partial-failure reporting (n of m), retry.
-- [ ] M2-29 Image details panel: global vs gallery-local title/alt/caption (inherit vs blank), dimensions, MIME, filesize, ID.
-- [ ] M2-30 Layout/settings panel generated from `/layouts` schemas, responsive values, sort mode (D3), validation errors.
-- [ ] M2-32 Conflict UX for 409: show what changed, reload or re-apply local edits; tested.
+- [x] M2-24 Editor shell: title, plain-text description, cover, status, save/publish, unsaved-change warning, revision tracking.
+- [x] M2-25 Editor image grid: server-paged/virtualized items, bulk selection, bulk remove with undo before save.
+- [x] M2-26 Reorder: drag-and-drop (dependency license/maintenance review) plus keyboard/button alternative with screen-reader announcements.
+- [x] M2-27 Media picker and upload via native `wp.media` modal (D2) with added/duplicate/missing feedback.
+- [x] M2-28 Upload progress inside the picker flow: real per-file progress, partial-failure reporting (n of m), retry.
+- [x] M2-29 Image details panel: global vs gallery-local title/alt/caption (inherit vs blank), dimensions, MIME, filesize, ID.
+- [x] M2-30 Layout/settings panel generated from `/layouts` schemas, responsive values, sort mode (D3), validation errors.
+- [x] M2-32 Conflict UX for 409: show what changed, reload or re-apply local edits; tested.
 - [ ] M2-33 Media Overview page per D6: permission-filtered attachment browser (search, server paging), "used in n galleries", only action "add to gallery" (gallery selection dialog, same bulk-assign result feedback as M2-27).
 - [ ] M2-34 Overview, Settings and System Status pages.
 - [ ] M2-38 Media Library integration: "used in n galleries" in attachment details; warning before deleting an attachment that is used in galleries (relations are still removed by M1-16).
 - [ ] M2-35 Accessibility pass of the admin app (focus, labels, contrast, reduced motion; WCAG 2.2 AA goal).
-- [ ] M2-37 Admin E2E: create gallery, upload/pick, reorder (mouse + keyboard), edit overrides, save/publish, duplicate, trash/restore, role restrictions.
+- [x] M2-37 Admin E2E: create gallery, upload/pick, reorder (mouse + keyboard), edit overrides, save/publish, duplicate, trash/restore, role restrictions.
 
 ## M3 — Frontend
 
@@ -212,7 +218,7 @@ Admin app (`apps/admin`, C§7)
 - [x] M3-18 Vitest for `assets/*` TypeScript; JS/TS coverage gate and Sonar include these sources (merged with `apps/admin`, still > 80 %).
 - [ ] M3-19 (labels come from `data-swg-labels` incl. the optional `error` key — the PHP views must emit them) Lightbox/frontend strings server-localized (en/de).
 - [x] M3-22 `POST /galleries/{id}/preview` (authorized, accepts unsaved settings, same renderer, never cached). (Was M2-12, moved per F-03.)
-- [ ] M3-23 Editor live preview in the Vue app (sandboxed, frontend CSS, debounced) using M3-22. (Was M2-31, moved per F-03.)
+- [ ] M3-23 (open: the preview route and its response with asset URLs exist; the iframe live preview in the editor is not built yet) Editor live preview in the Vue app (sandboxed, frontend CSS, debounced) using M3-22. (Was M2-31, moved per F-03.)
 - [ ] M3-20 Renderer tests: snapshot per layout, large gallery fixture (query-count budget), missing attachments, stale cache, multiple instances, feed context.
 - [ ] M3-21 Frontend E2E + axe: render, paging, lightbox keyboard/focus/touch, JS disabled, editor live preview.
 
@@ -220,10 +226,10 @@ Admin app (`apps/admin`, C§7)
 
 - [x] M4-01 Shortcode `[sw_gallery id="123"]`: strict attribute allowlist/validation, same renderer.
 - [x] M4-02 PHP API `swg_render_gallery( int $id, array $args = array() ): string` (returns, never echoes; PHPDoc contract, `@since`).
-- [ ] M4-03 Block `sw-gallery/gallery`: `block.json`, attributes = gallery ID + validated overrides (no media IDs), `supports` for align wide/full and spacing, `render_callback` → same renderer.
-- [ ] M4-04 Block editor glue in `assets/blocks` (minimal TS, WordPress components as externals): gallery selector, server-rendered preview, deep link to the Vue editor; versioned assets.
-- [ ] M4-05 Block tests: Vitest for glue (counts towards the JS gate), PHP test that block, shortcode and PHP API produce identical output and respect visibility.
-- [ ] M4-06 Block i18n via `wp_set_script_translations()` (JSON catalogs generated by `bin/i18n.sh`).
+- [x] M4-03 Block `sw-gallery/gallery`: `block.json`, attributes = gallery ID + validated overrides (no media IDs), `supports` for align wide/full and spacing, `render_callback` → same renderer.
+- [x] M4-04 Block editor glue in `assets/blocks` (minimal TS, WordPress components as externals): gallery selector, server-rendered preview, deep link to the Vue editor; versioned assets.
+- [x] M4-05 Block tests: Vitest for glue (counts towards the JS gate), PHP test that block, shortcode and PHP API produce identical output and respect visibility.
+- [x] M4-06 Block i18n via `wp_set_script_translations()` (JSON catalogs generated by `bin/i18n.sh`).
 - [ ] M4-07 Layout registration extension point (`swg_register_layouts`), versioned contract, example in docs.
 - [ ] M4-08 Import provider registration extension point (contract only, Media Library provider registered through it).
 - [ ] M4-09 Public actions/filters for gallery/item lifecycle and render arguments, each with failure policy in `docs/hooks.md`.
@@ -231,7 +237,7 @@ Admin app (`apps/admin`, C§7)
 - [ ] M4-11 Optional integrations (sw-image-optimizer, sw-slider, sw-forms, sw-backupit, sw-cloudcalendar): verify no hard dependency; implement only where a concrete contract exists, otherwise document as not implemented.
 - [ ] M4-12 Per D7: document in `docs/extending.md` that an admin side-panel registry is not implemented in 1.0 (planned R1.1-07); no placeholder API.
 - [x] M4-15 Admin bar "Edit gallery" entry on frontend pages rendering a gallery the user may edit (deep link from M2-19).
-- [ ] M4-13 Gutenberg E2E: insert block, select gallery, preview, publish, frontend render; shortcode in classic content.
+- [x] M4-13 Gutenberg E2E: insert block, select gallery, preview, publish, frontend render; shortcode in classic content.
 - [ ] M4-14 `docs/extending.md` (layouts, providers, hooks, PHP API, theming contract) incl. compatibility policy for public contracts (semver meaning, deprecation period, `@since`) — short, links instead of duplication.
 
 ## M5 — Hardening / release

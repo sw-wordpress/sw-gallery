@@ -62,3 +62,10 @@
 - D render pipeline: `RenderGallery` use case (one access decision for every entry point), sorted bounded item query, thumbnails/srcset, loading strategy, views and feed markup, `GalleryRenderer`, `wp swg render`; query budget asserted (13 queries for 12 images, 11 for 100).
 - State: 657 WordPress tests (single + multisite), 240 unit tests, merged PHP coverage 97.1 %.
 - The terminal was closed mid-wave; all work survived in git worktrees and three agents were resumed and finished.
+
+## 2026-11-13 — Wave 4 (E, F1, F2, F3) and first full website test
+- E gallery editor: staged editing with undo/redo, items grid with virtual scrolling, drag and keyboard reorder, native `wp.media` picker and XHR upload with real progress, image details (inherit vs blank), generated layout/settings form, conflict dialog with rebase, unsaved-changes guard.
+- F1 shortcode `[sw_gallery]`, `swg_render_gallery()`, versioned asset enqueue only where rendered, admin-bar "Edit gallery", authorised preview route; F2 layout CSS (responsive grid, `aspect`, theming properties), link pagination, render cache with media epoch and `swg_gallery_changed`; F3 Gutenberg block with minimal editor glue and its own translation pipeline.
+- Found and fixed by review and E2E: lazy chunks evaluated the admin entry twice (`?ver=` vs relative imports), Prettier scanning the generated admin output in `assets/`, the preview renderer using an outdated constructor after the cache change, a precedence contradiction between shortcode `page` and the request argument.
+- `SurfacesTest` (identical output and visibility on all surfaces, collector hand-off) and `frontend.spec.ts` (published post with shortcode and block in a real browser: grid, versioned CSS/JS, lightbox, no-JS links, link pagination, draft invisible, admin bar).
+- State: 1041 WordPress tests (single + multisite), 248 unit tests, merged PHP coverage 97.2 %; admin app 263 tests / 95.6 %, frontend assets 76 / 100 %, block 31 / 99.3 %; 93 E2E tests.
