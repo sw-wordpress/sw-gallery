@@ -182,7 +182,7 @@ msgid "The layouts could not be loaded."
 msgstr ""
 
 #: packages/wordpress/src/Admin/AdminRegistrar.php:50
-#: packages/wordpress/src/Admin/AdminRegistrar.php:138
+#: packages/wordpress/src/Admin/AdminRegistrar.php:144
 msgid "Gallery Management"
 msgstr ""
 
@@ -191,19 +191,19 @@ msgstr ""
 msgid "Galleries"
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:134
+#: packages/wordpress/src/Admin/AdminRegistrar.php:140
 msgid "You are not allowed to access this page."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:140
+#: packages/wordpress/src/Admin/AdminRegistrar.php:146
 msgid "The gallery admin app is not built. Run \"npm run build\" in apps/admin or install the release package."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:143
+#: packages/wordpress/src/Admin/AdminRegistrar.php:149
 msgid "The gallery administration requires JavaScript."
 msgstr ""
 
-#: packages/wordpress/src/Block/BlockRegistrar.php:138
+#: packages/wordpress/src/Block/BlockRegistrar.php:139
 msgid "No gallery selected. Choose one in the block settings."
 msgstr ""
 
@@ -293,7 +293,7 @@ msgstr ""
 msgid "Edit gallery: %s"
 msgstr ""
 
-#: packages/wordpress/src/Frontend/FrontendAssets.php:78
+#: packages/wordpress/src/Frontend/FrontendAssets.php:83
 msgid "Gallery diagnostic (visible to editors only): the gallery frontend assets are missing or invalid. Run \"npm run build\" in assets or install the release package."
 msgstr ""
 
@@ -328,6 +328,18 @@ msgstr[1] ""
 
 #: packages/wordpress/src/Rendering/DiagnosticMarkup.php:62
 msgid "Gallery diagnostic (visible to editors only)."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:69
+msgid "Row height (px)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:83
+msgid "Last row"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:84
+msgid "left keeps the last row at its natural height, justify stretches it to the full width."
 msgstr ""
 
 #: packages/wordpress/src/Rendering/View/LightboxLabels.php:21

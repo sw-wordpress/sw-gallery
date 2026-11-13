@@ -128,6 +128,14 @@ describe('layouts.css', () => {
     expect(masonryLayout).toContain('--swg-columns');
   });
 
+  it('never overrides the attribute-derived image ratio unless a fixed aspect is set', () => {
+    // An author `aspect-ratio: auto` (or a fallback of it) would disable the width/height attribute ratio: layout shift.
+    expect(rules).not.toMatch(/aspect-ratio:\s*(auto|var\(--swg-aspect,)/);
+    expect(rules).toMatch(
+      /\.swg-gallery\[style\*='--swg-aspect'\] \.swg-link img\s*\{[^}]*aspect-ratio:\s*var\(--swg-aspect\)/,
+    );
+  });
+
   it('defines no layout motion beyond the hover transform', () => {
     expect(rules.match(/transition/g)?.length).toBe(1);
     expect(rules).not.toMatch(/animation/);

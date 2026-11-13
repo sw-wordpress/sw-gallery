@@ -16,6 +16,8 @@ export interface GalleryInput {
   title: string;
   description?: string;
   status?: 'draft' | 'pending' | 'publish' | 'private';
+  layout?: string;
+  settings?: Record<string, unknown>;
 }
 
 /** Item of a gallery as the REST API returns it (docs/rest-api.md, "Item resource"); only what the tests assert. */
@@ -258,16 +260,21 @@ function chunk(type: string, data: Buffer): Buffer {
 
 /** A valid single-colour PNG (default 24x24, a few hundred bytes): fixtures stay tiny but decodable. */
 export function tinyPng(rgb: [number, number, number], size = 24): Buffer {
+  return tinyPngSized(rgb, size, size);
+}
+
+/** A valid single-colour PNG of any width and height (aspect-ratio fixtures for the layouts). */
+export function tinyPngSized(rgb: [number, number, number], width: number, height: number): Buffer {
   const header = Buffer.alloc(13);
-  header.writeUInt32BE(size, 0);
-  header.writeUInt32BE(size, 4);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
   header[8] = 8; // bit depth
   header[9] = 2; // truecolour
   const row = Buffer.concat([
     Buffer.from([0]),
-    Buffer.from(Array.from({ length: size }, () => rgb).flat()),
+    Buffer.from(Array.from({ length: width }, () => rgb).flat()),
   ]);
-  const raw = Buffer.concat(Array.from({ length: size }, () => row));
+  const raw = Buffer.concat(Array.from({ length: height }, () => row));
   return Buffer.concat([
     Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     chunk('IHDR', header),

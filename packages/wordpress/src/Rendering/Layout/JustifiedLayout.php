@@ -66,6 +66,7 @@ final class JustifiedLayout implements GalleryLayoutInterface, ImageHintsProvide
 			'type'       => 'object',
 			'properties' => array(
 				'rowHeight' => array(
+					'title'        => __( 'Row height (px)', 'sw-gallery' ),
 					'type'         => 'integer',
 					'minimum'      => self::MIN_ROW_HEIGHT,
 					'maximum'      => self::MAX_ROW_HEIGHT,
@@ -79,9 +80,11 @@ final class JustifiedLayout implements GalleryLayoutInterface, ImageHintsProvide
 					'default' => self::DEFAULT_GAP,
 				),
 				'lastRow'   => array(
-					'type'    => 'string',
-					'enum'    => self::LAST_ROWS,
-					'default' => 'left',
+					'title'       => __( 'Last row', 'sw-gallery' ),
+					'description' => __( 'left keeps the last row at its natural height, justify stretches it to the full width.', 'sw-gallery' ),
+					'type'        => 'string',
+					'enum'        => self::LAST_ROWS,
+					'default'     => 'left',
 				),
 			),
 		);
