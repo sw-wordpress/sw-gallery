@@ -15,6 +15,7 @@
  *   --swg-ar                                  justified: width/height ratio of one item, emitted per item by the layout
  *   --swg-aspect                              thumbnail aspect ratio, emitted inline by the layout only when not "auto"
  *   --swg-radius                              corner radius of thumbnails and pagination (4px)
+ *   --swg-thumb-radius                        corner radius of thumbnails only (--swg-radius); the masonry layout emits it (0)
  *   --swg-caption-color                       caption colour (inherit)
  *   --swg-caption-size                        caption font size (0.875em)
  *   --swg-focus-ring                          focus outline shorthand (3px solid Highlight)
@@ -161,7 +162,7 @@
 .swg-gallery .swg-link {
   display: block;
   overflow: hidden;
-  border-radius: var(--swg-radius, 4px);
+  border-radius: var(--swg-thumb-radius, var(--swg-radius, 4px));
   line-height: 0;
   text-decoration: none;
   box-shadow: none;

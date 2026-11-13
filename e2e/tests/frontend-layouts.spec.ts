@@ -401,6 +401,8 @@ test('masonry: without JavaScript it is a plain grid in editor order', async ({ 
   await expect(gallery).toHaveCount(1);
   await expect(gallery).not.toHaveClass(/swg-masonry-active/);
   await expect(gallery.locator('.swg-items')).toHaveCSS('display', 'grid');
+  // The corner radius of masonry defaults to 0: tightly packed square images.
+  await expect(gallery.locator('.swg-link').first()).toHaveCSS('border-top-left-radius', '0px');
   expect((await columnBottoms(page)).columns).toBe(3);
   expect(await ratios(page), 'stored order').toEqual(
     SHAPES.map(([w, h]) => Math.round((w / h) * 100) / 100),

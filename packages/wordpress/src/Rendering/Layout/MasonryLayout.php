@@ -35,6 +35,8 @@ final class MasonryLayout implements GalleryLayoutInterface, ImageHintsProviderI
 	private const MAX_COLUMNS     = 12;
 	private const DEFAULT_GAP     = 8;
 	private const MAX_GAP         = 64;
+	private const DEFAULT_RADIUS  = 0;
+	private const MAX_RADIUS      = 64;
 
 	/** Container width the thumbnail target is derived from, in pixels. */
 	private const REFERENCE_WIDTH = 1200;
@@ -64,6 +66,14 @@ final class MasonryLayout implements GalleryLayoutInterface, ImageHintsProviderI
 					'maximum' => self::MAX_GAP,
 					'default' => self::DEFAULT_GAP,
 				),
+				'radius'  => array(
+					'type'        => 'integer',
+					'minimum'     => 0,
+					'maximum'     => self::MAX_RADIUS,
+					'default'     => self::DEFAULT_RADIUS,
+					'title'       => __( 'Corner radius (px)', 'sw-gallery' ),
+					'description' => __( '0 keeps the images square, which suits a tightly packed masonry wall.', 'sw-gallery' ),
+				),
 			),
 		);
 	}
@@ -82,7 +92,8 @@ final class MasonryLayout implements GalleryLayoutInterface, ImageHintsProviderI
 		}
 		$values = $request->settings->values;
 		$css    = ResponsiveSetting::declarations( $values['columns'] ?? null, '--swg-columns', '', self::DEFAULT_COLUMNS, 1, self::MAX_COLUMNS )
-			. sprintf( '--swg-gap:%dpx', ResponsiveSetting::integer( $values['gap'] ?? null, self::DEFAULT_GAP, 0, self::MAX_GAP ) );
+			. sprintf( '--swg-gap:%dpx;', ResponsiveSetting::integer( $values['gap'] ?? null, self::DEFAULT_GAP, 0, self::MAX_GAP ) )
+			. sprintf( '--swg-thumb-radius:%dpx', ResponsiveSetting::integer( $values['radius'] ?? null, self::DEFAULT_RADIUS, 0, self::MAX_RADIUS ) );
 		return sprintf(
 			'<div class="swg-gallery swg-layout-masonry" data-swg-gallery data-swg-instance="%1$s" data-swg-labels="%2$s" style="%3$s"><ul class="swg-items" role="list">%4$s</ul></div>',
 			esc_attr( $request->instanceId ),

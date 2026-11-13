@@ -65,6 +65,7 @@ Public custom properties (set them on `.swg-gallery`, an ancestor or `:root`):
 | `--swg-gap`                                              | 8px                              | layout (`gap` setting)                            |
 | `--swg-aspect`                                           | `auto` (natural ratio)           | layout (`aspect` setting, not emitted for `auto`) |
 | `--swg-radius`                                           | 4px                              | theme                                             |
+| `--swg-thumb-radius`                                     | `--swg-radius`                   | layout (`radius` setting of masonry, default 0)   |
 | `--swg-caption-color`, `--swg-caption-size`              | inherit, 0.875em                 | theme                                             |
 | `--swg-focus-ring`                                       | 3px solid Highlight              | theme                                             |
 | `--swg-hover-transform`                                  | scale(1.03)                      | theme                                             |

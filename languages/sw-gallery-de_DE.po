@@ -250,7 +250,7 @@ msgstr "%d der ausgewählten Bilder wird in Galerien verwendet. Wenn Sie sie end
 msgid "%d of the selected images are used in galleries. If you delete them permanently, they are removed from those galleries. Delete them anyway?"
 msgstr "%d der ausgewählten Bilder werden in Galerien verwendet. Wenn Sie sie endgültig löschen, werden sie aus diesen Galerien entfernt. Trotzdem löschen?"
 
-#: packages/wordpress/src/Block/BlockRegistrar.php:166
+#: packages/wordpress/src/Block/BlockRegistrar.php:171
 msgid "No gallery selected. Choose one in the block settings."
 msgstr "Keine Galerie ausgewählt. Wähle in den Blockeinstellungen eine aus."
 
@@ -394,6 +394,14 @@ msgstr "Letzte Zeile"
 #: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:84
 msgid "left keeps the last row at its natural height, justify stretches it to the full width."
 msgstr "left belässt die letzte Zeile in ihrer natürlichen Höhe, justify streckt sie auf die volle Breite."
+
+#: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:74
+msgid "Corner radius (px)"
+msgstr "Eckenradius (px)"
+
+#: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:75
+msgid "0 keeps the images square, which suits a tightly packed masonry wall."
+msgstr "0 lässt die Bilder eckig, passend zu einer dicht gepackten Masonry-Wand."
 
 #: packages/wordpress/src/Rendering/View/LightboxLabels.php:21
 msgid "Image viewer"

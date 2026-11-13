@@ -54,7 +54,7 @@ class RenderMasonryLayoutTest extends SwgTestCase {
 
 	public function test_columns_and_gap_become_validated_custom_properties(): void {
 		$this->assertSame(
-			'--swg-columns:4;--swg-gap:16px',
+			'--swg-columns:4;--swg-gap:16px;--swg-thumb-radius:0px',
 			$this->style(
 				$this->render(
 					array( $this->item() ),
@@ -66,7 +66,7 @@ class RenderMasonryLayoutTest extends SwgTestCase {
 			)
 		);
 		$this->assertSame(
-			'--swg-columns:2;--swg-columns-md:4;--swg-columns-xl:6;--swg-gap:8px',
+			'--swg-columns:2;--swg-columns-md:4;--swg-columns-xl:6;--swg-gap:8px;--swg-thumb-radius:0px',
 			$this->style(
 				$this->render(
 					array( $this->item() ),
@@ -80,9 +80,9 @@ class RenderMasonryLayoutTest extends SwgTestCase {
 				)
 			)
 		);
-		$this->assertSame( '--swg-columns:3;--swg-gap:8px', $this->style( $this->render( array( $this->item() ) ) ) );
+		$this->assertSame( '--swg-columns:3;--swg-gap:8px;--swg-thumb-radius:0px', $this->style( $this->render( array( $this->item() ) ) ) );
 		$this->assertSame(
-			'--swg-columns:3;--swg-gap:8px',
+			'--swg-columns:3;--swg-gap:8px;--swg-thumb-radius:0px',
 			$this->style(
 				$this->render(
 					array( $this->item() ),
@@ -94,7 +94,7 @@ class RenderMasonryLayoutTest extends SwgTestCase {
 			)
 		);
 		$this->assertSame(
-			'--swg-columns:12;--swg-gap:0px',
+			'--swg-columns:12;--swg-gap:0px;--swg-thumb-radius:0px',
 			$this->style(
 				$this->render(
 					array( $this->item() ),
@@ -105,6 +105,15 @@ class RenderMasonryLayoutTest extends SwgTestCase {
 				)
 			)
 		);
+	}
+
+	public function test_the_corner_radius_defaults_to_square_and_is_clamped(): void {
+		$radius = fn( $value ): string => $this->style( $this->render( array( $this->item() ), array( 'radius' => $value ) ) );
+		$this->assertStringEndsWith( '--swg-thumb-radius:0px', $radius( null ) );
+		$this->assertStringEndsWith( '--swg-thumb-radius:12px', $radius( 12 ) );
+		$this->assertStringEndsWith( '--swg-thumb-radius:64px', $radius( 9999 ) );
+		$this->assertStringEndsWith( '--swg-thumb-radius:0px', $radius( -5 ) );
+		$this->assertStringEndsWith( '--swg-thumb-radius:0px', $radius( 'red;} body{display:none' ), 'Hostile values never reach the style attribute.' );
 	}
 
 	public function test_hostile_text_and_urls_are_escaped(): void {

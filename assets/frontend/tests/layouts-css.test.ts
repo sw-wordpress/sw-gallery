@@ -53,6 +53,7 @@ describe('layouts.css', () => {
       '--swg-gap',
       '--swg-aspect',
       '--swg-radius',
+      '--swg-thumb-radius',
       '--swg-caption-color',
       '--swg-caption-size',
       '--swg-focus-ring',
