@@ -10,8 +10,8 @@ import type { GalleryRecord, MediaRecord } from '../support/galleries';
 
 /**
  * Editor live preview (M3-23, M3-21 editor part) against the real renderer: the staged, unsaved state is posted to
- * `POST /galleries/{id}/preview` and shown in a sandboxed iframe. Fixtures (galleries and tiny PNGs) come through the REST
- * API with a unique prefix and are purged in afterAll. The iframe is a separate document: axe scans the parent page only.
+ * `POST /galleries/{id}/preview` and shown in a sandboxed iframe inside a full-viewport dialog (opened by the Preview button). Fixtures (galleries and tiny PNGs) come through the REST
+ * API with a unique prefix and are purged in afterAll. The dialog is a Quasar portal outside `#swg-admin-root`; the iframe is a separate document: axe scans the parent page only.
  */
 const PREFIX = uniquePrefix('preview');
 const COLORS: Array<[number, number, number]> = [
@@ -53,10 +53,35 @@ test.afterAll(async () => {
 
 const root = (page: Page): Locator => page.locator('#swg-admin-root');
 const state = (page: Page): Locator => root(page).locator('.swg-ed__state');
-const previewTab = (page: Page): Locator => root(page).getByRole('tab', { name: 'Live preview' });
-const frameElement = (page: Page): Locator => root(page).locator('iframe.swg-pvf');
-const frame = (page: Page): FrameLocator => page.frameLocator('#swg-admin-root iframe.swg-pvf');
-const pane = (page: Page): Locator => root(page).locator('.swg-pv');
+const previewButton = (page: Page, name = 'Preview'): Locator =>
+  root(page).locator('.swg-ed__actions').getByRole('button', { name, exact: true });
+/** The dialog is a portal on `<body>`, not part of `#swg-admin-root`. */
+const dialogBox = (page: Page): Locator => page.locator('.swg-pvd');
+const dialog = (page: Page, name = 'Live preview'): Locator => page.getByRole('dialog', { name });
+const frameElement = (page: Page): Locator => dialogBox(page).locator('iframe.swg-pvf');
+const frame = (page: Page): FrameLocator => page.frameLocator('.swg-pvd iframe.swg-pvf');
+const pane = (page: Page): Locator => dialogBox(page).locator('.swg-pv');
+
+/** Opens the preview dialog with the Preview button (the editor must be open). */
+async function showPreviewDialog(page: Page, name = 'Preview'): Promise<void> {
+  await previewButton(page, name).click();
+  await expect(dialogBox(page)).toBeVisible();
+  // Settled (the slide-up has ended) and covering the whole viewport, WordPress chrome included.
+  const size = page.viewportSize();
+  await expect
+    .poll(async () => {
+      const box = await dialogBox(page).boundingBox();
+      return box === null
+        ? null
+        : [Math.round(box.x), Math.round(box.y), Math.round(box.width), Math.round(box.height)];
+    })
+    .toEqual([0, 0, size?.width, size?.height]);
+}
+
+async function closePreviewDialog(page: Page): Promise<void> {
+  await dialogBox(page).getByRole('button', { name: 'Close preview' }).click();
+  await expect(dialogBox(page)).toHaveCount(0);
+}
 
 async function newGallery(
   name: string,
@@ -81,7 +106,7 @@ async function openEditor(page: Page, gallery: GalleryRecord): Promise<void> {
 
 async function openPreview(page: Page, gallery: GalleryRecord): Promise<void> {
   await openEditor(page, gallery);
-  await previewTab(page).click();
+  await showPreviewDialog(page);
   await expect(frameElement(page)).toBeVisible();
   await expect(frame(page).locator('.swg-gallery')).toBeVisible();
 }
@@ -98,6 +123,18 @@ function countPreviewRequests(page: Page): { count: () => number; bodies: unknow
     }
   });
   return { count: () => bodies.length, bodies };
+}
+
+/** The request count stays at `expected` for `ms` (a re-render would arrive within the debounce window). */
+async function expectNoMoreRequests(
+  requests: { count: () => number },
+  expected: number,
+  ms = 1500,
+): Promise<void> {
+  expect(requests.count()).toBe(expected);
+  await expect(async () => expect(requests.count()).not.toBe(expected)).not.toPass({
+    timeout: ms,
+  });
 }
 
 const isPreviewRoute = (url: URL): boolean =>
@@ -126,13 +163,13 @@ async function pickViewport(
   await pane(page).locator('.swg-seg').getByText(label, { exact: true }).click();
 }
 
-async function shot(page: Page, name: string): Promise<void> {
+async function shot(page: Page, name: string, fullPage = false): Promise<void> {
   await mkdir(SCREENSHOT_DIR, { recursive: true });
   await page.evaluate(() => {
     window.scrollTo(0, 0);
     return document.fonts.ready;
   });
-  await page.screenshot({ path: resolve(SCREENSHOT_DIR, `${name}.png`), fullPage: true });
+  await page.screenshot({ path: resolve(SCREENSHOT_DIR, `${name}.png`), fullPage });
 }
 
 test.describe('editor live preview as administrator', () => {
@@ -147,7 +184,7 @@ test.describe('editor live preview as administrator', () => {
     );
     await openEditor(page, gallery);
     await expect(frameElement(page)).toBeHidden();
-    await previewTab(page).click();
+    await showPreviewDialog(page);
     const answer = await response;
     expect(answer.status()).toBe(200);
     expect(answer.headers()['cache-control']).toContain('no-store');
@@ -172,7 +209,7 @@ test.describe('editor live preview as administrator', () => {
     await expect(pane(page).locator('.swg-pv__pagetext')).toHaveText('Page 1 of 1 · 4 images');
     // The renderer markup exists only inside the frame document.
     await expect(page.locator('.swg-gallery')).toHaveCount(0);
-    await expect(root(page).locator('.swg-pv__diag')).toHaveCount(0);
+    await expect(pane(page).locator('.swg-pv__diag')).toHaveCount(0);
   });
 
   test('previews unsaved settings without changing the saved gallery, and says so', async ({
@@ -180,67 +217,71 @@ test.describe('editor live preview as administrator', () => {
   }) => {
     const gallery = await newGallery('Staged', 4);
     const requests = countPreviewRequests(page);
-    await openPreview(page, gallery);
-    expect(await gridColumns(page)).toBe(3);
-    await expect(pane(page).locator('.swg-pv__unsaved-settings')).toHaveCount(0);
-
+    await openEditor(page, gallery);
+    // Several quick edits in the settings panel, before the preview is opened: nothing is requested yet.
     await showLayoutPanel(page);
-    // Several quick edits: debounced into very few requests.
     for (const value of ['4', '5', '6', '2']) await columnsInput(page).fill(value);
+    await expect(page.locator('.swg-pvd')).toHaveCount(0);
+    await expectNoMoreRequests(requests, 0, 1200);
+
+    await showPreviewDialog(page);
+    await expect(frame(page).locator('.swg-gallery')).toBeVisible();
     await expect.poll(() => gridColumns(page)).toBe(2);
-    expect(requests.count()).toBeLessThanOrEqual(3);
+    expect(requests.count()).toBe(1);
     await expect(pane(page).locator('.swg-pv__unsaved-settings')).toBeVisible();
     expect(requests.bodies.at(-1)).toMatchObject({
       layout: 'grid',
       settings: { columns: 2 },
       page: 1,
     });
-
-    // Nothing was saved.
-    const saved = await admin.detail(gallery.id);
-    expect(saved.settings).toEqual({});
+    // The staged value is shown, nothing was saved.
+    expect((await admin.detail(gallery.id)).settings).toEqual({});
 
     // Gallery title edits are not part of the render.
-    const before = requests.count();
+    await closePreviewDialog(page);
     await root(page)
       .locator('.swg-ed__side .swg-seg')
       .getByText('Details', { exact: true })
       .click();
     await root(page).locator('.swg-gdp').getByLabel('Title').fill(`${gallery.title} renamed`);
-    // A re-render would arrive within the debounce window; it must stay away.
-    await expect(async () => expect(requests.count()).toBeGreaterThan(before)).not.toPass({
+    await showPreviewDialog(page);
+    await expect(frame(page).locator('.swg-gallery')).toBeVisible();
+    expect(requests.count()).toBe(2);
+    await expect(async () => expect(requests.count()).toBeGreaterThan(2)).not.toPass({
       timeout: 1500,
     });
 
-    // Saving re-renders once and removes the "unsaved" notice.
+    // Saving (behind the closed dialog) and opening again: one render, no "unsaved" notice.
+    await closePreviewDialog(page);
     await root(page).getByRole('button', { name: 'Save', exact: true }).click();
     await expect(state(page)).toContainText('All changes saved');
-    await expect.poll(() => requests.count()).toBe(before + 1);
+    await showPreviewDialog(page);
+    await expect(frame(page).locator('.swg-gallery')).toBeVisible();
+    await expect.poll(() => requests.count()).toBe(3);
     await expect(pane(page).locator('.swg-pv__unsaved-settings')).toHaveCount(0);
     expect((await admin.detail(gallery.id)).settings).toEqual({ columns: 2 });
     expect(await gridColumns(page)).toBe(2);
   });
 
-  test('an invalid value shows the validation message and keeps the last good preview', async ({
+  test('an invalid value shows the validation message in the dialog and in the settings', async ({
     page,
   }) => {
     const gallery = await newGallery('Invalid', 3);
-    await openPreview(page, gallery);
+    await openEditor(page, gallery);
     await showLayoutPanel(page);
     await columnsInput(page).fill('20');
-    await expect(root(page).locator('.swg-lsp')).toContainText('Must be at most 12.');
+    await showPreviewDialog(page);
     await expect(pane(page).locator('.swg-pv__error')).toContainText('Fix the marked settings.');
-    await expect(pane(page).locator('.swg-pv__error')).toContainText(
-      'Showing the last successful preview.',
-    );
-    await expect(pane(page).locator('.swg-pv__stage')).toHaveClass(/is-stale/);
-    await expect(frame(page).locator('.swg-gallery img')).toHaveCount(3);
-    await expect(root(page).locator('.swg-lsp [role="alert"]').first()).toBeVisible();
+    await expect(frameElement(page)).toHaveCount(0);
     await shot(page, 'editor-preview-error-validation');
 
+    // The settings panel is behind the modal: close it to see and fix the marked field.
+    await closePreviewDialog(page);
+    await expect(root(page).locator('.swg-lsp')).toContainText('Must be at most 12.');
+    await expect(root(page).locator('.swg-lsp [role="alert"]').first()).toBeVisible();
     await columnsInput(page).fill('4');
+    await showPreviewDialog(page);
     await expect(pane(page).locator('.swg-pv__error')).toHaveCount(0);
-    await expect(pane(page).locator('.swg-pv__stage')).not.toHaveClass(/is-stale/);
     await expect.poll(() => gridColumns(page)).toBe(4);
     expect((await admin.detail(gallery.id)).settings).toEqual({});
   });
@@ -281,30 +322,39 @@ test.describe('editor live preview as administrator', () => {
     await expect(pane(page).locator('.swg-pv__stage')).not.toHaveClass(/is-stale/);
   });
 
-  test('viewport switcher resizes the frame', async ({ page }) => {
-    // Collapse the plugin navigation so that a tablet-wide frame fits next to the settings panel.
-    await page.setViewportSize({ width: 1590, height: 900 });
+  test('viewport buttons set real frame widths inside the dialog, Fit fills the stage', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1600, height: 900 });
     const gallery = await newGallery('Viewport', 4);
     await openPreview(page, gallery);
-    await root(page).getByRole('button', { name: 'Collapse navigation' }).click();
     const width = async (): Promise<number> => (await frameElement(page).boundingBox())?.width ?? 0;
-    // Room inside the preview stage (padding 12 px each side); the frame never exceeds it.
+    // Room inside the preview stage (padding 12 px each side).
     const room = async (): Promise<number> =>
       (await pane(page)
         .locator('.swg-pv__stage')
         .evaluate((el) => el.clientWidth)) - 24;
-    await expect.poll(room).toBeGreaterThan(768);
+    await expect.poll(room).toBeGreaterThan(1280);
 
+    await expect.poll(width).toBe(await room());
     await pickViewport(page, 'Mobile');
     await expect.poll(width).toBe(375);
     await expect(pane(page).locator('.swg-pv__width')).toContainText('375 px');
     await shot(page, 'editor-preview-mobile');
     await pickViewport(page, 'Tablet');
     await expect.poll(width).toBe(768);
+    await shot(page, 'editor-preview-tablet');
     await pickViewport(page, 'Desktop');
-    await expect.poll(width).toBe(Math.min(1280, await room()));
+    await expect.poll(width).toBe(1280);
     await pickViewport(page, 'Fit');
     await expect.poll(width).toBe(await room());
+    // The frame is as tall as the stage (the dialog), and the page behind does not scroll.
+    const stageHeight = await pane(page)
+      .locator('.swg-pv__stage')
+      .evaluate((el) => el.clientHeight);
+    expect((await frameElement(page).boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(
+      Math.min(stageHeight - 24, 480) - 1,
+    );
     // The frame follows the width: a phone-sized frame shows the same gallery.
     await pickViewport(page, 'Mobile');
     await expect(frame(page).locator('.swg-gallery img')).toHaveCount(4);
@@ -368,7 +418,7 @@ test.describe('editor live preview as administrator', () => {
   test('an empty gallery shows the diagnostic, not a blank frame', async ({ page }) => {
     const gallery = await newGallery('Empty', 0);
     await openEditor(page, gallery);
-    await previewTab(page).click();
+    await showPreviewDialog(page);
     await expect(pane(page).locator('.swg-pv__empty')).toContainText('Nothing to preview yet');
     await expect(frameElement(page)).toHaveCount(0);
     const diagnostics = pane(page).locator('details.swg-pv__diag');
@@ -404,67 +454,171 @@ test.describe('editor live preview as administrator', () => {
         .evaluate(() => (window as unknown as { __pwned?: unknown }).__pwned),
     ).toBeUndefined();
     // Nothing of it leaked into the admin document.
-    await expect(root(page).locator('.swg-pv img[src="x"]')).toHaveCount(0);
+    await expect(page.locator('.swg-pv img[src="x"]')).toHaveCount(0);
     await expect(page.locator('script:not([src])').filter({ hasText: '__pwned' })).toHaveCount(0);
   });
 
-  test('side by side on wide screens: no tabs, images and preview together', async ({ page }) => {
+  test('opens in a modal that fills the viewport; images grid keeps the full main column', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1700, height: 1000 });
-    const gallery = await newGallery('Wide', 4);
+    const gallery = await newGallery('Modal', 4);
     await openEditor(page, gallery);
+    // No tabs, no side-by-side pane: the images keep the whole main column.
     await expect(root(page).getByRole('tab')).toHaveCount(0);
+    await expect(root(page).locator('.swg-pv')).toHaveCount(0);
     await expect(root(page).getByRole('listbox')).toBeVisible();
-    await expect(frameElement(page)).toBeVisible();
+    await showPreviewDialog(page);
+    await expect(dialog(page)).toBeVisible();
     await expect(frame(page).locator('.swg-gallery img')).toHaveCount(4);
-    const images = await root(page).locator('.swg-ed__images').boundingBox();
-    const preview = await root(page).locator('.swg-ed__previewpanel').boundingBox();
-    expect(images && preview && Math.abs(images.y - preview.y) < 120).toBe(true);
-    await shot(page, 'editor-preview-wide');
+    // Nothing of the WordPress chrome is clickable behind it: the admin menu is covered.
+    const top = await page.evaluate(
+      () => document.elementFromPoint(10, 100)?.closest('.swg-pvd') !== null,
+    );
+    expect(top).toBe(true);
+    // The dialog body scrolls, not the page behind it.
+    await expect(dialog(page)).toHaveAttribute('aria-modal', 'true');
+    await shot(page, 'editor-preview-dialog-desktop');
   });
 
-  test('keyboard: the tabs follow the WAI-ARIA pattern and the preview controls are reachable', async ({
+  test('the dialog also fills a phone-sized viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 700 });
+    const gallery = await newGallery('Phone', 3);
+    await openEditor(page, gallery);
+    await showPreviewDialog(page);
+    await expect(frame(page).locator('.swg-gallery img')).toHaveCount(3);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+    await shot(page, 'editor-preview-dialog-mobile-viewport');
+  });
+
+  test('closes with Escape and with the button; focus returns to the Preview button', async ({
+    page,
+  }) => {
+    const gallery = await newGallery('Close', 3);
+    await openEditor(page, gallery);
+    await showPreviewDialog(page);
+    await expect(frame(page).locator('.swg-gallery')).toBeVisible();
+    await expect(dialog(page)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialogBox(page)).toHaveCount(0);
+    await expect(previewButton(page)).toBeFocused();
+
+    await previewButton(page).click();
+    await expect(frameElement(page)).toBeVisible();
+    await dialogBox(page).getByRole('button', { name: 'Close preview' }).click();
+    await expect(dialogBox(page)).toHaveCount(0);
+    await expect(frameElement(page)).toHaveCount(0);
+    await expect(previewButton(page)).toBeFocused();
+  });
+
+  test('sends no request while closed, cancels on close and renders afresh on every opening', async ({
+    page,
+  }) => {
+    const gallery = await newGallery('Requests', 3);
+    const requests = countPreviewRequests(page);
+    await openEditor(page, gallery);
+    await expectNoMoreRequests(requests, 0, 1500);
+
+    await showPreviewDialog(page);
+    await expect(frame(page).locator('.swg-gallery')).toBeVisible();
+    expect(requests.count()).toBe(1);
+    const firstDoc = await frameElement(page).getAttribute('srcdoc');
+    await closePreviewDialog(page);
+    await expectNoMoreRequests(requests, 1, 1500);
+
+    await showPreviewDialog(page);
+    await expect(frame(page).locator('.swg-gallery')).toBeVisible();
+    expect(requests.count()).toBe(2);
+    // A new frame document (per-render token) was created.
+    expect(await frameElement(page).getAttribute('srcdoc')).not.toBe(firstDoc);
+
+    // A request still in flight is cancelled by closing the dialog.
+    await closePreviewDialog(page);
+    await page.route(isPreviewRoute, (route) => route.abort('failed'));
+    const failed = page.waitForEvent('requestfailed', (r) => isPreviewRoute(new URL(r.url())));
+    await showPreviewDialog(page);
+    await failed;
+    await closePreviewDialog(page);
+    await page.unroute(isPreviewRoute);
+    const before = requests.count();
+    await expectNoMoreRequests(requests, before, 1500);
+  });
+
+  test('is disabled with a reason for a gallery that cannot be edited (trashed)', async ({
+    page,
+  }) => {
+    const gallery = await newGallery('Locked', 2);
+    await admin.trash(await admin.detail(gallery.id));
+    const requests = countPreviewRequests(page);
+    await openEditor(page, gallery);
+    await expect(previewButton(page)).toBeDisabled();
+    await expect(root(page).locator('.swg-ed__previewwrap')).toHaveAttribute(
+      'title',
+      'You are not allowed to edit this gallery, so there is no preview.',
+    );
+    await expectNoMoreRequests(requests, 0, 800);
+  });
+
+  test('keyboard: focus is trapped in the dialog and the preview controls are reachable', async ({
     page,
   }) => {
     const gallery = await newGallery('Keyboard', 3);
     await openEditor(page, gallery);
-    const images = root(page).getByRole('tab', { name: 'Images' });
-    await images.focus();
-    await page.keyboard.press('ArrowRight');
-    await expect(previewTab(page)).toHaveAttribute('aria-selected', 'true');
-    await expect(previewTab(page)).toBeFocused();
-    await expect(frameElement(page)).toBeVisible();
-    await page.keyboard.press('Tab');
-    await expect(root(page).locator('#swg-ed-view-panel-preview')).toBeFocused();
-    await page.keyboard.press('Tab');
+    await previewButton(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(dialogBox(page)).toBeVisible();
+    await expect(frame(page).locator('.swg-gallery')).toBeVisible();
+    // Tabbing around never leaves the dialog.
+    const insideDialog = (): Promise<string> =>
+      page.evaluate(() =>
+        // `body` = focus is on the browser chrome (nothing of the page behind the modal is reachable).
+        document.activeElement?.closest('[role="dialog"]') ||
+        document.activeElement === document.body
+          ? 'in'
+          : `out: ${document.activeElement?.outerHTML.slice(0, 160)}`,
+      );
+    for (const key of ['Tab', 'Shift+Tab']) {
+      for (let i = 0; i < 14; i += 1) {
+        await page.keyboard.press(key);
+        await expect.poll(insideDialog).toBe('in');
+      }
+    }
+    // A viewport button is operable with the keyboard.
+    await pane(page).locator('.swg-seg input:checked').focus();
+    await page.keyboard.press('ArrowLeft');
     await expect(pane(page).locator('.swg-seg input:checked')).toBeFocused();
-    await page.keyboard.press('Home');
-    await previewTab(page).focus();
-    await page.keyboard.press('Home');
-    await expect(images).toHaveAttribute('aria-selected', 'true');
     // The preview announces its updates through the editor's live region.
-    await previewTab(page).click();
     await expect(root(page).locator('.swg-shell > [role="status"]')).toContainText(
       /Preview updated\. Page 1 of 1\./,
     );
+    await page.keyboard.press('Escape');
+    await expect(previewButton(page)).toBeFocused();
   });
 
-  test('axe: the editor with the preview pane open (light and dark; the frame is a separate document)', async ({
+  test('axe: the open preview dialog (light and dark; the frame is a separate document)', async ({
     page,
   }) => {
     const gallery = await newGallery('Axe', 4, 'publish');
     await openPreview(page, gallery);
     const options = { exclude: ['iframe.swg-pvf'] };
-    expect(await seriousViolations(page, '#swg-admin-root', options), 'preview, light').toEqual([]);
-    await shot(page, 'editor-preview-light');
+    expect(await seriousViolations(page, '.swg-pvd', options), 'dialog, light').toEqual([]);
+    expect(await seriousViolations(page, 'body', options), 'page and dialog, light').toEqual([]);
+    await shot(page, 'editor-preview-dialog-light');
+    // The theme toggle sits behind the modal: close, switch, reopen.
+    await closePreviewDialog(page);
     await page.getByRole('button', { name: 'Dark mode' }).click();
     await expect(root(page)).toHaveClass(/swg-dark/);
+    await showPreviewDialog(page);
     await expect(frame(page).locator('.swg-gallery')).toBeVisible();
-    expect(await seriousViolations(page, '#swg-admin-root', options), 'preview, dark').toEqual([]);
+    expect(await seriousViolations(page, '.swg-pvd', options), 'dialog, dark').toEqual([]);
+    expect(await seriousViolations(page, 'body', options), 'page and dialog, dark').toEqual([]);
     const background = await frame(page)
       .locator('body')
       .evaluate((body) => getComputedStyle(body).backgroundColor);
     expect(background).toBe('rgb(19, 26, 46)');
-    await shot(page, 'editor-preview-dark');
+    await shot(page, 'editor-preview-dialog-dark');
   });
 });
 
@@ -481,7 +635,7 @@ test.describe('editor live preview by role', () => {
     });
     const contributorPage = await contributorContext.newPage();
     await openEditor(contributorPage, own);
-    await previewTab(contributorPage).click();
+    await showPreviewDialog(contributorPage);
     await expect(pane(contributorPage).locator('.swg-pv__empty')).toContainText(
       'Nothing to preview yet',
     );
@@ -512,7 +666,10 @@ test.describe('editor live preview in German', () => {
       images.slice(0, 3).map((image) => image.id),
     );
     await page.goto(`${PLUGIN_PAGE}#/galleries/${gallery.id}`);
-    await root(page).getByRole('tab', { name: 'Live-Vorschau' }).click();
+    await expect(root(page).locator('.swg-ed__title')).toBeVisible();
+    await showPreviewDialog(page, 'Vorschau');
+    await expect(dialog(page, 'Live-Vorschau')).toBeVisible();
+    await expect(dialogBox(page)).toContainText('Schließen Sie die Vorschau');
     await expect(frameElement(page)).toBeVisible();
     await expect(frameElement(page)).toHaveAttribute(
       'title',
@@ -520,6 +677,6 @@ test.describe('editor live preview in German', () => {
     );
     await expect(pane(page).locator('.swg-pv__pagetext')).toHaveText('Seite 1 von 1 · 3 Bilder');
     await expect(pane(page).getByRole('button', { name: 'Vorschau aktualisieren' })).toBeVisible();
-    await shot(page, 'editor-preview-german');
+    await shot(page, 'editor-preview-dialog-german');
   });
 });

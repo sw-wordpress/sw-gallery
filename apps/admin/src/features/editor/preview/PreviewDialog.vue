@@ -39,9 +39,12 @@ const reduced = computed(
   <q-dialog
     v-model="open"
     maximized
+    class="swg-pvd-root"
     role="dialog"
     aria-modal="true"
     :aria-labelledby="titleId"
+    transition-show="slide-up"
+    transition-hide="slide-down"
     :transition-duration="reduced ? 0 : 300"
     @hide="emit('hide')"
   >
@@ -73,6 +76,13 @@ const reduced = computed(
     </q-card>
   </q-dialog>
 </template>
+
+<!-- Not scoped: the class lands on Quasar's portal root. Above the WP admin bar (99999) and menu: the dialog covers the whole screen. -->
+<style>
+.swg-root .swg-pvd-root {
+  z-index: 100100;
+}
+</style>
 
 <style scoped>
 .swg-pvd {

@@ -366,6 +366,9 @@ watch(preview.error, (error) => {
     <div
       ref="stage"
       class="swg-pv__stage"
+      role="region"
+      tabindex="0"
+      :aria-label="t('editor.preview.stage')"
       :class="{ 'is-stale': errorText !== null && frameDoc !== null }"
       :aria-busy="preview.loading.value"
     >

@@ -308,6 +308,7 @@ export default {
       loading: 'The preview is available once the gallery has loaded.',
       notEditable: 'You are not allowed to edit this gallery, so there is no preview.',
     },
+    stage: 'Preview area',
     frameTitle: 'Preview of the gallery as it appears on the website',
     viewport: {
       legend: 'Preview width',

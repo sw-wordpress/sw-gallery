@@ -320,6 +320,7 @@ const editor: Shape<typeof editorEn> = {
       loading: 'Die Vorschau ist verfügbar, sobald die Galerie geladen ist.',
       notEditable: 'Sie dürfen diese Galerie nicht bearbeiten, daher gibt es keine Vorschau.',
     },
+    stage: 'Vorschaubereich',
     frameTitle: 'Vorschau der Galerie, wie sie auf der Website erscheint',
     viewport: {
       legend: 'Vorschaubreite',
