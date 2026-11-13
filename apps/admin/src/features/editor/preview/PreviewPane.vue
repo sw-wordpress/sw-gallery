@@ -24,6 +24,8 @@ const VIEWPORT_WIDTH: Record<Viewport, number | null> = {
   desktop: 1280,
   fit: null,
 };
+/** Preview-only page sizes; the empty value keeps the site setting (nothing is sent). */
+const PER_PAGE_CHOICES = [6, 12, 24, 48, 100];
 const MIN_FRAME_HEIGHT = 240;
 const MAX_FRAME_HEIGHT = 2000;
 /** At most one announcement in this window; the latest message wins. */
@@ -89,6 +91,14 @@ const widthLabel = computed(() =>
     ? t('editor.preview.viewport.fitting')
     : t('editor.preview.viewport.width', { width: deviceWidth.value }),
 );
+
+const perPageValue = computed(() =>
+  preview.perPage.value === null ? '' : String(preview.perPage.value),
+);
+function onPerPage(event: Event): void {
+  const raw = (event.target as HTMLSelectElement).value;
+  preview.setPerPage(raw === '' ? null : Number(raw));
+}
 
 // ---- document of the iframe (rebuilt per render and theme change, never mutated)
 interface FrameDoc {
@@ -231,6 +241,13 @@ watch(preview.error, (error) => {
       >
         <q-tooltip>{{ t('editor.preview.refresh') }}</q-tooltip>
       </q-btn>
+      <label class="swg-pv__perpage">
+        <span>{{ t('editor.preview.perPage.label') }}</span>
+        <select :value="perPageValue" :disabled="!canPreview" @change="onPerPage">
+          <option value="">{{ t('editor.preview.perPage.site') }}</option>
+          <option v-for="n in PER_PAGE_CHOICES" :key="n" :value="String(n)">{{ n }}</option>
+        </select>
+      </label>
       <div
         v-if="preview.result.value !== null && preview.totalPages.value > 0"
         class="swg-pv__pager"
@@ -260,7 +277,7 @@ watch(preview.error, (error) => {
         />
       </div>
     </div>
-    <p class="swg-pv__width swg-num">{{ widthLabel }}</p>
+    <p class="swg-pv__width swg-num">{{ widthLabel }} · {{ t('editor.preview.perPage.hint') }}</p>
 
     <p v-if="!canPreview" class="swg-pv__note" role="note">
       <q-icon name="r_lock" size="18px" aria-hidden="true" />
@@ -364,6 +381,27 @@ watch(preview.error, (error) => {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
+}
+.swg-pv__perpage {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--swg-muted);
+}
+.swg-pv__perpage select {
+  block-size: 32px;
+  padding-inline: 8px;
+  border: 1px solid var(--swg-border);
+  border-radius: var(--swg-radius-sm);
+  background: var(--swg-surface);
+  color: var(--swg-text);
+  font: inherit;
+  font-size: 13px;
+}
+.swg-pv__perpage select:focus-visible {
+  outline: 2px solid var(--swg-focus);
+  outline-offset: 2px;
 }
 .swg-pv__pager {
   display: flex;

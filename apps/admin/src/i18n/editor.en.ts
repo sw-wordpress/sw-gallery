@@ -310,6 +310,11 @@ export default {
       width: 'Preview width: {width} px',
       fitting: 'Preview width: fits the available space',
     },
+    perPage: {
+      label: 'Images per page',
+      site: 'Site default',
+      hint: 'The page size is only changed in this preview.',
+    },
     refresh: 'Refresh preview',
     pager: {
       label: 'Preview pages',

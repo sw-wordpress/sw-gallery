@@ -322,6 +322,11 @@ const editor: Shape<typeof editorEn> = {
       width: 'Vorschaubreite: {width} px',
       fitting: 'Vorschaubreite: passt sich dem verfügbaren Platz an',
     },
+    perPage: {
+      label: 'Bilder pro Seite',
+      site: 'Website-Standard',
+      hint: 'Die Seitengröße gilt nur in dieser Vorschau.',
+    },
     refresh: 'Vorschau aktualisieren',
     pager: {
       label: 'Vorschauseiten',

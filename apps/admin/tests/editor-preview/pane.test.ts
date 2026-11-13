@@ -233,7 +233,7 @@ describe('preview pane: controls', () => {
     };
     await pick('Mobile');
     expect(device()).toContain('inline-size: 375px');
-    expect($('.swg-pv__width')?.textContent).toBe('Preview width: 375 px');
+    expect($('.swg-pv__width')?.textContent).toContain('Preview width: 375 px');
     await pick('Tablet');
     expect(device()).toContain('inline-size: 768px');
     await pick('Desktop');
@@ -260,6 +260,27 @@ describe('preview pane: controls', () => {
     expect(button('Next preview page')?.disabled).toBe(true);
     await click(button('Previous preview page'));
     await waitFor(() => expect($('.swg-pv__pagetext')?.textContent).toContain('Page 2 of 3'));
+  });
+
+  it('changes the preview page size only for the request and starts again on page 1', async () => {
+    const server = new FakeServer();
+    server.previewHandler = async (request) =>
+      makePreview({ page: request.page ?? 1, totalPages: request.perPage === 6 ? 5 : 1 });
+    await open(server);
+    await showPreview();
+    await waitFor(() => expect(server.previewRequests).toHaveLength(1));
+    expect(server.previewRequests[0]).not.toHaveProperty('perPage');
+    const select = $('.swg-pv__perpage select') as HTMLSelectElement;
+    select.value = '6';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+    await waitFor(() => expect(server.previewRequests).toHaveLength(2));
+    expect(server.previewRequests[1]).toMatchObject({ perPage: 6, page: 1 });
+    expect(server.gallery.settings).toEqual({});
+    select.value = '';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    await waitFor(() => expect(server.previewRequests).toHaveLength(3));
+    expect(server.previewRequests[2]).not.toHaveProperty('perPage');
   });
 
   it('refreshes on demand', async () => {

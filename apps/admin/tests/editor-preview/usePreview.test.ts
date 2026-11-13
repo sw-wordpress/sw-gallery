@@ -210,6 +210,24 @@ describe('usePreview scheduling', () => {
     expect(h.calls).toHaveLength(2);
   });
 
+  it('bounds and applies the preview page size and returns to page 1', async () => {
+    const h = setup();
+    await tick(0);
+    h.calls[0]?.resolve(makePreview({ totalPages: 4 }));
+    await tick(PREVIEW_MIN_INTERVAL_MS);
+    h.preview.goto(3);
+    await tick(0);
+    h.calls[1]?.resolve(makePreview({ page: 3, totalPages: 4 }));
+    await tick(PREVIEW_MIN_INTERVAL_MS);
+    h.preview.setPerPage(1000);
+    expect(h.preview.page.value).toBe(1);
+    await tick(PREVIEW_DEBOUNCE_MS);
+    expect(h.calls[2]?.request).toMatchObject({ perPage: 200, page: 1 });
+    h.preview.setPerPage(200);
+    h.preview.setPerPage(null);
+    expect(h.preview.perPage.value).toBeNull();
+  });
+
   it('refresh renders again immediately (after the rate guard)', async () => {
     const h = setup();
     await tick(0);

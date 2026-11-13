@@ -71,6 +71,8 @@ export function usePreview(options: PreviewOptions) {
   const error = shallowRef<PreviewError | null>(null);
   const loading = ref(false);
   const page = ref(1);
+  /** Preview-only page size (1..200); `null` = the site setting (not sent). */
+  const perPage = ref<number | null>(null);
   /** Bumps with every successful render; the view recreates the iframe per value. */
   const renderId = ref(0);
 
@@ -82,7 +84,7 @@ export function usePreview(options: PreviewOptions) {
 
   const requestKey = computed(() => {
     const state = options.state();
-    return state === null ? null : JSON.stringify([state, options.reloadKey()]);
+    return state === null ? null : JSON.stringify([state, options.reloadKey(), perPage.value]);
   });
 
   function cancel(): void {
@@ -114,6 +116,7 @@ export function usePreview(options: PreviewOptions) {
           sortMode: state.sortMode,
           settings: state.settings,
           page: page.value,
+          ...(perPage.value === null ? {} : { perPage: perPage.value }),
         },
         current.signal,
       );
@@ -184,6 +187,14 @@ export function usePreview(options: PreviewOptions) {
     schedule(true);
   }
 
+  /** Changes the preview page size and starts again on page 1 (debounced like any staged change). */
+  function setPerPage(value: number | null): void {
+    const next = value === null ? null : Math.min(Math.max(Math.floor(value), 1), 200);
+    if (next === perPage.value) return;
+    perPage.value = next;
+    page.value = 1;
+  }
+
   const totalPages = computed(() => result.value?.totalPages ?? 1);
 
   return {
@@ -191,6 +202,8 @@ export function usePreview(options: PreviewOptions) {
     error,
     loading,
     page,
+    perPage,
+    setPerPage,
     renderId,
     totalPages,
     refresh,
