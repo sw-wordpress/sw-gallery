@@ -30,7 +30,7 @@ withDefaults(
     class="swg-card"
     :class="{ 'swg-card--interactive': interactive, 'swg-card--accent': accent }"
   >
-    <header v-if="title || $slots.header || $slots.actions" class="swg-card__header">
+    <div v-if="title || $slots.header || $slots.actions" class="swg-card__header">
       <slot name="header">
         <div class="swg-card__heading">
           <span v-if="icon" class="swg-card__icon" aria-hidden="true"
@@ -43,9 +43,9 @@ withDefaults(
         </div>
       </slot>
       <div v-if="$slots.actions" class="swg-card__actions"><slot name="actions" /></div>
-    </header>
+    </div>
     <div class="swg-card__body" :class="{ 'swg-card__body--flush': !padding }"><slot /></div>
-    <footer v-if="$slots.footer" class="swg-card__footer"><slot name="footer" /></footer>
+    <div v-if="$slots.footer" class="swg-card__footer"><slot name="footer" /></div>
   </component>
 </template>
 

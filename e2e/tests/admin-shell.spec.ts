@@ -10,15 +10,17 @@ const ALL_SECTIONS = [
   'Settings',
   'System Status',
 ] as const;
-// Settings and System Status need manage_options (UX hint from window.swgAdmin.capabilities; the server enforces).
+// Settings and System Status need manage_options, the Media Overview needs upload_files (UX hints from
+// window.swgAdmin.capabilities; the server enforces).
 const WITHOUT_MANAGE = ALL_SECTIONS.filter((s) => s !== 'Settings' && s !== 'System Status');
+const WITHOUT_UPLOAD = WITHOUT_MANAGE.filter((s) => s !== 'Media Overview');
 
 // Every role with edit_posts sees the menu entry (server capability: edit_posts).
 const ROLES_WITH_ACCESS: Array<[Role, readonly string[]]> = [
   ['administrator', ALL_SECTIONS],
   ['editor', WITHOUT_MANAGE],
   ['author', WITHOUT_MANAGE],
-  ['contributor', WITHOUT_MANAGE],
+  ['contributor', WITHOUT_UPLOAD],
 ];
 
 for (const [role, sections] of ROLES_WITH_ACCESS) {
@@ -37,7 +39,7 @@ for (const [role, sections] of ROLES_WITH_ACCESS) {
       ).toBeVisible();
     });
 
-    test(`the app shell offers ${sections.length} navigation entries and honest placeholders, without console or network errors`, async ({
+    test(`the app shell offers ${sections.length} navigation entries and a real page each, without console or network errors`, async ({
       page,
     }) => {
       // Monitored from the first request; nothing navigates away from the page, so aborted requests would be real problems.
@@ -55,26 +57,11 @@ for (const [role, sections] of ROLES_WITH_ACCESS) {
         await link.click();
         // The PHP page owns the only h1; the app's page title is an h2.
         await expect(root.getByRole('heading', { level: 2 }).first()).toHaveText(section);
-        if (section === 'Galleries') {
-          // Implemented (M2-22/23, covered in galleries-list.spec.ts): the real list, no placeholder.
-          await expect(root.locator('.swg-placeholder')).toHaveCount(0);
-          await expect(root.locator('section[aria-label="Gallery list"]')).toHaveAttribute(
-            'aria-busy',
-            'false',
-          );
-        } else {
-          // Everything else is an honest placeholder: an h3 title, no data, no actions.
-          await expect(root.getByRole('heading', { level: 3 })).toHaveText(
-            `${section}: not yet available`,
-          );
-          await expect(
-            page.getByText(
-              'This section is planned but not implemented in this version. It shows no data and offers no actions.',
-            ),
-          ).toBeVisible();
-          await expect(root.locator('.swg-placeholder').getByRole('button')).toHaveCount(0);
-          await expect(root.locator('.swg-placeholder').getByRole('link')).toHaveCount(0);
-        }
+        // Every section is a real page: no placeholder, no empty shell.
+        await expect(root.locator('.swg-placeholder')).toHaveCount(0);
+        await expect(
+          root.locator('[role="region"][aria-busy="true"], [aria-busy="true"]'),
+        ).toHaveCount(0);
         await expect(link).toHaveAttribute('aria-current', 'page');
         await expect(link).toHaveClass(/swg-nav-link--active/);
         await expect(nav.locator('[aria-current="page"]')).toHaveCount(1);
@@ -92,6 +79,31 @@ for (const [role, sections] of ROLES_WITH_ACCESS) {
         await expect(
           page.locator('#swg-admin-root').getByRole('heading', { name: 'No access' }),
         ).toBeVisible();
+      });
+
+      if (role === 'contributor') {
+        test('has no Media Overview (no upload_files): a deep link shows no-access', async ({
+          page,
+        }) => {
+          await page.goto(`${PLUGIN_PAGE}#/media`);
+          await expect(
+            page.locator('#swg-admin-root').getByRole('heading', { name: 'No access' }),
+          ).toBeVisible();
+        });
+      }
+
+      test('the status page is hidden as well and sends no request', async ({ page }) => {
+        const requests: string[] = [];
+        page.on('request', (request) => requests.push(request.url()));
+        await page.goto(`${PLUGIN_PAGE}#/status`);
+        await expect(
+          page.locator('#swg-admin-root').getByRole('heading', { name: 'No access' }),
+        ).toBeVisible();
+        expect(
+          requests.filter((url) =>
+            /swg\/v1\/(status|settings)|swg%2Fv1%2F(status|settings)/.test(url),
+          ),
+        ).toEqual([]);
       });
     }
   });

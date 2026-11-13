@@ -136,7 +136,7 @@ async function copySummary(): Promise<void> {
           <textarea id="swg-status-summary" readonly rows="14" :value="summary" />
         </div>
 
-        <SwgCard :title="t('status.schema.title')" icon="r_database" tag="section">
+        <SwgCard :title="t('status.schema.title')" icon="r_storage" tag="section">
           <ul class="swg-status__checks">
             <li>
               <StatusChip
@@ -301,6 +301,13 @@ async function copySummary(): Promise<void> {
 }
 .swg-status__sub {
   margin-block: 4px 10px;
+  /* Scoped, because the global Quasar heading rule (`.swg-root h4`) outranks the plain `.swg-eyebrow` class. */
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--swg-muted);
 }
 .swg-status__tiles {
   margin-block-end: 14px;

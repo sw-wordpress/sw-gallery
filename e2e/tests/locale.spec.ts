@@ -20,9 +20,9 @@ test.describe('user with locale de_DE', () => {
     await expect(page.locator('#swg-admin-root').getByRole('heading', { level: 2 })).toHaveText(
       'Übersicht',
     );
-    await expect(page.locator('#swg-admin-root').getByRole('heading', { level: 3 })).toHaveText(
-      'Übersicht: noch nicht verfügbar',
-    );
+    await expect(
+      page.locator('#swg-admin-root').getByRole('heading', { level: 3, name: 'Zuletzt geändert' }),
+    ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Dunkelmodus' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Navigation einklappen' })).toBeVisible();
   });

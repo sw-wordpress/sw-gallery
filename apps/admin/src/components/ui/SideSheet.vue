@@ -30,7 +30,7 @@ const titleId = uid('swg-sheet');
     @hide="emit('hide')"
   >
     <q-card class="swg-sheet" :style="{ '--sheet-w': `${width}px` }">
-      <header class="swg-sheet__head">
+      <div class="swg-sheet__head">
         <div class="swg-sheet__titles">
           <h2 :id="titleId" class="swg-sheet__title swg-truncate">{{ title }}</h2>
           <p v-if="subtitle" class="swg-sheet__subtitle swg-truncate">{{ subtitle }}</p>
@@ -44,9 +44,10 @@ const titleId = uid('swg-sheet');
           :aria-label="closeLabel"
           @click="open = false"
         />
-      </header>
-      <div class="swg-sheet__body"><slot /></div>
-      <footer v-if="$slots.footer" class="swg-sheet__foot"><slot name="footer" /></footer>
+      </div>
+      <!-- Scrollable: keyboard users must be able to focus and scroll it, also when it holds nothing focusable (WCAG 2.1.1). -->
+      <div class="swg-sheet__body" role="region" tabindex="0" :aria-label="title"><slot /></div>
+      <div v-if="$slots.footer" class="swg-sheet__foot"><slot name="footer" /></div>
     </q-card>
   </q-dialog>
 </template>

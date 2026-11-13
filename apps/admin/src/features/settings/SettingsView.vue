@@ -209,7 +209,7 @@ async function save(): Promise<void> {
         <SwgCard
           :title="t('settings.data.title')"
           :subtitle="t('settings.data.subtitle')"
-          icon="r_database"
+          icon="r_storage"
         >
           <div class="swg-settings__fields">
             <div class="swg-settings__field">
