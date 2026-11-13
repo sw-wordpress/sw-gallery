@@ -222,10 +222,9 @@
     margin-inline: -10px 0;
   }
 }
-/* Dialogs/menus/notifications must sit above the WP admin bar (99999) and admin menu */
-.swg-root.q-portal--dialog .q-dialog,
-.swg-root.q-portal--menu .q-menu,
-.swg-root.q-portal--dialog .q-dialog__backdrop {
+/* Dialogs/menus/notifications must sit above the WP admin bar (99999) and admin menu. Quasar names its portal
+   containers `q-portal--<type>--<n>` and the app marks them `swg-root swg-portal`, so match the inner elements. */
+.swg-root .q-dialog {
   z-index: 100100;
 }
 .swg-root .q-notifications__list {
