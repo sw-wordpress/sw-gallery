@@ -5,6 +5,7 @@ import type { Gallery, UpdateGalleryInput } from '../../src/api/galleries';
 import type { GalleryItem, ItemPatchBody, ItemPage } from '../../src/api/items';
 import type { LayoutsResponse } from '../../src/api/layouts';
 import type { MediaItem } from '../../src/api/media';
+import type { PreviewRequest, PreviewResponse } from '../../src/api/preview';
 import type { EditorApi } from '../../src/features/editor/injection';
 import { makeGallery } from '../galleries/support';
 
@@ -70,6 +71,11 @@ export class FakeServer {
   beforeWrite: ((label: string) => void) | null = null;
   /** Revisions seen as `expectedRevision`, in call order. */
   expected: number[] = [];
+  /** Requests of the live preview, in call order. */
+  previewRequests: PreviewRequest[] = [];
+  /** Replaces the preview answer (resolve, reject or wait for the signal). */
+  previewHandler:
+    ((request: PreviewRequest, signal?: AbortSignal) => Promise<PreviewResponse>) | null = null;
 
   constructor(itemCount = 4, galleryOver: Partial<Gallery> = {}) {
     this.items = Array.from({ length: itemCount }, (_, i) => makeItem(i + 1));
@@ -214,12 +220,33 @@ export class FakeServer {
       },
       layouts: { list: async () => LAYOUTS },
       media: { upload: () => Promise.reject(new Error('unused')) },
+      preview: {
+        render: async (_id: number, request: PreviewRequest, signal?: AbortSignal) => {
+          this.previewRequests.push(request);
+          return this.previewHandler !== null
+            ? this.previewHandler(request, signal)
+            : makePreview();
+        },
+      },
     };
   }
 
   ids(): number[] {
     return this.items.map((i) => i.id);
   }
+}
+
+export function makePreview(over: Partial<PreviewResponse> = {}): PreviewResponse {
+  return {
+    html: '<div class="swg-gallery"><ul class="swg-items"></ul></div>',
+    layoutId: 'grid',
+    page: 1,
+    totalPages: 1,
+    totalItems: 4,
+    diagnostics: [],
+    assets: { css: [], js: [] },
+    ...over,
+  };
 }
 
 export type SpyMedia = { upload: Mock<(file: File) => Promise<MediaItem>> };

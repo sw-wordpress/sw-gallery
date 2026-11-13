@@ -309,6 +309,63 @@ const editor: Shape<typeof editorEn> = {
       'Ihre Änderungen wurden auf die aktuelle Version angewendet. Sie sind noch nicht gespeichert.',
     discarded: 'Neu geladen. Ihre ungespeicherten Änderungen wurden verworfen.',
   },
+  preview: {
+    title: 'Live-Vorschau',
+    tabs: { label: 'Editor-Ansicht', images: 'Bilder', preview: 'Live-Vorschau' },
+    frameTitle: 'Vorschau der Galerie, wie sie auf der Website erscheint',
+    viewport: {
+      legend: 'Vorschaubreite',
+      mobile: 'Mobil',
+      tablet: 'Tablet',
+      desktop: 'Desktop',
+      fit: 'Anpassen',
+      width: 'Vorschaubreite: {width} px',
+      fitting: 'Vorschaubreite: passt sich dem verfügbaren Platz an',
+    },
+    perPage: {
+      label: 'Bilder pro Seite',
+      site: 'Website-Standard',
+      hint: 'Die Seitengröße gilt nur in dieser Vorschau.',
+    },
+    refresh: 'Vorschau aktualisieren',
+    pager: {
+      label: 'Vorschauseiten',
+      prev: 'Vorherige Vorschauseite',
+      next: 'Nächste Vorschauseite',
+      status: 'Seite {page} von {total} · {count} Bild | Seite {page} von {total} · {count} Bilder',
+    },
+    loading: 'Vorschau wird aktualisiert',
+    updated: 'Vorschau aktualisiert. Seite {page} von {total}.',
+    notEditable: 'Die Vorschau ist verfügbar, wenn Sie diese Galerie bearbeiten dürfen.',
+    unsavedSettings:
+      'Die Vorschau zeigt Ihr ungespeichertes Layout, die Sortierung und die Einstellungen.',
+    unsavedItems:
+      'Die Vorschau zeigt die gespeicherte Bildreihenfolge, -auswahl und -texte. Umsortieren, Entfernen und Textänderungen gelten nach dem Speichern.',
+    assetsDropped:
+      'Einige Stylesheets oder Skripte wurden nicht geladen, weil sie nicht von dieser Website stammen. Die Vorschau kann von der Website abweichen.',
+    noAssets:
+      'Die Frontend-Styles sind auf dem Server nicht verfügbar, daher wird die Vorschau ohne Gestaltung angezeigt.',
+    diagnostics: {
+      title: 'Hinweise für Redakteure ({count})',
+      hint: 'Nur hier sichtbar, nie auf der Website.',
+    },
+    empty: {
+      title: 'Noch nichts zur Vorschau',
+      text: 'Fügen Sie Bilder hinzu, um die Galerie hier zu sehen.',
+    },
+    stale: 'Zeigt die letzte erfolgreiche Vorschau.',
+    error: {
+      validation:
+        'Mit diesen Werten kann die Vorschau nicht erzeugt werden. Korrigieren Sie die markierten Einstellungen.',
+      unknownLayout: 'Dieses Layout ist auf dem Server nicht verfügbar.',
+      forbidden: 'Sie dürfen diese Galerie nicht in der Vorschau ansehen.',
+      notFound: 'Diese Galerie existiert nicht mehr.',
+      network: 'Der Server ist nicht erreichbar.',
+      invalidResponse: 'Der Server hat eine unerwartete Antwort gesendet.',
+      server: 'Der Server konnte die Vorschau nicht erzeugen.',
+      retry: 'Erneut versuchen',
+    },
+  },
 };
 
 export default editor;
