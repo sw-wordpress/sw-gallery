@@ -15,7 +15,10 @@ watch(
 </script>
 
 <template>
-  <div class="swg-cover" :class="{ 'swg-cover--small': small }">
+  <div
+    class="swg-cover"
+    :class="{ 'swg-cover--small': small, 'swg-cover--empty': !(url && !broken) }"
+  >
     <img
       v-if="url && !broken"
       :src="url"
@@ -37,6 +40,15 @@ watch(
   aspect-ratio: 4 / 3;
   overflow: hidden;
   background: var(--swg-surface-3);
+}
+.swg-cover--empty {
+  /* The placeholder carries no picture: keep it short so cards without a cover stay compact. */
+  aspect-ratio: 16 / 10;
+}
+@media (max-width: 520px) {
+  .swg-cover--empty {
+    aspect-ratio: 16 / 7;
+  }
 }
 .swg-cover--small {
   width: 64px;

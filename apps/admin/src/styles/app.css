@@ -301,10 +301,14 @@
   outline-offset: 2px;
   border-radius: 6px;
 }
-.swg-root .q-btn:focus-visible,
-.swg-root .q-field:focus-within .q-field__control {
+.swg-root .q-btn:focus-visible {
   outline: 3px solid var(--swg-focus);
   outline-offset: 1px;
+}
+/* Fields: ONE ring. Quasar draws its own 2px focus border (`:after`); an additional outline made a double ring. */
+.swg-root .q-field--outlined.q-field--focused .q-field__control:after {
+  border-color: var(--swg-focus);
+  border-width: 2px;
 }
 .swg-root .q-field__native:focus-visible,
 .swg-root .q-field__input:focus-visible {

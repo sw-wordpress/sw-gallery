@@ -16,7 +16,8 @@ withDefaults(
 </script>
 
 <template>
-  <header class="swg-page-header">
+  <!-- A div, not `header`: inside the labelled app region a `header` would become a nested banner landmark. -->
+  <div class="swg-page-header">
     <div class="swg-page-header__text">
       <router-link v-if="backTo" :to="backTo" class="swg-page-header__back">
         <q-icon name="r_arrow_back" size="18px" class="swg-flip-rtl" aria-hidden="true" />
@@ -26,7 +27,7 @@ withDefaults(
       <p v-if="subtitle" class="swg-page-header__subtitle">{{ subtitle }}</p>
     </div>
     <div v-if="$slots.default" class="swg-page-header__actions"><slot /></div>
-  </header>
+  </div>
 </template>
 
 <style scoped>

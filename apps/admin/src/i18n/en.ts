@@ -1,8 +1,17 @@
 import editor from './editor.en';
+import media from './media.en';
+import overview from './overview.en';
+import settings from './settings.en';
+import status from './status.en';
 
 export default {
   editor,
+  media,
+  overview,
+  settings,
+  status,
   app: {
+    content: 'Gallery Management content',
     title: 'Gallery Management',
     brand: 'Gallery',
     versionShort: 'v{version}',
@@ -23,15 +32,16 @@ export default {
     settings: 'Settings',
     status: 'System Status',
   },
-  placeholder: {
-    title: '{section}: not yet available',
-    body: 'This section is planned but not implemented in this version. It shows no data and offers no actions.',
-  },
   common: {
     retry: 'Retry',
     items: 'no items | one item | {count} items',
   },
   errors: {
+    loadFailureTitle: 'This section could not be loaded',
+    loadFailureText:
+      'A part of the application failed to load. Your connection may have dropped, or the plugin was updated while this page was open.',
+    loadFailureRetry: 'Try again',
+    loadFailureReload: 'Reload the page',
     noAccessTitle: 'No access',
     noAccessText: 'Your account is not allowed to use the gallery management or this section.',
     bootstrap: 'The admin application could not start: the server configuration is missing.',

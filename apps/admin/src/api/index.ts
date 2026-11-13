@@ -7,6 +7,8 @@ export * from './galleries';
 export * from './items';
 export * from './layouts';
 export * from './media';
+export * from './settings';
+export * from './status';
 
 let client: ApiClient | null = null;
 

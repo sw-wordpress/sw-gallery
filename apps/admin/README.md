@@ -78,6 +78,10 @@ Catalogs `src/i18n/{en,de}.ts` (typed: `de` must match `en` at compile time). `t
 
 **Chunking rule.** PHP loads the entry as `app-<hash>.js?ver=<version>`. A lazy chunk importing the entry would make the browser evaluate it again under the unversioned URL (second Vue, second `bootstrap()`), so `vite.config.ts` puts node_modules and code shared by several chunks into `vendor`/`core`, and `scripts/check-chunks.mjs` (part of `npm run build`) fails if any chunk imports the entry. `bootstrap()` is idempotent as a second line of defence.
 
+## Pages (`src/features/{overview,media,settings,status}`)
+
+One lazy chunk per route (`router/index.ts`, `VIEWS`). Each feature injects its typed API (`MEDIA_API`, `SETTINGS_API`, `STATUS_API`; galleries via `GALLERIES_API`) so tests use fakes. Media Overview is read-only except "Add to gallery" (D6) and reuses the editor's upload queue and selection composables as read-only dependencies. A lazy chunk that fails to load shows `layouts/LoadFailure.vue` (retry/reload) via `router.onError`. Code shared by the shell and lazy views must live in the `core` chunk: `npm run build` fails otherwise (the shell therefore calls `hasCapability` directly instead of `useCapabilities`).
+
 ## Design system (D14)
 
 Tokens (light/dark, palette identical to the other sw-* plugins) live in `src/styles/app.css` under `.swg-root`; dark mode is the class `swg-dark` on the root and on Quasar portals (`composables/useTheme.ts`). Fonts (Inter, JetBrains Mono; woff2, latin + latin-ext) come from `src/styles/fonts.css`. `layouts/ShellLayout.vue` holds rail, collapse, theme toggle, skip link and live region; theme and rail state persist per viewer in localStorage (`swg-theme`, `swg-rail-collapsed`), storage failures are tolerated. Building blocks: `components/ui/` (`Swg*`, props/slots only, no i18n). Nav entries carry an optional `capability` in `router` `NAV_ITEMS` (UX hint). `tsconfig` keeps `strictTemplates: true`; fallthrough attributes of Quasar components (`aria-*`, `data-*`, `role`, `id`, `form`, `autocomplete`, `onKeyup`) are allowed by a scoped augmentation in `env.d.ts`.

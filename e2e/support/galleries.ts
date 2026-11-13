@@ -226,6 +226,27 @@ export class GalleryFixtures {
     }
   }
 
+  /** GET of any plugin REST route (`swg/v1/<path>`) with the page's nonce; the caller inspects status, headers and body. */
+  async rest(path: string, query: Record<string, string | number> = {}): Promise<APIResponse> {
+    return this.request.get(joinUrl(this.bootstrap.restRoot, path, query), {
+      headers: this.headers(),
+    });
+  }
+
+  /** PATCH of any plugin REST route; returns the raw response (refusals are part of what tests assert). */
+  async restPatch(path: string, data: Record<string, unknown>): Promise<APIResponse> {
+    return this.request.patch(joinUrl(this.bootstrap.restRoot, path), {
+      headers: this.headers(),
+      data,
+    });
+  }
+
+  /** Total of a gallery list query (`X-WP-Total`), e.g. `{ status: 'publish' }`. */
+  async galleryTotal(query: Record<string, string | number> = {}): Promise<number> {
+    const response = await this.rest('galleries', { ...query, per_page: 1 });
+    return Number(response.headers()['x-wp-total'] ?? 0);
+  }
+
   /** Permanently deletes everything whose title starts with the prefix (live and trashed). */
   async purge(prefix: string): Promise<void> {
     const all = await this.list({

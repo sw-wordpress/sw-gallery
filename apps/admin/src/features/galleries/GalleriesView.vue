@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { errorMessage } from '@/api/errorMessage';
@@ -136,6 +136,14 @@ const viewOptions = computed(() => [
 
 // --- results
 const canCreate = computed(() => can('edit_posts'));
+
+// The overview's "New gallery" arrives as `?new=1`: open the create sheet once and drop the flag again.
+onMounted(() => {
+  if (single(route.query.new) !== '1') return;
+  const { new: _flag, ...rest } = route.query;
+  void router.replace({ query: rest });
+  if (canCreate.value) actions.openCreate();
+});
 const errorText = computed(() =>
   list.error.value === null ? null : errorMessage(list.error.value, t),
 );

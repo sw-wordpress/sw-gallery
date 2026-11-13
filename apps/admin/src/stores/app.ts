@@ -4,6 +4,7 @@ import { defineStore } from 'pinia';
 export const THEME_KEY = 'swg-theme';
 export const RAIL_KEY = 'swg-rail-collapsed';
 export const GALLERY_VIEW_KEY = 'swg-gallery-view';
+export const MEDIA_VIEW_KEY = 'swg-media-view';
 export type GalleryView = 'grid' | 'table';
 export type ThemePreference = 'light' | 'dark' | 'system';
 
@@ -44,6 +45,7 @@ export const useAppStore = defineStore('app', () => {
   const galleryView = ref<GalleryView>(
     readStorage(GALLERY_VIEW_KEY) === 'table' ? 'table' : 'grid',
   );
+  const mediaView = ref<GalleryView>(readStorage(MEDIA_VIEW_KEY) === 'table' ? 'table' : 'grid');
   /** Text for the polite live region. */
   const announcement = ref('');
 
@@ -69,6 +71,10 @@ export const useAppStore = defineStore('app', () => {
     galleryView.value = value;
     writeStorage(GALLERY_VIEW_KEY, value === 'table' ? 'table' : null);
   }
+  function setMediaView(value: GalleryView): void {
+    mediaView.value = value;
+    writeStorage(MEDIA_VIEW_KEY, value === 'table' ? 'table' : null);
+  }
   function announce(message: string): void {
     // Reset first so an identical message is announced again.
     announcement.value = '';
@@ -85,6 +91,8 @@ export const useAppStore = defineStore('app', () => {
     announcement,
     galleryView,
     setGalleryView,
+    mediaView,
+    setMediaView,
     setTheme,
     toggleTheme,
     setRailCollapsed,

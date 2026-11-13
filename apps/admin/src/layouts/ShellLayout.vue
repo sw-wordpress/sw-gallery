@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute } from 'vue-router';
-import { getConfig } from '@/config';
-import { useCapabilities } from '@/composables/useCapabilities';
-import { NAV_ITEMS } from '@/router';
+import { useRoute, useRouter } from 'vue-router';
+import { getConfig, hasCapability } from '@/config';
+import { NAV_ITEMS, loadFailure } from '@/router';
 import { useAppStore } from '@/stores/app';
+import LoadFailure from '@/layouts/LoadFailure.vue';
 import NoAccess from '@/layouts/NoAccess.vue';
 
 /** Capability every user of the app needs; the PHP page enforces it, this is a UX hint. */
@@ -13,8 +13,9 @@ const ACCESS_CAPABILITY = 'edit_posts';
 
 const { t } = useI18n();
 const route = useRoute();
+const router = useRouter();
 const app = useAppStore();
-const { can } = useCapabilities();
+const can = (capability: string): boolean => hasCapability(getConfig(), capability);
 const version = getConfig().version;
 const main = ref<HTMLElement | null>(null);
 
@@ -25,6 +26,56 @@ const routeAllowed = computed(() => {
   const item = NAV_ITEMS.find((i) => i.name === route.name);
   return allowed.value && (!item?.capability || can(item.capability));
 });
+
+// Top navigation on narrow screens scrolls horizontally: fades and chevrons show that more tabs exist.
+const navEl = ref<HTMLElement | null>(null);
+const more = reactive({ start: false, end: false });
+function updateMore(): void {
+  const el = navEl.value;
+  if (el === null) return;
+  // `scrollLeft` is negative in RTL: its magnitude is the distance from the start edge in both directions.
+  const offset = Math.abs(el.scrollLeft);
+  more.start = offset > 1;
+  more.end = offset + el.clientWidth < el.scrollWidth - 1;
+}
+let resizeObserver: ResizeObserver | null = null;
+onMounted(() => {
+  updateMore();
+  if (typeof ResizeObserver === 'function' && navEl.value !== null) {
+    resizeObserver = new ResizeObserver(updateMore);
+    resizeObserver.observe(navEl.value);
+  }
+});
+onBeforeUnmount(() => resizeObserver?.disconnect());
+/** Keep the active tab visible after navigation (also from a deep link). */
+async function revealActive(): Promise<void> {
+  await nextTick();
+  navEl.value
+    ?.querySelector<HTMLElement>('[aria-current="page"]')
+    ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  updateMore();
+}
+watch(
+  () => route.fullPath,
+  () => void revealActive(),
+);
+
+const retrying = ref(false);
+async function retryLoad(): Promise<void> {
+  const target = loadFailure.value;
+  if (target === null) return;
+  retrying.value = true;
+  try {
+    await router.push(target);
+  } catch {
+    /* a repeated failure is reported through router.onError and keeps the message on screen */
+  } finally {
+    retrying.value = false;
+  }
+}
+function reloadPage(): void {
+  window.location.reload();
+}
 
 function focusMain(): void {
   main.value?.focus();
@@ -60,28 +111,45 @@ watch(
         </span>
       </div>
 
-      <nav v-if="allowed" class="swg-rail__nav" :aria-label="t('nav.label')">
-        <ul>
-          <li v-for="item in navItems" :key="item.name">
-            <router-link
-              :to="item.to"
-              class="swg-nav-link"
-              :active-class="item.to === '/' ? '' : 'swg-nav-link--active'"
-              exact-active-class="swg-nav-link--active"
-            >
-              <q-icon :name="item.icon" size="22px" aria-hidden="true" />
-              <span class="swg-nav-link__label">{{ t(item.labelKey) }}</span>
-              <q-tooltip
-                v-if="app.railCollapsed"
-                anchor="center right"
-                self="center left"
-                :offset="[8, 0]"
-                >{{ t(item.labelKey) }}</q-tooltip
+      <div
+        v-if="allowed"
+        class="swg-rail__navwrap"
+        :class="{ 'has-more-start': more.start, 'has-more-end': more.end }"
+      >
+        <nav
+          ref="navEl"
+          class="swg-rail__nav"
+          :aria-label="t('nav.label')"
+          @scroll.passive="updateMore"
+        >
+          <ul>
+            <li v-for="item in navItems" :key="item.name">
+              <router-link
+                :to="item.to"
+                class="swg-nav-link"
+                :active-class="item.to === '/' ? '' : 'swg-nav-link--active'"
+                exact-active-class="swg-nav-link--active"
               >
-            </router-link>
-          </li>
-        </ul>
-      </nav>
+                <q-icon :name="item.icon" size="22px" aria-hidden="true" />
+                <span class="swg-nav-link__label">{{ t(item.labelKey) }}</span>
+                <q-tooltip
+                  v-if="app.railCollapsed"
+                  anchor="center right"
+                  self="center left"
+                  :offset="[8, 0]"
+                  >{{ t(item.labelKey) }}</q-tooltip
+                >
+              </router-link>
+            </li>
+          </ul>
+        </nav>
+        <span class="swg-rail__more swg-rail__more--start" aria-hidden="true"
+          ><q-icon name="r_chevron_left" size="20px" class="swg-flip-rtl"
+        /></span>
+        <span class="swg-rail__more swg-rail__more--end" aria-hidden="true"
+          ><q-icon name="r_chevron_right" size="20px" class="swg-flip-rtl"
+        /></span>
+      </div>
 
       <div class="swg-rail__tools">
         <q-btn
@@ -111,10 +179,24 @@ watch(
       </div>
     </aside>
 
-    <main id="swg-main" ref="main" class="swg-main" tabindex="-1">
+    <!-- WordPress' own page wrapper is the document's `main` landmark; a second one would duplicate it. -->
+    <div
+      id="swg-main"
+      ref="main"
+      class="swg-main"
+      role="region"
+      :aria-label="t('app.content')"
+      tabindex="-1"
+    >
       <NoAccess v-if="!routeAllowed" />
+      <LoadFailure
+        v-else-if="loadFailure !== null"
+        :retrying="retrying"
+        @retry="retryLoad"
+        @reload="reloadPage"
+      />
       <router-view v-else />
-    </main>
+    </div>
 
     <div class="swg-sr-only" role="status" aria-live="polite" aria-atomic="true">
       {{ app.announcement }}
@@ -192,6 +274,16 @@ watch(
 .swg-rail__name small {
   color: var(--swg-muted);
   font-size: 12px;
+}
+.swg-rail__navwrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.swg-rail__more {
+  display: none;
 }
 .swg-rail__nav {
   flex: 1;
@@ -295,12 +387,50 @@ watch(
   .swg-rail__name {
     display: none;
   }
+  .swg-rail__navwrap {
+    flex-direction: row;
+    min-width: 0;
+  }
   .swg-rail__nav {
     flex: 1;
     min-width: 0;
     overflow-x: auto;
     overflow-y: hidden;
-    scrollbar-width: thin;
+    scrollbar-width: none;
+  }
+  .swg-rail__nav::-webkit-scrollbar {
+    display: none;
+  }
+  /* Edge fade plus chevron: more tabs exist beyond the visible ones (WCAG 1.4.1: not colour alone). */
+  .swg-rail__more {
+    position: absolute;
+    inset-block: 0;
+    z-index: 1;
+    display: none;
+    align-items: center;
+    inline-size: 32px;
+    color: var(--swg-muted);
+    pointer-events: none;
+  }
+  .swg-rail__more--start {
+    inset-inline-start: 0;
+    justify-content: flex-start;
+    background: linear-gradient(to right, var(--swg-rail-bg) 30%, transparent);
+  }
+  .swg-rail__more--end {
+    inset-inline-end: 0;
+    justify-content: flex-end;
+    background: linear-gradient(to left, var(--swg-rail-bg) 30%, transparent);
+  }
+  .swg-root[dir='rtl'] .swg-rail__more--start {
+    background: linear-gradient(to left, var(--swg-rail-bg) 30%, transparent);
+  }
+  .swg-root[dir='rtl'] .swg-rail__more--end {
+    background: linear-gradient(to right, var(--swg-rail-bg) 30%, transparent);
+  }
+  .has-more-start > .swg-rail__more--start,
+  .has-more-end > .swg-rail__more--end {
+    display: flex;
   }
   .swg-rail__nav ul {
     flex-direction: row;
