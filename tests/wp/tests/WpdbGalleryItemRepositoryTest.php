@@ -154,4 +154,31 @@ class WpdbGalleryItemRepositoryTest extends SwgTestCase {
 
 		$this->assertSame( array( $a, $b ), $this->repository->orderedIds( 10 ), 'The first update was rolled back.' );
 	}
+
+	public function test_the_settings_batch_read_costs_one_query_per_page_and_matches_the_single_reads(): void {
+		global $wpdb;
+		$ids = array();
+		for ( $i = 1; $i <= 12; ++$i ) {
+			$ids[ $i ] = $this->repository->append( 10, 200 + $i )->id;
+		}
+		$this->repository->saveItemSettings( 10, $ids[2], array( 'span' => 2 ) );
+		$this->repository->saveOverrides( 10, $ids[3], new \SWGallery\Core\Domain\Gallery\ItemOverrides( 'T', null, 'A' ) );
+
+		$before  = $wpdb->num_queries;
+		$records = $this->repository->findPageWithSettings( 10, 0, 50 );
+		$this->assertSame( 1, $wpdb->num_queries - $before, 'One query per page including the settings.' );
+
+		$this->assertCount( 12, $records );
+		$this->assertSame( array( 'span' => 2 ), $records[1]->settings );
+		$this->assertSame( array(), $records[0]->settings );
+		$this->assertSame( 'T', $records[2]->item->overrides->title );
+		$this->assertSame( array_values( $ids ), array_map( static fn( $r ) => $r->item->id, $records ), 'Manual order.' );
+		$this->assertSame( $this->repository->itemSettings( 10, $ids[2] ), $records[1]->settings );
+		$this->assertCount( 3, $this->repository->findPageWithSettings( 10, 4, 3 ), 'Offset and limit apply.' );
+
+		$single = $this->repository->findWithSettings( 10, $ids[2] );
+		$this->assertSame( array( 'span' => 2 ), $single?->settings );
+		$this->assertNull( $this->repository->findWithSettings( 11, $ids[2] ), 'Scoped to the gallery.' );
+		$this->assertNull( $this->repository->findWithSettings( 10, 999999 ) );
+	}
 }

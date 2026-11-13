@@ -123,8 +123,9 @@ final class MediaLibraryProviderTest extends MediaImportProviderContract
         $this->expectPermanent(fn () => $provider->listMedia($this->connection($provider), null, null, 10), 'swg_import_forbidden');
     }
 
-    public function testAuthorSeesOnlyOwnUploadsAndCannotReadOthers(): void
+    public function testAuthorSeesForeignReadableImagesLikeTheItemServicesAllow(): void
     {
+        // D11 / FU-02: every readable image may be used, not only the user's own uploads.
         $other = $this->seed(1)[0];
         $author = $this->createUser('author');
         wp_set_current_user($author);
@@ -133,8 +134,52 @@ final class MediaLibraryProviderTest extends MediaImportProviderContract
         $connection = $this->connection($provider);
 
         $ids = array_map(static fn ($o) => $o->remoteObjectId, $provider->listMedia($connection, null, null, 100)->objects);
-        self::assertSame(array( $own ), $ids);
-        $this->expectPermanent(fn () => $provider->getMediaMetadata($connection, $other), 'swg_import_not_found');
+        self::assertSame(array( $other, $own ), $ids);
+        self::assertSame($other, $provider->getMediaMetadata($connection, $other)->remoteObjectId);
+    }
+
+    /**
+     * @return array<string, array{string, bool}>
+     */
+    public static function roleMatrix(): array
+    {
+        return array(
+            'administrator' => array( 'administrator', true ),
+            'editor'        => array( 'editor', true ),
+            'author'        => array( 'author', true ),
+            'contributor'   => array( 'contributor', false ),
+            'subscriber'    => array( 'subscriber', false ),
+        );
+    }
+
+    /**
+     * @dataProvider roleMatrix
+     */
+    public function testRoleMatrixMatchesTheAccessPolicy(string $role, bool $allowed): void
+    {
+        $ids = $this->seed(1);
+        $user = $this->createUser($role);
+        wp_set_current_user($user);
+        $provider = $this->createProvider();
+        $connection = $this->connection($provider);
+        $policy = new \SWGallery\WordPress\Security\WpGalleryAccessPolicy();
+
+        self::assertSame($allowed, $policy->canUseAttachment(new \SWGallery\Core\Domain\Access\Actor($user), (int) $ids[0]));
+        if ($allowed) {
+            self::assertSame($ids[0], $provider->getMediaMetadata($connection, $ids[0])->remoteObjectId);
+            self::assertCount(1, $provider->listMedia($connection, null, null, 10)->objects);
+            return;
+        }
+        $this->expectPermanent(fn () => $provider->getMediaMetadata($connection, $ids[0]), 'swg_import_not_found');
+    }
+
+    public function testTrashedAttachmentIsNotListedAndNotFound(): void
+    {
+        $ids = $this->seed(1);
+        wp_trash_post((int) $ids[0]);
+        $provider = $this->createProvider();
+        self::assertSame(array(), $provider->listMedia($this->connection($provider), null, null, 10)->objects);
+        $this->expectPermanent(fn () => $provider->getMediaMetadata($this->connection($provider), $ids[0]), 'swg_import_not_found');
     }
 
     public function testFolderScopedListingAndForeignConnectionAreRejected(): void

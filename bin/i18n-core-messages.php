@@ -31,6 +31,32 @@ foreach ($iterator as $file) {
 $messages = array_keys($messages);
 sort($messages);
 
+// Validation messages (FU-09): "new ValidationError(self::ERROR_X, <path>, 'literal' | sprintf('template', ...))". They are
+// formatted in English by the core, so the adapter translates them by stable error code: the template list per code is
+// generated here, the numbers/types are read back from the English message by the adapter.
+$validator = (string) file_get_contents($root . '/packages/core/src/Domain/Settings/SettingsSchemaValidator.php');
+preg_match_all("/const\\s+(ERROR_\\w+)\\s*=\\s*'([a-z_]+)'/", $validator, $consts, PREG_SET_ORDER);
+$codes = [];
+foreach ($consts as $const) {
+    $codes[$const[1]] = $const[2];
+}
+preg_match_all(
+    "/new ValidationError\\(\\s*self::(ERROR_\\w+),\\s*[^,]+,\\s*(?:sprintf\\(\\s*)?('(?:[^'\\\\]|\\\\.)*')/s",
+    $validator,
+    $found,
+    PREG_SET_ORDER
+);
+$templates = [];
+foreach ($found as $match) {
+    $value = eval('return ' . $match[2] . ';');
+    if (!isset($codes[$match[1]]) || !is_string($value) || $value === '') {
+        fwrite(STDERR, "Unresolved validation message for {$match[1]}\n");
+        exit(1);
+    }
+    $templates[$codes[$match[1]]][$value] = true;
+}
+ksort($templates);
+
 $header = <<<'PHP'
 <?php
 /**
@@ -71,9 +97,64 @@ $out = $header;
 foreach ($messages as $message) {
     $out .= "\t\t\t__( " . var_export($message, true) . ", 'sw-gallery' ),\n";
 }
+$allTemplates = [];
+foreach ($templates as $list) {
+    foreach (array_keys($list) as $template) {
+        $allTemplates[$template] = true;
+    }
+}
+$allTemplates = array_keys($allTemplates);
+sort($allTemplates);
+foreach ($allTemplates as $template) {
+    if (str_contains($template, '%')) {
+        $out .= "\t\t\t/* translators: %d or %s: a number or a schema type */\n";
+    }
+    $out .= "\t\t\t__( " . var_export($template, true) . ", 'sw-gallery' ),\n";
+}
+$out .= "\t\t);\n\t}\n";
+$out .= <<<'PHP'
+
+	/**
+	 * Translates a validation message of the core by its stable error code. The templates are generated from the
+	 * validator; the number or type in the English message is matched back into the translated template. A message
+	 * that matches no template (third-party schema code) is returned unchanged.
+	 *
+	 * @param string $code    Stable validation error code (`swg_*`).
+	 * @param string $message English message produced by the validator.
+	 */
+	public static function translate_validation( string $code, string $message ): string {
+		foreach ( self::validation_templates()[ $code ] ?? array() as $english ) {
+			$pattern = '/^' . str_replace( array( '%d', '%s' ), array( '(\d+)', '(.+)' ), preg_quote( $english, '/' ) ) . '$/u';
+			if ( 1 === preg_match( $pattern, $message, $params ) ) {
+				array_shift( $params );
+				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText -- runtime lookup of catalog entries declared in catalog().
+				$translated = __( $english, 'sw-gallery' );
+				return array() === $params ? $translated : vsprintf( $translated, $params );
+			}
+		}
+		return $message;
+	}
+
+	/**
+	 * English templates per error code (translated at call time, the literals are declared in catalog()).
+	 *
+	 * @return array<string, list<string>>
+	 */
+	private static function validation_templates(): array {
+		return array(
+
+PHP;
+$width = max(array_map('strlen', array_map(static fn ($c) => var_export($c, true), array_keys($templates))));
+foreach ($templates as $code => $list) {
+    $out .= "\t\t\t" . str_pad(var_export($code, true), $width) . " => array(\n";
+    foreach (array_keys($list) as $template) {
+        $out .= "\t\t\t\t" . var_export($template, true) . ",\n";
+    }
+    $out .= "\t\t\t),\n";
+}
 $out .= "\t\t);\n\t}\n}\n";
 if (!is_dir($root . '/packages/wordpress/src/Support')) {
     mkdir($root . '/packages/wordpress/src/Support', 0775, true);
 }
 file_put_contents($root . '/packages/wordpress/src/Support/CoreMessages.php', $out);
-fwrite(STDOUT, count($messages) . " core messages\n");
+fwrite(STDOUT, count($messages) . " core messages, " . count($templates) . " validation codes\n");

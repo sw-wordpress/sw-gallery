@@ -8,10 +8,18 @@ use SWGallery\Core\Domain\Layout\LayoutRenderRequest;
 
 /**
  * A gallery presentation strategy (grid, masonry, ...). Public extension point; the contract is versioned,
- * breaking changes need a new interface.
+ * breaking changes need a new interface (see docs/extending.md, compatibility policy).
+ *
+ * Registration validates the contract: `getId()` must match GallerySettings::LAYOUT_ID_PATTERN and
+ * `getSettingsSchema()` must be a non-empty array; an object that fails is rejected (never registered).
+ *
+ * @since 1.0.0
  */
 interface GalleryLayoutInterface
 {
+    /** Version of this contract. It only changes together with a new interface (major release). */
+    public const API_VERSION = 1;
+
     /** Stable id matching GallerySettings::LAYOUT_ID_PATTERN. */
     public function getId(): string;
 

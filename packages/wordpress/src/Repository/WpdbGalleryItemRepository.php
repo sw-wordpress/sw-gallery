@@ -213,6 +213,72 @@ final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface,
 		global $wpdb;
 		$table = Schema::items_table();
 		$json  = $wpdb->get_var( $wpdb->prepare( "SELECT settings FROM {$table} WHERE id = %d AND gallery_id = %d", $itemId, $galleryId ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from prefix.
+		return $this->decode_settings( $json );
+	}
+
+	/**
+	 * One page in stored manual order including each item's settings: one query per page, independent of the page size
+	 * (`findPage()` omits the settings and `itemSettings()` reads one item, which would cost one query per row).
+	 *
+	 * @param int $galleryId Gallery id.
+	 * @param int $offset    Zero-based offset.
+	 * @param int $limit     Page size (1..500).
+	 * @return list<ItemRecord>
+	 */
+	public function findPageWithSettings( int $galleryId, int $offset, int $limit ): array {
+		global $wpdb;
+		$table = Schema::items_table();
+		$rows  = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, gallery_id, attachment_id, position, title_override, caption_override, alt_override, settings FROM {$table} WHERE gallery_id = %d ORDER BY position ASC, id ASC LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from prefix.
+				$galleryId,
+				max( 1, min( 500, $limit ) ),
+				max( 0, $offset )
+			),
+			ARRAY_A
+		);
+		return $this->records( (array) $rows );
+	}
+
+	/**
+	 * A single item including its settings, or null when it is not part of the gallery.
+	 *
+	 * @param int $galleryId Gallery id.
+	 * @param int $itemId    Item id.
+	 */
+	public function findWithSettings( int $galleryId, int $itemId ): ?ItemRecord {
+		global $wpdb;
+		$table = Schema::items_table();
+		$row   = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT id, gallery_id, attachment_id, position, title_override, caption_override, alt_override, settings FROM {$table} WHERE gallery_id = %d AND id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from prefix.
+				$galleryId,
+				$itemId
+			),
+			ARRAY_A
+		);
+		return is_array( $row ) ? $this->records( array( $row ) )[0] : null;
+	}
+
+	/**
+	 * @param array<int, mixed> $rows Result rows (ARRAY_A) including the settings column.
+	 * @return list<ItemRecord>
+	 */
+	private function records( array $rows ): array {
+		$records = array();
+		foreach ( $rows as $row ) {
+			if ( is_array( $row ) ) {
+				$records[] = new ItemRecord( $this->hydrate( array( $row ) )[0], $this->decode_settings( $row['settings'] ?? null ) );
+			}
+		}
+		return $records;
+	}
+
+	/**
+	 * @param mixed $json Stored JSON (NULL or empty when the item has no settings).
+	 * @return array<string, mixed>
+	 */
+	private function decode_settings( mixed $json ): array {
 		if ( ! is_string( $json ) || '' === $json ) {
 			return array();
 		}

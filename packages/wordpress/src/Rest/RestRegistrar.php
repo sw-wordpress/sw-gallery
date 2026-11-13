@@ -53,7 +53,6 @@ final class RestRegistrar implements RegistrarInterface {
 				Services::items(),
 				Services::revisions(),
 				Services::access(),
-				new ItemRowReader(),
 				new ItemPresenter( Services::media(), Services::access() )
 			),
 			new LayoutController( $errors, Services::layouts(), new LayoutPresenter() ),

@@ -13,13 +13,21 @@ namespace SWGallery\WordPress\Import;
 
 use SWGallery\Core\Contract\MediaImportProviderInterface;
 use SWGallery\Core\Contract\RemoteStreamInterface;
+use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Import\FolderPage;
 use SWGallery\Core\Domain\Import\ImportCapabilities;
 use SWGallery\Core\Domain\Import\ImportConnection;
 use SWGallery\Core\Domain\Import\RemoteMediaObject;
 use SWGallery\Core\Domain\Import\RemoteMediaPage;
 use SWGallery\Core\Exception\ImportProviderException;
+use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 
+/**
+ * Visibility follows decision D11: a user may use every image attachment they can read
+ * ({@see WpGalleryAccessPolicy::canUseAttachment()}: allowed type, not trashed, `upload_files`, `read_post`), the same
+ * rule that the item services apply when an image is added to a gallery. Changing attachment metadata is not part of
+ * this provider.
+ */
 final class MediaLibraryProvider implements MediaImportProviderInterface {
 
 	public const PROVIDER_ID = 'media-library';
@@ -33,6 +41,12 @@ final class MediaLibraryProvider implements MediaImportProviderInterface {
 
 	/** Ids and cursors are plain positive decimal integers (attachment IDs). */
 	private const ID_PATTERN = '/^[1-9][0-9]{0,17}$/';
+
+	private WpGalleryAccessPolicy $access;
+
+	public function __construct( ?WpGalleryAccessPolicy $access = null ) {
+		$this->access = $access ?? new WpGalleryAccessPolicy();
+	}
 
 	public function getProviderId(): string {
 		return self::PROVIDER_ID;
@@ -69,7 +83,7 @@ final class MediaLibraryProvider implements MediaImportProviderInterface {
 		$after = null === $cursor ? 0 : $this->parseId( $cursor, self::ERR_BAD_CURSOR );
 		$limit = max( 1, min( self::MAX_PAGE_SIZE, $limit ) );
 
-		$args = array(
+		$args  = array(
 			'post_type'              => 'attachment',
 			'post_status'            => 'inherit',
 			'post_mime_type'         => 'image',
@@ -81,11 +95,6 @@ final class MediaLibraryProvider implements MediaImportProviderInterface {
 			'update_post_meta_cache' => true,
 			'update_post_term_cache' => false,
 		);
-		if ( ! current_user_can( 'edit_others_posts' ) ) {
-			// Same visibility rule as the media library grid: users without edit_others_posts see their own uploads.
-			$args['author'] = get_current_user_id();
-		}
-
 		$where = static function ( string $clause ) use ( $after ): string {
 			global $wpdb;
 			return $clause . $wpdb->prepare( " AND {$wpdb->posts}.ID > %d", $after ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- core table name.
@@ -106,9 +115,12 @@ final class MediaLibraryProvider implements MediaImportProviderInterface {
 		$more  = count( $posts ) > $limit;
 		$posts = array_slice( $posts, 0, $limit );
 
+		// The page boundary (and cursor) is computed before the policy filter, so a page may hold fewer objects.
 		$objects = array();
 		foreach ( $posts as $post ) {
-			$objects[] = $this->describe( $post );
+			if ( $this->usable( $post->ID ) ) {
+				$objects[] = $this->describe( $post );
+			}
 		}
 		$next = ( $more && array() !== $posts ) ? (string) $posts[ count( $posts ) - 1 ]->ID : null;
 
@@ -148,11 +160,15 @@ final class MediaLibraryProvider implements MediaImportProviderInterface {
 			! $post instanceof \WP_Post
 			|| 'attachment' !== $post->post_type
 			|| ! str_starts_with( (string) get_post_mime_type( $post ), 'image/' )
-			|| ! current_user_can( 'edit_post', $id )
+			|| ! $this->usable( $id )
 		) {
 			throw new ImportProviderException( self::ERR_NOT_FOUND, false );
 		}
 		return $post;
+	}
+
+	private function usable( int $attachmentId ): bool {
+		return $this->access->canUseAttachment( new Actor( get_current_user_id() ), $attachmentId );
 	}
 
 	private function parseId( string $value, string $errorCode ): int {

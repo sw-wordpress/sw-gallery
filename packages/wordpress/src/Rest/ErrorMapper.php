@@ -116,7 +116,7 @@ final class ErrorMapper {
 			$errors = array();
 			foreach ( $error->errors as $failure ) {
 				$entry            = $failure->toArray();
-				$entry['message'] = CoreMessages::translate( $entry['message'] );
+				$entry['message'] = CoreMessages::translate_validation( $entry['code'], $entry['message'] );
 				$errors[]         = $entry;
 			}
 			return self::unprocessable( $code, $message, array( 'errors' => $errors ) );

@@ -11,7 +11,7 @@ interface LayoutRegistryInterface
 {
     public const FALLBACK_ID = 'grid';
 
-    /** @throws \InvalidArgumentException When a layout with the same id is already registered. */
+    /** @throws \InvalidArgumentException When the id or the schema is invalid or a layout with the same id is already registered. */
     public function register(GalleryLayoutInterface $layout): void;
 
     public function has(string $id): bool;

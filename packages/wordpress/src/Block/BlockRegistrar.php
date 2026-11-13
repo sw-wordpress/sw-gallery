@@ -12,6 +12,7 @@ namespace SWGallery\WordPress\Block;
 use SWGallery\Core\Application\Render\EntryPoint;
 use SWGallery\WordPress\Admin\AdminRegistrar;
 use SWGallery\WordPress\Bootstrap\RegistrarInterface;
+use SWGallery\WordPress\Frontend\FrontendManifest;
 use SWGallery\WordPress\Infrastructure\Services;
 
 /**
@@ -27,6 +28,8 @@ final class BlockRegistrar implements RegistrarInterface {
 	public const BLOCK_NAME    = 'sw-gallery/gallery';
 	public const EDITOR_HANDLE = 'swg-block-editor';
 	public const TEXT_DOMAIN   = 'sw-gallery';
+	/** Handle of the layout stylesheet in the block editor (FU-20). */
+	public const LAYOUT_STYLE_HANDLE = 'swg-editor-layouts';
 
 	private const EDITOR_DEPENDENCIES = array(
 		'wp-api-fetch',
@@ -41,21 +44,27 @@ final class BlockRegistrar implements RegistrarInterface {
 	private string $block_dir;
 	private string $block_url;
 	private string $languages_dir;
+	private FrontendManifest $layout_manifest;
+	private string $layout_url;
 
 	/** @var callable():bool */
 	private $is_editor_preview;
 
 	/**
-	 * @param string|null   $block_dir     Directory with block.json and build/; defaults to the plugin's assets/blocks.
-	 * @param string|null   $block_url     Public URL of that directory.
-	 * @param string|null   $languages_dir Directory with the script translation catalogs.
-	 * @param callable|null $is_editor_preview Tells whether the current request renders the editor preview (a REST
-	 *                                         request of an editor); defaults to the REST_REQUEST check.
+	 * @param string|null           $block_dir     Directory with block.json and build/; defaults to the plugin's assets/blocks.
+	 * @param string|null           $block_url     Public URL of that directory.
+	 * @param string|null           $languages_dir Directory with the script translation catalogs.
+	 * @param callable|null         $is_editor_preview Tells whether the current request renders the editor preview (a REST
+	 *                                                 request of an editor); defaults to the REST_REQUEST check.
+	 * @param FrontendManifest|null $layout_manifest Manifest of the frontend build (layout stylesheet); defaults to assets/build.
+	 * @param string|null           $layout_url    Public URL of that build directory.
 	 */
-	public function __construct( ?string $block_dir = null, ?string $block_url = null, ?string $languages_dir = null, ?callable $is_editor_preview = null ) {
-		$this->block_dir     = rtrim( $block_dir ?? SWGALLERY_DIR . 'assets/blocks', '/\\' );
-		$this->block_url     = rtrim( $block_url ?? SWGALLERY_URL . 'assets/blocks', '/' );
-		$this->languages_dir = rtrim( $languages_dir ?? SWGALLERY_DIR . 'languages', '/\\' );
+	public function __construct( ?string $block_dir = null, ?string $block_url = null, ?string $languages_dir = null, ?callable $is_editor_preview = null, ?FrontendManifest $layout_manifest = null, ?string $layout_url = null ) {
+		$this->layout_manifest = $layout_manifest ?? new FrontendManifest( SWGALLERY_DIR . 'assets/build' );
+		$this->layout_url      = rtrim( $layout_url ?? SWGALLERY_URL . 'assets/build', '/' );
+		$this->block_dir       = rtrim( $block_dir ?? SWGALLERY_DIR . 'assets/blocks', '/\\' );
+		$this->block_url       = rtrim( $block_url ?? SWGALLERY_URL . 'assets/blocks', '/' );
+		$this->languages_dir   = rtrim( $languages_dir ?? SWGALLERY_DIR . 'languages', '/\\' );
 
 		$this->is_editor_preview = $is_editor_preview ?? static fn (): bool => defined( 'REST_REQUEST' ) && REST_REQUEST;
 	}
@@ -63,6 +72,24 @@ final class BlockRegistrar implements RegistrarInterface {
 	public function register(): void {
 		// Priority 20: after CoreRegistrar loaded the text domain, which the block.json metadata is translated with.
 		add_action( 'init', array( $this, 'register_block' ), 20 );
+		add_action( 'enqueue_block_assets', array( $this, 'enqueue_editor_layout_styles' ) );
+	}
+
+	/**
+	 * FU-20: the server side preview in the block editor shows the real gallery markup, so it needs the layout
+	 * stylesheet of the frontend. `enqueue_block_assets` also runs on the frontend (where FrontendAssets decides what to
+	 * load) and its styles reach the editor canvas iframe, hence the admin check. The file comes from the validated
+	 * manifest (FrontendManifest); without a build nothing is enqueued.
+	 */
+	public function enqueue_editor_layout_styles(): void {
+		if ( ! is_admin() || ! current_user_can( 'edit_posts' ) ) {
+			return;
+		}
+		$file = $this->layout_manifest->resolve()['layout'];
+		if ( null === $file ) {
+			return;
+		}
+		wp_enqueue_style( self::LAYOUT_STYLE_HANDLE, $this->layout_url . '/' . $file, array(), SWGALLERY_VERSION );
 	}
 
 	public function register_block(): void {

@@ -9,6 +9,7 @@ use SWGallery\Core\Contract\GalleryLayoutInterface;
 use SWGallery\Core\Contract\GalleryRepositoryInterface;
 use SWGallery\Core\Contract\ImageHintsProviderInterface;
 use SWGallery\Core\Contract\LayoutRegistryInterface;
+use SWGallery\Core\Contract\LoggerInterface;
 use SWGallery\Core\Contract\MediaReferenceRepositoryInterface;
 use SWGallery\Core\Contract\RenderItemSourceInterface;
 use SWGallery\Core\Contract\SimpleMarkupRendererInterface;
@@ -23,6 +24,7 @@ use SWGallery\Core\Domain\Layout\LayoutRenderRequest;
 use SWGallery\Core\Domain\Layout\LoadingStrategy;
 use SWGallery\Core\Domain\Layout\RenderItem;
 use SWGallery\Core\Domain\Settings\SettingsSchemaValidator;
+use SWGallery\Core\Logging\LogLevel;
 
 /**
  * The one rendering pipeline (SPECIFICATION 5): every entry point calls it, so access, paging, overrides and
@@ -47,6 +49,7 @@ final class RenderGallery
         private readonly LayoutRegistryInterface $layouts,
         private readonly SimpleMarkupRendererInterface $simpleMarkup,
         private readonly SettingsSchemaValidator $validator = new SettingsSchemaValidator(),
+        private readonly ?LoggerInterface $logger = null,
     ) {
     }
 
@@ -77,10 +80,17 @@ final class RenderGallery
 
         $resolution = $this->layouts->resolve($context->layoutOverride ?? $gallery->settings->layout);
         $layout = $resolution->layout;
+        $layoutId = $resolution->fellBack ? LayoutRegistryInterface::FALLBACK_ID : $resolution->requestedId;
         if ($resolution->fellBack) {
             $diagnostics[] = new RenderDiagnostic(RenderDiagnostic::UNKNOWN_LAYOUT, ['layout' => $resolution->requestedId]);
         }
-        $settings = $this->effectiveSettings($gallery, $layout, $context, $diagnostics);
+        // A (third-party) layout that throws is contained: the grid fallback takes over, editors get a diagnostic.
+        try {
+            $settings = $this->effectiveSettings($gallery, $layout, $layoutId, $context, $diagnostics);
+        } catch (\Throwable $e) {
+            [$layout, $layoutId] = $this->failedLayout($layoutId, $e, $diagnostics);
+            $settings = $gallery->settings->withLayout($layoutId);
+        }
         $diagnosticsVisible = $canEdit && $context->entryPoint->isInteractive();
 
         $page = $this->loadPage($context, $settings);
@@ -88,7 +98,13 @@ final class RenderGallery
             array_map(static fn ($item): int => $item->attachmentId, $page['items']->items)
         );
 
-        $hints = $layout instanceof ImageHintsProviderInterface ? $layout->imageHints($settings) : ImageHints::fallback();
+        try {
+            $hints = $layout instanceof ImageHintsProviderInterface ? $layout->imageHints($settings) : ImageHints::fallback();
+        } catch (\Throwable $e) {
+            [$layout, $layoutId] = $this->failedLayout($layoutId, $e, $diagnostics);
+            $settings = $gallery->settings->withLayout($layoutId);
+            $hints = $layout instanceof ImageHintsProviderInterface ? $layout->imageHints($settings) : ImageHints::fallback();
+        }
         $renderItems = [];
         $unavailable = 0;
         foreach ($page['items']->items as $item) {
@@ -122,18 +138,27 @@ final class RenderGallery
                 $diagnostics[] = new RenderDiagnostic(RenderDiagnostic::EMPTY_GALLERY);
             }
 
-            return $this->result('', $diagnosticsVisible ? $diagnostics : [], [], $page, 0, $layout);
+            return $this->result('', $diagnosticsVisible ? $diagnostics : [], [], $page, 0, $layoutId);
         }
 
         $request = new LayoutRenderRequest($gallery->id, $context->instanceId, $renderItems, $settings);
         if ($context->entryPoint->isInteractive()) {
+            try {
+                $html = $layout->render($request);
+            } catch (\Throwable $e) {
+                [$layout, $layoutId] = $this->failedLayout($layoutId, $e, $diagnostics);
+                $html = $layout->render(
+                    new LayoutRenderRequest($gallery->id, $context->instanceId, $renderItems, $gallery->settings->withLayout($layoutId))
+                );
+            }
+
             return $this->result(
-                $layout->render($request),
+                $html,
                 $diagnosticsVisible ? $diagnostics : [],
                 [RenderAsset::Lightbox],
                 $page,
                 count($renderItems),
-                $layout
+                $layoutId
             );
         }
 
@@ -143,8 +168,27 @@ final class RenderGallery
             [],
             $page,
             count($renderItems),
-            $layout
+            $layoutId
         );
+    }
+
+    /**
+     * Contains a failing layout: logs the failure (layout id and exception class only), adds the editor diagnostic and
+     * returns the fallback layout. A failing fallback itself is not contained (a built-in defect must surface).
+     *
+     * @param list<RenderDiagnostic> $diagnostics
+     *
+     * @return array{0: GalleryLayoutInterface, 1: string}
+     */
+    private function failedLayout(string $layoutId, \Throwable $error, array &$diagnostics): array
+    {
+        if ($layoutId === LayoutRegistryInterface::FALLBACK_ID) {
+            throw $error;
+        }
+        $this->logger?->log(LogLevel::Error, 'swg_layout_failed', ['layout' => $layoutId, 'exception' => $error::class]);
+        $diagnostics[] = new RenderDiagnostic(RenderDiagnostic::LAYOUT_FAILED, ['layout' => $layoutId]);
+
+        return [$this->layouts->get(LayoutRegistryInterface::FALLBACK_ID), LayoutRegistryInterface::FALLBACK_ID];
     }
 
     /**
@@ -156,10 +200,11 @@ final class RenderGallery
     private function effectiveSettings(
         Gallery $gallery,
         GalleryLayoutInterface $layout,
+        string $layoutId,
         RenderContext $context,
         array &$diagnostics
     ): GallerySettings {
-        $settings = $gallery->settings->withLayout($layout->getId());
+        $settings = $gallery->settings->withLayout($layoutId);
         if ($context->settingsOverrides === []) {
             return $settings;
         }
@@ -222,7 +267,7 @@ final class RenderGallery
         array $assets,
         array $page,
         int $rendered,
-        GalleryLayoutInterface $layout
+        string $layoutId
     ): RenderResult {
         return new RenderResult(
             $html,
@@ -233,7 +278,7 @@ final class RenderGallery
             $page['totalPages'],
             $page['items']->total,
             $rendered,
-            $layout->getId()
+            $layoutId
         );
     }
 }

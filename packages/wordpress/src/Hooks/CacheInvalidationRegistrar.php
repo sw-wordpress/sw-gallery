@@ -11,7 +11,6 @@ namespace SWGallery\WordPress\Hooks;
 
 use SWGallery\Core\Event\EventInterface;
 use SWGallery\Core\Event\VetoableEventInterface;
-use SWGallery\Core\Logging\LogLevel;
 use SWGallery\WordPress\Bootstrap\RegistrarInterface;
 use SWGallery\WordPress\Infrastructure\Services;
 
@@ -98,18 +97,6 @@ final class CacheInvalidationRegistrar implements RegistrarInterface {
 		if ( ! is_int( $gallery_id ) || $gallery_id <= 0 ) {
 			return;
 		}
-		try {
-			do_action( 'swg_gallery_changed', $gallery_id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- "swg_" is the documented plugin prefix (see phpcs-wordpress.xml.dist).
-		} catch ( \Throwable $e ) {
-			Services::logger()->log(
-				LogLevel::Error,
-				'swg_listener_failed',
-				array(
-					'event'     => $event->name(),
-					'hook'      => 'swg_gallery_changed',
-					'exception' => $e::class,
-				)
-			);
-		}
+		( new GalleryChangedNotifier() )->notify( $gallery_id, $event->name() );
 	}
 }

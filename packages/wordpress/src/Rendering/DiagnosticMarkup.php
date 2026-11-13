@@ -42,6 +42,12 @@ final class DiagnosticMarkup {
 					__( 'Gallery diagnostic (visible to editors only): the layout "%s" is not available, the grid layout is used instead.', 'sw-gallery' ),
 					self::context_string( $diagnostic, 'layout' )
 				);
+			case RenderDiagnostic::LAYOUT_FAILED:
+				return sprintf(
+					/* translators: %s: layout id that failed */
+					__( 'Gallery diagnostic (visible to editors only): the layout "%s" failed, the grid layout is used instead.', 'sw-gallery' ),
+					self::context_string( $diagnostic, 'layout' )
+				);
 			case RenderDiagnostic::INVALID_OVERRIDE:
 				return __( 'Gallery diagnostic (visible to editors only): the settings of this embed are invalid and were ignored.', 'sw-gallery' );
 			case RenderDiagnostic::EMPTY_GALLERY:
