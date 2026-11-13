@@ -10,6 +10,9 @@ export interface PageMonitor {
   requests: string[];
 }
 
+/** WordPress core loads admin-bar and user avatars from Gravatar: outside the plugin and dependent on the host's network. */
+const EXTERNAL_CORE_HOSTS = /^https:\/\/(secure\.)?gravatar\.com\//;
+
 export function monitorPage(page: Page): PageMonitor {
   const monitor: PageMonitor = { problems: [], failedRequests: [], requests: [] };
   page.on('console', (message) => {
@@ -19,9 +22,10 @@ export function monitorPage(page: Page): PageMonitor {
   });
   page.on('pageerror', (error) => monitor.problems.push(`pageerror: ${error.message}`));
   page.on('request', (request) => monitor.requests.push(request.url()));
-  page.on('requestfailed', (request) =>
-    monitor.failedRequests.push(`${request.url()} ${request.failure()?.errorText ?? ''}`),
-  );
+  page.on('requestfailed', (request) => {
+    if (EXTERNAL_CORE_HOSTS.test(request.url())) return;
+    monitor.failedRequests.push(`${request.url()} ${request.failure()?.errorText ?? ''}`);
+  });
   page.on('response', (response) => {
     if (response.status() >= 400) {
       monitor.failedRequests.push(`${response.status()} ${response.url()}`);
