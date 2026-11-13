@@ -9,6 +9,8 @@ import { createLayoutsApi } from '@/api/layouts';
 import type { LayoutsApi } from '@/api/layouts';
 import { createMediaApi } from '@/api/media';
 import type { MediaApi } from '@/api/media';
+import { createPreviewApi } from '@/api/preview';
+import type { PreviewApi } from '@/api/preview';
 import { GALLERIES_API } from '@/features/galleries/injection';
 
 /** Every endpoint the editor talks to (typed layer only, never ad hoc fetch). */
@@ -17,6 +19,7 @@ export interface EditorApi {
   items: ItemsApi;
   layouts: LayoutsApi;
   media: MediaApi;
+  preview: PreviewApi;
 }
 
 /** Tests provide a fake; production builds everything from the shared client. */
@@ -31,5 +34,6 @@ export function useEditorApi(): EditorApi {
     items: createItemsApi(client),
     layouts: createLayoutsApi(client),
     media: createMediaApi(client),
+    preview: createPreviewApi(client),
   };
 }

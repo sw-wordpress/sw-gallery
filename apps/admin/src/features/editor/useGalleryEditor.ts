@@ -418,6 +418,12 @@ export function createEditorSession(galleryId: number, api: EditorApi) {
     settingIssues.value = issues;
   }
 
+  /** Forgets reported validation problems (e.g. after a preview of the current state rendered fine). */
+  function clearValidation(): void {
+    settingIssues.value = [];
+    invalidDetails.value = [];
+  }
+
   /** `reapply`: staged changes onto the fresh state; `discard`: take the server state. */
   function resolveConflict(choice: 'reapply' | 'discard'): void {
     const state = conflict.value;
@@ -651,6 +657,9 @@ export function createEditorSession(galleryId: number, api: EditorApi) {
     addAttachments,
     resolveConflict,
     openConflict,
+    /** Shows the field errors of a 400/422 answer (also used by the live preview). */
+    recordValidation,
+    clearValidation,
     /** What is currently staged, by kind (details keys, edited item ids, order, removed count). */
     stagedSummary: () =>
       base.value !== null && working.value !== null
