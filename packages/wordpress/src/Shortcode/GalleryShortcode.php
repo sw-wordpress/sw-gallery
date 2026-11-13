@@ -23,6 +23,9 @@ final class GalleryShortcode {
 
 	public const TAG = 'sw_gallery';
 
+	/** Classes of the shortcode wrapper (see wrap()). */
+	public const WRAPPER_CLASSES = 'swg-shortcode is-layout-constrained';
+
 	private const ID_PATTERN = '/^[1-9]\d{0,9}$/';
 
 	public function __construct(
@@ -43,8 +46,20 @@ final class GalleryShortcode {
 			return $this->invalid_id_notice();
 		}
 		// Feeds get the plain, dependency free markup instead of the interactive gallery.
-		$entry = is_feed() ? EntryPoint::Feed : EntryPoint::Shortcode;
-		return $this->embeds->render( $id, $entry, $this->arguments->options( $id, $atts ) );
+		$feed = is_feed();
+		$html = $this->embeds->render( $id, $feed ? EntryPoint::Feed : EntryPoint::Shortcode, $this->arguments->options( $id, $atts ) );
+		return $feed || '' === $html ? $html : $this->wrap( $html );
+	}
+
+	/**
+	 * FU-23: the one deliberate difference between the surfaces. Block themes constrain direct children of a
+	 * `is-layout-constrained` container to the theme's content width (core's own layout rule); classic themes do not
+	 * define the class, so the wrapper is inert there. To change the width, set core's custom property
+	 * `--wp--style--global--content-size` on `.swg-shortcode` (docs/rendering.md). The block has its own wrapper
+	 * (alignment support) and is not wrapped again.
+	 */
+	private function wrap( string $html ): string {
+		return '<div class="' . self::WRAPPER_CLASSES . '">' . $html . '</div>';
 	}
 
 	/**

@@ -56,7 +56,8 @@ class SurfacesTest extends SwgTestCase {
 		Services::reset();
 		switch ( $surface ) {
 			case 'shortcode':
-				$html = do_shortcode( '[sw_gallery id="' . $gallery . '"' . $extra . ']' );
+				// The shortcode wrapper (FU-23) is the one documented difference between the surfaces.
+				$html = (string) preg_replace( '#^<div class="' . preg_quote( \SWGallery\WordPress\Shortcode\GalleryShortcode::WRAPPER_CLASSES, '#' ) . '">(.*)</div>$#s', '$1', do_shortcode( '[sw_gallery id="' . $gallery . '"' . $extra . ']' ) );
 				break;
 			case 'api':
 				$html = swg_render_gallery( $gallery, '' === $extra ? array() : array( 'columns' => 2 ) );

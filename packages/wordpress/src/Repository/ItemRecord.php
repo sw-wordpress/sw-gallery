@@ -7,15 +7,15 @@
 
 declare(strict_types=1);
 
-namespace SWGallery\WordPress\Rest;
+namespace SWGallery\WordPress\Repository;
 
 use SWGallery\Core\Domain\Gallery\GalleryItem;
 
 /**
- * Read model of the item routes: the core item (ids, position, overrides) plus the per-item layout settings, which the
+ * Read model of the item routes ({@see WpdbGalleryItemRepository::findPageWithSettings()}): the core item (ids, position, overrides) plus the per-item layout settings, which the
  * core repository contract only offers one item at a time.
  */
-final class ItemRow {
+final class ItemRecord {
 
 	/**
 	 * @param GalleryItem          $item     The item.

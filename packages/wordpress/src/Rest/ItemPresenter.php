@@ -15,6 +15,7 @@ use SWGallery\Core\Contract\MediaReferenceRepositoryInterface;
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Gallery\ItemOverrides;
 use SWGallery\Core\Domain\Media\MediaReference;
+use SWGallery\WordPress\Repository\ItemRecord;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 
 /**
@@ -32,13 +33,13 @@ final class ItemPresenter {
 	}
 
 	/**
-	 * @param Actor     $actor Requesting actor.
-	 * @param ItemRow[] $rows  Items of one page.
-	 * @phpstan-param list<ItemRow> $rows
+	 * @param Actor        $actor Requesting actor.
+	 * @param ItemRecord[] $rows  Items of one page.
+	 * @phpstan-param list<ItemRecord> $rows
 	 * @return list<array<string, mixed>>
 	 */
 	public function present_many( Actor $actor, array $rows ): array {
-		$ids        = array_map( static fn( ItemRow $row ): int => $row->item->attachmentId, $rows );
+		$ids        = array_map( static fn( ItemRecord $row ): int => $row->item->attachmentId, $rows );
 		$references = array() === $ids ? array() : $this->references->findReferences( $ids );
 		$data       = array();
 		foreach ( $rows as $row ) {
@@ -52,20 +53,20 @@ final class ItemPresenter {
 	}
 
 	/**
-	 * @param Actor   $actor Requesting actor.
-	 * @param ItemRow $row   The item.
+	 * @param Actor      $actor Requesting actor.
+	 * @param ItemRecord $row   The item.
 	 * @return array<string, mixed>
 	 */
-	public function present( Actor $actor, ItemRow $row ): array {
+	public function present( Actor $actor, ItemRecord $row ): array {
 		return $this->present_many( $actor, array( $row ) )[0];
 	}
 
 	/**
-	 * @param ItemRow             $row       The item.
+	 * @param ItemRecord          $row       The item.
 	 * @param MediaReference|null $reference Usable attachment metadata, null when missing.
 	 * @return array<string, mixed>
 	 */
-	private function present_row( ItemRow $row, ?MediaReference $reference ): array {
+	private function present_row( ItemRecord $row, ?MediaReference $reference ): array {
 		$overrides = $row->item->overrides;
 		$global    = null === $reference ? null : array(
 			'title'   => $reference->title,

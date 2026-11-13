@@ -15,6 +15,7 @@ use SWGallery\Core\Application\Render\RenderGallery;
 use SWGallery\Core\Application\Service\GalleryItemEditService;
 use SWGallery\Core\Application\Service\GalleryItemService;
 use SWGallery\Core\Application\Service\GalleryService;
+use SWGallery\Core\Application\Service\ImportProviderRegistry;
 use SWGallery\Core\Application\Service\LayoutRegistry;
 use SWGallery\Core\Domain\Gallery\Gallery;
 use SWGallery\Core\Domain\Settings\SettingsSchemaValidator;
@@ -25,6 +26,7 @@ use SWGallery\WordPress\Frontend\EmbedRenderer;
 use SWGallery\WordPress\Frontend\FrontendAssets;
 use SWGallery\WordPress\Frontend\FrontendManifest;
 use SWGallery\WordPress\Frontend\PreviewGalleries;
+use SWGallery\WordPress\Hooks\ExtensionPoints;
 use SWGallery\WordPress\Media\ThumbnailResolver;
 use SWGallery\WordPress\Media\WpMediaRepository;
 use SWGallery\WordPress\Rendering\GalleryRenderer;
@@ -41,29 +43,32 @@ use SWGallery\WordPress\Settings\PluginSettings;
 
 final class Services {
 
-	private static ?WpLogger $logger                  = null;
-	private static ?WpTransactionRunner $transactions = null;
-	private static ?EventDispatcher $events           = null;
-	private static ?LayoutRegistry $layouts           = null;
-	private static ?WpdbGalleryRelations $relations   = null;
-	private static ?WpGalleryRepository $galleries    = null;
-	private static ?WpdbGalleryItemRepository $items  = null;
-	private static ?PostMetaRevisionStore $revisions  = null;
-	private static ?WpMediaRepository $media          = null;
-	private static ?WpGalleryAccessPolicy $access     = null;
-	private static ?PluginSettings $settings          = null;
-	private static ?GalleryService $gallery_service   = null;
-	private static ?GalleryItemService $item_service  = null;
-	private static ?GalleryItemEditService $item_edit = null;
-	private static ?ThumbnailResolver $thumbnails     = null;
-	private static ?RenderGallery $render_pipeline    = null;
-	private static ?GalleryRenderer $gallery_renderer = null;
-	private static ?MediaEpoch $media_epoch           = null;
-	private static ?RenderCache $render_cache         = null;
-	private static ?AssetCollector $asset_collector   = null;
-	private static ?EmbedRenderer $embed_renderer     = null;
-	private static ?EmbedArguments $embed_arguments   = null;
-	private static ?FrontendAssets $frontend_assets   = null;
+	private static ?WpLogger $logger                         = null;
+	private static ?WpTransactionRunner $transactions        = null;
+	private static ?EventDispatcher $events                  = null;
+	private static ?LayoutRegistry $layouts                  = null;
+	private static bool $layouts_announced                   = false;
+	private static ?ImportProviderRegistry $import_providers = null;
+	private static bool $providers_announced                 = false;
+	private static ?WpdbGalleryRelations $relations          = null;
+	private static ?WpGalleryRepository $galleries           = null;
+	private static ?WpdbGalleryItemRepository $items         = null;
+	private static ?PostMetaRevisionStore $revisions         = null;
+	private static ?WpMediaRepository $media                 = null;
+	private static ?WpGalleryAccessPolicy $access            = null;
+	private static ?PluginSettings $settings                 = null;
+	private static ?GalleryService $gallery_service          = null;
+	private static ?GalleryItemService $item_service         = null;
+	private static ?GalleryItemEditService $item_edit        = null;
+	private static ?ThumbnailResolver $thumbnails            = null;
+	private static ?RenderGallery $render_pipeline           = null;
+	private static ?GalleryRenderer $gallery_renderer        = null;
+	private static ?MediaEpoch $media_epoch                  = null;
+	private static ?RenderCache $render_cache                = null;
+	private static ?AssetCollector $asset_collector          = null;
+	private static ?EmbedRenderer $embed_renderer            = null;
+	private static ?EmbedArguments $embed_arguments          = null;
+	private static ?FrontendAssets $frontend_assets          = null;
 
 	public static function logger(): WpLogger {
 		return self::$logger ??= new WpLogger();
@@ -78,13 +83,31 @@ final class Services {
 		return self::$events ??= new EventDispatcher( self::logger() );
 	}
 
-	/** Layout registry with the layouts this plugin ships (the public extension point arrives with M4-07). */
+	/**
+	 * Layout registry: the built-ins first, then the public `swg_register_layouts` action (once per request, as soon as
+	 * all plugins are loaded, so other plugins have attached their callbacks). The same instance is returned before and
+	 * after the action ran.
+	 */
 	public static function layouts(): LayoutRegistry {
 		if ( null === self::$layouts ) {
 			self::$layouts = new LayoutRegistry();
 			BuiltInLayouts::register( self::$layouts );
 		}
+		if ( ! self::$layouts_announced && did_action( 'plugins_loaded' ) > 0 ) {
+			self::$layouts_announced = true; // Before the action: a callback that reads the registry must not recurse.
+			ExtensionPoints::register_layouts( self::$layouts, self::logger() );
+		}
 		return self::$layouts;
+	}
+
+	/** Import provider registry, filled through the public `swg_register_import_providers` action (once per request). */
+	public static function import_providers(): ImportProviderRegistry {
+		self::$import_providers ??= new ImportProviderRegistry();
+		if ( ! self::$providers_announced && did_action( 'plugins_loaded' ) > 0 ) {
+			self::$providers_announced = true;
+			ExtensionPoints::register_import_providers( self::$import_providers, self::logger() );
+		}
+		return self::$import_providers;
 	}
 
 	public static function relations(): WpdbGalleryRelations {
@@ -167,7 +190,9 @@ final class Services {
 			self::media(),
 			self::thumbnails(),
 			self::layouts(),
-			new FeedMarkup()
+			new FeedMarkup(),
+			new SettingsSchemaValidator(),
+			self::logger()
 		);
 	}
 
@@ -200,7 +225,9 @@ final class Services {
 			self::media(),
 			self::thumbnails(),
 			self::layouts(),
-			new FeedMarkup()
+			new FeedMarkup(),
+			new SettingsSchemaValidator(),
+			self::logger()
 		);
 		// Previews are never cached (the renderer skips the cache for EntryPoint::Preview).
 		return new GalleryRenderer( $pipeline, $galleries, self::access(), self::settings(), self::render_cache() );
@@ -231,28 +258,31 @@ final class Services {
 
 	/** Forgets all instances (tests). */
 	public static function reset(): void {
-		self::$logger           = null;
-		self::$transactions     = null;
-		self::$events           = null;
-		self::$layouts          = null;
-		self::$relations        = null;
-		self::$galleries        = null;
-		self::$items            = null;
-		self::$revisions        = null;
-		self::$media            = null;
-		self::$access           = null;
-		self::$settings         = null;
-		self::$gallery_service  = null;
-		self::$item_service     = null;
-		self::$item_edit        = null;
-		self::$thumbnails       = null;
-		self::$render_pipeline  = null;
-		self::$gallery_renderer = null;
-		self::$media_epoch      = null;
-		self::$render_cache     = null;
-		self::$asset_collector  = null;
-		self::$embed_renderer   = null;
-		self::$embed_arguments  = null;
-		self::$frontend_assets  = null;
+		self::$logger              = null;
+		self::$transactions        = null;
+		self::$events              = null;
+		self::$layouts             = null;
+		self::$layouts_announced   = false;
+		self::$import_providers    = null;
+		self::$providers_announced = false;
+		self::$relations           = null;
+		self::$galleries           = null;
+		self::$items               = null;
+		self::$revisions           = null;
+		self::$media               = null;
+		self::$access              = null;
+		self::$settings            = null;
+		self::$gallery_service     = null;
+		self::$item_service        = null;
+		self::$item_edit           = null;
+		self::$thumbnails          = null;
+		self::$render_pipeline     = null;
+		self::$gallery_renderer    = null;
+		self::$media_epoch         = null;
+		self::$render_cache        = null;
+		self::$asset_collector     = null;
+		self::$embed_renderer      = null;
+		self::$embed_arguments     = null;
+		self::$frontend_assets     = null;
 	}
 }

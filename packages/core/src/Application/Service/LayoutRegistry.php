@@ -6,6 +6,7 @@ namespace SWGallery\Core\Application\Service;
 
 use SWGallery\Core\Contract\GalleryLayoutInterface;
 use SWGallery\Core\Contract\LayoutRegistryInterface;
+use SWGallery\Core\Domain\Gallery\GallerySettings;
 use SWGallery\Core\Domain\Layout\LayoutResolution;
 use SWGallery\Core\Exception\UnknownLayoutException;
 
@@ -17,6 +18,12 @@ final class LayoutRegistry implements LayoutRegistryInterface
     public function register(GalleryLayoutInterface $layout): void
     {
         $id = $layout->getId();
+        if (preg_match(GallerySettings::LAYOUT_ID_PATTERN, $id) !== 1) {
+            throw new \InvalidArgumentException('The layout id is invalid.');
+        }
+        if ($layout->getSettingsSchema() === []) {
+            throw new \InvalidArgumentException('A layout needs a non-empty settings schema.');
+        }
         if (isset($this->layouts[$id])) {
             throw new \InvalidArgumentException('A layout with this id is already registered.');
         }

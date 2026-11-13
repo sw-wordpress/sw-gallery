@@ -13,7 +13,6 @@ namespace SWGallery\WordPress\Rest;
 
 use SWGallery\Core\Application\Service\GalleryItemEditService;
 use SWGallery\Core\Application\Service\GalleryItemService;
-use SWGallery\Core\Contract\GalleryItemRepositoryInterface;
 use SWGallery\Core\Contract\GalleryRepositoryInterface;
 use SWGallery\Core\Contract\RevisionStoreInterface;
 use SWGallery\Core\Domain\Access\Actor;
@@ -22,6 +21,7 @@ use SWGallery\Core\Domain\Gallery\ItemOverrides;
 use SWGallery\Core\Domain\Gallery\Revision;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\ItemNotFoundException;
+use SWGallery\WordPress\Repository\WpdbGalleryItemRepository;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 
 /**
@@ -50,10 +50,9 @@ final class ItemController extends AbstractController {
 		private readonly GalleryItemService $items,
 		private readonly GalleryItemEditService $edits,
 		private readonly GalleryRepositoryInterface $galleries,
-		private readonly GalleryItemRepositoryInterface $item_repository,
+		private readonly WpdbGalleryItemRepository $item_repository,
 		private readonly RevisionStoreInterface $revisions,
 		private readonly WpGalleryAccessPolicy $access,
-		private readonly ItemRowReader $reader,
 		private readonly ItemPresenter $presenter
 	) {
 		parent::__construct( $errors );
@@ -234,7 +233,7 @@ final class ItemController extends AbstractController {
 				$gallery  = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
 				$page     = max( 1, (int) $request->get_param( 'page' ) );
 				$per_page = max( 1, (int) $request->get_param( 'per_page' ) );
-				$rows     = $this->reader->page( $gallery->id, ( $page - 1 ) * $per_page, $per_page );
+				$rows     = $this->item_repository->findPageWithSettings( $gallery->id, ( $page - 1 ) * $per_page, $per_page );
 				$total    = $this->item_repository->count( $gallery->id );
 
 				$response = $this->with_pagination_headers( new \WP_REST_Response( $this->presenter->present_many( $actor, $rows ), 200 ), $total, $per_page );
@@ -297,7 +296,7 @@ final class ItemController extends AbstractController {
 				if ( array() === $overrides && null === $settings ) {
 					return ErrorMapper::bad_request( GalleryController::CODE_NO_CHANGES, __( 'The request does not change anything.', 'sw-gallery' ) );
 				}
-				$current  = $this->reader->find( $gallery->id, $item_id ) ?? throw new ItemNotFoundException();
+				$current  = $this->item_repository->findWithSettings( $gallery->id, $item_id ) ?? throw new ItemNotFoundException();
 				$expect   = $this->expected_revision( $request );
 				$revision = $expect;
 				if ( null !== $settings ) {
@@ -436,7 +435,7 @@ final class ItemController extends AbstractController {
 	 * @throws ItemNotFoundException When the item vanished meanwhile.
 	 */
 	private function stored_item( Actor $actor, int $gallery_id, int $item_id ): array {
-		$row = $this->reader->find( $gallery_id, $item_id ) ?? throw new ItemNotFoundException();
+		$row = $this->item_repository->findWithSettings( $gallery_id, $item_id ) ?? throw new ItemNotFoundException();
 		return $this->presenter->present( $actor, $row );
 	}
 

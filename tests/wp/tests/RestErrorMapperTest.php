@@ -133,4 +133,71 @@ class RestErrorMapperTest extends SwgTestCase {
 		$this->assertSame( 400, ErrorMapper::bad_request( 'swg_x', 'm' )->get_error_data()['status'] );
 		$this->assertSame( 422, ErrorMapper::unprocessable( 'swg_x', 'm', array( 'k' => 1 ) )->get_error_data()['status'] );
 	}
+
+	/**
+	 * @return array<string, array{string, string, string, string}>
+	 */
+	public static function validation_messages(): array {
+		return array(
+			'required'    => array( 'swg_required', 'A required value is missing.', 'Ein erforderlicher Wert fehlt.', 'A required value is missing.' ),
+			'type'        => array( 'swg_invalid_type', 'The value must be of type integer.', 'Der Wert muss vom Typ integer sein.', 'The value must be of type integer.' ),
+			'responsive'  => array( 'swg_invalid_type', 'A responsive value must be a plain value or an object.', 'Ein responsiver Wert muss ein einfacher Wert oder ein Objekt sein.', 'A responsive value must be a plain value or an object.' ),
+			'minimum'     => array( 'swg_below_minimum', 'The value must be at least 1.', 'Der Wert muss mindestens 1 betragen.', 'The value must be at least 1.' ),
+			'maximum'     => array( 'swg_above_maximum', 'The value must be at most 12.5.', 'Der Wert darf höchstens 12.5 betragen.', 'The value must be at most 12.5.' ),
+			'too short'   => array( 'swg_too_short', 'The value needs at least 3 characters.', 'Der Wert braucht mindestens 3 Zeichen.', 'The value needs at least 3 characters.' ),
+			'too long'    => array( 'swg_too_long', 'The value allows at most 8 characters.', 'Der Wert darf höchstens 8 Zeichen lang sein.', 'The value allows at most 8 characters.' ),
+			'few items'   => array( 'swg_too_few_items', 'At least 2 entries are needed.', 'Es sind mindestens 2 Einträge nötig.', 'At least 2 entries are needed.' ),
+			'many items'  => array( 'swg_too_many_items', 'At most 4 entries are allowed.', 'Es sind höchstens 4 Einträge erlaubt.', 'At most 4 entries are allowed.' ),
+			'enum'        => array( 'swg_not_in_enum', 'The value is not one of the allowed options.', 'Der Wert gehört nicht zu den erlaubten Optionen.', 'The value is not one of the allowed options.' ),
+			'encoding'    => array( 'swg_invalid_encoding', 'The value is not valid UTF-8.', 'Der Wert ist kein gültiges UTF-8.', 'The value is not valid UTF-8.' ),
+			'breakpoint'  => array( 'swg_unknown_breakpoint', 'The breakpoint is not supported.', 'Der Breakpoint wird nicht unterstützt.', 'The breakpoint is not supported.' ),
+		);
+	}
+
+	/**
+	 * FU-09: validation messages are translated by their stable error code; the English text stays the default.
+	 *
+	 * @dataProvider validation_messages
+	 */
+	public function test_validation_messages_are_translated_by_code( string $code, string $english, string $german, string $expected_english ): void {
+		$error = new ValidationFailedException( array( new ValidationError( $code, '/x', $english ) ) );
+		$this->assertSame( $expected_english, $this->mapper->map( $error, new Actor( 1 ) )->get_error_data()['errors'][0]['message'] );
+
+		$switched = switch_to_locale( 'de_DE' );
+		add_filter( 'locale', static fn(): string => 'de_DE' );
+		load_textdomain( 'sw-gallery', SWGALLERY_DIR . 'languages/sw-gallery-de_DE.mo' );
+		try {
+			$data = $this->mapper->map( $error, new Actor( 1 ) )->get_error_data();
+			$this->assertSame( $german, $data['errors'][0]['message'] );
+			$this->assertSame( $code, $data['errors'][0]['code'], 'The stable code is untouched.' );
+			$this->assertSame( '/x', $data['errors'][0]['path'] );
+		} finally {
+			unload_textdomain( 'sw-gallery' );
+			if ( $switched ) {
+				restore_previous_locale();
+			}
+		}
+	}
+
+	public function test_unknown_validation_messages_and_codes_pass_through_unchanged(): void {
+		$error = new ValidationFailedException(
+			array(
+				new ValidationError( 'swg_required', '/a', 'A third-party message.' ),
+				new ValidationError( 'my_plugin_code', '/b', 'The value must be at least 1.' ),
+			)
+		);
+		$switched = switch_to_locale( 'de_DE' );
+		add_filter( 'locale', static fn(): string => 'de_DE' );
+		load_textdomain( 'sw-gallery', SWGALLERY_DIR . 'languages/sw-gallery-de_DE.mo' );
+		try {
+			$errors = $this->mapper->map( $error, new Actor( 1 ) )->get_error_data()['errors'];
+			$this->assertSame( 'A third-party message.', $errors[0]['message'] );
+			$this->assertSame( 'The value must be at least 1.', $errors[1]['message'] );
+		} finally {
+			unload_textdomain( 'sw-gallery' );
+			if ( $switched ) {
+				restore_previous_locale();
+			}
+		}
+	}
 }

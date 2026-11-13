@@ -58,7 +58,7 @@ A changed `coverAttachmentId` must pass `canUseAttachment` (D11), else 422 `swg_
 
 ## Items and order
 
-Code: `Rest/ItemController`, `ItemPresenter`, `ItemRowReader`. Same conventions as the gallery routes (errors, camelCase, `expectedRevision`, identical 404 for missing and not-viewable galleries, 403 when the user may view but not edit). Coarse check `edit_posts`; the core services enforce the access policy again.
+Code: `Rest/ItemController`, `ItemPresenter`; the item rows including their settings come from `WpdbGalleryItemRepository::findPageWithSettings()` (one query per page). Same conventions as the gallery routes (errors, camelCase, `expectedRevision`, identical 404 for missing and not-viewable galleries, 403 when the user may view but not edit). Coarse check `edit_posts`; the core services enforce the access policy again.
 
 | Method, route | Body / query | Success |
 |---|---|---|

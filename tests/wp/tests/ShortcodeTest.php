@@ -9,6 +9,7 @@
 use SWGallery\Core\Application\Render\EntryPoint;
 use SWGallery\Tests\Support\RenderFixtures;
 use SWGallery\WordPress\Infrastructure\Services;
+use SWGallery\WordPress\Shortcode\GalleryShortcode;
 use SWGallery\WordPress\Shortcode\ShortcodeRegistrar;
 
 class ShortcodeTest extends SwgTestCase {
@@ -55,6 +56,28 @@ class ShortcodeTest extends SwgTestCase {
 		wp_set_current_user( $user );
 		Services::reset();
 		return do_shortcode( $text );
+	}
+
+	/** Removes the documented shortcode wrapper (FU-23) so the markup can be compared with the other surfaces. */
+	private function unwrap( string $html ): string {
+		$prefix = '<div class="' . GalleryShortcode::WRAPPER_CLASSES . '">';
+		$this->assertStringStartsWith( $prefix, $html );
+		$this->assertStringEndsWith( '</div>', $html );
+		return substr( $html, strlen( $prefix ), -6 );
+	}
+
+	public function test_the_shortcode_wraps_its_output_for_block_themes_and_nothing_else_does(): void {
+		$id = $this->gallery_with_images( 2 );
+		wp_set_current_user( 0 );
+		Services::reset();
+
+		$html = do_shortcode( '[sw_gallery id="' . $id . '"]' );
+		$this->assertSame( 'swg-shortcode is-layout-constrained', GalleryShortcode::WRAPPER_CLASSES );
+		$this->assertStringStartsWith( '<div class="swg-shortcode is-layout-constrained"><', $html );
+		$this->assertSame( 1, substr_count( $html, 'swg-shortcode' ), 'Wrapped once.' );
+		$this->assertStringNotContainsString( 'swg-shortcode', swg_render_gallery( $id ) );
+
+		$this->assertSame( '', do_shortcode( '[sw_gallery id="9999999"]' ), 'Nothing to show: no empty wrapper.' );
 	}
 
 	public function test_a_valid_shortcode_returns_the_gallery_and_never_echoes(): void {
@@ -156,7 +179,7 @@ class ShortcodeTest extends SwgTestCase {
 
 		$this->assertStringContainsString( '--swg-columns:5;', $html );
 		$this->assertStringContainsString( '--swg-gap:12px', $html );
-		$this->assertSame( $this->renderer_html( $id, array( 'layout' => 'grid', 'settings' => array( 'columns' => 5, 'gap' => 12 ) ) ), $html );
+		$this->assertSame( $this->renderer_html( $id, array( 'layout' => 'grid', 'settings' => array( 'columns' => 5, 'gap' => 12 ) ) ), $this->unwrap( $html ) );
 	}
 
 	public function test_the_page_comes_from_the_request_argument_and_hostile_values_are_ignored(): void {
@@ -286,6 +309,7 @@ class ShortcodeTest extends SwgTestCase {
 		$by_api = swg_render_gallery( $id, array( 'layout' => 'grid', 'columns' => 4, 'gap' => 10 ) );
 
 		$this->assertNotSame( '', $by_shortcode );
+		$by_shortcode = $this->unwrap( $by_shortcode );
 		$this->assertSame( $by_shortcode, $by_api );
 		$this->assertSame( $by_shortcode, $this->renderer_html( $id, $options ) );
 	}
@@ -295,7 +319,7 @@ class ShortcodeTest extends SwgTestCase {
 		wp_set_current_user( 0 );
 		Services::reset();
 
-		$first  = do_shortcode( '[sw_gallery id="' . $id . '"]' );
+		$first  = $this->unwrap( do_shortcode( '[sw_gallery id="' . $id . '"]' ) );
 		$second = swg_render_gallery( $id );
 
 		$this->assertNotSame( $first, $second );

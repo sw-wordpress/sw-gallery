@@ -41,6 +41,90 @@ final class CoreMessages {
 			__( 'The order must contain every item of the gallery exactly once.', 'sw-gallery' ),
 			__( 'The settings are invalid.', 'sw-gallery' ),
 			__( 'You are not allowed to do this.', 'sw-gallery' ),
+			__( 'A required value is missing.', 'sw-gallery' ),
+			__( 'A responsive value must be a plain value or an object.', 'sw-gallery' ),
+			/* translators: %d or %s: a number or a schema type */
+			__( 'At least %d entries are needed.', 'sw-gallery' ),
+			/* translators: %d or %s: a number or a schema type */
+			__( 'At most %d entries are allowed.', 'sw-gallery' ),
+			__( 'The breakpoint is not supported.', 'sw-gallery' ),
+			/* translators: %d or %s: a number or a schema type */
+			__( 'The value allows at most %d characters.', 'sw-gallery' ),
+			__( 'The value is not one of the allowed options.', 'sw-gallery' ),
+			__( 'The value is not valid UTF-8.', 'sw-gallery' ),
+			/* translators: %d or %s: a number or a schema type */
+			__( 'The value must be at least %s.', 'sw-gallery' ),
+			/* translators: %d or %s: a number or a schema type */
+			__( 'The value must be at most %s.', 'sw-gallery' ),
+			/* translators: %d or %s: a number or a schema type */
+			__( 'The value must be of type %s.', 'sw-gallery' ),
+			/* translators: %d or %s: a number or a schema type */
+			__( 'The value needs at least %d characters.', 'sw-gallery' ),
+		);
+	}
+
+	/**
+	 * Translates a validation message of the core by its stable error code. The templates are generated from the
+	 * validator; the number or type in the English message is matched back into the translated template. A message
+	 * that matches no template (third-party schema code) is returned unchanged.
+	 *
+	 * @param string $code    Stable validation error code (`swg_*`).
+	 * @param string $message English message produced by the validator.
+	 */
+	public static function translate_validation( string $code, string $message ): string {
+		foreach ( self::validation_templates()[ $code ] ?? array() as $english ) {
+			$pattern = '/^' . str_replace( array( '%d', '%s' ), array( '(\d+)', '(.+)' ), preg_quote( $english, '/' ) ) . '$/u';
+			if ( 1 === preg_match( $pattern, $message, $params ) ) {
+				array_shift( $params );
+				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText -- runtime lookup of catalog entries declared in catalog().
+				$translated = __( $english, 'sw-gallery' );
+				return array() === $params ? $translated : vsprintf( $translated, $params );
+			}
+		}
+		return $message;
+	}
+
+	/**
+	 * English templates per error code (translated at call time, the literals are declared in catalog()).
+	 *
+	 * @return array<string, list<string>>
+	 */
+	private static function validation_templates(): array {
+		return array(
+			'swg_above_maximum'      => array(
+				'The value must be at most %s.',
+			),
+			'swg_below_minimum'      => array(
+				'The value must be at least %s.',
+			),
+			'swg_invalid_encoding'   => array(
+				'The value is not valid UTF-8.',
+			),
+			'swg_invalid_type'       => array(
+				'The value must be of type %s.',
+				'A responsive value must be a plain value or an object.',
+			),
+			'swg_not_in_enum'        => array(
+				'The value is not one of the allowed options.',
+			),
+			'swg_required'           => array(
+				'A required value is missing.',
+			),
+			'swg_too_few_items'      => array(
+				'At least %d entries are needed.',
+			),
+			'swg_too_long'           => array(
+				'The value allows at most %d characters.',
+			),
+			'swg_too_many_items'     => array(
+				'At most %d entries are allowed.',
+			),
+			'swg_too_short'          => array(
+				'The value needs at least %d characters.',
+			),
+			'swg_unknown_breakpoint' => array(
+				'The breakpoint is not supported.',
+			),
 		);
 	}
 }

@@ -77,6 +77,7 @@ msgid "The preview could not be loaded."
 msgstr ""
 
 #: assets/blocks/src/GallerySelector.tsx:20
+#: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:178
 msgid "(no title)"
 msgstr ""
 
@@ -182,28 +183,75 @@ msgid "The layouts could not be loaded."
 msgstr ""
 
 #: packages/wordpress/src/Admin/AdminRegistrar.php:50
-#: packages/wordpress/src/Admin/AdminRegistrar.php:138
+#: packages/wordpress/src/Admin/AdminRegistrar.php:144
 msgid "Gallery Management"
 msgstr ""
 
 #: packages/wordpress/src/Admin/AdminRegistrar.php:51
+#: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:89
 #: packages/wordpress/src/PostTypes.php:29
 msgid "Galleries"
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:134
+#: packages/wordpress/src/Admin/AdminRegistrar.php:140
 msgid "You are not allowed to access this page."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:140
+#: packages/wordpress/src/Admin/AdminRegistrar.php:146
 msgid "The gallery admin app is not built. Run \"npm run build\" in apps/admin or install the release package."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:143
+#: packages/wordpress/src/Admin/AdminRegistrar.php:149
 msgid "The gallery administration requires JavaScript."
 msgstr ""
 
-#: packages/wordpress/src/Block/BlockRegistrar.php:138
+#: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:76
+msgid "Used in galleries"
+msgstr ""
+
+#: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:139
+msgid "Not used in any gallery."
+msgstr ""
+
+#. translators: %d: number of galleries that use this image
+#: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:143
+#, php-format
+msgid "Used in %d gallery"
+msgid_plural "Used in %d galleries"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of further galleries that are not listed
+#: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:155
+#, php-format
+msgid "and %d more"
+msgstr ""
+
+#. translators: %d: number of galleries (one)
+#: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:217
+#, php-format
+msgid "This image is used in %d gallery. If you delete it permanently, it is removed from that gallery. Delete it anyway?"
+msgstr ""
+
+#. translators: %d: number of galleries
+#: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:219
+#, php-format
+msgid "This image is used in %d galleries. If you delete it permanently, it is removed from those galleries. Delete it anyway?"
+msgstr ""
+
+#. translators: %d: selected images that galleries use (one)
+#: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:221
+#, php-format
+msgid "%d of the selected images is used in galleries. If you delete them permanently, they are removed from those galleries. Delete them anyway?"
+msgstr ""
+
+#. translators: %d: selected images that galleries use
+#: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:223
+#, php-format
+msgid "%d of the selected images are used in galleries. If you delete them permanently, they are removed from those galleries. Delete them anyway?"
+msgstr ""
+
+#: packages/wordpress/src/Block/BlockRegistrar.php:166
 msgid "No gallery selected. Choose one in the block settings."
 msgstr ""
 
@@ -311,22 +359,28 @@ msgstr ""
 msgid "Gallery diagnostic (visible to editors only): the layout \"%s\" is not available, the grid layout is used instead."
 msgstr ""
 
-#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:46
+#. translators: %s: layout id that failed
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:48
+#, php-format
+msgid "Gallery diagnostic (visible to editors only): the layout \"%s\" failed, the grid layout is used instead."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:52
 msgid "Gallery diagnostic (visible to editors only): the settings of this embed are invalid and were ignored."
 msgstr ""
 
-#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:48
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:54
 msgid "Gallery diagnostic (visible to editors only): this gallery has no images yet."
 msgstr ""
 
-#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:54
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:60
 #, php-format
 msgid "Gallery diagnostic (visible to editors only): %d image is missing or unusable and was skipped."
 msgid_plural "Gallery diagnostic (visible to editors only): %d images are missing or unusable and were skipped."
 msgstr[0] ""
 msgstr[1] ""
 
-#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:62
+#: packages/wordpress/src/Rendering/DiagnosticMarkup.php:68
 msgid "Gallery diagnostic (visible to editors only)."
 msgstr ""
 
@@ -396,7 +450,7 @@ msgid "An unexpected error occurred."
 msgstr ""
 
 #: packages/wordpress/src/Rest/GalleryController.php:322
-#: packages/wordpress/src/Rest/ItemController.php:298
+#: packages/wordpress/src/Rest/ItemController.php:297
 #: packages/wordpress/src/Rest/SettingsController.php:92
 msgid "The request does not change anything."
 msgstr ""
@@ -419,11 +473,11 @@ msgstr ""
 msgid "You are not allowed to publish galleries."
 msgstr ""
 
-#: packages/wordpress/src/Rest/ItemController.php:469
+#: packages/wordpress/src/Rest/ItemController.php:468
 msgid "The settings must be an object."
 msgstr ""
 
-#: packages/wordpress/src/Rest/ItemController.php:491
+#: packages/wordpress/src/Rest/ItemController.php:490
 msgid "A required parameter is missing."
 msgstr ""
 
@@ -481,7 +535,7 @@ msgstr ""
 msgid "Galleries are not exported in 1.0. WordPress export and migration tools move galleries without their images, and attachment IDs change on import. A gallery export with ID remapping is planned."
 msgstr ""
 
-#: packages/wordpress/src/Shortcode/GalleryShortcode.php:68
+#: packages/wordpress/src/Shortcode/GalleryShortcode.php:83
 msgid "Gallery diagnostic (visible to editors only): the shortcode needs a valid gallery id, for example [sw_gallery id=\"123\"]."
 msgstr ""
 
@@ -523,6 +577,68 @@ msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:43
 msgid "You are not allowed to do this."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:44
+msgid "A required value is missing."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:45
+msgid "A responsive value must be a plain value or an object."
+msgstr ""
+
+#. translators: %d or %s: a number or a schema type
+#: packages/wordpress/src/Support/CoreMessages.php:47
+#, php-format
+msgid "At least %d entries are needed."
+msgstr ""
+
+#. translators: %d or %s: a number or a schema type
+#: packages/wordpress/src/Support/CoreMessages.php:49
+#, php-format
+msgid "At most %d entries are allowed."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:50
+msgid "The breakpoint is not supported."
+msgstr ""
+
+#. translators: %d or %s: a number or a schema type
+#: packages/wordpress/src/Support/CoreMessages.php:52
+#, php-format
+msgid "The value allows at most %d characters."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:53
+msgid "The value is not one of the allowed options."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:54
+msgid "The value is not valid UTF-8."
+msgstr ""
+
+#. translators: %d or %s: a number or a schema type
+#: packages/wordpress/src/Support/CoreMessages.php:56
+#, php-format
+msgid "The value must be at least %s."
+msgstr ""
+
+#. translators: %d or %s: a number or a schema type
+#: packages/wordpress/src/Support/CoreMessages.php:58
+#, php-format
+msgid "The value must be at most %s."
+msgstr ""
+
+#. translators: %d or %s: a number or a schema type
+#: packages/wordpress/src/Support/CoreMessages.php:60
+#, php-format
+msgid "The value must be of type %s."
+msgstr ""
+
+#. translators: %d or %s: a number or a schema type
+#: packages/wordpress/src/Support/CoreMessages.php:62
+#, php-format
+msgid "The value needs at least %d characters."
 msgstr ""
 
 #. translators: 1: required PHP version, 2: current PHP version
