@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /*
- * Live preview of the gallery editor (M3-23). Renders with the SERVER renderer (route
+ * Live preview of the gallery editor (M3-23), shown inside PreviewDialog.vue (full viewport). Renders with the SERVER renderer (route
  * `POST /galleries/{id}/preview`) using the STAGED, unsaved layout, sort mode and settings, and
  * shows the markup in a sandboxed iframe (PreviewFrame.vue / srcdoc.ts). Item order, removals and
  * text edits are not part of the request (the server has no staged-items input): the pane says so.
  */
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SegmentedControl from '@/components/ui/SegmentedControl.vue';
 import { useAppStore } from '@/stores/app';
@@ -17,7 +17,7 @@ import type { ValidatedAssets } from './srcdoc';
 import { usePreview } from './usePreview';
 import type { PreviewErrorKind } from './usePreview';
 
-type Viewport = 'mobile' | 'tablet' | 'desktop' | 'fit';
+export type Viewport = 'mobile' | 'tablet' | 'desktop' | 'fit';
 const VIEWPORT_WIDTH: Record<Viewport, number | null> = {
   mobile: 375,
   tablet: 768,
@@ -28,17 +28,24 @@ const VIEWPORT_WIDTH: Record<Viewport, number | null> = {
 const PER_PAGE_CHOICES = [6, 12, 24, 48, 100];
 /** Room for the lightbox, which is fixed inside the frame, even when the gallery itself is short. */
 const MIN_FRAME_HEIGHT = 480;
-const MAX_FRAME_HEIGHT = 2000;
+/** Tall galleries scroll inside the stage; the cap only guards against a runaway height report. */
+const MAX_FRAME_HEIGHT = 20000;
+/** Vertical padding of the stage (2 x 12 px). */
+const STAGE_PAD = 24;
 /** At most one announcement in this window; the latest message wins. */
 const ANNOUNCE_INTERVAL_MS = 3000;
 
 const props = defineProps<{
   session: EditorSession;
   galleryId: number;
-  /** The pane is visible (tab selected or side-by-side layout). */
+  /** The preview dialog is open: no request is sent and none is in flight otherwise. */
   active: boolean;
   readonly: boolean;
 }>();
+
+/** Chosen width and page size; the dialog keeps them while the editor stays mounted. */
+const viewport = defineModel<Viewport>('viewport', { default: 'fit' });
+const pageSize = defineModel<number | null>('perPage', { default: null });
 
 const { t, locale } = useI18n();
 const app = useAppStore();
@@ -50,6 +57,7 @@ const canPreview = computed(() => ready.value && !props.readonly);
 const preview = usePreview({
   api: api.preview,
   galleryId: props.galleryId,
+  initialPerPage: pageSize.value,
   active: () => props.active && canPreview.value,
   state: () => {
     const working = props.session.working.value;
@@ -73,7 +81,6 @@ watch(preview.renderId, () => {
 });
 
 // ---- viewport
-const viewport = ref<Viewport>('fit');
 const viewportOptions = computed(() =>
   (['mobile', 'tablet', 'desktop', 'fit'] as const).map((value) => ({
     value,
@@ -93,6 +100,10 @@ const widthLabel = computed(() =>
     : t('editor.preview.viewport.width', { width: deviceWidth.value }),
 );
 
+watch(preview.perPage, (value) => {
+  pageSize.value = value;
+});
+
 const perPageValue = computed(() =>
   preview.perPage.value === null ? '' : String(preview.perPage.value),
 );
@@ -100,6 +111,21 @@ function onPerPage(event: Event): void {
   const raw = (event.target as HTMLSelectElement).value;
   preview.setPerPage(raw === '' ? null : Number(raw));
 }
+
+// ---- stage: the frame is at least as tall as the stage (the dialog), so a short gallery fills it
+const stage = ref<HTMLElement | null>(null);
+const stageHeight = ref(0);
+const frameMinHeight = computed(() => Math.max(MIN_FRAME_HEIGHT, stageHeight.value - STAGE_PAD));
+let stageObserver: ResizeObserver | null = null;
+onMounted(() => {
+  const el = stage.value;
+  if (el === null || typeof ResizeObserver === 'undefined') return;
+  stageObserver = new ResizeObserver(() => {
+    stageHeight.value = el.clientHeight;
+  });
+  stageObserver.observe(el);
+});
+onBeforeUnmount(() => stageObserver?.disconnect());
 
 // ---- document of the iframe (rebuilt per render and theme change, never mutated)
 interface FrameDoc {
@@ -223,120 +249,126 @@ watch(preview.error, (error) => {
 
 <template>
   <div class="swg-pv">
-    <div class="swg-pv__bar">
-      <SegmentedControl
-        v-model="viewportModel"
-        :options="viewportOptions"
-        :legend="t('editor.preview.viewport.legend')"
-        :disabled="!canPreview"
-      />
-      <q-btn
-        flat
-        round
-        dense
-        icon="r_refresh"
-        :aria-label="t('editor.preview.refresh')"
-        :disable="!canPreview || preview.loading.value"
-        class="swg-pv__refresh"
-        @click="preview.refresh()"
-      >
-        <q-tooltip>{{ t('editor.preview.refresh') }}</q-tooltip>
-      </q-btn>
-      <label class="swg-pv__perpage">
-        <span>{{ t('editor.preview.perPage.label') }}</span>
-        <select :value="perPageValue" :disabled="!canPreview" @change="onPerPage">
-          <option value="">{{ t('editor.preview.perPage.site') }}</option>
-          <option v-for="n in PER_PAGE_CHOICES" :key="n" :value="String(n)">{{ n }}</option>
-        </select>
-      </label>
-      <div
-        v-if="preview.result.value !== null && preview.totalPages.value > 0"
-        class="swg-pv__pager"
-        role="group"
-        :aria-label="t('editor.preview.pager.label')"
-      >
-        <q-btn
-          flat
-          round
-          dense
-          icon="r_chevron_left"
-          class="swg-flip-rtl swg-pv__prev"
-          :aria-label="t('editor.preview.pager.prev')"
-          :disable="preview.page.value <= 1"
-          @click="preview.goto(preview.page.value - 1)"
+    <div class="swg-pv__top">
+      <div class="swg-pv__bar">
+        <SegmentedControl
+          v-model="viewportModel"
+          :options="viewportOptions"
+          :legend="t('editor.preview.viewport.legend')"
+          :disabled="!canPreview"
         />
-        <span class="swg-pv__pagetext swg-num">{{ pagerText }}</span>
         <q-btn
           flat
           round
           dense
-          icon="r_chevron_right"
-          class="swg-flip-rtl swg-pv__next"
-          :aria-label="t('editor.preview.pager.next')"
-          :disable="preview.page.value >= preview.totalPages.value"
-          @click="preview.goto(preview.page.value + 1)"
+          icon="r_refresh"
+          :aria-label="t('editor.preview.refresh')"
+          :disable="!canPreview || preview.loading.value"
+          class="swg-pv__refresh"
+          @click="preview.refresh()"
+        >
+          <q-tooltip>{{ t('editor.preview.refresh') }}</q-tooltip>
+        </q-btn>
+        <label class="swg-pv__perpage">
+          <span>{{ t('editor.preview.perPage.label') }}</span>
+          <select :value="perPageValue" :disabled="!canPreview" @change="onPerPage">
+            <option value="">{{ t('editor.preview.perPage.site') }}</option>
+            <option v-for="n in PER_PAGE_CHOICES" :key="n" :value="String(n)">{{ n }}</option>
+          </select>
+        </label>
+        <div
+          v-if="preview.result.value !== null && preview.totalPages.value > 0"
+          class="swg-pv__pager"
+          role="group"
+          :aria-label="t('editor.preview.pager.label')"
+        >
+          <q-btn
+            flat
+            round
+            dense
+            icon="r_chevron_left"
+            class="swg-flip-rtl swg-pv__prev"
+            :aria-label="t('editor.preview.pager.prev')"
+            :disable="preview.page.value <= 1"
+            @click="preview.goto(preview.page.value - 1)"
+          />
+          <span class="swg-pv__pagetext swg-num">{{ pagerText }}</span>
+          <q-btn
+            flat
+            round
+            dense
+            icon="r_chevron_right"
+            class="swg-flip-rtl swg-pv__next"
+            :aria-label="t('editor.preview.pager.next')"
+            :disable="preview.page.value >= preview.totalPages.value"
+            @click="preview.goto(preview.page.value + 1)"
+          />
+        </div>
+      </div>
+      <p class="swg-pv__width swg-num">{{ widthLabel }} · {{ t('editor.preview.perPage.hint') }}</p>
+
+      <p v-if="!canPreview" class="swg-pv__note" role="note">
+        <q-icon name="r_lock" size="18px" aria-hidden="true" />
+        {{ t('editor.preview.notEditable') }}
+      </p>
+      <template v-else>
+        <p v-if="settingsStaged" class="swg-pv__note is-info swg-pv__unsaved-settings" role="note">
+          <q-icon name="r_info" size="18px" aria-hidden="true" />
+          {{ t('editor.preview.unsavedSettings') }}
+        </p>
+        <p v-if="itemsStaged" class="swg-pv__note is-info swg-pv__unsaved-items" role="note">
+          <q-icon name="r_info" size="18px" aria-hidden="true" />
+          {{ t('editor.preview.unsavedItems') }}
+        </p>
+      </template>
+      <p v-if="assetsDropped" class="swg-pv__note is-warning swg-pv__assets-dropped" role="note">
+        <q-icon name="r_warning" size="18px" aria-hidden="true" />
+        {{ t('editor.preview.assetsDropped') }}
+      </p>
+      <p v-else-if="assetsMissing" class="swg-pv__note is-warning" role="note">
+        <q-icon name="r_warning" size="18px" aria-hidden="true" />
+        {{ t('editor.preview.noAssets') }}
+      </p>
+
+      <div v-if="errorText" class="swg-pv__alert swg-pv__error">
+        <q-icon name="r_error" size="20px" aria-hidden="true" />
+        <span>
+          {{ errorText }}
+          <template v-if="preview.result.value !== null"> {{ t('editor.preview.stale') }}</template>
+        </span>
+        <q-btn
+          flat
+          dense
+          no-caps
+          :label="t('editor.preview.error.retry')"
+          class="swg-pv__retry"
+          @click="preview.refresh()"
         />
       </div>
+
+      <details
+        v-if="diagnostics.length > 0"
+        class="swg-pv__diag"
+        :open="diagnosticsOpen ? true : undefined"
+      >
+        <summary>
+          {{
+            t('editor.preview.diagnostics.title', { count: diagnostics.length }, diagnostics.length)
+          }}
+        </summary>
+        <p class="swg-pv__hint">{{ t('editor.preview.diagnostics.hint') }}</p>
+        <ul>
+          <li v-for="(d, index) in diagnostics" :key="`${d.code}:${index}`">{{ d.message }}</li>
+        </ul>
+      </details>
     </div>
-    <p class="swg-pv__width swg-num">{{ widthLabel }} · {{ t('editor.preview.perPage.hint') }}</p>
-
-    <p v-if="!canPreview" class="swg-pv__note" role="note">
-      <q-icon name="r_lock" size="18px" aria-hidden="true" />
-      {{ t('editor.preview.notEditable') }}
-    </p>
-    <template v-else>
-      <p v-if="settingsStaged" class="swg-pv__note is-info swg-pv__unsaved-settings" role="note">
-        <q-icon name="r_info" size="18px" aria-hidden="true" />
-        {{ t('editor.preview.unsavedSettings') }}
-      </p>
-      <p v-if="itemsStaged" class="swg-pv__note is-info swg-pv__unsaved-items" role="note">
-        <q-icon name="r_info" size="18px" aria-hidden="true" />
-        {{ t('editor.preview.unsavedItems') }}
-      </p>
-    </template>
-    <p v-if="assetsDropped" class="swg-pv__note is-warning swg-pv__assets-dropped" role="note">
-      <q-icon name="r_warning" size="18px" aria-hidden="true" />
-      {{ t('editor.preview.assetsDropped') }}
-    </p>
-    <p v-else-if="assetsMissing" class="swg-pv__note is-warning" role="note">
-      <q-icon name="r_warning" size="18px" aria-hidden="true" />
-      {{ t('editor.preview.noAssets') }}
-    </p>
-
-    <div v-if="errorText" class="swg-pv__alert swg-pv__error">
-      <q-icon name="r_error" size="20px" aria-hidden="true" />
-      <span>
-        {{ errorText }}
-        <template v-if="preview.result.value !== null"> {{ t('editor.preview.stale') }}</template>
-      </span>
-      <q-btn
-        flat
-        dense
-        no-caps
-        :label="t('editor.preview.error.retry')"
-        class="swg-pv__retry"
-        @click="preview.refresh()"
-      />
-    </div>
-
-    <details
-      v-if="diagnostics.length > 0"
-      class="swg-pv__diag"
-      :open="diagnosticsOpen ? true : undefined"
-    >
-      <summary>
-        {{
-          t('editor.preview.diagnostics.title', { count: diagnostics.length }, diagnostics.length)
-        }}
-      </summary>
-      <p class="swg-pv__hint">{{ t('editor.preview.diagnostics.hint') }}</p>
-      <ul>
-        <li v-for="(d, index) in diagnostics" :key="`${d.code}:${index}`">{{ d.message }}</li>
-      </ul>
-    </details>
 
     <div
+      ref="stage"
       class="swg-pv__stage"
+      role="region"
+      tabindex="0"
+      :aria-label="t('editor.preview.stage')"
       :class="{ 'is-stale': errorText !== null && frameDoc !== null }"
       :aria-busy="preview.loading.value"
     >
@@ -355,7 +387,7 @@ watch(preview.error, (error) => {
           :srcdoc="frameDoc.srcdoc"
           :token="frameDoc.token"
           :title="t('editor.preview.frameTitle')"
-          :min-height="MIN_FRAME_HEIGHT"
+          :min-height="frameMinHeight"
           :max-height="MAX_FRAME_HEIGHT"
         />
       </div>
@@ -376,6 +408,15 @@ watch(preview.error, (error) => {
   flex-direction: column;
   gap: 10px;
   min-inline-size: 0;
+  /* Fills the dialog body; on very short screens the whole pane scrolls instead of squeezing the stage. */
+  block-size: 100%;
+  overflow: auto;
+}
+.swg-pv__top {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: none;
 }
 .swg-pv__bar {
   display: flex;
@@ -472,12 +513,17 @@ watch(preview.error, (error) => {
 }
 .swg-pv__stage {
   position: relative;
+  flex: 1 1 0;
   padding: 12px;
-  overflow-x: auto;
+  overflow: auto;
   border: 1px solid var(--swg-border);
   border-radius: var(--swg-radius);
-  background: var(--swg-surface-2);
-  min-block-size: 160px;
+  /* A dotted stage: the difference between the stage and a narrower device frame is obvious. */
+  background:
+    radial-gradient(color-mix(in srgb, var(--swg-text) 14%, transparent) 1px, transparent 1px) 0 0 /
+      16px 16px,
+    var(--swg-surface-2);
+  min-block-size: min(60vh, 480px);
 }
 .swg-pv__stage.is-stale .swg-pv__device {
   opacity: 0.45;
@@ -485,7 +531,7 @@ watch(preview.error, (error) => {
 }
 .swg-pv__device {
   margin-inline: auto;
-  max-inline-size: 100%;
+  /* Real widths: a device wider than the stage scrolls the stage sideways instead of shrinking. */
   overflow: hidden;
   /* A ring instead of a border: the frame is exactly as wide as the chosen viewport. */
   box-shadow: 0 0 0 1px var(--swg-border);

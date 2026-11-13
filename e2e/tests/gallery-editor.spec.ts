@@ -709,6 +709,65 @@ test.describe('accessibility and screenshots', () => {
   });
 });
 
+test.describe('editor uses the full content width', () => {
+  test.use({ storageState: authFile('administrator') });
+
+  /** Width of the editor content box and the number of tiles in the first row of the images grid. */
+  async function metrics(page: Page): Promise<{ editor: number; firstRow: number }> {
+    const editor = await root(page)
+      .locator('.swg-ed')
+      .evaluate((el) => el.getBoundingClientRect().width);
+    const boxes = await Promise.all((await tiles(page).all()).map((tile) => tile.boundingBox()));
+    const tops = boxes.flatMap((box) => (box === null ? [] : [Math.round(box.y)]));
+    return { editor, firstRow: tops.filter((top) => top === tops[0]).length };
+  }
+
+  test('is wider than the 1320 px cap at 1920 px and the grid recalculates on resize', async ({
+    page,
+  }) => {
+    const gallery = await newGallery('Wide', 6);
+    await page.setViewportSize({ width: 1920, height: 1000 });
+    await openEditor(page, gallery);
+    await expect(tiles(page)).toHaveCount(6);
+    const wide = await metrics(page);
+    expect(wide.editor).toBeGreaterThan(1320);
+    expect(wide.firstRow).toBeGreaterThanOrEqual(5);
+    await shot(page, 'editor-full-width-1920');
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expect.poll(async () => (await metrics(page)).firstRow).toBeLessThan(wide.firstRow);
+    await shot(page, 'editor-full-width-1280');
+
+    await page.setViewportSize({ width: 2560, height: 1200 });
+    await expect.poll(async () => (await metrics(page)).editor).toBeGreaterThan(wide.editor);
+    expect((await metrics(page)).firstRow).toBe(6);
+    await shot(page, 'editor-full-width-2560');
+  });
+
+  test('other pages keep their width cap', async ({ page }) => {
+    await page.setViewportSize({ width: 2560, height: 1000 });
+    await page.goto(`${PLUGIN_PAGE}#/galleries`);
+    const content = root(page).locator('#swg-main > *').first();
+    await expect(content).toBeVisible();
+    expect((await content.boundingBox())?.width ?? 0).toBeLessThanOrEqual(1320);
+  });
+
+  test('no horizontal page scroll at 375 px, with the Preview button in the action group', async ({
+    page,
+  }) => {
+    const gallery = await newGallery('Phone', 4);
+    await page.setViewportSize({ width: 375, height: 800 });
+    await openEditor(page, gallery);
+    await expect(tiles(page)).toHaveCount(4);
+    await expect(root(page).getByRole('button', { name: 'Preview', exact: true })).toBeVisible();
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+    await shot(page, 'editor-full-width-375');
+  });
+});
+
 test.describe('German', () => {
   test.use({ storageState: authFile('german') });
 

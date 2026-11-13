@@ -13,7 +13,7 @@
  *    item ids; it is undone by removing the images.
  *  - Undo/redo covers staged changes (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z); Save clears the history.
  */
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { errorMessage } from '@/api/errorMessage';
 import type { LayoutsResponse } from '@/api/layouts';
@@ -31,9 +31,8 @@ import ImageDetailsSheet from './components/ImageDetailsSheet.vue';
 import ItemsGrid from './components/ItemsGrid.vue';
 import LayoutSettingsPanel from './components/LayoutSettingsPanel.vue';
 import UploadPanel from './components/UploadPanel.vue';
-import ViewTabs from './components/ViewTabs.vue';
 import { useEditorApi } from './injection';
-import PreviewPane from './preview/PreviewPane.vue';
+import PreviewDialog from './preview/PreviewDialog.vue';
 import { validateSettings } from './schema';
 import { createEditorSession } from './useGalleryEditor';
 import type { AddOutcome, FailureKind, SaveReport } from './useGalleryEditor';
@@ -230,6 +229,8 @@ function onWindowKeydown(event: KeyboardEvent): void {
   const mod = event.ctrlKey || event.metaKey;
   if (!mod) return;
   const key = event.key.toLowerCase();
+  // The preview is modal: staged edits are not undone behind it.
+  if (previewOpen.value && (key === 'z' || key === 'y')) return;
   if (key === 's') {
     event.preventDefault();
     void onSave();
@@ -382,34 +383,17 @@ function onFileDrop(event: DragEvent): void {
   uploads.add(Array.from(event.dataTransfer?.files ?? []));
 }
 
-// ---- live preview: side by side on wide screens, a tab next to "Images" otherwise
-const WIDE_QUERY = '(min-width: 1600px)';
-type MainView = 'images' | 'preview';
-const mainView = ref<MainView>('images');
-const wide = ref(false);
-let wideQuery: MediaQueryList | null = null;
-function onWideChange(event: MediaQueryListEvent): void {
-  wide.value = event.matches;
+// ---- live preview: a full-viewport dialog behind the "Preview" button
+const previewOpen = ref(false);
+const previewButton = ref<{ $el: HTMLElement } | null>(null);
+const previewReason = computed(() => {
+  if (readonly.value) return t('editor.preview.disabled.notEditable');
+  if (session.phase.value !== 'ready') return t('editor.preview.disabled.loading');
+  return '';
+});
+function focusPreviewButton(): void {
+  void nextTick(() => previewButton.value?.$el.focus());
 }
-onMounted(() => {
-  if (typeof window.matchMedia !== 'function') return;
-  wideQuery = window.matchMedia(WIDE_QUERY);
-  wide.value = wideQuery.matches === true;
-  if (typeof wideQuery.addEventListener === 'function') {
-    wideQuery.addEventListener('change', onWideChange);
-  }
-});
-onBeforeUnmount(() => {
-  if (wideQuery !== null && typeof wideQuery.removeEventListener === 'function') {
-    wideQuery.removeEventListener('change', onWideChange);
-  }
-});
-const previewActive = computed(() => wide.value || mainView.value === 'preview');
-const mainViewOptions = computed(() => [
-  { value: 'images' as const, label: t('editor.preview.tabs.images') },
-  { value: 'preview' as const, label: t('editor.preview.tabs.preview') },
-]);
-const VIEW_ID = 'swg-ed-view';
 
 // ---- side panel
 type Panel = 'details' | 'layout';
@@ -557,6 +541,23 @@ const reportAlert = computed(() => {
               :disable="!session.dirty.value || session.saving.value || readonly"
               @click="discardOpen = true"
             />
+            <span class="swg-ed__previewwrap" :title="previewReason || undefined">
+              <q-btn
+                ref="previewButton"
+                flat
+                no-caps
+                icon="r_visibility"
+                class="swg-ed__preview"
+                :label="t('editor.actions.preview')"
+                :disable="previewReason !== ''"
+                :aria-describedby="previewReason ? 'swg-ed-preview-reason' : undefined"
+                aria-haspopup="dialog"
+                @click="previewOpen = true"
+              />
+              <span v-if="previewReason" id="swg-ed-preview-reason" class="swg-sr-only">{{
+                previewReason
+              }}</span>
+            </span>
             <q-btn
               v-if="canPublish && gallery.status !== 'publish'"
               outline
@@ -650,30 +651,168 @@ const reportAlert = computed(() => {
         </div>
 
         <div class="swg-ed__cols">
-          <div class="swg-ed__main" :class="{ 'is-wide': wide }">
-            <ViewTabs
-              v-if="!wide"
-              v-model="mainView"
-              :options="mainViewOptions"
-              :label="t('editor.preview.tabs.label')"
-              :id-base="VIEW_ID"
-            />
-            <div
-              v-show="wide || mainView === 'images'"
-              :id="`${VIEW_ID}-panel-images`"
-              class="swg-ed__tabpanel"
-              :role="wide ? undefined : 'tabpanel'"
-              :aria-labelledby="wide ? undefined : `${VIEW_ID}-tab-images`"
+          <div class="swg-ed__main">
+            <section
+              class="swg-ed__images"
+              :aria-label="t('editor.images.region')"
+              @dragenter="onFileEnter"
+              @dragover="onFileOver"
+              @dragleave="onFileLeave"
+              @drop="onFileDrop"
             >
-              <section
-                class="swg-ed__images"
-                :aria-label="t('editor.images.region')"
-                @dragenter="onFileEnter"
-                @dragover="onFileOver"
-                @dragleave="onFileLeave"
-                @drop="onFileDrop"
+              <div class="swg-ed__bar">
+                <q-btn
+                  color="primary"
+                  unelevated
+                  no-caps
+                  icon="r_photo_library"
+                  :label="t('editor.actions.add')"
+                  :disable="!uploadAllowed"
+                  class="swg-ed__add"
+                  @click="addFromLibrary"
+                />
+                <span v-if="pickerReason" class="swg-ed__reason">{{ pickerReason }}</span>
+                <span class="swg-ed__count swg-num">
+                  {{ t('galleries.card.images', { count: itemCount }, itemCount) }}
+                  <template v-if="missingCount > 0">
+                    ·
+                    {{ t('editor.images.unavailableCount', { count: missingCount }, missingCount) }}
+                  </template>
+                </span>
+              </div>
+
+              <UploadPanel
+                :uploads="uploads"
+                :dragging="fileDragging"
+                :disabled="!uploadAllowed"
+                :reason="pickerReason"
+              />
+
+              <div
+                v-if="itemCount > 0"
+                class="swg-ed__bar swg-ed__selbar"
+                role="toolbar"
+                :aria-label="t('editor.selection.toolbar')"
               >
-                <div class="swg-ed__bar">
+                <span class="swg-ed__sel">
+                  {{
+                    t(
+                      'editor.selection.count',
+                      { count: selection.count.value },
+                      selection.count.value,
+                    )
+                  }}
+                </span>
+                <q-btn
+                  flat
+                  dense
+                  no-caps
+                  :label="t('editor.selection.all')"
+                  @click="selection.selectAll()"
+                />
+                <q-btn
+                  flat
+                  dense
+                  no-caps
+                  :label="t('editor.selection.clear')"
+                  :disable="selection.count.value === 0"
+                  @click="selection.clear()"
+                />
+                <span class="swg-ed__sep" aria-hidden="true" />
+                <q-btn
+                  flat
+                  dense
+                  round
+                  icon="r_first_page"
+                  class="swg-flip-rtl"
+                  :aria-label="t('editor.reorder.start')"
+                  :disable="!session.reorderEnabled.value || readonly"
+                  @click="move('start')"
+                />
+                <q-btn
+                  flat
+                  dense
+                  round
+                  icon="r_chevron_left"
+                  class="swg-flip-rtl"
+                  :aria-label="t('editor.reorder.earlier')"
+                  :disable="!session.reorderEnabled.value || readonly"
+                  @click="move('earlier')"
+                />
+                <q-btn
+                  flat
+                  dense
+                  round
+                  icon="r_chevron_right"
+                  class="swg-flip-rtl"
+                  :aria-label="t('editor.reorder.later')"
+                  :disable="!session.reorderEnabled.value || readonly"
+                  @click="move('later')"
+                />
+                <q-btn
+                  flat
+                  dense
+                  round
+                  icon="r_last_page"
+                  class="swg-flip-rtl"
+                  :aria-label="t('editor.reorder.end')"
+                  :disable="!session.reorderEnabled.value || readonly"
+                  @click="move('end')"
+                />
+                <span class="swg-ed__sep" aria-hidden="true" />
+                <q-btn
+                  flat
+                  dense
+                  no-caps
+                  icon="r_tune"
+                  :label="t('editor.selection.details')"
+                  @click="openDetailsOfTarget"
+                />
+                <q-btn
+                  v-if="!readonly"
+                  flat
+                  dense
+                  no-caps
+                  icon="r_star"
+                  :label="t('editor.selection.cover')"
+                  :disable="singleAttachment === null"
+                  @click="singleAttachment !== null && useAsCover(singleAttachment)"
+                />
+                <q-btn
+                  v-if="!readonly"
+                  flat
+                  dense
+                  no-caps
+                  color="negative"
+                  icon="r_delete"
+                  :label="t('editor.selection.remove')"
+                  class="swg-ed__remove"
+                  @click="requestRemove()"
+                />
+              </div>
+              <p v-if="session.truncated.value" class="swg-ed__reason">
+                {{ t('editor.reorder.disabled') }}
+              </p>
+              <p v-else-if="working.details.sortMode !== 'manual'" class="swg-ed__reason">
+                {{ t('editor.sort.activeNote') }}
+              </p>
+
+              <ItemsGrid
+                v-if="itemCount > 0"
+                ref="grid"
+                :session="session"
+                :selection="selection"
+                :cover-attachment-id="coverId"
+                :readonly="readonly"
+                @open-details="openDetails"
+                @remove-request="requestRemove()"
+              />
+              <div v-else class="swg-ed__empty">
+                <EmptyState
+                  illustration="media"
+                  :title="t('editor.empty.title')"
+                  :text="t('editor.empty.text')"
+                >
                   <q-btn
                     color="primary"
                     unelevated
@@ -681,183 +820,12 @@ const reportAlert = computed(() => {
                     icon="r_photo_library"
                     :label="t('editor.actions.add')"
                     :disable="!uploadAllowed"
-                    class="swg-ed__add"
                     @click="addFromLibrary"
                   />
-                  <span v-if="pickerReason" class="swg-ed__reason">{{ pickerReason }}</span>
-                  <span class="swg-ed__count swg-num">
-                    {{ t('galleries.card.images', { count: itemCount }, itemCount) }}
-                    <template v-if="missingCount > 0">
-                      ·
-                      {{
-                        t('editor.images.unavailableCount', { count: missingCount }, missingCount)
-                      }}
-                    </template>
-                  </span>
-                </div>
-
-                <UploadPanel
-                  :uploads="uploads"
-                  :dragging="fileDragging"
-                  :disabled="!uploadAllowed"
-                  :reason="pickerReason"
-                />
-
-                <div
-                  v-if="itemCount > 0"
-                  class="swg-ed__bar swg-ed__selbar"
-                  role="toolbar"
-                  :aria-label="t('editor.selection.toolbar')"
-                >
-                  <span class="swg-ed__sel">
-                    {{
-                      t(
-                        'editor.selection.count',
-                        { count: selection.count.value },
-                        selection.count.value,
-                      )
-                    }}
-                  </span>
-                  <q-btn
-                    flat
-                    dense
-                    no-caps
-                    :label="t('editor.selection.all')"
-                    @click="selection.selectAll()"
-                  />
-                  <q-btn
-                    flat
-                    dense
-                    no-caps
-                    :label="t('editor.selection.clear')"
-                    :disable="selection.count.value === 0"
-                    @click="selection.clear()"
-                  />
-                  <span class="swg-ed__sep" aria-hidden="true" />
-                  <q-btn
-                    flat
-                    dense
-                    round
-                    icon="r_first_page"
-                    class="swg-flip-rtl"
-                    :aria-label="t('editor.reorder.start')"
-                    :disable="!session.reorderEnabled.value || readonly"
-                    @click="move('start')"
-                  />
-                  <q-btn
-                    flat
-                    dense
-                    round
-                    icon="r_chevron_left"
-                    class="swg-flip-rtl"
-                    :aria-label="t('editor.reorder.earlier')"
-                    :disable="!session.reorderEnabled.value || readonly"
-                    @click="move('earlier')"
-                  />
-                  <q-btn
-                    flat
-                    dense
-                    round
-                    icon="r_chevron_right"
-                    class="swg-flip-rtl"
-                    :aria-label="t('editor.reorder.later')"
-                    :disable="!session.reorderEnabled.value || readonly"
-                    @click="move('later')"
-                  />
-                  <q-btn
-                    flat
-                    dense
-                    round
-                    icon="r_last_page"
-                    class="swg-flip-rtl"
-                    :aria-label="t('editor.reorder.end')"
-                    :disable="!session.reorderEnabled.value || readonly"
-                    @click="move('end')"
-                  />
-                  <span class="swg-ed__sep" aria-hidden="true" />
-                  <q-btn
-                    flat
-                    dense
-                    no-caps
-                    icon="r_tune"
-                    :label="t('editor.selection.details')"
-                    @click="openDetailsOfTarget"
-                  />
-                  <q-btn
-                    v-if="!readonly"
-                    flat
-                    dense
-                    no-caps
-                    icon="r_star"
-                    :label="t('editor.selection.cover')"
-                    :disable="singleAttachment === null"
-                    @click="singleAttachment !== null && useAsCover(singleAttachment)"
-                  />
-                  <q-btn
-                    v-if="!readonly"
-                    flat
-                    dense
-                    no-caps
-                    color="negative"
-                    icon="r_delete"
-                    :label="t('editor.selection.remove')"
-                    class="swg-ed__remove"
-                    @click="requestRemove()"
-                  />
-                </div>
-                <p v-if="session.truncated.value" class="swg-ed__reason">
-                  {{ t('editor.reorder.disabled') }}
-                </p>
-                <p v-else-if="working.details.sortMode !== 'manual'" class="swg-ed__reason">
-                  {{ t('editor.sort.activeNote') }}
-                </p>
-
-                <ItemsGrid
-                  v-if="itemCount > 0"
-                  ref="grid"
-                  :session="session"
-                  :selection="selection"
-                  :cover-attachment-id="coverId"
-                  :readonly="readonly"
-                  @open-details="openDetails"
-                  @remove-request="requestRemove()"
-                />
-                <div v-else class="swg-ed__empty">
-                  <EmptyState
-                    illustration="media"
-                    :title="t('editor.empty.title')"
-                    :text="t('editor.empty.text')"
-                  >
-                    <q-btn
-                      color="primary"
-                      unelevated
-                      no-caps
-                      icon="r_photo_library"
-                      :label="t('editor.actions.add')"
-                      :disable="!uploadAllowed"
-                      @click="addFromLibrary"
-                    />
-                    <span v-if="pickerReason" class="swg-muted">{{ pickerReason }}</span>
-                  </EmptyState>
-                </div>
-              </section>
-            </div>
-            <div
-              v-show="wide || mainView === 'preview'"
-              :id="`${VIEW_ID}-panel-preview`"
-              class="swg-ed__tabpanel swg-ed__previewpanel"
-              :role="wide ? undefined : 'tabpanel'"
-              :tabindex="wide ? undefined : 0"
-              :aria-labelledby="wide ? undefined : `${VIEW_ID}-tab-preview`"
-            >
-              <h3 v-if="wide" class="swg-ed__previewtitle">{{ t('editor.preview.title') }}</h3>
-              <PreviewPane
-                :session="session"
-                :gallery-id="galleryId"
-                :active="previewActive"
-                :readonly="readonly"
-              />
-            </div>
+                  <span v-if="pickerReason" class="swg-muted">{{ pickerReason }}</span>
+                </EmptyState>
+              </div>
+            </section>
           </div>
 
           <aside class="swg-ed__side" :aria-label="t('editor.panel.label')">
@@ -888,6 +856,14 @@ const reportAlert = computed(() => {
       </template>
     </DataState>
 
+    <PreviewDialog
+      v-if="gallery && working"
+      v-model="previewOpen"
+      :session="session"
+      :gallery-id="galleryId"
+      :readonly="readonly"
+      @hide="focusPreviewButton"
+    />
     <ImageDetailsSheet
       v-model="detailsOpen"
       :session="session"
@@ -987,6 +963,9 @@ const reportAlert = computed(() => {
   align-items: center;
   gap: 8px;
 }
+.swg-ed__previewwrap {
+  display: inline-flex;
+}
 .swg-ed__state {
   display: flex;
   align-items: center;
@@ -1033,7 +1012,7 @@ const reportAlert = computed(() => {
 }
 .swg-ed__cols {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 330px;
+  grid-template-columns: minmax(0, 1fr) 360px;
   gap: 20px;
   align-items: start;
 }
@@ -1042,24 +1021,6 @@ const reportAlert = computed(() => {
   flex-direction: column;
   gap: 12px;
   min-inline-size: 0;
-}
-.swg-ed__main.is-wide {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 20px;
-  align-items: start;
-}
-.swg-ed__main.is-wide .swg-ed__previewpanel {
-  position: sticky;
-  inset-block-start: 40px;
-}
-.swg-ed__tabpanel {
-  min-inline-size: 0;
-}
-.swg-ed__previewtitle {
-  margin-block-end: 8px;
-  font-size: 15px;
-  font-weight: 700;
 }
 .swg-ed__images {
   position: relative;

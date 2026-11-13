@@ -36,6 +36,13 @@ function onMessage(event: MessageEvent): void {
 
 onMounted(() => window.addEventListener('message', onMessage));
 onBeforeUnmount(() => window.removeEventListener('message', onMessage));
+// The stage (dialog) may grow or shrink: keep the frame at least as tall as the minimum.
+watch(
+  () => props.minHeight,
+  () => {
+    height.value = clamp(height.value);
+  },
+);
 // The parent recreates the frame (new key) per render; reset until the new document reports.
 watch(
   () => props.srcdoc,
