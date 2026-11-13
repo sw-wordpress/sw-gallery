@@ -31,6 +31,14 @@ export default tseslint.config(
     },
   },
   {
+    // Classic script of the native Media Library screens (no build step).
+    files: ['media-library/*.js'],
+    languageOptions: { sourceType: 'script', globals: { ...globals.browser } },
+    rules: {
+      'no-restricted-properties': ['error', ...htmlSinks],
+    },
+  },
+  {
     // Tests build fixture DOMs from trusted literals.
     files: ['**/tests/**/*.ts'],
     rules: { 'no-restricted-properties': 'off' },

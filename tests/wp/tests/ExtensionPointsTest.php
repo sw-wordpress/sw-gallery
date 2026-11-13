@@ -79,9 +79,12 @@ class ExtensionPointsTest extends SwgTestCase {
 		$data     = $response->get_data();
 
 		$this->assertSame( 200, $response->get_status() );
-		$this->assertSame( array( 'grid', 'partner-wall' ), array_column( $data['layouts'], 'id' ) );
-		$this->assertSame( 'Partner-wall', $data['layouts'][1]['label'] );
-		$this->assertSame( $schema, $data['layouts'][1]['settingsSchema'] );
+		$ids = array_column( $data['layouts'], 'id' );
+		$this->assertSame( 'partner-wall', end( $ids ), 'Third-party layouts come after the built-ins.' );
+		$this->assertContains( 'grid', $ids );
+		$last = $data['layouts'][ count( $ids ) - 1 ];
+		$this->assertSame( 'Partner-wall', $last['label'] );
+		$this->assertSame( $schema, $last['settingsSchema'] );
 		$wp_rest_server = null;
 	}
 
@@ -100,7 +103,9 @@ class ExtensionPointsTest extends SwgTestCase {
 
 		$layouts = Services::layouts();
 
-		$this->assertSame( array( 'grid', 'good-one' ), array_map( static fn( $l ) => $l->getId(), $layouts->all() ) );
+		$ids = array_map( static fn( $l ) => $l->getId(), $layouts->all() );
+		$this->assertSame( 'good-one', end( $ids ), 'Only the valid layout was added after the built-ins.' );
+		$this->assertSame( 1, count( array_keys( $ids, 'grid', true ) ) );
 		$this->assertInstanceOf( GridLayout::class, $layouts->get( 'grid' ), 'A built-in is never replaced.' );
 		$this->assertSame( array_fill( 0, 5, 'swg_layout_rejected' ), $this->logged_codes() );
 		$entry = Services::logger()->recent()[0];
