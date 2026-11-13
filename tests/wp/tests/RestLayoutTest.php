@@ -43,7 +43,7 @@ class RestLayoutTest extends SwgTestCase {
 		$data     = $this->data( $response );
 
 		$this->assertSame( 'grid', $data['fallbackId'] );
-		$this->assertCount( 1, $data['layouts'] );
+		$this->assertSame( array( 'grid', 'justified', 'masonry' ), array_column( $data['layouts'], 'id' ) );
 		$grid = $data['layouts'][0];
 		$this->assertSame( array( 'id', 'label', 'settingsSchema' ), array_keys( $grid ) );
 		$this->assertSame( 'grid', $grid['id'] );
@@ -51,6 +51,19 @@ class RestLayoutTest extends SwgTestCase {
 		$this->assertTrue( $grid['settingsSchema']['properties']['columns']['x-responsive'] );
 		$this->assertSame( 12, $grid['settingsSchema']['properties']['columns']['maximum'] );
 		$this->assertSame( 64, $grid['settingsSchema']['properties']['gap']['maximum'] );
+	}
+
+	public function test_justified_and_masonry_are_listed_with_their_schemas(): void {
+		$data = $this->data( $this->call( 'GET', '/layouts', array(), $this->makeUser( 'author' ) ) );
+		$by   = array_column( $data['layouts'], null, 'id' );
+
+		$this->assertSame( 'Justified', $by['justified']['label'] );
+		$this->assertSame( array( 'rowHeight', 'gap', 'lastRow' ), array_keys( $by['justified']['settingsSchema']['properties'] ) );
+		$this->assertTrue( $by['justified']['settingsSchema']['properties']['rowHeight']['x-responsive'] );
+		$this->assertSame( array( 'left', 'justify' ), $by['justified']['settingsSchema']['properties']['lastRow']['enum'] );
+		$this->assertSame( 'Masonry', $by['masonry']['label'] );
+		$this->assertSame( array( 'columns', 'gap' ), array_keys( $by['masonry']['settingsSchema']['properties'] ) );
+		$this->assertTrue( $by['masonry']['settingsSchema']['properties']['columns']['x-responsive'] );
 	}
 
 	public function test_extra_layouts_keep_unknown_labels_and_item_settings_keys(): void {
@@ -62,13 +75,13 @@ class RestLayoutTest extends SwgTestCase {
 				'properties' => array( 'span' => array( 'type' => 'integer' ) ),
 			),
 		);
-		Services::layouts()->register( new StubLayout( 'masonry', $schema ) );
+		Services::layouts()->register( new StubLayout( 'mosaic', $schema ) );
 
 		$data = $this->data( $this->call( 'GET', '/layouts', array(), $this->makeUser( 'editor' ) ) );
 
-		$this->assertSame( array( 'grid', 'masonry' ), array_column( $data['layouts'], 'id' ) );
-		$masonry = $data['layouts'][1];
-		$this->assertSame( 'Masonry', $masonry['label'] );
+		$this->assertSame( array( 'grid', 'justified', 'masonry', 'mosaic' ), array_column( $data['layouts'], 'id' ) );
+		$masonry = $data['layouts'][3];
+		$this->assertSame( 'Mosaic', $masonry['label'] );
 		$this->assertArrayHasKey( 'x-item-settings', $masonry['settingsSchema'] );
 		// An empty property list must stay a JSON object.
 		$this->assertStringContainsString( '"properties":{}', (string) wp_json_encode( $masonry['settingsSchema'] ) );

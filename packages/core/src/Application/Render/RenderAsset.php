@@ -8,4 +8,5 @@ namespace SWGallery\Core\Application\Render;
 enum RenderAsset: string
 {
     case Lightbox = 'lightbox';
+    case Masonry = 'masonry';
 }

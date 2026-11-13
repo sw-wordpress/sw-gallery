@@ -8,6 +8,7 @@ use SWGallery\Core\Contract\GalleryAccessPolicyInterface;
 use SWGallery\Core\Contract\GalleryLayoutInterface;
 use SWGallery\Core\Contract\GalleryRepositoryInterface;
 use SWGallery\Core\Contract\ImageHintsProviderInterface;
+use SWGallery\Core\Contract\LayoutAssetsProviderInterface;
 use SWGallery\Core\Contract\LayoutRegistryInterface;
 use SWGallery\Core\Contract\LoggerInterface;
 use SWGallery\Core\Contract\MediaReferenceRepositoryInterface;
@@ -155,7 +156,7 @@ final class RenderGallery
             return $this->result(
                 $html,
                 $diagnosticsVisible ? $diagnostics : [],
-                [RenderAsset::Lightbox],
+                [RenderAsset::Lightbox, ...($layout instanceof LayoutAssetsProviderInterface ? $layout->renderAssets() : [])],
                 $page,
                 count($renderItems),
                 $layoutId

@@ -21,13 +21,15 @@ final class FrontendManifest {
 	public const STYLE_KEY  = 'style.css';
 	/** Optional: the layout stylesheet (frontend CSS stream). */
 	public const LAYOUT_KEY = 'frontend/src/layouts.css';
+	/** Optional: the masonry progressive-enhancement script (classic script). */
+	public const MASONRY_KEY = 'frontend/src/masonry.ts';
 
 	private const MAX_MANIFEST_BYTES = 262144;
 	private const FILE_PATTERN       = '#^[A-Za-z0-9_][A-Za-z0-9_./-]*\.(js|css)$#';
 
 	private string $build_dir;
 
-	/** @var array{script: ?string, style: ?string, layout: ?string}|null */
+	/** @var array{script: ?string, style: ?string, layout: ?string, masonry: ?string}|null */
 	private ?array $resolved = null;
 
 	public function __construct( string $build_dir ) {
@@ -37,7 +39,7 @@ final class FrontendManifest {
 	/**
 	 * Build-relative file names; an entry is null when it is absent or not trustworthy.
 	 *
-	 * @return array{script: ?string, style: ?string, layout: ?string}
+	 * @return array{script: ?string, style: ?string, layout: ?string, masonry: ?string}
 	 */
 	public function resolve(): array {
 		if ( null !== $this->resolved ) {
@@ -46,16 +48,18 @@ final class FrontendManifest {
 		$manifest = $this->read();
 		if ( null === $manifest ) {
 			$this->resolved = array(
-				'script' => null,
-				'style'  => null,
-				'layout' => null,
+				'script'  => null,
+				'style'   => null,
+				'layout'  => null,
+				'masonry' => null,
 			);
 			return $this->resolved;
 		}
 		$this->resolved = array(
-			'script' => $this->entry_file( $manifest, self::SCRIPT_KEY, 'js' ),
-			'style'  => $this->entry_file( $manifest, self::STYLE_KEY, 'css' ),
-			'layout' => $this->entry_file( $manifest, self::LAYOUT_KEY, 'css' ),
+			'script'  => $this->entry_file( $manifest, self::SCRIPT_KEY, 'js' ),
+			'style'   => $this->entry_file( $manifest, self::STYLE_KEY, 'css' ),
+			'layout'  => $this->entry_file( $manifest, self::LAYOUT_KEY, 'css' ),
+			'masonry' => $this->entry_file( $manifest, self::MASONRY_KEY, 'js' ),
 		);
 		return $this->resolved;
 	}

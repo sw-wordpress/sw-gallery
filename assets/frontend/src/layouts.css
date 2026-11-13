@@ -1,7 +1,7 @@
 /*
- * sw-gallery layout stylesheet (grid layout, caption and pagination).
+ * sw-gallery layout stylesheet (grid, justified and masonry layouts, caption and pagination).
  *
- * Static CSS driven by custom properties; no layout JavaScript. Every selector starts with `.swg-`, only logical
+ * Static CSS driven by custom properties; no layout JavaScript (masonry packs with an optional script, see masonry.ts). Every selector starts with `.swg-`, only logical
  * properties are used (RTL), and the colours inherit from the theme so light and dark themes work unchanged.
  *
  * Breakpoints (min-width, one definition, mirrored by GridLayout::BREAKPOINT_WIDTHS in PHP):
@@ -10,15 +10,17 @@
  *
  * Public custom properties (set on `.swg-gallery`, an ancestor or `:root`; fallbacks in brackets):
  *   --swg-columns, --swg-columns-sm|md|lg|xl  columns per breakpoint (3), emitted by the layout
- *   --swg-gap                                 grid gap (8px), emitted by the layout
- *   --swg-aspect                              thumbnail aspect ratio, emitted by the layout only when not "auto"
+ *   --swg-gap                                 gap between items (8px), emitted by the layout
+ *   --swg-row-height, --swg-row-height-sm|md|lg|xl  justified: target row height (220px), emitted by the layout
+ *   --swg-ar                                  justified: width/height ratio of one item, emitted per item by the layout
+ *   --swg-aspect                              thumbnail aspect ratio, emitted inline by the layout only when not "auto"
  *   --swg-radius                              corner radius of thumbnails and pagination (4px)
  *   --swg-caption-color                       caption colour (inherit)
  *   --swg-caption-size                        caption font size (0.875em)
  *   --swg-focus-ring                          focus outline shorthand (3px solid Highlight)
  *   --swg-hover-transform                     hover/focus transform of the thumbnail (scale(1.03))
  *   --swg-pagination-gap                      gap between pagination items (0.25rem)
- * Properties named --swg-col-<n> are internal and may change.
+ * Properties named --swg-col-<n> and --swg-rh-<n> are internal and may change.
  */
 
 .swg-gallery {
@@ -39,7 +41,8 @@
   box-sizing: inherit;
 }
 
-.swg-layout-grid > .swg-items {
+.swg-layout-grid > .swg-items,
+.swg-layout-masonry > .swg-items {
   display: grid;
   grid-template-columns: repeat(var(--swg-col-0), minmax(0, 1fr));
   gap: var(--swg-gap, 8px);
@@ -49,27 +52,101 @@
 }
 
 @media (min-width: 576px) {
-  .swg-layout-grid > .swg-items {
+  .swg-layout-grid > .swg-items,
+  .swg-layout-masonry > .swg-items {
     grid-template-columns: repeat(var(--swg-col-1), minmax(0, 1fr));
+  }
+
+  .swg-layout-justified {
+    --swg-rh: var(--swg-rh-1);
   }
 }
 
 @media (min-width: 768px) {
-  .swg-layout-grid > .swg-items {
+  .swg-layout-grid > .swg-items,
+  .swg-layout-masonry > .swg-items {
     grid-template-columns: repeat(var(--swg-col-2), minmax(0, 1fr));
+  }
+
+  .swg-layout-justified {
+    --swg-rh: var(--swg-rh-2);
   }
 }
 
 @media (min-width: 1024px) {
-  .swg-layout-grid > .swg-items {
+  .swg-layout-grid > .swg-items,
+  .swg-layout-masonry > .swg-items {
     grid-template-columns: repeat(var(--swg-col-3), minmax(0, 1fr));
+  }
+
+  .swg-layout-justified {
+    --swg-rh: var(--swg-rh-3);
   }
 }
 
 @media (min-width: 1280px) {
-  .swg-layout-grid > .swg-items {
+  .swg-layout-grid > .swg-items,
+  .swg-layout-masonry > .swg-items {
     grid-template-columns: repeat(var(--swg-col-4), minmax(0, 1fr));
   }
+
+  .swg-layout-justified {
+    --swg-rh: var(--swg-rh-4);
+  }
+}
+
+/*
+ * Masonry: a plain grid without JavaScript (natural heights, items at the start). masonry.ts adds the class
+ * `swg-masonry-active` and per item `grid-row-end: span N` on 1px rows; the DOM order never changes.
+ */
+.swg-layout-masonry > .swg-items {
+  align-items: start;
+}
+
+.swg-masonry-active > .swg-items {
+  grid-auto-rows: 1px;
+  row-gap: 0;
+}
+
+/*
+ * Justified: flex rows, no JavaScript. Per item basis = ratio * row height and grow proportional to the ratio, so
+ * the free space of a row is shared by ratio and every item of a row ends up with the same height. The zero-width
+ * filler with a huge grow keeps the last row at its natural size (a negative margin cancels its gap); `lastRow:
+ * justify` drops it. The image keeps width/height attributes and an aspect-ratio (no layout shift).
+ */
+.swg-layout-justified {
+  --swg-rh-0: var(--swg-row-height, 220px);
+  --swg-rh-1: var(--swg-row-height-sm, var(--swg-rh-0));
+  --swg-rh-2: var(--swg-row-height-md, var(--swg-rh-1));
+  --swg-rh-3: var(--swg-row-height-lg, var(--swg-rh-2));
+  --swg-rh-4: var(--swg-row-height-xl, var(--swg-rh-3));
+  --swg-rh: var(--swg-rh-0);
+}
+
+.swg-layout-justified > .swg-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--swg-gap, 8px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swg-layout-justified:not(.swg-last-justify) > .swg-items::after {
+  content: '';
+  flex: 1000000 1 0;
+  margin-inline-start: calc(-1 * var(--swg-gap, 8px));
+}
+
+.swg-layout-justified .swg-item {
+  flex-grow: calc(var(--swg-ar, 1.5) * 100);
+  flex-shrink: 1;
+  flex-basis: calc(var(--swg-ar, 1.5) * var(--swg-rh));
+}
+
+.swg-gallery.swg-layout-justified .swg-link img {
+  aspect-ratio: var(--swg-ar, 1.5);
 }
 
 .swg-gallery .swg-item {
@@ -95,10 +172,17 @@
   inline-size: 100%;
   block-size: auto;
   max-inline-size: 100%;
-  aspect-ratio: var(--swg-aspect, auto);
   object-fit: cover;
   margin: 0;
   border-radius: 0;
+}
+
+/*
+ * No author `aspect-ratio` unless the layout asked for a fixed one: even `auto` would override the ratio the browser
+ * derives from the width/height attributes, which is what prevents layout shift before an image has loaded.
+ */
+.swg-gallery[style*='--swg-aspect'] .swg-link img {
+  aspect-ratio: var(--swg-aspect);
 }
 
 .swg-gallery .swg-link:focus-visible {

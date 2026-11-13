@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>sw-gallery masonry fixture</title>
+        <!-- Needs the script: run `npx vite --open /frontend/fixtures/masonry.html` in assets (dev server transpiles masonry.ts). Without it the page is a plain grid. Review: resize (re-packs), Tab order = DOM order (links #i1, #i2, ...), dir="rtl", colour scheme. -->
+        <link rel="stylesheet" href="../src/layouts.css" />
+        <style>
+            :root {
+                color-scheme: light dark;
+            }
+            body {
+                font-family: system-ui, sans-serif;
+                margin: 1rem auto;
+                max-width: 64rem;
+                padding: 0 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Masonry (1 / 2 / 3 columns, gap 12px, with captions)</h1>
+        <div
+            class="swg-gallery swg-layout-masonry"
+            data-swg-gallery
+            style="--swg-columns: 1; --swg-columns-sm: 2; --swg-columns-md: 3; --swg-gap: 12px"
+        >
+            <ul class="swg-items" role="list">
+                <li class="swg-item">
+                    <a class="swg-link" href="#i1"
+                        ><img
+                            alt="Image 1"
+                            width="300"
+                            height="200"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='300' height='200' fill='%23c0392b'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='50' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3E1 300x200%3C/text%3E%3C/svg%3E"
+                    /></a>
+                    <p class="swg-caption">Caption 1</p>
+                </li>
+                <li class="swg-item">
+                    <a class="swg-link" href="#i2"
+                        ><img
+                            alt="Image 2"
+                            width="200"
+                            height="300"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300'%3E%3Crect width='200' height='300' fill='%2327ae60'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='50' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3E2 200x300%3C/text%3E%3C/svg%3E"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a class="swg-link" href="#i3"
+                        ><img
+                            alt="Image 3"
+                            width="400"
+                            height="200"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Crect width='400' height='200' fill='%232980b9'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='50' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3E3 400x200%3C/text%3E%3C/svg%3E"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a class="swg-link" href="#i4"
+                        ><img
+                            alt="Image 4"
+                            width="300"
+                            height="300"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect width='300' height='300' fill='%238e44ad'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='75' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3E4 300x300%3C/text%3E%3C/svg%3E"
+                    /></a>
+                    <p class="swg-caption">Caption 4</p>
+                </li>
+                <li class="swg-item">
+                    <a class="swg-link" href="#i5"
+                        ><img
+                            alt="Image 5"
+                            width="600"
+                            height="200"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='200'%3E%3Crect width='600' height='200' fill='%23d35400'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='50' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3E5 600x200%3C/text%3E%3C/svg%3E"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a class="swg-link" href="#i6"
+                        ><img
+                            alt="Image 6"
+                            width="240"
+                            height="320"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='320'%3E%3Crect width='240' height='320' fill='%2316a085'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='60' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3E6 240x320%3C/text%3E%3C/svg%3E"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a class="swg-link" href="#i7"
+                        ><img
+                            alt="Image 7"
+                            width="320"
+                            height="240"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='240'%3E%3Crect width='320' height='240' fill='%237f8c8d'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='60' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3E7 320x240%3C/text%3E%3C/svg%3E"
+                    /></a>
+                    <p class="swg-caption">Caption 7</p>
+                </li>
+                <li class="swg-item">
+                    <a class="swg-link" href="#i8"
+                        ><img
+                            alt="Image 8"
+                            width="200"
+                            height="200"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='200' height='200' fill='%23f39c12'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='50' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3E8 200x200%3C/text%3E%3C/svg%3E"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a class="swg-link" href="#i9"
+                        ><img
+                            alt="Image 9"
+                            width="500"
+                            height="250"
+                            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='250'%3E%3Crect width='500' height='250' fill='%232c3e50'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='62' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif'%3E9 500x250%3C/text%3E%3C/svg%3E"
+                    /></a>
+                </li>
+            </ul>
+        </div>
+        <script type="module" src="../src/masonry.ts"></script>
+    </body>
+</html>
