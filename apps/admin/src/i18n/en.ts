@@ -1,7 +1,9 @@
 import editor from './editor.en';
+import media from './media.en';
 
 export default {
   editor,
+  media,
   app: {
     title: 'Gallery Management',
     brand: 'Gallery',

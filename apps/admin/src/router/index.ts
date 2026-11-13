@@ -15,7 +15,14 @@ export interface NavItem {
 export const NAV_ITEMS: readonly NavItem[] = [
   { name: 'overview', to: '/', icon: 'r_space_dashboard', labelKey: 'nav.overview' },
   { name: 'galleries', to: '/galleries', icon: 'r_photo_library', labelKey: 'nav.galleries' },
-  { name: 'media', to: '/media', icon: 'r_perm_media', labelKey: 'nav.media' },
+  {
+    name: 'media',
+    to: '/media',
+    icon: 'r_perm_media',
+    labelKey: 'nav.media',
+    // `GET /media` needs `upload_files`: contributors (D11) have no Media Overview.
+    capability: 'upload_files',
+  },
   {
     name: 'settings',
     to: '/settings',
@@ -35,6 +42,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
 /** Sections that are implemented; every other one stays an honest placeholder. */
 const VIEWS: Record<string, RouteRecordRaw['component']> = {
   galleries: () => import('@/features/galleries/GalleriesView.vue'),
+  media: () => import('@/features/media/MediaView.vue'),
 };
 
 const routes: RouteRecordRaw[] = [

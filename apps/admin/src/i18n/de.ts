@@ -1,8 +1,10 @@
 import type en from './en';
 import editor from './editor.de';
+import media from './media.de';
 
 const de: typeof en = {
   editor,
+  media,
   app: {
     title: 'Galerieverwaltung',
     brand: 'Galerie',

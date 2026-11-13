@@ -10,6 +10,8 @@ import { EDITOR_API } from '../../src/features/editor/injection';
 import type { EditorApi } from '../../src/features/editor/injection';
 import { GALLERIES_API } from '../../src/features/galleries/injection';
 import type { GalleriesApi } from '../../src/api/galleries';
+import { MEDIA_API } from '../../src/features/media/injection';
+import type { MediaFeatureApi } from '../../src/features/media/injection';
 import { createAppRouter } from '../../src/router';
 
 export const ALL_CAPS = ['edit_posts', 'edit_others_posts', 'upload_files', 'manage_options'];
@@ -51,6 +53,7 @@ export interface MountOptions {
   timezone?: string;
   galleriesApi?: GalleriesApi;
   editorApi?: EditorApi;
+  mediaApi?: MediaFeatureApi;
 }
 
 /** Default for tests that do not care about the list: the server has no galleries. */
@@ -79,6 +82,7 @@ export async function mountApp(options: MountOptions = {}) {
     timezone = 'UTC',
     galleriesApi = emptyGalleriesApi(),
     editorApi,
+    mediaApi,
   } = options;
   setBootstrap(capabilities, version, locale, timezone);
   const root = document.createElement('div');
@@ -100,6 +104,7 @@ export async function mountApp(options: MountOptions = {}) {
       provide: {
         [GALLERIES_API as symbol]: galleriesApi,
         ...(editorApi === undefined ? {} : { [EDITOR_API as symbol]: editorApi }),
+        ...(mediaApi === undefined ? {} : { [MEDIA_API as symbol]: mediaApi }),
       },
     },
   });
