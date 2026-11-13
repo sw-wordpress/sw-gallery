@@ -1,10 +1,10 @@
 // Builds every public entry (one Vite run each, see vite.config.ts) into assets/build and merges the per-run
-// manifests into one `.vite/manifest.json` (keys: lightbox/src/main.ts, style.css, frontend/src/layouts.css).
+// manifests into one `.vite/manifest.json` (keys: lightbox/src/main.ts, style.css, frontend/src/masonry.ts, frontend/src/layouts.css).
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const ENTRIES = ['lightbox', 'layouts'];
+const ENTRIES = ['lightbox', 'masonry', 'layouts'];
 const root = fileURLToPath(new URL('..', import.meta.url));
 const manifestFile = new URL('../build/.vite/manifest.json', import.meta.url);
 const vite = fileURLToPath(new URL('../node_modules/vite/bin/vite.js', import.meta.url));
