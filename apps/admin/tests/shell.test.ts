@@ -179,3 +179,16 @@ describe('app store', () => {
     expect(useAppStore().systemDark).toBe(false);
   });
 });
+
+describe('content width', () => {
+  it('drops the width cap only for routes flagged fullWidth (the gallery editor)', async () => {
+    const editor = await mountApp({ path: '/galleries/7' });
+    expect(editor.wrapper.find('#swg-main').classes()).toContain('swg-main--full');
+    editor.wrapper.unmount();
+    for (const path of ['/', '/galleries', '/media']) {
+      const other = await mountApp({ path });
+      expect(other.wrapper.find('#swg-main').classes()).not.toContain('swg-main--full');
+      other.wrapper.unmount();
+    }
+  });
+});

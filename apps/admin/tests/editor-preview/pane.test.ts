@@ -57,9 +57,13 @@ function setInput(input: HTMLInputElement | HTMLTextAreaElement, value: string):
   input.value = value;
   input.dispatchEvent(new Event('input', { bubbles: true }));
 }
-const tab = (name: string): HTMLElement | undefined =>
-  $$('[role="tab"]').find((el) => el.textContent?.trim() === name);
-const showPreview = (): Promise<void> => click(tab('Live preview'));
+const previewButton = (): HTMLButtonElement | undefined => button('Preview');
+const dialog = (): HTMLElement | null => $('.swg-pvd');
+const showPreview = (): Promise<void> => click(previewButton());
+const closePreview = async (): Promise<void> => {
+  await click(button('Close preview'));
+  await waitFor(() => expect($('.swg-pvd')).toBeNull());
+};
 const showLayoutPanel = async (): Promise<void> => {
   const radio = $$('.swg-seg input[type="radio"]').find((r) =>
     r.closest('label')?.textContent?.includes('Layout'),
@@ -74,24 +78,22 @@ const waitFor = (check: () => void): Promise<void> =>
 const srcdoc = (): string => frame()?.getAttribute('srcdoc') ?? '';
 
 describe('preview pane: opening and requests', () => {
-  it('sends nothing while the Images tab is shown and renders once the preview tab opens', async () => {
+  it('sends nothing while the dialog is closed and renders once the Preview button opens it', async () => {
     const { server } = await open();
     await new Promise((resolve) => setTimeout(resolve, 600));
     expect(server.previewRequests).toHaveLength(0);
-    expect(tab('Images')?.getAttribute('aria-selected')).toBe('true');
-    expect($('#swg-ed-view-panel-preview')?.getAttribute('style')).toContain('display: none');
+    expect(dialog()).toBeNull();
+    expect(previewButton()?.disabled).toBe(false);
 
     await showPreview();
     await waitFor(() => expect(frame()).not.toBeNull());
     expect(server.previewRequests).toEqual([
       { layout: 'grid', sortMode: 'manual', settings: {}, page: 1 },
     ]);
-    expect(tab('Live preview')?.getAttribute('aria-selected')).toBe('true');
-    expect($('#swg-ed-view-panel-preview')?.getAttribute('role')).toBe('tabpanel');
-    expect($('#swg-ed-view-panel-preview')?.getAttribute('aria-labelledby')).toBe(
-      'swg-ed-view-tab-preview',
-    );
     expect(live()).toContain('Preview updated. Page 1 of 1.');
+    // The images grid keeps the whole main column: no tabs, no side-by-side pane.
+    expect($$('[role="tab"]')).toHaveLength(0);
+    expect($$('[role="listbox"]')).toHaveLength(1);
   });
 
   it('shows the markup only inside a sandboxed srcdoc iframe, never in the admin DOM', async () => {
@@ -147,14 +149,19 @@ describe('preview pane: opening and requests', () => {
     expect($('.swg-pv')?.textContent).toContain('The frontend styles are not available');
   });
 
-  it('does not preview a gallery the user cannot edit and sends no request', async () => {
+  it('disables the Preview button with a reason for a gallery the user cannot edit', async () => {
     const server = new FakeServer(2, { canEdit: false, canPublish: false });
     await open(server);
-    await showPreview();
+    const btn = previewButton() as HTMLButtonElement;
+    expect(btn.disabled).toBe(true);
+    const reason = 'You are not allowed to edit this gallery, so there is no preview.';
+    expect(btn.closest('.swg-ed__previewwrap')?.getAttribute('title')).toBe(reason);
+    const describedBy = btn.getAttribute('aria-describedby') as string;
+    expect(document.getElementById(describedBy)?.textContent).toBe(reason);
+    await click(btn);
     await new Promise((resolve) => setTimeout(resolve, 600));
+    expect(dialog()).toBeNull();
     expect(server.previewRequests).toHaveLength(0);
-    expect($('.swg-pv')?.textContent).toContain('allowed to edit this gallery');
-    expect(frame()).toBeNull();
   });
 });
 
@@ -189,16 +196,17 @@ describe('preview pane: staging interplay', () => {
     const { server } = await open();
     await showPreview();
     await waitFor(() => expect(server.previewRequests).toHaveLength(1));
-    await click(tab('Images'));
+    await closePreview();
     await click($$('[role="option"]')[1]);
     await click($('.swg-ed__remove'));
     await click(button('Remove image'));
-    await click(tab('Live preview'));
+    await showPreview();
+    await waitFor(() => expect(server.previewRequests).toHaveLength(2));
     expect($('.swg-pv__unsaved-items')?.textContent).toContain(
       'saved image order, selection and texts',
     );
     await new Promise((resolve) => setTimeout(resolve, 1200));
-    expect(server.previewRequests).toHaveLength(1);
+    expect(server.previewRequests).toHaveLength(2);
   });
 
   it('re-renders after a successful save and after images were added', async () => {
@@ -322,7 +330,7 @@ describe('preview pane: controls', () => {
     await post({ origin: 'null', data: good });
     expect(height()).toBe('777px');
     await post({ origin: 'null', data: { ...good, height: 90000 } });
-    expect(height()).toBe('2000px');
+    expect(height()).toBe('20000px');
     await post({ origin: 'null', data: { ...good, height: 10 } });
     expect(height()).toBe('480px');
   });
@@ -448,90 +456,123 @@ describe('preview pane: diagnostics, empty and errors', () => {
   });
 });
 
-describe('preview pane: layout, tabs and language', () => {
-  it('tabs: arrow keys switch, focus stays on the tab, Home/End and wrap-around work', async () => {
+describe('preview dialog', () => {
+  it('is a modal dialog with an accessible name, header, hint and close button', async () => {
     await open();
-    const images = tab('Images') as HTMLElement;
-    const preview = tab('Live preview') as HTMLElement;
-    expect(images.getAttribute('tabindex')).toBe('0');
-    expect(preview.getAttribute('tabindex')).toBe('-1');
-    images.focus();
-    images.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-    await settle();
-    expect(preview.getAttribute('aria-selected')).toBe('true');
-    expect(document.activeElement).toBe(preview);
-    preview.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-    await settle();
-    expect(images.getAttribute('aria-selected')).toBe('true');
-    images.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
-    await settle();
-    expect(preview.getAttribute('aria-selected')).toBe('true');
-    preview.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
-    await settle();
-    expect(images.getAttribute('aria-selected')).toBe('true');
-    images.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
-    await settle();
-    expect(preview.getAttribute('aria-selected')).toBe('true');
-    preview.dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
-    await settle();
-    expect(preview.getAttribute('aria-selected')).toBe('true');
+    await showPreview();
+    await waitFor(() => expect(frame()).not.toBeNull());
+    const el = dialog() as HTMLElement;
+    const root = el.closest('[role="dialog"]') as HTMLElement;
+    expect(root.getAttribute('aria-modal')).toBe('true');
+    const name = document.getElementById(root.getAttribute('aria-labelledby') as string);
+    expect(name?.textContent).toBe('Live preview');
+    expect(el.textContent).toContain('Shows your unsaved settings. Close the preview to change');
+    expect(button('Close preview')).toBeDefined();
+    expect($$('.swg-pv__bar')).toHaveLength(1);
   });
 
-  it('tabs mirror the arrow keys in right-to-left documents', async () => {
-    document.documentElement.setAttribute('dir', 'rtl');
-    try {
-      await open();
-      const images = tab('Images') as HTMLElement;
-      images.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
-      await settle();
-      expect(tab('Live preview')?.getAttribute('aria-selected')).toBe('true');
-    } finally {
-      document.documentElement.removeAttribute('dir');
-    }
+  it('closes with the close button, cancels its request and returns focus to the Preview button', async () => {
+    const server = new FakeServer();
+    let aborted = false;
+    server.previewHandler = (_request, signal) =>
+      new Promise((_resolve, reject) => {
+        signal?.addEventListener('abort', () => {
+          aborted = true;
+          reject(new ApiError('swg_aborted', 'aborted', 0));
+        });
+      });
+    await open(server);
+    await showPreview();
+    await waitFor(() => expect(server.previewRequests).toHaveLength(1));
+    await closePreview();
+    expect(aborted).toBe(true);
+    await waitFor(() => expect(document.activeElement).toBe(previewButton()));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    expect(server.previewRequests).toHaveLength(1);
   });
 
-  it('shows both panes side by side on wide screens, without tabs, and previews right away', async () => {
+  it('closes with Escape', async () => {
+    const { server } = await open();
+    await showPreview();
+    await waitFor(() => expect(frame()).not.toBeNull());
+    const esc = { key: 'Escape', keyCode: 27, bubbles: true };
+    window.dispatchEvent(new KeyboardEvent('keydown', esc));
+    window.dispatchEvent(new KeyboardEvent('keyup', esc));
+    await waitFor(() => expect($('.swg-pvd')).toBeNull());
+    await waitFor(() => expect(document.activeElement).toBe(previewButton()));
+    expect(server.previewRequests).toHaveLength(1);
+  });
+
+  it('builds a fresh frame and request per opening and keeps width and page size', async () => {
+    const { server } = await open();
+    await showPreview();
+    await waitFor(() => expect(frame()).not.toBeNull());
+    const first = frame();
+    const radio = $$('.swg-pv .swg-seg input[type="radio"]').find((r) =>
+      r.closest('label')?.textContent?.includes('Tablet'),
+    ) as HTMLInputElement;
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change', { bubbles: true }));
+    const select = $('.swg-pv__perpage select') as HTMLSelectElement;
+    select.value = '12';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+    await waitFor(() => expect(server.previewRequests).toHaveLength(2));
+    await closePreview();
+    await showPreview();
+    await waitFor(() => expect(server.previewRequests).toHaveLength(3));
+    await waitFor(() => expect(frame()).not.toBeNull());
+    expect(frame()).not.toBe(first);
+    expect(server.previewRequests[2]).toMatchObject({ perPage: 12, page: 1 });
+    expect($('.swg-pv__device')?.getAttribute('style')).toContain('inline-size: 768px');
+  });
+
+  it('shows staged settings that were changed before opening, without saving them', async () => {
+    const { server } = await open();
+    await showLayoutPanel();
+    setInput(columnsInput(), '5');
+    await settle();
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    expect(server.previewRequests).toHaveLength(0);
+    await showPreview();
+    await waitFor(() => expect(server.previewRequests).toHaveLength(1));
+    expect(server.previewRequests[0]?.settings).toEqual({ columns: 5 });
+    expect($('.swg-pv__unsaved-settings')).not.toBeNull();
+    expect(server.calls).not.toContain('details');
+  });
+
+  it('leaves the staged edits alone when Ctrl+Z is pressed behind the open dialog', async () => {
+    await open();
+    await showLayoutPanel();
+    setInput(columnsInput(), '5');
+    await settle();
+    await showPreview();
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+    await settle();
+    expect($('.swg-pv__unsaved-settings')).not.toBeNull();
+  });
+
+  it('opens without animation when reduced motion is requested', async () => {
     vi.stubGlobal('matchMedia', (query: string) => ({
-      matches: query.includes('min-width'),
+      matches: query.includes('prefers-reduced-motion'),
       media: query,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     }));
-    const { server } = await open();
-    expect($$('[role="tab"]')).toHaveLength(0);
-    expect($('.swg-ed__main')?.classList.contains('is-wide')).toBe(true);
-    expect($('#swg-ed-view-panel-preview')?.getAttribute('role')).toBeNull();
-    expect($('.swg-ed__previewtitle')?.textContent).toBe('Live preview');
-    await waitFor(() => expect(frame()).not.toBeNull());
-    expect(server.previewRequests).toHaveLength(1);
-    expect($$('[role="listbox"]')).toHaveLength(1);
-  });
-
-  it('reacts to the viewport becoming wide', async () => {
-    let listener: ((event: MediaQueryListEvent) => void) | null = null;
-    vi.stubGlobal('matchMedia', (query: string) => ({
-      matches: false,
-      media: query,
-      addEventListener: (_type: string, fn: (event: MediaQueryListEvent) => void) => {
-        if (query.includes('min-width')) listener = fn;
-      },
-      removeEventListener: vi.fn(),
-    }));
     await open();
-    expect($$('[role="tab"]')).toHaveLength(2);
-    (listener as unknown as (event: MediaQueryListEvent) => void)({
-      matches: true,
-    } as MediaQueryListEvent);
-    await settle();
-    expect($$('[role="tab"]')).toHaveLength(0);
+    await showPreview();
+    await waitFor(() => expect(frame()).not.toBeNull());
+    expect(dialog()).not.toBeNull();
   });
 
   it('is fully translated (German)', async () => {
     await open(new FakeServer(), { locale: 'de_DE' });
-    const german = $$('[role="tab"]').map((el) => el.textContent?.trim());
-    expect(german).toEqual(['Bilder', 'Live-Vorschau']);
-    await click(tab('Live-Vorschau'));
+    expect(previewButton()).toBeUndefined();
+    await click(button('Vorschau'));
     await waitFor(() => expect(frame()).not.toBeNull());
+    expect($('.swg-pvd')?.textContent).toContain('Live-Vorschau');
+    expect($('.swg-pvd')?.textContent).toContain('Schließen Sie die Vorschau');
+    expect(button('Vorschau schließen')).toBeDefined();
     expect($('.swg-pv__width')?.textContent).toContain('Vorschaubreite');
     expect($('.swg-pv__pagetext')?.textContent).toBe('Seite 1 von 1 · 4 Bilder');
     expect(frame()?.getAttribute('title')).toBe(
