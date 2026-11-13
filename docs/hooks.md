@@ -9,6 +9,19 @@ Failure policy per CODE-STYLE §9. Every public action/filter (`swg_*`) is an ob
 * Core (`packages/core`) exposes its own event dispatcher; only the WordPress adapter bridges it to `swg_*` hooks.
 * Document each hook in this file: name, when, payload, may-veto. Hooks listed in SPECIFICATION §7 (layout/provider/panel registries) follow the same rules.
 
+## Index of all public hooks
+Everything not listed here is internal. Compatibility rules: `docs/extending.md`. All hooks are `@since 1.0.0` (first public release).
+
+| Hook | Type | Fired | Arguments | May veto | Failure policy |
+|---|---|---|---|---|---|
+| `swg_<event>` (10 events, below) | action | after commit | `array $payload` (ids/scalars) | no | throwing callback caught, logged, ignored |
+| `swg_before_gallery_trashing`, `swg_before_gallery_deleting` | filter | before any change | `true`, `array $payload` | yes (`false` / `WP_Error`) | throwing callback logged, does **not** veto (fails open) |
+| `swg_gallery_changed` | action | after every persisted gallery change, incl. attachment deletion/cover cleared/repair | `int $gallery_id` | no | caught, logged, ignored |
+| `swg_register_layouts` | action | once per request after `plugins_loaded`, built-ins registered | `LayoutRegistryInterface $registry`, `int $api_version` | no (a rejected layout is logged) | caught, logged; remaining callbacks of the hook skipped |
+| `swg_register_import_providers` | action | once per request after `plugins_loaded` | `ImportProviderRegistryInterface $registry` | no (a rejected provider is logged) | caught, logged; remaining callbacks skipped |
+
+No render-argument filter and no admin side-panel hook exist in 1.0 (reasons: `docs/extending.md`, "Not implemented in 1.0"). Log codes (`swg_listener_failed`, `swg_layout_rejected`, `swg_layout_failed`, `swg_import_provider_rejected`) carry only the hook/event name, class names and exception classes, never messages, paths or values.
+
 ## Core events
 Names are the core event names; the adapter bridges them as `swg_<name>` (bridge: `Infrastructure/EventBridge`, see the end of this file). Payloads are IDs and scalars only.
 Listener failures are logged with code `swg_listener_failed` (event name and exception class only, never the message) and ignored.
@@ -46,10 +59,18 @@ add_action( 'swg_items_assigned', static function ( array $payload ): void {
 ```
 
 ## `swg_gallery_changed` (cache purge)
-`do_action( 'swg_gallery_changed', int $gallery_id )` fires after every persisted gallery change (`gallery_created|updated|trashed|restored|deleted|duplicated`, `items_assigned|removed|reordered`, `item_updated`), once per change, after the revision was saved; vetoable `before_*` events never fire it. Use it to purge page caches/CDN for pages embedding the gallery. Payload: the gallery id only; no veto. A throwing callback is caught, logged as `swg_listener_failed` (event, hook, exception class) and ignored. Attachment edits do not fire it (they change the media epoch of the fragment cache, see `docs/rendering.md`).
+`do_action( 'swg_gallery_changed', int $gallery_id )` fires after every persisted gallery change, once per change and gallery, after the revision was saved; vetoable `before_*` events never fire it. Sources (never two for one change):
+
+* the core events `gallery_created|updated|trashed|restored|deleted|duplicated`, `items_assigned|removed|reordered`, `item_updated`;
+* `RevisionBump`: an attachment was deleted (once per gallery that used it or had it as cover; relations and cover are cleaned first), and `wp swg repair --apply` cleared a dangling cover (once per fixed gallery). A dry run fires nothing.
+
+Use it to purge page caches/CDN for pages embedding the gallery. Payload: the gallery id only; no veto. A throwing callback is caught, logged as `swg_listener_failed` (event, hook, exception class) and ignored. Plain attachment edits (alt text, regenerated sub-sizes) do not fire it (they change the media epoch of the fragment cache, see `docs/rendering.md`). Not covered: orphan relation rows removed by repair (no visible change: unusable attachments are skipped when rendering).
 
 ```php
 add_action( 'swg_gallery_changed', static function ( int $gallery_id ): void {
 	my_cache_purge_gallery( $gallery_id );
 } );
 ```
+
+## Registration actions
+`swg_register_layouts( LayoutRegistryInterface $registry, int $api_version )` and `swg_register_import_providers( ImportProviderRegistryInterface $registry )` fire **once per request** the first time the registry is used after `plugins_loaded` (the registry instance is the same before and after, a callback that reads it does not recurse). The registry passed to callbacks is guarded: `register()` never throws; a contract violation (invalid id, empty schema, throwing `getId()`), a duplicate id or an invalid provider id is rejected and logged (`swg_layout_rejected`, `swg_import_provider_rejected`: class names only). A throwing callback is logged as `swg_listener_failed` (`hook`, `exception`), what was registered before it stays, later callbacks of that hook are skipped. Contracts and examples: `docs/extending.md`.
