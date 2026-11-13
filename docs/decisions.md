@@ -124,3 +124,18 @@ Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und
 | Settings forward compatibility | Unknown keys from newer versions are preserved on save and ignored when rendering. |
 | Logging | Structured events go to `error_log` when `WP_DEBUG_LOG` is on, plus a bounded ring buffer (last 50 errors, non-autoloaded option) shown on System Status. |
 | Browser support | One shared `browserslist` (last 2 versions of evergreen browsers, Safari ≥ 16) for admin and frontend builds. |
+
+## Wave 5 decisions
+
+| Topic | Decision |
+|---|---|
+| Layout contract | `GalleryLayoutInterface::API_VERSION = 1`, passed as 2nd argument of `swg_register_layouts`; registration validates the id pattern and a non-empty schema; a duplicate never replaces a built-in. |
+| Third-party code | Registries handed to listeners are guarded (reject + log, never throw). A layout failing in schema merge, `imageHints()` or `render()` falls back to `grid` (`swg_layout_failed`, editor-only diagnostic `layout_failed`). No render-argument filter in 1.0 (it would bypass `EmbedArguments`). |
+| Shortcode wrapper | `<div class="swg-shortcode is-layout-constrained">`: the gallery follows the content column of block themes, inert in classic themes; the one documented difference between surfaces. |
+| Media Library | Count in details/column (one grouped query), links only to galleries the user may edit; confirm script only on `upload.php` and the attachment screen. FU-02/D11: the import provider lists every readable image. |
+| `swg_gallery_changed` | Also fired from `RevisionBump` (attachment deletion, cover cleared, repair of covers), once per affected gallery. |
+| Masonry / justified | Masonry = grid + CSS row spans measured per item, DOM order untouched, fallback plain grid; justified = ratio-driven flex rows with zero-width filler, CSS only. Extra assets via `LayoutAssetsProviderInterface`. No author `aspect-ratio` unless a fixed aspect is set. |
+| Admin pages | Media nav capability `upload_files`; add-to-gallery re-reads the revision and `canEdit` first; Settings typed confirmation word (EN `DELETE`, DE `LÖSCHEN`); Status summary is fixed English from API fields only; Overview totals from `X-WP-Total`. |
+| Live preview | Sandboxed `srcdoc` iframe, strict CSP with nonce, exact asset allowlist, token-checked height messages; re-render on staged layout/sort/settings and on revision change only; staged order/removals are not previewed (stated in the UI). Debounce 400 ms, min. 800 ms between requests. |
+| Admin shell | App shell is `div role="region"` (WordPress owns `main`); fragile chunking: the shell must not import modules shared with lazy views through the entry (`check-chunks` guards it). |
+

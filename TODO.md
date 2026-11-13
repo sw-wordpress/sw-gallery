@@ -129,29 +129,35 @@ Tooling and tests
 
 ## Follow-ups from Wave 1/2 (small tasks, do together with the next matching milestone)
 - [ ] FU-01 (deferred, not part of Wave 3a: needs a careful per-test cleanup) Test harness (`tests/wp/support/SwgTestCase.php`): `tear_down()` runs `TRUNCATE`/dbDelta (DDL = implicit COMMIT) before the parent rollback, so posts/users/attachments leak between tests. Several tests depend on today's behaviour (a plain reorder or `DELETE` breaks 9+ tests, tried): fix deliberately with a per-test cleanup, not by editing the base class blindly.
-- [ ] FU-02 `MediaLibraryProvider` uses `edit_post` per attachment (authors see only their own uploads) — stricter than D11 and than `WpGalleryAccessPolicy::canUseAttachment`. Align it with the policy or document why not (M4-08).
+- [x] FU-02 `MediaLibraryProvider` uses `edit_post` per attachment (authors see only their own uploads) — stricter than D11 and than `WpGalleryAccessPolicy::canUseAttachment`. Align it with the policy or document why not (M4-08).
 - [x] FU-03 (done 2026-11-11 in the REST layer; `publish` and `private` need the publish right) REST (M2-03): call `WpGalleryAccessPolicy::canPublish` when a request sets status `publish`; `GalleryService` has no publish check.
 - [x] FU-04 (done 2026-11-11: `Infrastructure/Services` builds all adapters and core services; `ServicesIntegrationTest` runs the full life cycle against the real database) Service wiring (M1-18, orchestrator): build `Services`-based registry — `WpGalleryRepository`, `WpdbGalleryRelations`, `WpGalleryAccessPolicy`, `WpMediaRepository`, `WpdbGalleryItemRepository(Services::transactions())`, `PostMetaRevisionStore`, `ConsistencyRepair`, core `GalleryService`/`GalleryItemService`/`GalleryItemEditService` with `Services::logger()`/`events()`.
 - [ ] FU-06 E2E: on this host ~1 in 3 page loads lose all requests (`net::ERR_NETWORK_CHANGED`, many Docker veth interfaces churning); `retries: 1` hides it (reported as flaky). Verified in a trace: WordPress's own scripts fail too, so not a plugin defect. Revisit on CI.
-- [ ] FU-07 Quasar creates two `#q-notify` containers on `<body>` (duplicate id, harmless, present since the scaffold; `Notify` is installed only once in `main.ts`) — find the cause (Quasar internals) and fix.
-- [ ] FU-08 Mobile (375 px): the five nav tabs overflow and scroll horizontally, the fifth is cut off at the edge (same as the siblings); consider a visible scroll affordance.
-- [ ] FU-09 Core `ValidationError` messages are not in the gettext catalog (REST returns them in English unless they match a catalog entry): route them through `CoreMessages` / a message map keyed by error code.
+- [x] FU-07 (not reproducible after Wave 5; regression tests added) Quasar creates two `#q-notify` containers on `<body>` (duplicate id, harmless, present since the scaffold; `Notify` is installed only once in `main.ts`) — find the cause (Quasar internals) and fix.
+- [x] FU-08 Mobile (375 px): the five nav tabs overflow and scroll horizontally, the fifth is cut off at the edge (same as the siblings); consider a visible scroll affordance.
+- [x] FU-09 Core `ValidationError` messages are not in the gettext catalog (REST returns them in English unless they match a catalog entry): route them through `CoreMessages` / a message map keyed by error code.
 - [x] FU-10 (done 2026-11-12: `canPublishNew`) `WpGalleryAccessPolicy::canPublishNew(Actor)`: creating a gallery with status `publish`/`private` is currently checked in the REST controller (`publish_posts`); move the rule into the policy so every entry point shares it.
 - [x] FU-11 (done 2026-11-12: `defaultLayout` on create, `itemsPerPage` in the renderer; `lightbox` read by the asset enqueue) `GalleryController::create` does not use the `defaultLayout` plugin setting yet (settings API exists); and the renderer does not read `itemsPerPage`/`lightbox` yet.
-- [ ] FU-12 `Rest/ItemRowReader` contains prepared SQL inside the REST layer (the repository's `findPage` omits item settings); move it into `WpdbGalleryItemRepository` as a batched read.
+- [x] FU-12 `Rest/ItemRowReader` contains prepared SQL inside the REST layer (the repository's `findPage` omits item settings); move it into `WpdbGalleryItemRepository` as a batched read.
 - [x] FU-13 (done 2026-11-12: `previewAccess`) Preview of drafts: the single access decision returns `Diagnostic` for drafts even for editors; the preview task (M3-22) needs an explicit authorised-preview rule in the policy.
 - [x] FU-14 (done 2026-11-11: `workers: 3` in `e2e/playwright.config.ts`; with ~10 workers two tests failed even after the retry, with 3 workers the whole suite passes) E2E host noise.
-- [ ] FU-15 Gallery list polish: placeholder cover tile too tall (4:3 on mobile), double focus ring in the search field, 375 px rail nav slightly wider than the viewport.
+- [x] FU-15 Gallery list polish: placeholder cover tile too tall (4:3 on mobile), double focus ring in the search field, 375 px rail nav slightly wider than the viewport.
 - [ ] FU-16 Contributors lack `upload_files`, so under D11 all of their items count as `missing`: decide whether contributors may use already-readable library images (D11 revisit).
-- [ ] FU-17 `swg_gallery_changed` fires only from core events: `RevisionBump` (attachment deleted, cover cleared, repair run) bumps revisions without an event, so full-page caches/CDNs are not purged in those cases (the object-cache fragment cache stays correct through the media epoch) — emit the action from `GalleryLifecycleRegistrar`/repair too.
+- [x] FU-17 `swg_gallery_changed` fires only from core events: `RevisionBump` (attachment deleted, cover cleared, repair run) bumps revisions without an event, so full-page caches/CDNs are not purged in those cases (the object-cache fragment cache stays correct through the media epoch) — emit the action from `GalleryLifecycleRegistrar`/repair too.
 - [ ] FU-18 Pagination arg `swg_page_<galleryId>` is shared by two embeds of the same gallery on one page (documented); the shortcode/block must omit `page` unless the embed really sets it, otherwise the URL arg never takes effect.
-- [ ] FU-19 Admin app: a lazy chunk that fails to load (flaky network) fails silently; add a router `onError` message with retry.
-- [ ] FU-20 Block editor preview is unstyled (no gallery stylesheet in the editor): load the layout stylesheet via `editorStyle`/`enqueue_block_assets`.
+- [x] FU-19 Admin app: a lazy chunk that fails to load (flaky network) fails silently; add a router `onError` message with retry.
+- [x] FU-20 Block editor preview is unstyled (no gallery stylesheet in the editor): load the layout stylesheet via `editorStyle`/`enqueue_block_assets`.
 - [ ] FU-21 Release packaging (M5-09/M5-10): the ZIP must ship `assets/blocks/block.json` and `assets/blocks/build/`, `assets/build/`, `assets/admin/`, the compiled `.mo` and the block JSON catalog; the build script must run all three npm builds.
-- [ ] FU-22 Docs: `docs/development.md` must describe the `assets/` and `assets/blocks` projects, `bin/rebuild-on-change.sh` and the `COMPOSER_PROCESS_TIMEOUT=0` need of the long WordPress suites.
-- [ ] FU-23 Shortcode output is not width-constrained by block themes (full width in Twenty Twenty-Five inside constrained post content, the block version gets alignment support): decide whether the shortcode wrapper should carry the theme's content-width class (F-23).
+- [x] FU-22 Docs: `docs/development.md` must describe the `assets/` and `assets/blocks` projects, `bin/rebuild-on-change.sh` and the `COMPOSER_PROCESS_TIMEOUT=0` need of the long WordPress suites.
+- [x] FU-23 Shortcode output is not width-constrained by block themes (full width in Twenty Twenty-Five inside constrained post content, the block version gets alignment support): decide whether the shortcode wrapper should carry the theme's content-width class (F-23).
 - [ ] FU-24 Keyboard-only reorder was not tested with a real screen reader; touch drag-and-drop is untested (keys and buttons are the alternative).
-- [ ] FU-05 Docs: `docs/development.md` must mention the `assets/` project, `bin/rebuild-on-change.sh`, `bin/watch-build.sh` and the new test commands.
+- [ ] FU-25 Link names: an image with empty alt text yields a link without accessible name (axe `link-name`, serious); renderer should fall back to the title or an `aria-label` (product decision).
+- [ ] FU-26 Admin: gallery editor `GalleryEditor.vue` still uses `<header>`/`<aside>` (moderate axe waiver `landmark-*-is-top-level` in `a11y.spec.ts`): turn into divs and delete the waiver; editor settings form shows raw enum values (`left`/`justify`) — needs enum titles in the schema renderer.
+- [ ] FU-27 Media Library: no delete warning in the grid-view media modal (needs Backbone code).
+- [ ] FU-28 Editor live preview: below 1100 px the settings panel stacks under the preview; a title-only save re-renders the preview; `diagnostics[].message` is shown untranslated; staged order/removals are not previewed (server has no staged-items input).
+- [ ] FU-29 Media Overview: uploader filter is a numeric user id (no users endpoint); justified layout breaks rows greedily (a very narrow image may stretch alone on a narrow container).
+- [ ] FU-30 Public API: `@since` tags only on the layout interface; add them to all public hooks/classes. Flaky E2E on first attempt under host load (admin-shell, theme-and-rail, justified 768) — keep watching.
+- [x] FU-05 Docs: `docs/development.md` must mention the `assets/` project, `bin/rebuild-on-change.sh`, `bin/watch-build.sh` and the new test commands.
 
 ## M2 — Management
 
@@ -190,10 +196,10 @@ Admin app (`apps/admin`, C§7)
 - [x] M2-29 Image details panel: global vs gallery-local title/alt/caption (inherit vs blank), dimensions, MIME, filesize, ID.
 - [x] M2-30 Layout/settings panel generated from `/layouts` schemas, responsive values, sort mode (D3), validation errors.
 - [x] M2-32 Conflict UX for 409: show what changed, reload or re-apply local edits; tested.
-- [ ] M2-33 Media Overview page per D6: permission-filtered attachment browser (search, server paging), "used in n galleries", only action "add to gallery" (gallery selection dialog, same bulk-assign result feedback as M2-27).
-- [ ] M2-34 Overview, Settings and System Status pages.
-- [ ] M2-38 Media Library integration: "used in n galleries" in attachment details; warning before deleting an attachment that is used in galleries (relations are still removed by M1-16).
-- [ ] M2-35 Accessibility pass of the admin app (focus, labels, contrast, reduced motion; WCAG 2.2 AA goal).
+- [x] M2-33 Media Overview page per D6: permission-filtered attachment browser (search, server paging), "used in n galleries", only action "add to gallery" (gallery selection dialog, same bulk-assign result feedback as M2-27).
+- [x] M2-34 Overview, Settings and System Status pages.
+- [x] M2-38 Media Library integration: "used in n galleries" in attachment details; warning before deleting an attachment that is used in galleries (relations are still removed by M1-16).
+- [x] M2-35 Accessibility pass of the admin app (focus, labels, contrast, reduced motion; WCAG 2.2 AA goal).
 - [x] M2-37 Admin E2E: create gallery, upload/pick, reorder (mouse + keyboard), edit overrides, save/publish, duplicate, trash/restore, role restrictions.
 
 ## M3 — Frontend
@@ -206,8 +212,8 @@ Admin app (`apps/admin`, C§7)
 - [x] M3-06 Loading strategy: first row eager/`fetchpriority`, rest lazy; CLS-safe aspect ratios.
 - [x] M3-07 View layer `resources/views` with contextual escaping; captions restricted by a `wp_kses` policy; simplified markup for feeds, excerpts and REST `content.rendered` (no CSS/JS dependency).
 - [x] M3-08 (grid layout, CSS, aspect setting, theming contract; done in Waves 3a/4) Layout `grid` (CSS grid, responsive columns/spacing, logical properties for RTL, documented CSS custom properties and `swg-` classes as public theming contract).
-- [ ] M3-09 Layout `masonry` per D10 (row-ordered markup, grid-like without JS, JS column packing keeps DOM order).
-- [ ] M3-10 Layout `justified` (CSS-only via aspect-ratio flex rows, works without JS).
+- [x] M3-09 Layout `masonry` per D10 (row-ordered markup, grid-like without JS, JS column packing keeps DOM order).
+- [x] M3-10 Layout `justified` (CSS-only via aspect-ratio flex rows, works without JS).
 - [x] M3-11 Frontend pagination per D5: link-based, per-instance query arg, several galleries per page independent, bounded page size, no JS.
 - [x] M3-12 Unknown layout → `grid` + diagnostic visible to editors only.
 - [x] M3-13 Fragment cache: key = gallery revision + settings hash + visibility context + media epoch; only `publish` output cached (D4); works with and without persistent object cache.
@@ -218,9 +224,9 @@ Admin app (`apps/admin`, C§7)
 - [x] M3-18 Vitest for `assets/*` TypeScript; JS/TS coverage gate and Sonar include these sources (merged with `apps/admin`, still > 80 %).
 - [ ] M3-19 (labels come from `data-swg-labels` incl. the optional `error` key — the PHP views must emit them) Lightbox/frontend strings server-localized (en/de).
 - [x] M3-22 `POST /galleries/{id}/preview` (authorized, accepts unsaved settings, same renderer, never cached). (Was M2-12, moved per F-03.)
-- [ ] M3-23 (open: the preview route and its response with asset URLs exist; the iframe live preview in the editor is not built yet) Editor live preview in the Vue app (sandboxed, frontend CSS, debounced) using M3-22. (Was M2-31, moved per F-03.)
+- [x] M3-23 Editor live preview in the Vue app (sandboxed, frontend CSS, debounced) using M3-22. (Was M2-31, moved per F-03.)
 - [ ] M3-20 Renderer tests: snapshot per layout, large gallery fixture (query-count budget), missing attachments, stale cache, multiple instances, feed context.
-- [ ] M3-21 Frontend E2E + axe: render, paging, lightbox keyboard/focus/touch, JS disabled, editor live preview.
+- [x] M3-21 Frontend E2E + axe: render, paging, lightbox keyboard/focus/touch, JS disabled, editor live preview.
 
 ## M4 — WordPress surfaces
 
@@ -230,15 +236,15 @@ Admin app (`apps/admin`, C§7)
 - [x] M4-04 Block editor glue in `assets/blocks` (minimal TS, WordPress components as externals): gallery selector, server-rendered preview, deep link to the Vue editor; versioned assets.
 - [x] M4-05 Block tests: Vitest for glue (counts towards the JS gate), PHP test that block, shortcode and PHP API produce identical output and respect visibility.
 - [x] M4-06 Block i18n via `wp_set_script_translations()` (JSON catalogs generated by `bin/i18n.sh`).
-- [ ] M4-07 Layout registration extension point (`swg_register_layouts`), versioned contract, example in docs.
-- [ ] M4-08 Import provider registration extension point (contract only, Media Library provider registered through it).
-- [ ] M4-09 Public actions/filters for gallery/item lifecycle and render arguments, each with failure policy in `docs/hooks.md`.
-- [ ] M4-10 Listener isolation tests (throwing listener, vetoing `before_*` filter, read-only payloads).
-- [ ] M4-11 Optional integrations (sw-image-optimizer, sw-slider, sw-forms, sw-backupit, sw-cloudcalendar): verify no hard dependency; implement only where a concrete contract exists, otherwise document as not implemented.
-- [ ] M4-12 Per D7: document in `docs/extending.md` that an admin side-panel registry is not implemented in 1.0 (planned R1.1-07); no placeholder API.
+- [x] M4-07 Layout registration extension point (`swg_register_layouts`), versioned contract, example in docs.
+- [x] M4-08 Import provider registration extension point (contract only, Media Library provider registered through it).
+- [x] M4-09 Public actions/filters for gallery/item lifecycle and render arguments, each with failure policy in `docs/hooks.md`.
+- [x] M4-10 Listener isolation tests (throwing listener, vetoing `before_*` filter, read-only payloads).
+- [x] M4-11 Optional integrations (sw-image-optimizer, sw-slider, sw-forms, sw-backupit, sw-cloudcalendar): verify no hard dependency; implement only where a concrete contract exists, otherwise document as not implemented.
+- [x] M4-12 Per D7: document in `docs/extending.md` that an admin side-panel registry is not implemented in 1.0 (planned R1.1-07); no placeholder API.
 - [x] M4-15 Admin bar "Edit gallery" entry on frontend pages rendering a gallery the user may edit (deep link from M2-19).
 - [x] M4-13 Gutenberg E2E: insert block, select gallery, preview, publish, frontend render; shortcode in classic content.
-- [ ] M4-14 `docs/extending.md` (layouts, providers, hooks, PHP API, theming contract) incl. compatibility policy for public contracts (semver meaning, deprecation period, `@since`) — short, links instead of duplication.
+- [x] M4-14 `docs/extending.md` (layouts, providers, hooks, PHP API, theming contract) incl. compatibility policy for public contracts (semver meaning, deprecation period, `@since`) — short, links instead of duplication.
 
 ## M5 — Hardening / release
 

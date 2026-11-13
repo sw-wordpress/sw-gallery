@@ -69,3 +69,11 @@
 - Found and fixed by review and E2E: lazy chunks evaluated the admin entry twice (`?ver=` vs relative imports), Prettier scanning the generated admin output in `assets/`, the preview renderer using an outdated constructor after the cache change, a precedence contradiction between shortcode `page` and the request argument.
 - `SurfacesTest` (identical output and visibility on all surfaces, collector hand-off) and `frontend.spec.ts` (published post with shortcode and block in a real browser: grid, versioned CSS/JS, lightbox, no-JS links, link pagination, draft invisible, admin bar).
 - State: 1041 WordPress tests (single + multisite), 248 unit tests, merged PHP coverage 97.2 %; admin app 263 tests / 95.6 %, frontend assets 76 / 100 %, block 31 / 99.3 %; 93 E2E tests.
+
+## 2026-11-13 — Wave 5 (G1, G2, H, I)
+- G1 admin pages: Media Overview (grid/table, search/sort/paging with URL sync, usage counts, upload, details sheet, "add to gallery"), Settings (typed confirmation for delete-data), System Status (no paths, copyable summary), Overview; a11y pass with axe sweep over every route (light/dark), mobile nav, chunk-load error with retry; FU-07 not reproducible (regression tests).
+- G2 editor live preview: sandboxed `srcdoc` iframe (`sandbox="allow-scripts"`, CSP, nonce, validated same-origin assets, validated height messages), debounced staged settings, viewport switcher, paging, diagnostics, error states.
+- H layouts `justified` (CSS only) and `masonry` (grid + 740 B script, DOM order untouched); fixed a grid CSS bug that overrode the width/height ratio (layout shift); `LayoutAssetsProviderInterface`.
+- I extension points `swg_register_layouts` (API v1) and `swg_register_import_providers` with guarded registries, containment of failing layouts (grid fallback + `layout_failed` diagnostic), `swg_gallery_changed` completeness, Media Library column/field/delete warning, validation messages translated, item SQL moved into the repository, `docs/extending.md`, `docs/integrations.md`, `docs/development.md`.
+- Merge: three conflicts only in docs/languages; two tests assumed `grid` as the only built-in (fixed); Media Library script got a Vitest and a lint scope.
+

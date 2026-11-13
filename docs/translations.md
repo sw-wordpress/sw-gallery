@@ -7,7 +7,7 @@ Regional WordPress locales (de_AT, de_CH, de_DE_formal, …) use the shipped lan
 |---|---|---|
 | PHP (REST messages, notices, shortcode/block output, WP-CLI) | gettext, text domain `sw-gallery`, loaded from `languages/` | `languages/sw-gallery.pot`, `sw-gallery-<locale>.po/.mo` |
 | Messages of the framework independent core | literal `__()` calls in a generated `Support/CoreMessages.php` (reaches the .pot), translated at presentation time | same catalogs |
-| Admin UI (Vue/Quasar) | vue-i18n catalogs bundled in the build, language follows the WordPress user locale (Quasar labels too) | `apps/admin/src/i18n/{en,de}.ts` |
+| Admin UI (Vue/Quasar) | vue-i18n catalogs bundled in the build, language follows the WordPress user locale (Quasar labels too) | `apps/admin/src/i18n/{en,de}.ts` plus per-feature catalogs (`editor`, `media`, `settings`, `status`, `overview`) |
 | Gutenberg block (JS + `block.json`) | `__( '…', 'sw-gallery' )` from `@wordpress/i18n` with the **literal** text domain; `wp_set_script_translations()`; JSON catalog per locale | `languages/sw-gallery-<locale>-<md5>.json` (md5 of `assets/blocks/build/index.js`) |
 | Frontend lightbox strings | passed by the server renderer (`data-swg-labels`) | PHP catalogs |
 
