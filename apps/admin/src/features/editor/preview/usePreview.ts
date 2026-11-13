@@ -32,10 +32,12 @@ export interface PreviewState {
 export interface PreviewOptions {
   api: PreviewApi;
   galleryId: number;
-  /** False while the pane is hidden, the editor is loading or the gallery is not editable: no requests. */
+  /** False while the dialog is closed, the editor is loading or the gallery is not editable: no requests. */
   active: () => boolean;
   /** Staged layout/sort/settings; `null` while loading. */
   state: () => PreviewState | null;
+  /** Page size to start with (kept by the dialog while the editor stays mounted); `null` = site setting. */
+  initialPerPage?: number | null;
   /** Changes whenever the SAVED gallery changed (successful save, images added): forces a re-render. */
   reloadKey: () => unknown;
   /** 422/400: the caller maps the field errors (existing `invalidFields` mechanism). */
@@ -72,7 +74,7 @@ export function usePreview(options: PreviewOptions) {
   const loading = ref(false);
   const page = ref(1);
   /** Preview-only page size (1..200); `null` = the site setting (not sent). */
-  const perPage = ref<number | null>(null);
+  const perPage = ref<number | null>(options.initialPerPage ?? null);
   /** Bumps with every successful render; the view recreates the iframe per value. */
   const renderId = ref(0);
 

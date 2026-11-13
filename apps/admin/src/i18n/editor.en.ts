@@ -25,6 +25,7 @@ export default {
     save: 'Save',
     publish: 'Publish',
     add: 'Add images',
+    preview: 'Preview',
   },
   status: {
     saved: 'All changes saved',
@@ -299,7 +300,14 @@ export default {
   },
   preview: {
     title: 'Live preview',
-    tabs: { label: 'Editor view', images: 'Images', preview: 'Live preview' },
+    dialog: {
+      hint: 'Shows your unsaved settings. Close the preview to change settings.',
+      close: 'Close preview',
+    },
+    disabled: {
+      loading: 'The preview is available once the gallery has loaded.',
+      notEditable: 'You are not allowed to edit this gallery, so there is no preview.',
+    },
     frameTitle: 'Preview of the gallery as it appears on the website',
     viewport: {
       legend: 'Preview width',

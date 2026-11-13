@@ -29,6 +29,7 @@ const editor: Shape<typeof editorEn> = {
     save: 'Speichern',
     publish: 'Veröffentlichen',
     add: 'Bilder hinzufügen',
+    preview: 'Vorschau',
   },
   status: {
     saved: 'Alle Änderungen gespeichert',
@@ -311,7 +312,14 @@ const editor: Shape<typeof editorEn> = {
   },
   preview: {
     title: 'Live-Vorschau',
-    tabs: { label: 'Editor-Ansicht', images: 'Bilder', preview: 'Live-Vorschau' },
+    dialog: {
+      hint: 'Zeigt Ihre ungespeicherten Einstellungen. Schließen Sie die Vorschau, um Einstellungen zu ändern.',
+      close: 'Vorschau schließen',
+    },
+    disabled: {
+      loading: 'Die Vorschau ist verfügbar, sobald die Galerie geladen ist.',
+      notEditable: 'Sie dürfen diese Galerie nicht bearbeiten, daher gibt es keine Vorschau.',
+    },
     frameTitle: 'Vorschau der Galerie, wie sie auf der Website erscheint',
     viewport: {
       legend: 'Vorschaubreite',
