@@ -26,7 +26,8 @@ const VIEWPORT_WIDTH: Record<Viewport, number | null> = {
 };
 /** Preview-only page sizes; the empty value keeps the site setting (nothing is sent). */
 const PER_PAGE_CHOICES = [6, 12, 24, 48, 100];
-const MIN_FRAME_HEIGHT = 240;
+/** Room for the lightbox, which is fixed inside the frame, even when the gallery itself is short. */
+const MIN_FRAME_HEIGHT = 480;
 const MAX_FRAME_HEIGHT = 2000;
 /** At most one announcement in this window; the latest message wins. */
 const ANNOUNCE_INTERVAL_MS = 3000;
@@ -444,6 +445,11 @@ watch(preview.error, (error) => {
   color: var(--swg-danger-text);
   font-size: 14px;
 }
+.swg-pv__retry {
+  flex: none;
+  white-space: nowrap;
+  margin-inline-start: auto;
+}
 .swg-pv__diag {
   padding: 8px 12px;
   border: 1px solid var(--swg-border);
@@ -481,7 +487,8 @@ watch(preview.error, (error) => {
   margin-inline: auto;
   max-inline-size: 100%;
   overflow: hidden;
-  border: 1px solid var(--swg-border);
+  /* A ring instead of a border: the frame is exactly as wide as the chosen viewport. */
+  box-shadow: 0 0 0 1px var(--swg-border);
   border-radius: var(--swg-radius-sm);
   background: var(--swg-surface);
 }

@@ -318,13 +318,13 @@ describe('preview pane: controls', () => {
     await post({ origin: 'null', data: { ...good, swgPreview: 'nope' } });
     await post({ origin: 'null', data: good, source: window });
     await post({ origin: 'null', data: { ...good, height: -5 } });
-    expect(height()).toBe('240px');
+    expect(height()).toBe('480px');
     await post({ origin: 'null', data: good });
     expect(height()).toBe('777px');
     await post({ origin: 'null', data: { ...good, height: 90000 } });
     expect(height()).toBe('2000px');
     await post({ origin: 'null', data: { ...good, height: 10 } });
-    expect(height()).toBe('240px');
+    expect(height()).toBe('480px');
   });
 
   it('follows the dark theme by rebuilding the document without a new request', async () => {

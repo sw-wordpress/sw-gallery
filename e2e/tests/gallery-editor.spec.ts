@@ -211,7 +211,10 @@ async function openFirstDetails(page: Page): Promise<void> {
 }
 
 async function showLayoutPanel(page: Page): Promise<void> {
-  await root(page).locator('.swg-seg').getByText('Layout & settings', { exact: true }).click();
+  await root(page)
+    .locator('.swg-ed__side .swg-seg')
+    .getByText('Layout & settings', { exact: true })
+    .click();
   await expect(root(page).locator('.swg-lsp')).toBeVisible();
 }
 
@@ -664,7 +667,10 @@ test.describe('accessibility and screenshots', () => {
 
     await showLayoutPanel(page);
     expect(await axe(page, '#swg-admin-root'), 'settings, light').toEqual([]);
-    await root(page).locator('.swg-seg').getByText('Details', { exact: true }).click();
+    await root(page)
+      .locator('.swg-ed__side .swg-seg')
+      .getByText('Details', { exact: true })
+      .click();
 
     await openFirstDetails(page);
     expect(await axe(page, '.q-dialog', true), 'details sheet, light').toEqual([]);

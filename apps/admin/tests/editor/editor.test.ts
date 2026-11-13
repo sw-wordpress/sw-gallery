@@ -504,7 +504,7 @@ describe('gallery details', () => {
 
 describe('layout and settings', () => {
   const panelToggle = async (): Promise<void> => {
-    const radio = $$('.swg-seg input[type="radio"]')[1] as HTMLInputElement;
+    const radio = $$('.swg-ed__side .swg-seg input[type="radio"]')[1] as HTMLInputElement;
     radio.checked = true;
     radio.dispatchEvent(new Event('change', { bubbles: true }));
     await settle();
