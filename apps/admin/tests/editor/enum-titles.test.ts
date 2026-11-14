@@ -27,7 +27,8 @@ describe('x-enum-titles (FU-26)', () => {
     expect(optionLabel(plain!, 'a')).toBe('a');
     expect(optionLabel(plain!, 'toString')).toBe('toString'); // no prototype lookups
     expect(
-      fieldsOf({ properties: { x: { enum: [1], 'x-enum-titles': ['no'] } } })[0]?.optionTitles,
+      fieldsOf({ properties: { x: { enum: [1], 'x-enum-titles': ['no'] as never } } })[0]
+        ?.optionTitles,
     ).toEqual({});
   });
 

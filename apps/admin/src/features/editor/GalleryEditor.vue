@@ -29,6 +29,7 @@ import ConflictDialog from './components/ConflictDialog.vue';
 import GalleryDetailsPanel from './components/GalleryDetailsPanel.vue';
 import ImageDetailsSheet from './components/ImageDetailsSheet.vue';
 import ItemsGrid from './components/ItemsGrid.vue';
+import TileSizeControl from './components/TileSizeControl.vue';
 import LayoutSettingsPanel from './components/LayoutSettingsPanel.vue';
 import UploadPanel from './components/UploadPanel.vue';
 import { useEditorApi } from './injection';
@@ -679,6 +680,7 @@ const reportAlert = computed(() => {
                     {{ t('editor.images.unavailableCount', { count: missingCount }, missingCount) }}
                   </template>
                 </span>
+                <TileSizeControl v-if="itemCount > 0" />
               </div>
 
               <UploadPanel

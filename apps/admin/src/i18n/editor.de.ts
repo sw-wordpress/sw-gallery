@@ -123,6 +123,16 @@ const editor: Shape<typeof editorEn> = {
     isCover: 'Titelbild',
     edited: 'ungespeicherte Textänderungen',
   },
+  tileSize: {
+    label: 'Vorschaugröße',
+    short: 'Größe',
+    small: 'Kleine Vorschaubilder',
+    medium: 'Mittlere Vorschaubilder',
+    large: 'Große Vorschaubilder',
+    smallSet: 'Kleine Vorschaubilder',
+    mediumSet: 'Mittlere Vorschaubilder',
+    largeSet: 'Große Vorschaubilder',
+  },
   images: {
     region: 'Galeriebilder',
     unavailableCount: '{count} nicht verfügbar',

@@ -6,7 +6,7 @@ import { uid } from '@/utils/ids';
 import type { MoveMode } from '../reorder';
 import type { ItemSelection } from '../useItemSelection';
 import type { EditorSession, ItemView } from '../useGalleryEditor';
-import { computeWindow, scrollTopForRow } from '../virtual';
+import { TILE_MIN_WIDTH, computeWindow, scrollTopForRow } from '../virtual';
 import ItemTile from './ItemTile.vue';
 
 /**
@@ -36,7 +36,6 @@ const app = useAppStore();
 const base = uid('swg-grid');
 const helpId = `${base}-help`;
 
-const MIN_TILE = 150;
 const GAP = 12;
 const LABEL_HEIGHT = 26;
 const PAD = 8;
@@ -54,7 +53,7 @@ const win = computed(() =>
     width: (width.value || 900) - PAD * 2,
     height: height.value || 600,
     scrollTop: scrollTop.value,
-    minTile: MIN_TILE,
+    minTile: TILE_MIN_WIDTH[app.tileSize],
     gap: GAP,
     labelHeight: LABEL_HEIGHT,
   }),
@@ -87,6 +86,7 @@ onBeforeUnmount(() => observer?.disconnect());
 
 function onScroll(): void {
   scrollTop.value = scroller.value?.scrollTop ?? 0;
+  rememberAnchor();
 }
 
 function ensureVisible(index: number): void {
@@ -99,6 +99,27 @@ function ensureVisible(index: number): void {
     scrollTop.value = top;
   }
 }
+
+// A new tile size changes the row length and height: the first visible tile stays at the top of the view.
+let anchorIndex = 0;
+function rememberAnchor(): void {
+  anchorIndex = Math.floor(scrollTop.value / win.value.rowHeight) * win.value.columns;
+}
+watch(
+  () => app.tileSize,
+  () => {
+    const anchor = anchorIndex;
+    void nextTick(() => {
+      const el = scroller.value;
+      if (el === null) return;
+      const top = Math.floor(anchor / win.value.columns) * win.value.rowHeight;
+      el.scrollTop = top;
+      scrollTop.value = top;
+      rememberAnchor();
+      if (focused.value) ensureVisible(props.selection.activeIndex.value);
+    });
+  },
+);
 
 // ---- view model of a tile
 function viewAt(index: number): ItemView | null {

@@ -116,6 +116,16 @@ export default {
     isCover: 'cover image',
     edited: 'unsaved text changes',
   },
+  tileSize: {
+    label: 'Thumbnail size',
+    short: 'Size',
+    small: 'Small thumbnails',
+    medium: 'Medium thumbnails',
+    large: 'Large thumbnails',
+    smallSet: 'Small thumbnails',
+    mediumSet: 'Medium thumbnails',
+    largeSet: 'Large thumbnails',
+  },
   images: {
     region: 'Gallery images',
     unavailableCount: '{count} unavailable',
