@@ -1,0 +1,167 @@
+/*
+ * Carousel (film strip, layout `carousel`): a native scroll-snap strip. Works without JavaScript (swipe, scroll, arrow
+ * keys on the focusable viewport); carousel.ts only adds previous/next buttons and a position text.
+ *
+ * Public custom properties: --swg-carousel-height[-sm|md|lg|xl] (slide height, 320px), --swg-gap, --swg-thumb-radius,
+ * --swg-carousel-button-bg / --swg-carousel-button-fg (buttons over the images), --swg-focus-ring.
+ */
+
+.swg-layout-carousel {
+  --swg-ch-0: var(--swg-carousel-height, 320px);
+  --swg-ch-1: var(--swg-carousel-height-sm, var(--swg-ch-0));
+  --swg-ch-2: var(--swg-carousel-height-md, var(--swg-ch-1));
+  --swg-ch-3: var(--swg-carousel-height-lg, var(--swg-ch-2));
+  --swg-ch-4: var(--swg-carousel-height-xl, var(--swg-ch-3));
+  --swg-ch: var(--swg-ch-0);
+
+  container-type: inline-size;
+}
+
+@media (min-width: 576px) {
+  .swg-layout-carousel {
+    --swg-ch: var(--swg-ch-1);
+  }
+}
+
+@media (min-width: 768px) {
+  .swg-layout-carousel {
+    --swg-ch: var(--swg-ch-2);
+  }
+}
+
+@media (min-width: 1024px) {
+  .swg-layout-carousel {
+    --swg-ch: var(--swg-ch-3);
+  }
+}
+
+@media (min-width: 1280px) {
+  .swg-layout-carousel {
+    --swg-ch: var(--swg-ch-4);
+  }
+}
+
+.swg-carousel__frame {
+  position: relative;
+}
+
+/* The padding leaves room for the focus ring and the hover scale; a thin scrollbar stays as the scroll affordance. */
+.swg-carousel__viewport {
+  overflow: auto hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 4px;
+  scrollbar-width: thin;
+  padding: 4px;
+}
+
+.swg-carousel__viewport:focus-visible {
+  outline: var(--swg-focus-ring, 3px solid Highlight);
+  outline-offset: 0;
+}
+
+.swg-layout-carousel > .swg-carousel__frame > .swg-carousel__viewport > .swg-items {
+  display: flex;
+  gap: var(--swg-gap, 8px);
+  inline-size: max-content;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swg-layout-carousel .swg-item {
+  flex: 0 0 auto;
+  inline-size: calc(var(--swg-ch) * var(--swg-ar, 1.5));
+  max-inline-size: calc(100cqi - 8px);
+  scroll-snap-align: start;
+}
+
+.swg-layout-carousel.swg-snap-center .swg-item {
+  scroll-snap-align: center;
+}
+
+.swg-gallery.swg-layout-carousel .swg-link img {
+  block-size: var(--swg-ch);
+  inline-size: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .swg-carousel__viewport {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Added by carousel.ts. aria-disabled (not disabled) keeps the focus on a button that reaches the end. */
+.swg-carousel__btn {
+  position: absolute;
+  inset-block-start: 50%;
+  display: grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgb(0 0 0 / 0.25);
+  border-radius: 50%;
+  background: var(--swg-carousel-button-bg, rgb(255 255 255 / 0.92));
+  color: var(--swg-carousel-button-fg, #1d2327);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.3);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.swg-carousel__prev {
+  inset-inline-start: 0.5rem;
+}
+
+.swg-carousel__next {
+  inset-inline-end: 0.5rem;
+}
+
+.swg-carousel__btn::before {
+  content: '';
+  inline-size: 0.7rem;
+  block-size: 0.7rem;
+  border-block-start: 3px solid currentcolor;
+  border-inline-start: 3px solid currentcolor;
+  transform: translateX(0.12rem) rotate(-45deg);
+}
+
+.swg-carousel__next::before {
+  transform: translateX(-0.12rem) rotate(135deg);
+}
+
+/* RTL: the inline-start border is the right one, so the corner points up-right and the rotations differ. */
+.swg-carousel__prev:dir(rtl)::before {
+  transform: translateX(-0.12rem) rotate(45deg);
+}
+
+.swg-carousel__next:dir(rtl)::before {
+  transform: translateX(0.12rem) rotate(-135deg);
+}
+
+.swg-carousel__btn:hover {
+  background: var(--swg-carousel-button-bg, #fff);
+}
+
+.swg-carousel__btn:focus-visible {
+  outline: var(--swg-focus-ring, 3px solid Highlight);
+  outline-offset: 2px;
+}
+
+.swg-carousel__btn[aria-disabled='true'] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.swg-no-buttons .swg-carousel__btn {
+  display: none;
+}
+
+.swg-carousel__status {
+  margin-block: 0.5rem 0;
+  margin-inline: 0;
+  font-size: 0.875em;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}

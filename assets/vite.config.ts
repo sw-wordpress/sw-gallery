@@ -5,12 +5,14 @@ import { defineConfig } from 'vitest/config';
  * Public frontend assets, built in two runs that scripts/build-all.mjs merges into one manifest
  * (rolldown cannot emit several IIFE entries in one build, hence one run per entry, selected by SWG_ENTRY):
  * - `lightbox`: a classic (non-module) script, an IIFE bundle without runtime dependencies, plus its stylesheet;
- * - `masonry`: the progressive-enhancement script of the masonry layout (`frontend/src/masonry.ts`), classic IIFE too;
- * - `layouts`: the CSS-only layout stylesheet (`frontend/src/layouts.css`; grid, justified, masonry), no script.
+ * - `masonry`, `carousel`, `focus`: the progressive-enhancement scripts of those layouts (`frontend/src/<name>.ts`), classic IIFE too;
+ * - `layouts`: the CSS-only layout stylesheet (`frontend/src/layouts.css`; grid, justified, masonry, carousel, focus), no script.
  */
 const entries: Record<string, string> = {
   lightbox: resolve(import.meta.dirname, 'lightbox/src/main.ts'),
   masonry: resolve(import.meta.dirname, 'frontend/src/masonry.ts'),
+  carousel: resolve(import.meta.dirname, 'frontend/src/carousel.ts'),
+  focus: resolve(import.meta.dirname, 'frontend/src/focus.ts'),
   layouts: resolve(import.meta.dirname, 'frontend/src/layouts.css'),
 };
 const name = process.env.SWG_ENTRY ?? 'lightbox';

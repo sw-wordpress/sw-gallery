@@ -43,8 +43,8 @@ class RestLayoutTest extends SwgTestCase {
 		$data     = $this->data( $response );
 
 		$this->assertSame( 'grid', $data['fallbackId'] );
-		$this->assertSame( array( 'grid', 'justified', 'masonry' ), array_column( $data['layouts'], 'id' ) );
-		$grid = $data['layouts'][0];
+		$this->assertSame( array( 'carousel', 'grid', 'justified', 'masonry' ), array_column( $data['layouts'], 'id' ) );
+		$grid = array_column( $data['layouts'], null, 'id' )['grid'];
 		$this->assertSame( array( 'id', 'label', 'settingsSchema' ), array_keys( $grid ) );
 		$this->assertSame( 'grid', $grid['id'] );
 		$this->assertSame( 'Grid', $grid['label'] );
@@ -69,6 +69,17 @@ class RestLayoutTest extends SwgTestCase {
 		$this->assertTrue( $by['masonry']['settingsSchema']['properties']['columns']['x-responsive'] );
 	}
 
+	public function test_carousel_is_listed_with_their_schemas(): void {
+		$data = $this->data( $this->call( 'GET', '/layouts', array(), $this->makeUser( 'author' ) ) );
+		$by   = array_column( $data['layouts'], null, 'id' );
+
+		$this->assertSame( 'Carousel', $by['carousel']['label'] );
+		$this->assertSame( array( 'height', 'gap', 'radius', 'buttons', 'snap' ), array_keys( $by['carousel']['settingsSchema']['properties'] ) );
+		$this->assertTrue( $by['carousel']['settingsSchema']['properties']['height']['x-responsive'] );
+		$this->assertSame( 'boolean', $by['carousel']['settingsSchema']['properties']['buttons']['type'] );
+		$this->assertSame( array( 'start', 'center' ), array_keys( $by['carousel']['settingsSchema']['properties']['snap']['x-enum-titles'] ) );
+	}
+
 	public function test_extra_layouts_keep_unknown_labels_and_item_settings_keys(): void {
 		$schema = array(
 			'type'            => 'object',
@@ -82,8 +93,8 @@ class RestLayoutTest extends SwgTestCase {
 
 		$data = $this->data( $this->call( 'GET', '/layouts', array(), $this->makeUser( 'editor' ) ) );
 
-		$this->assertSame( array( 'grid', 'justified', 'masonry', 'mosaic' ), array_column( $data['layouts'], 'id' ) );
-		$masonry = $data['layouts'][3];
+		$this->assertSame( array( 'carousel', 'grid', 'justified', 'masonry', 'mosaic' ), array_column( $data['layouts'], 'id' ) );
+		$masonry = array_column( $data['layouts'], null, 'id' )['mosaic'];
 		$this->assertSame( 'Mosaic', $masonry['label'] );
 		$this->assertArrayHasKey( 'x-item-settings', $masonry['settingsSchema'] );
 		// An empty property list must stay a JSON object.
@@ -96,7 +107,7 @@ class RestLayoutTest extends SwgTestCase {
 		load_textdomain( 'sw-gallery', SWGALLERY_DIR . 'languages/sw-gallery-de_DE.mo' );
 		try {
 			$data = $this->data( $this->call( 'GET', '/layouts', array(), $this->makeUser( 'editor' ) ) );
-			$this->assertNotSame( 'Grid', $data['layouts'][0]['label'] );
+			$this->assertNotSame( 'Grid', array_column( $data['layouts'], null, 'id' )['grid']['label'] );
 		} finally {
 			unload_textdomain( 'sw-gallery' );
 			if ( $switched ) {

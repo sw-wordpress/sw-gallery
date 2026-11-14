@@ -131,6 +131,13 @@ class RenderSnapshotTest extends SwgTestCase {
 		$this->assert_snapshot( 'masonry', $this->normalise( $this->render( $fixture['gallery'] )->html, $fixture ) );
 	}
 
+	public function test_snapshot_carousel(): void {
+		$fixture = $this->fixed_gallery( 'carousel', array( 'height' => 240, 'gap' => 10 ) );
+		$result  = $this->render( $fixture['gallery'] );
+		$this->assertSame( array( RenderAsset::Lightbox, RenderAsset::Carousel ), $result->assets );
+		$this->assert_snapshot( 'carousel', $this->normalise( $result->html, $fixture ) );
+	}
+
 	public function test_snapshot_feed(): void {
 		$fixture = $this->fixed_gallery();
 		$this->assert_snapshot( 'feed', $this->normalise( $this->render( $fixture['gallery'], 0, EntryPoint::Feed )->html, $fixture ) );
