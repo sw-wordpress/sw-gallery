@@ -22,6 +22,13 @@ final class AdminRegistrar implements RegistrarInterface {
 	public const CAPABILITY     = 'edit_posts';
 	public const ASSET_HANDLE   = 'swg-admin';
 	public const MOUNT_ID       = 'swg-admin-root';
+
+	/**
+	 * Hash route of the gallery editor (`sprintf` pattern with the gallery id). Contract with the app's router
+	 * (`/galleries/:id(\d+)`, apps/admin/src/router) and with assets/blocks `editGalleryUrl`; a Vitest test pins both.
+	 */
+	public const EDITOR_ROUTE = '#/galleries/%d';
+	private const JSON_FLAGS    = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
 	private const HINT_CAPS     = array( 'edit_posts', 'edit_others_posts', 'delete_others_posts', 'upload_files', 'manage_options' );
 	private const MENU_POSITION = 26;
 
@@ -113,6 +120,23 @@ final class AdminRegistrar implements RegistrarInterface {
 	}
 
 	/**
+	 * URL of the editor for one gallery: the single builder for the admin bar, the Media Library column and tests.
+	 *
+	 * @param int $gallery_id Gallery id.
+	 */
+	public static function editor_url( int $gallery_id ): string {
+		return admin_url( 'admin.php?page=' . self::PAGE_SLUG . sprintf( self::EDITOR_ROUTE, $gallery_id ) );
+	}
+
+	/**
+	 * The bootstrap as the inline script payload. The hex flags keep `<`, `>`, `&` and quotes out of the HTML
+	 * (a value can never close the script element or an attribute).
+	 */
+	public function bootstrap_json(): string {
+		return (string) wp_json_encode( $this->bootstrap(), self::JSON_FLAGS );
+	}
+
+	/**
 	 * Data handed to the app. Contains no secret besides the per-user REST nonce, which the app keeps in memory.
 	 *
 	 * @return array<string, mixed>
@@ -132,6 +156,9 @@ final class AdminRegistrar implements RegistrarInterface {
 			),
 			'isRtl'        => is_rtl(),
 			'timezone'     => wp_timezone_string(),
+			'ajaxUrl'      => esc_url_raw( admin_url( 'admin-ajax.php' ) ),
+			'loginUrl'     => esc_url_raw( wp_login_url( admin_url( 'admin.php?page=' . self::PAGE_SLUG ) ) ),
+			'assetsUrl'    => esc_url_raw( $this->assets_url . '/' ),
 		);
 	}
 

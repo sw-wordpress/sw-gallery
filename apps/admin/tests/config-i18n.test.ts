@@ -92,22 +92,41 @@ describe('bootstrap config', () => {
   });
 
   it('applies safe defaults for optional members', () => {
-    const config = normaliseConfig({ restRoot: 'https://x.test/r/' });
+    const config = normaliseConfig({ restRoot: 'https://x.test/r/', nonce: 'n' });
     expect(config).toEqual({
       restRoot: 'https://x.test/r/',
-      nonce: '',
+      nonce: 'n',
       locale: 'en_US',
       version: '',
       adminUrl: '',
       capabilities: [],
       isRtl: false,
       timezone: '',
+      ajaxUrl: '',
+      loginUrl: '',
+      assetsUrl: '',
     });
   });
 
-  it('throws without a REST root', () => {
-    expect(() => normaliseConfig(undefined)).toThrow('restRoot');
-    expect(() => normaliseConfig({ restRoot: '' })).toThrow('restRoot');
+  it('keeps web URLs and drops anything else (javascript:, junk) for the optional URLs', () => {
+    const config = normaliseConfig({
+      restRoot: 'https://x.test/r/',
+      nonce: 'n',
+      ajaxUrl: 'https://x.test/wp-admin/admin-ajax.php',
+      loginUrl: 'javascript:alert(1)',
+      assetsUrl: 'http://[bad',
+    });
+    expect(config.ajaxUrl).toBe('https://x.test/wp-admin/admin-ajax.php');
+    expect(config.loginUrl).toBe('');
+    expect(config.assetsUrl).toBe('');
+  });
+
+  it('throws without a usable REST root or nonce', () => {
+    expect(() => normaliseConfig(undefined)).toThrow('window.swgAdmin');
+    expect(() => normaliseConfig({ restRoot: '', nonce: 'n' })).toThrow('restRoot');
+    expect(() => normaliseConfig({ restRoot: 'javascript:1', nonce: 'n' })).toThrow('restRoot');
+    expect(() => normaliseConfig({ restRoot: 'https://x.test/r/' })).toThrow('nonce');
+    expect(() => normaliseConfig({ restRoot: 'https://x.test/r/', nonce: '' })).toThrow('nonce');
   });
 
   it('reads window.swgAdmin once and builds the shared API client from it', async () => {
@@ -140,7 +159,7 @@ describe('errorMessage', () => {
     );
     expect(errorMessage(new ApiError('c', 'm', 400), t)).toBe('errors.validation');
     expect(errorMessage(new ApiError('c', 'm', 403), t)).toBe('errors.forbidden');
-    expect(errorMessage(new ApiError('c', 'm', 401), t)).toBe('errors.forbidden');
+    expect(errorMessage(new ApiError('c', 'm', 401), t)).toBe('errors.sessionExpired');
     expect(errorMessage(new ApiError('c', 'm', 404), t)).toBe('errors.notFound');
     expect(errorMessage(new ConflictError('c', 'm'), t)).toBe('errors.conflict');
     expect(errorMessage(new ApiError('c', 'm', 500), t)).toBe('errors.server');

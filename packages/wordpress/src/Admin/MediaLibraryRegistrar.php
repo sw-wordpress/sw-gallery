@@ -178,7 +178,7 @@ final class MediaLibraryRegistrar implements RegistrarInterface {
 			$title   = '' === $gallery->post_title ? __( '(no title)', 'sw-gallery' ) : $gallery->post_title;
 			$links[] = sprintf(
 				'<a href="%s">%s</a>',
-				esc_url( admin_url( 'admin.php?page=' . AdminRegistrar::PAGE_SLUG . '#/galleries/' . $gallery_id ) ),
+				esc_url( AdminRegistrar::editor_url( $gallery_id ) ),
 				esc_html( $title )
 			);
 			if ( count( $links ) >= self::MAX_LISTED ) {

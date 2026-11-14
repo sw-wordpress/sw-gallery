@@ -58,7 +58,7 @@ final class AdminBar {
 				array(
 					'id'    => 'swg-edit-gallery-' . $id,
 					'title' => esc_html( $label ),
-					'href'  => admin_url( 'admin.php?page=' . AdminRegistrar::PAGE_SLUG . '#/galleries/' . $id ),
+					'href'  => AdminRegistrar::editor_url( $id ),
 				)
 			);
 		}

@@ -48,6 +48,8 @@ export const useAppStore = defineStore('app', () => {
   const mediaView = ref<GalleryView>(readStorage(MEDIA_VIEW_KEY) === 'table' ? 'table' : 'grid');
   /** Text for the polite live region. */
   const announcement = ref('');
+  /** The login session is gone (HTTP 401): the shell shows a banner, the views stay mounted with their unsaved state. */
+  const sessionExpired = ref(false);
 
   const isDark = computed(() =>
     themePreference.value === 'system' ? systemDark.value : themePreference.value === 'dark',
@@ -75,6 +77,9 @@ export const useAppStore = defineStore('app', () => {
     mediaView.value = value;
     writeStorage(MEDIA_VIEW_KEY, value === 'table' ? 'table' : null);
   }
+  function setSessionExpired(value: boolean): void {
+    sessionExpired.value = value;
+  }
   function announce(message: string): void {
     // Reset first so an identical message is announced again.
     announcement.value = '';
@@ -89,6 +94,8 @@ export const useAppStore = defineStore('app', () => {
     isDark,
     railCollapsed,
     announcement,
+    sessionExpired,
+    setSessionExpired,
     galleryView,
     setGalleryView,
     mediaView,

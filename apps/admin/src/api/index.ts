@@ -1,5 +1,7 @@
 import { getConfig } from '@/config';
+import { useAppStore } from '@/stores/app';
 import { ApiClient } from './client';
+import { createNonceRefresher } from './session';
 
 export * from './client';
 export { errorMessage, invalidFields } from './errorMessage';
@@ -7,6 +9,7 @@ export * from './galleries';
 export * from './items';
 export * from './layouts';
 export * from './media';
+export * from './session';
 export * from './settings';
 export * from './status';
 
@@ -16,7 +19,12 @@ let client: ApiClient | null = null;
 export function getApi(): ApiClient {
   if (client === null) {
     const config = getConfig();
-    client = new ApiClient({ restRoot: config.restRoot, nonce: config.nonce });
+    client = new ApiClient({
+      restRoot: config.restRoot,
+      nonce: config.nonce,
+      refreshNonce: config.ajaxUrl === '' ? undefined : createNonceRefresher(config.ajaxUrl),
+      onSessionExpired: () => useAppStore().setSessionExpired(true),
+    });
   }
   return client;
 }

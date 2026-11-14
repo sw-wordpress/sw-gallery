@@ -20,6 +20,12 @@ export interface SwgAdminBootstrap {
   isRtl?: boolean;
   /** WordPress timezone (`wp_timezone_string()`, IANA name or `+02:00`). Optional. */
   timezone?: string;
+  /** `admin-ajax.php` URL, used for the `rest-nonce` refresh. Optional: without it only Heartbeat refreshes the nonce. */
+  ajaxUrl?: string;
+  /** `wp_login_url()` with a redirect back to this page, for the "session expired" state. Optional. */
+  loginUrl?: string;
+  /** Public URL of the build directory (trailing slash). Optional. */
+  assetsUrl?: string;
 }
 
 /** Normalised, validated form used by the app. */
@@ -32,4 +38,7 @@ export interface SwgConfig {
   capabilities: string[];
   isRtl: boolean;
   timezone: string;
+  ajaxUrl: string;
+  loginUrl: string;
+  assetsUrl: string;
 }

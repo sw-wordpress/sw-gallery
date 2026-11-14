@@ -190,7 +190,32 @@ class AdminPageTest extends SwgTestCase {
 		$this->assertContains( 'edit_posts', $data['capabilities'] );
 		$this->assertContains( 'upload_files', $data['capabilities'] );
 		$this->assertNotContains( 'manage_options', $data['capabilities'] );
-		$this->assertSame( array( 'restRoot', 'nonce', 'locale', 'version', 'adminUrl', 'capabilities', 'isRtl', 'timezone' ), array_keys( $data ) );
+		$this->assertSame( array( 'restRoot', 'nonce', 'locale', 'version', 'adminUrl', 'capabilities', 'isRtl', 'timezone', 'ajaxUrl', 'loginUrl', 'assetsUrl' ), array_keys( $data ) );
+		$this->assertSame( admin_url( 'admin-ajax.php' ), $data['ajaxUrl'] );
+		$this->assertStringStartsWith( wp_login_url(), $data['loginUrl'] );
+		$this->assertStringContainsString( 'redirect_to=', $data['loginUrl'] );
+		$this->assertSame( 'https://example.test/build/', $data['assetsUrl'] );
+	}
+
+	public function test_the_bootstrap_json_is_hex_escaped_and_holds_no_secret_besides_the_nonce(): void {
+		$registrar = $this->registrar();
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+		$hostile = static fn (): string => 'https://example.test/wp-login.php?a=1&b=</script><b>\'"';
+		add_filter( 'login_url', $hostile );
+		$json = $registrar->bootstrap_json();
+		remove_filter( 'login_url', $hostile );
+
+		$this->assertDoesNotMatchRegularExpression( '/[<>&\']/', $json );
+		$this->assertStringNotContainsString( '</script', strtolower( $json ) );
+		$data = json_decode( $json, true );
+		$this->assertIsArray( $data );
+		// Only the REST nonce is secret-like: no cookies, salts, keys or password material.
+		$this->assertDoesNotMatchRegularExpression( '/AUTH_KEY|SECURE_AUTH|LOGGED_IN_|password|salt|cookie/i', $json );
+	}
+
+	public function test_the_editor_url_builder_matches_the_documented_route_format(): void {
+		$this->assertSame( '#/galleries/%d', AdminRegistrar::EDITOR_ROUTE );
+		$this->assertSame( admin_url( 'admin.php?page=swg-galleries#/galleries/42' ), AdminRegistrar::editor_url( 42 ) );
 	}
 
 	public function test_an_author_does_not_get_capabilities_of_an_editor(): void {
