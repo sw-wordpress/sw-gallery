@@ -59,17 +59,18 @@ Breakpoints (min-width): sm 576 px, md 768 px, lg 1024 px, xl 1280 px; the image
 
 Public custom properties (set them on `.swg-gallery`, an ancestor or `:root`):
 
-| Property                                                 | Default                          | Set by                                            |
-| -------------------------------------------------------- | -------------------------------- | ------------------------------------------------- |
-| `--swg-columns`, `--swg-columns-sm`, `-md`, `-lg`, `-xl` | 3, each inherits the smaller one | layout (`columns` setting)                        |
-| `--swg-gap`                                              | 8px                              | layout (`gap` setting)                            |
-| `--swg-aspect`                                           | `auto` (natural ratio)           | layout (`aspect` setting, not emitted for `auto`) |
-| `--swg-radius`                                           | 4px                              | theme                                             |
-| `--swg-thumb-radius`                                     | `--swg-radius`                   | layout (`radius` setting of masonry, default 0)   |
-| `--swg-caption-color`, `--swg-caption-size`              | inherit, 0.875em                 | theme                                             |
-| `--swg-focus-ring`                                       | 3px solid Highlight              | theme                                             |
-| `--swg-hover-transform`                                  | scale(1.03)                      | theme                                             |
-| `--swg-pagination-gap`                                   | 0.25rem                          | theme                                             |
+| Property                                                              | Default                          | Set by                                                                                                 |
+| --------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `--swg-columns`, `--swg-columns-sm`, `-md`, `-lg`, `-xl`              | 3, each inherits the smaller one | layout (`columns` setting)                                                                             |
+| `--swg-gap`                                                           | 8px                              | layout (`gap` setting)                                                                                 |
+| `--swg-aspect`                                                        | `auto` (natural ratio)           | layout (`aspect` setting, not emitted for `auto`)                                                      |
+| `--swg-radius`                                                        | 4px                              | theme                                                                                                  |
+| `--swg-thumb-radius`                                                  | `--swg-radius`                   | layout (`radius` setting of masonry, default 0)                                                        |
+| `--swg-{n,m,w}-{x,y,w,h}`, `--swg-{n,m,w}-ar`, `--swg-fx`, `--swg-fy` | 0, 0, 100, 100, ratios, 50%      | mosaic layout: plan rectangles per item and container variant (percent), container ratios, focal point |
+| `--swg-caption-color`, `--swg-caption-size`                           | inherit, 0.875em                 | theme                                                                                                  |
+| `--swg-focus-ring`                                                    | 3px solid Highlight              | theme                                                                                                  |
+| `--swg-hover-transform`                                               | scale(1.03)                      | theme                                                                                                  |
+| `--swg-pagination-gap`                                                | 0.25rem                          | theme                                                                                                  |
 
 `--swg-col-<n>` are internal. Pagination classes: `.swg-pagination`, `__list`, `__item`, `__link`, `__current`, `__disabled`, `__gap`, `__status`.
 

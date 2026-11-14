@@ -24,6 +24,8 @@
  * Properties named --swg-col-<n> and --swg-rh-<n> are internal and may change.
  */
 
+@import './mosaic.css';
+
 .swg-gallery {
   --swg-col-0: var(--swg-columns, 3);
   --swg-col-1: var(--swg-columns-sm, var(--swg-col-0));

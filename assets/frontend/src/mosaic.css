@@ -1,0 +1,103 @@
+/*
+ * Mosaic (treemap, L-02): the PHP view writes one rectangle per item and container variant as custom properties
+ * (percent of the container: --swg-{n|m|w}-{x|y|w|h}) and the container ratios (--swg-{n|m|w}-ar, width/height);
+ * the layout is pure CSS. Variants follow the CONTAINER width (container query), not the viewport:
+ *   < 480px  plain 2 column grid (also the default for browsers without container queries)
+ *   >= 480px n (4:5)   >= 720px m (1:1)   >= 1024px w (16:10 or the `ratio` setting)
+ * The list is widened by the gap and pulled back with a negative margin, every tile is padded by half the gap, so the
+ * outer edges are flush and the gutter between tiles is exactly --swg-gap. Inset properties are logical: RTL mirrors
+ * the arrangement. --swg-fx/--swg-fy (focal point) become object-position. Captions stay in the lightbox (plan mode).
+ */
+.swg-gallery.swg-layout-mosaic {
+  container: swg-mosaic / inline-size;
+}
+
+.swg-gallery.swg-layout-mosaic > .swg-items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--swg-gap, 6px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swg-gallery.swg-layout-mosaic .swg-link img {
+  aspect-ratio: 1;
+  object-position: var(--swg-fx, 50%) var(--swg-fy, 50%);
+}
+
+@container swg-mosaic (min-width: 480px) {
+  .swg-gallery.swg-layout-mosaic > .swg-items {
+    --swg-ar: var(--swg-n-ar, 0.8);
+    display: block;
+    position: relative;
+    inline-size: calc(100% + var(--swg-gap, 6px));
+    margin: calc(var(--swg-gap, 6px) / -2);
+    aspect-ratio: var(--swg-ar);
+  }
+
+  .swg-gallery.swg-layout-mosaic .swg-item {
+    --swg-x: var(--swg-n-x, 0);
+    --swg-y: var(--swg-n-y, 0);
+    --swg-w: var(--swg-n-w, 100);
+    --swg-h: var(--swg-n-h, 100);
+    position: absolute;
+    inset-inline-start: calc(var(--swg-x) * 1%);
+    inset-block-start: calc(var(--swg-y) * 1%);
+    inline-size: calc(var(--swg-w) * 1%);
+    block-size: calc(var(--swg-h) * 1%);
+    padding: calc(var(--swg-gap, 6px) / 2);
+  }
+
+  .swg-gallery.swg-layout-mosaic .swg-item:hover,
+  .swg-gallery.swg-layout-mosaic .swg-item:focus-within {
+    z-index: 1;
+  }
+
+  .swg-gallery.swg-layout-mosaic .swg-link {
+    position: relative;
+    flex: 1;
+  }
+
+  .swg-gallery.swg-layout-mosaic .swg-link img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    aspect-ratio: auto;
+  }
+
+  .swg-gallery.swg-layout-mosaic .swg-link:focus-visible {
+    outline-offset: -4px;
+  }
+
+  .swg-gallery.swg-layout-mosaic .swg-caption {
+    display: none;
+  }
+}
+
+@container swg-mosaic (min-width: 720px) {
+  .swg-gallery.swg-layout-mosaic > .swg-items {
+    --swg-ar: var(--swg-m-ar, 1);
+  }
+
+  .swg-gallery.swg-layout-mosaic .swg-item {
+    --swg-x: var(--swg-m-x, 0);
+    --swg-y: var(--swg-m-y, 0);
+    --swg-w: var(--swg-m-w, 100);
+    --swg-h: var(--swg-m-h, 100);
+  }
+}
+
+@container swg-mosaic (min-width: 1024px) {
+  .swg-gallery.swg-layout-mosaic > .swg-items {
+    --swg-ar: var(--swg-w-ar, 1.6);
+  }
+
+  .swg-gallery.swg-layout-mosaic .swg-item {
+    --swg-x: var(--swg-w-x, 0);
+    --swg-y: var(--swg-w-y, 0);
+    --swg-w: var(--swg-w-w, 100);
+    --swg-h: var(--swg-w-h, 100);
+  }
+}

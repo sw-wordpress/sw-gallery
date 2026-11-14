@@ -424,12 +424,81 @@ msgid "Stretch to full width"
 msgstr "Auf volle Breite strecken"
 
 #: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:74
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:89
 msgid "Corner radius (px)"
 msgstr "Eckenradius (px)"
 
 #: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:75
 msgid "0 keeps the images square, which suits a tightly packed masonry wall."
 msgstr "0 lässt die Bilder eckig, passend zu einer dicht gepackten Masonry-Wand."
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:90
+msgid "0 keeps the tiles square so the mosaic reads as one surface."
+msgstr "0 lässt die Kacheln eckig, damit das Mosaik als eine Fläche wirkt."
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:93
+msgid "Shape of the wide mosaic"
+msgstr "Form des breiten Mosaiks"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:94
+msgid "Width to height ratio of the whole mosaic in a wide container. Narrower containers use 1:1 and 4:5; below 480 px wide a plain grid is shown."
+msgstr "Verhältnis von Breite zu Höhe des gesamten Mosaiks in einem breiten Container. Schmalere Container nutzen 1:1 und 4:5; unter 480 px Breite wird ein einfaches Raster gezeigt."
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:98
+msgid "Automatic (16:10)"
+msgstr "Automatisch (16:10)"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:99
+msgid "Square (1:1)"
+msgstr "Quadratisch (1:1)"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:100
+msgid "Classic (4:3)"
+msgstr "Klassisch (4:3)"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:101
+msgid "Photo (3:2)"
+msgstr "Foto (3:2)"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:102
+msgid "Widescreen (16:9)"
+msgstr "Breitbild (16:9)"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:111
+msgid "Size in the mosaic"
+msgstr "Größe im Mosaik"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:112
+msgid "How much area this picture gets: large pictures take about twice, extra large about three times the area of a normal one."
+msgstr "Wie viel Fläche dieses Bild bekommt: große Bilder etwa die doppelte, extragroße etwa die dreifache Fläche eines normalen Bildes."
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:116
+msgid "Normal"
+msgstr "Normal"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:117
+msgid "Large"
+msgstr "Groß"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:118
+msgid "Extra large"
+msgstr "Extragroß"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:123
+msgid "Focal point"
+msgstr "Bildschwerpunkt"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:124
+msgid "Which part of the picture stays visible when the tile crops it, in percent from the left and the top (50 / 50 is the centre)."
+msgstr "Welcher Teil des Bildes sichtbar bleibt, wenn die Kachel es beschneidet, in Prozent von links und von oben (50 / 50 ist die Mitte)."
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:128
+msgid "Focal point, horizontal (%)"
+msgstr "Bildschwerpunkt, horizontal (%)"
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:135
+msgid "Focal point, vertical (%)"
+msgstr "Bildschwerpunkt, vertikal (%)"
 
 #. translators: 1: position of the image in the gallery, 2: number of images in the gallery.
 #: packages/wordpress/src/Rendering/View/ImageMarkup.php:58

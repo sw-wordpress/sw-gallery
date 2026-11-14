@@ -425,11 +425,80 @@ msgid "Stretch to full width"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:74
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:89
 msgid "Corner radius (px)"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:75
 msgid "0 keeps the images square, which suits a tightly packed masonry wall."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:90
+msgid "0 keeps the tiles square so the mosaic reads as one surface."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:93
+msgid "Shape of the wide mosaic"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:94
+msgid "Width to height ratio of the whole mosaic in a wide container. Narrower containers use 1:1 and 4:5; below 480 px wide a plain grid is shown."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:98
+msgid "Automatic (16:10)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:99
+msgid "Square (1:1)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:100
+msgid "Classic (4:3)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:101
+msgid "Photo (3:2)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:102
+msgid "Widescreen (16:9)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:111
+msgid "Size in the mosaic"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:112
+msgid "How much area this picture gets: large pictures take about twice, extra large about three times the area of a normal one."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:116
+msgid "Normal"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:117
+msgid "Large"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:118
+msgid "Extra large"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:123
+msgid "Focal point"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:124
+msgid "Which part of the picture stays visible when the tile crops it, in percent from the left and the top (50 / 50 is the centre)."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:128
+msgid "Focal point, horizontal (%)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:135
+msgid "Focal point, vertical (%)"
 msgstr ""
 
 #. translators: 1: position of the image in the gallery, 2: number of images in the gallery.

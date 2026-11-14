@@ -401,7 +401,7 @@ class RenderPipelineTest extends SwgTestCase {
 	}
 
 	public function test_an_unknown_layout_falls_back_to_grid_with_an_editor_only_diagnostic(): void {
-		$gallery = $this->makeGalleryPost( $this->author, 'publish', '', 'mosaic' );
+		$gallery = $this->makeGalleryPost( $this->author, 'publish', '', 'wallpaper' );
 		$this->addItems( $gallery, array( $this->makeImage() ) );
 
 		$visitor = $this->render( $gallery );
@@ -412,7 +412,7 @@ class RenderPipelineTest extends SwgTestCase {
 		$this->assertSame( array(), $visitor->diagnostics );
 		$this->assertStringContainsString( 'swg-layout-grid', $editor->html );
 		$this->assertStringContainsString( 'swg-diagnostic', $editor->html );
-		$this->assertStringContainsString( '&quot;mosaic&quot;', $editor->html );
+		$this->assertStringContainsString( '&quot;wallpaper&quot;', $editor->html );
 		$this->assertSame( 'grid', $editor->layoutId );
 	}
 
