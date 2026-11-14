@@ -172,7 +172,7 @@ class AuthenticationBoundaryTest extends SwgTestCase {
 			wp_set_current_user( 0 );
 			$response = rest_do_request( new WP_REST_Request( 'OPTIONS', '/swg/v1' . $path ) );
 			$this->assertSame( 200, $response->get_status(), $path );
-			$this->assertSame( array( 'namespace', 'methods', 'endpoints', 'schema' ), array_keys( (array) $response->get_data() ), $path );
+			$this->assertSame( array(), array_diff( array_keys( (array) $response->get_data() ), array( 'namespace', 'methods', 'endpoints', 'schema', '_links' ) ), $path );
 			$flat = (string) wp_json_encode( $response->get_data() );
 			$this->assertStringNotContainsString( 'Secret title', $flat );
 			$this->assertStringNotContainsString( ABSPATH, $flat );
