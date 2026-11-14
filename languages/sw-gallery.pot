@@ -361,7 +361,7 @@ msgstr ""
 msgid "Edit gallery: %s"
 msgstr ""
 
-#: packages/wordpress/src/Frontend/FrontendAssets.php:83
+#: packages/wordpress/src/Frontend/FrontendAssets.php:87
 msgid "Gallery diagnostic (visible to editors only): the gallery frontend assets are missing or invalid. Run \"npm run build\" in assets or install the release package."
 msgstr ""
 
@@ -404,6 +404,84 @@ msgstr[1] ""
 msgid "Gallery diagnostic (visible to editors only)."
 msgstr ""
 
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:66
+msgid "Slide height (px)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:67
+msgid "Every slide is as wide as its height times its aspect ratio."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:85
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:117
+#: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:74
+msgid "Corner radius (px)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:88
+msgid "Previous/next buttons"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:89
+msgid "Shows buttons when JavaScript is available; swiping, scrolling and the arrow keys always work."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:94
+msgid "Snap position"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:98
+msgid "Slide starts at the edge"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:99
+msgid "Slide is centred"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:134
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:136
+msgid "Image carousel"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:79
+msgid "Stage ratio"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:80
+msgid "Images are never cropped on the stage; auto uses the ratio of the first image."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:84
+msgid "Like the first image"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:93
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:164
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:170
+msgid "Thumbnails"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:94
+msgid "Narrow containers always show the thumbnails below."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:98
+msgid "Below the stage"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:99
+msgid "Beside the stage"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:104
+msgid "Thumbnail size (px)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:163
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:168
+msgid "Selected image"
+msgstr ""
+
 #: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:69
 msgid "Row height (px)"
 msgstr ""
@@ -422,10 +500,6 @@ msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:90
 msgid "Stretch to full width"
-msgstr ""
-
-#: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:74
-msgid "Corner radius (px)"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:75

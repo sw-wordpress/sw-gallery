@@ -91,11 +91,25 @@
   }
 }
 
-/* Added by carousel.ts. aria-disabled (not disabled) keeps the focus on a button that reaches the end. */
-.swg-carousel__btn {
+/*
+ * Added by carousel.ts. The buttons sit in an overlay that spans the frame; its inline axis stays `auto`, so the static
+ * position and `space-between` follow the text direction (the build lowers `inset-inline-*` to :lang() rules that miss
+ * `dir="rtl"`, hence no inset-inline here). aria-disabled (not disabled) keeps the focus on a button that reaches the end.
+ */
+.swg-carousel__nav {
   position: absolute;
   inset-block-start: 50%;
+  display: flex;
+  justify-content: space-between;
+  inline-size: 100%;
+  block-size: 0;
+  padding-inline: 0.5rem;
+  pointer-events: none;
+}
+
+.swg-carousel__btn {
   display: grid;
+  flex: none;
   place-items: center;
   inline-size: 2.75rem;
   block-size: 2.75rem;
@@ -107,15 +121,8 @@
   color: var(--swg-carousel-button-fg, #1d2327);
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.3);
   cursor: pointer;
+  pointer-events: auto;
   transform: translateY(-50%);
-}
-
-.swg-carousel__prev {
-  inset-inline-start: 0.5rem;
-}
-
-.swg-carousel__next {
-  inset-inline-end: 0.5rem;
 }
 
 .swg-carousel__btn::before {
@@ -154,7 +161,7 @@
   cursor: default;
 }
 
-.swg-no-buttons .swg-carousel__btn {
+.swg-no-buttons .swg-carousel__nav {
   display: none;
 }
 

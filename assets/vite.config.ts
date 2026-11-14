@@ -33,6 +33,11 @@ export default defineConfig({
     // Matches the shared browserslist (package.json): evergreen browsers, Safari >= 16.
     target: ['es2021', 'chrome100', 'edge100', 'firefox100', 'safari16', 'ios16'],
     modulePreload: false,
+    // The stylesheet uses `:dir(rtl)` (carousel chevrons). A lower CSS target would lower it to `:lang(ar), ...` rules that
+    // miss `dir="rtl"` documents; Chrome/Edge 120 and Safari 16.4 support it natively (older ones only lose the chevron mirroring).
+    ...(cssOnly
+      ? { cssTarget: ['chrome120', 'edge120', 'firefox100', 'safari16.4', 'ios16.4'] }
+      : {}),
     // Library mode (IIFE) keeps the CSS as a separate file instead of injecting it from the script.
     ...(cssOnly
       ? {}

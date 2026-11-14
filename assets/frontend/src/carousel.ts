@@ -40,7 +40,10 @@ function enhance(container: HTMLElement): void {
   const status = document.createElement('p');
   status.className = 'swg-carousel__status';
   status.setAttribute('aria-live', 'polite');
-  frame.append(prev, next);
+  const nav = document.createElement('div');
+  nav.className = 'swg-carousel__nav';
+  nav.append(prev, next);
+  frame.append(nav);
   container.append(status);
 
   const slides = (): HTMLElement[] => Array.from(list.children) as HTMLElement[];
@@ -124,8 +127,7 @@ function enhance(container: HTMLElement): void {
       viewport.removeEventListener('keydown', onKey);
       window.cancelAnimationFrame(frameId);
       window.clearTimeout(timer);
-      prev.remove();
-      next.remove();
+      nav.remove();
       status.remove();
       instances.delete(container);
     },

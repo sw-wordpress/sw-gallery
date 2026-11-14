@@ -287,6 +287,7 @@ describe('carousel enhancement', () => {
     mod.destroy(container);
     expect(observer.disconnected).toBe(true);
     expect(container.querySelector('.swg-carousel__btn')).toBeNull();
+    expect(container.querySelector('.swg-carousel__nav')).toBeNull();
     expect(container.querySelector('.swg-carousel__status')).toBeNull();
     expect(order(container)).toEqual(before);
     // No listener is left behind.

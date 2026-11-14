@@ -31,6 +31,8 @@ describe.each(['carousel.css', 'focus.css'])('%s', (name) => {
       /(^|[\s;{])(left|right|width|height|max-width|max-height|min-width|min-height)\s*:/,
     );
     expect(rules).not.toMatch(/text-align\s*:\s*(left|right)/);
+    // The build lowers `inset-inline-*` to :lang() based left/right rules that ignore `dir="rtl"`.
+    expect(rules).not.toMatch(/inset-inline/);
   });
 
   it('keeps motion behind prefers-reduced-motion: no-preference', () => {
