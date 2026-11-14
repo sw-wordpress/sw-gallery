@@ -1,0 +1,55 @@
+name: Security audit
+
+# New advisories appear without any code change, so PR checks alone are not enough: this runs daily, on demand and on pull requests that
+# touch a lockfile. bin/security-audit.sh audits every Composer/npm project. Shipped dependencies (composer --no-dev, npm --omit=dev,
+# high and above) fail the run; development tooling (including the dev-only e2e project) is recorded in the report but never blocks.
+on:
+  schedule:
+    - cron: '23 4 * * *'
+  workflow_dispatch: null
+  pull_request:
+    paths:
+      - composer.lock
+      - tests/wp/composer.lock
+      - apps/admin/package-lock.json
+      - assets/package-lock.json
+      - assets/blocks/package-lock.json
+      - e2e/package-lock.json
+      - .github/workflows/security-audit.yml
+      - bin/security-audit.sh
+
+concurrency:
+  group: security-audit-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Composer and npm audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: shivammathur/setup-php@2.33.0
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version-file: apps/admin/.nvmrc
+      - name: Audit (the report is the job summary and an artifact)
+        run: bin/security-audit.sh "$RUNNER_TEMP/audit-report"
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/audit-report/report.md" ]; then cat "$RUNNER_TEMP/audit-report/report.md" >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@v4.6.2
+        if: always()
+        with:
+          name: audit-report
+          path: ${{ runner.temp }}/audit-report
+          if-no-files-found: warn
+          retention-days: 30
