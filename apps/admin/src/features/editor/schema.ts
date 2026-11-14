@@ -18,6 +18,8 @@ export interface FieldDef {
   max: number | undefined;
   maxLength: number | undefined;
   options: unknown[];
+  /** Display labels from the optional `x-enum-titles` keyword (`{ value: label }`); only string labels count. */
+  optionTitles: Record<string, string>;
   defaultValue: unknown;
 }
 
@@ -38,6 +40,22 @@ function kindOf(schema: JsonSchema): FieldKind {
   }
 }
 
+function enumTitles(value: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    for (const [key, title] of Object.entries(value)) {
+      if (typeof title === 'string' && title !== '') out[key] = title;
+    }
+  }
+  return out;
+}
+
+/** Label of one enum value: the schema's translated title, else the raw value. */
+export function optionLabel(def: Pick<FieldDef, 'optionTitles'>, value: unknown): string {
+  const key = String(value);
+  return Object.hasOwn(def.optionTitles, key) ? (def.optionTitles[key] as string) : key;
+}
+
 export function fieldsOf(schema: JsonSchema | undefined): FieldDef[] {
   const properties = schema?.properties;
   if (properties === undefined || properties === null || typeof properties !== 'object') return [];
@@ -51,6 +69,7 @@ export function fieldsOf(schema: JsonSchema | undefined): FieldDef[] {
     max: typeof def.maximum === 'number' ? def.maximum : undefined,
     maxLength: typeof def.maxLength === 'number' ? def.maxLength : undefined,
     options: Array.isArray(def.enum) ? def.enum : [],
+    optionTitles: enumTitles(def['x-enum-titles']),
     defaultValue: def.default,
   }));
 }

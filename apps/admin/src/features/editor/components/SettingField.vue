@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   BREAKPOINTS,
+  optionLabel,
   readResponsive,
   unknownBreakpoints,
   validateValue,
@@ -194,7 +195,7 @@ const rangeValue = (bp: Breakpoint | null): number => {
               map-options
               class="swg-sfield__select"
               :model-value="valueAt(bp) ?? def.defaultValue ?? null"
-              :options="def.options.map((o) => ({ value: o, label: String(o) }))"
+              :options="def.options.map((o) => ({ value: o, label: optionLabel(def, o) }))"
               :label="fullLabel(bp)"
               :error="errorAt(bp) !== null"
               :error-message="errorAt(bp) ?? ''"

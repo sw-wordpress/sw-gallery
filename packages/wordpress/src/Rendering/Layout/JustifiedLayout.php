@@ -84,6 +84,11 @@ final class JustifiedLayout implements GalleryLayoutInterface, ImageHintsProvide
 					'description' => __( 'left keeps the last row at its natural height, justify stretches it to the full width.', 'sw-gallery' ),
 					'type'        => 'string',
 					'enum'        => self::LAST_ROWS,
+					// Display labels of the enum values (schema keyword `x-enum-titles`, translated); the admin form falls back to the raw value.
+					'x-enum-titles' => array(
+						'left'    => __( 'Natural height (left-aligned)', 'sw-gallery' ),
+						'justify' => __( 'Stretch to full width', 'sw-gallery' ),
+					),
 					'default'     => 'left',
 				),
 			),

@@ -61,6 +61,9 @@ class RestLayoutTest extends SwgTestCase {
 		$this->assertSame( array( 'rowHeight', 'gap', 'lastRow' ), array_keys( $by['justified']['settingsSchema']['properties'] ) );
 		$this->assertTrue( $by['justified']['settingsSchema']['properties']['rowHeight']['x-responsive'] );
 		$this->assertSame( array( 'left', 'justify' ), $by['justified']['settingsSchema']['properties']['lastRow']['enum'] );
+		$titles = $by['justified']['settingsSchema']['properties']['lastRow']['x-enum-titles'];
+		$this->assertSame( array( 'left', 'justify' ), array_keys( $titles ) );
+		$this->assertSame( array( 'Natural height (left-aligned)', 'Stretch to full width' ), array_values( $titles ) );
 		$this->assertSame( 'Masonry', $by['masonry']['label'] );
 		$this->assertSame( array( 'columns', 'gap', 'radius' ), array_keys( $by['masonry']['settingsSchema']['properties'] ) );
 		$this->assertTrue( $by['masonry']['settingsSchema']['properties']['columns']['x-responsive'] );

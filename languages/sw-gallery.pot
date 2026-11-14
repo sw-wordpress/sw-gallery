@@ -182,26 +182,26 @@ msgstr ""
 msgid "The layouts could not be loaded."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:50
-#: packages/wordpress/src/Admin/AdminRegistrar.php:144
+#: packages/wordpress/src/Admin/AdminRegistrar.php:57
+#: packages/wordpress/src/Admin/AdminRegistrar.php:171
 msgid "Gallery Management"
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:51
+#: packages/wordpress/src/Admin/AdminRegistrar.php:58
 #: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:89
 #: packages/wordpress/src/PostTypes.php:29
 msgid "Galleries"
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:140
+#: packages/wordpress/src/Admin/AdminRegistrar.php:167
 msgid "You are not allowed to access this page."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:146
+#: packages/wordpress/src/Admin/AdminRegistrar.php:173
 msgid "The gallery admin app is not built. Run \"npm run build\" in apps/admin or install the release package."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:149
+#: packages/wordpress/src/Admin/AdminRegistrar.php:176
 msgid "The gallery administration requires JavaScript."
 msgstr ""
 
@@ -394,6 +394,14 @@ msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:84
 msgid "left keeps the last row at its natural height, justify stretches it to the full width."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:89
+msgid "Natural height (left-aligned)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:90
+msgid "Stretch to full width"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:74
