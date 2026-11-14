@@ -113,16 +113,16 @@ cannot do.
 | Role | Can |
 |---|---|
 | Subscriber | no access to the admin app |
-| Contributor | create, edit and delete own galleries as drafts or pending review; cannot publish; <!-- verify after stream P merge --> may use library images they can read but cannot upload |
+| Contributor | create, edit and delete own galleries as drafts or pending review; cannot publish; may use library images they can read but cannot upload |
 | Author | as contributor, plus publish own galleries and upload images |
 | Editor | manage every gallery, publish, change the owner of foreign galleries |
 | Administrator | everything, plus Settings and System Status (`manage_options`) |
 
-Intended 1.0 rules (decided, being finalised) <!-- verify after stream P merge -->:
+Rules for ownership, images and link names (1.0):
 
-- Changing the owner of a gallery needs the right to edit others' posts, and the new owner must be able to edit posts.
+- Changing the owner of a gallery needs the right to edit others' posts (`edit_others_posts`, also for the current owner); the new owner must exist, be able to edit posts and (multisite) belong to the site.
 - Contributors may add images they can read in the Media Library but cannot upload new ones.
-- Thumbnail links without alternative text get an `aria-label`, so screen reader users hear what the link does.
+- Thumbnail links of images without alternative text get an `aria-label`: the image title, otherwise "Image N of M".
 
 Multisite: permissions and data are per site; a super admin has the site administrator's rights.
 
