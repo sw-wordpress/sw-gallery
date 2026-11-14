@@ -124,7 +124,7 @@ final class BlockRegistrar implements RegistrarInterface {
 		}
 		wp_add_inline_script(
 			self::EDITOR_HANDLE,
-			'window.swgBlock = ' . wp_json_encode( $this->editor_data() ) . ';',
+			'window.swgBlock = ' . wp_json_encode( $this->editor_data(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ) . ';',
 			'before'
 		);
 		wp_set_script_translations( self::EDITOR_HANDLE, self::TEXT_DOMAIN, $this->languages_dir );

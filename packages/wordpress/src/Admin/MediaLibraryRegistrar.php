@@ -203,7 +203,7 @@ final class MediaLibraryRegistrar implements RegistrarInterface {
 			return;
 		}
 		wp_enqueue_script( self::SCRIPT, $this->assets_url . '/' . self::SCRIPT_FILE, array(), SWGALLERY_VERSION, true );
-		wp_add_inline_script( self::SCRIPT, 'window.swgMediaLibrary = ' . wp_json_encode( $this->messages() ) . ';', 'before' );
+		wp_add_inline_script( self::SCRIPT, 'window.swgMediaLibrary = ' . wp_json_encode( $this->messages(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT ) . ';', 'before' );
 	}
 
 	/**

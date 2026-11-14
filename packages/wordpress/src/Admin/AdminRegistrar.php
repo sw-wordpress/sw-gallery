@@ -85,7 +85,7 @@ final class AdminRegistrar implements RegistrarInterface {
 		wp_enqueue_script( self::ASSET_HANDLE, $this->assets_url . '/' . $files['script'], array(), SWGALLERY_VERSION, true );
 		wp_add_inline_script(
 			self::ASSET_HANDLE,
-			'window.swgAdmin = ' . wp_json_encode( $this->bootstrap() ) . ';',
+			'window.swgAdmin = ' . $this->bootstrap_json() . ';',
 			'before'
 		);
 

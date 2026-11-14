@@ -13,7 +13,7 @@ class AdminBootstrapSecurityTest extends SwgTestCase {
 
 	use WpFixtures;
 
-	private const KEYS = array( 'restRoot', 'nonce', 'locale', 'version', 'adminUrl', 'capabilities', 'isRtl', 'timezone' );
+	private const KEYS = array( 'restRoot', 'nonce', 'locale', 'version', 'adminUrl', 'capabilities', 'isRtl', 'timezone', 'ajaxUrl', 'loginUrl', 'assetsUrl' );
 
 	public function tear_down(): void {
 		wp_set_current_user( 0 );
@@ -26,7 +26,7 @@ class AdminBootstrapSecurityTest extends SwgTestCase {
 	private function inline_script( int $user ): string {
 		wp_set_current_user( $user );
 		$registrar = new AdminRegistrar();
-		return 'window.swgAdmin = ' . wp_json_encode( $registrar->bootstrap() ) . ';';
+		return 'window.swgAdmin = ' . $registrar->bootstrap_json() . ';';
 	}
 
 	public function test_the_bootstrap_has_exactly_the_documented_keys_and_no_personal_or_server_data(): void {
@@ -53,10 +53,7 @@ class AdminBootstrapSecurityTest extends SwgTestCase {
 		$script = $this->inline_script( $admin );
 
 		$this->assertDoesNotMatchRegularExpression( '/<\/script/i', $script, 'a closing tag would end the inline script' );
-		// OPEN FINDING S-03 (docs/security.md, low): `<!--<script>` inside a value is not escaped by the default JSON flags
-		// and would switch the HTML script data state. Values come from trusted sources (validated locale, core URLs), so it
-		// is not exploitable today; the hardening is JSON_HEX_TAG | JSON_HEX_AMP in AdminRegistrar::enqueue() (stream N owns
-		// that file, the diff is in the review report). Re-enable the assertion below once it is applied:
-		// $this->assertStringNotContainsString( '<!--', $script );
+		// S-03 (fixed): the hex flags keep `<!--<script>` out of the inline script as well.
+		$this->assertStringNotContainsString( '<!--', $script );
 	}
 }
