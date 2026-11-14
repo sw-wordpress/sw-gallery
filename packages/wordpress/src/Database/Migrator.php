@@ -34,6 +34,11 @@ final class Migrator {
 		return (int) get_option( $this->option, 0 );
 	}
 
+	/** The stored schema was written by a newer plugin version: this code must neither migrate nor write (downgrade guard). */
+	public function is_newer(): bool {
+		return $this->stored_version() > $this->target_version();
+	}
+
 	/** Cheap check without any DDL. */
 	public function is_current(): bool {
 		return $this->stored_version() >= $this->target_version();
@@ -45,6 +50,18 @@ final class Migrator {
 	 *              request holds the lock; the next request retries.
 	 */
 	public function run( bool $force = false ): bool {
+		if ( $this->is_newer() ) {
+			// dbDelta of an older layout could alter columns of the newer schema: never touch it (also not when forced).
+			Services::logger()->log(
+				LogLevel::Error,
+				'swg_schema_newer',
+				array(
+					'stored' => $this->stored_version(),
+					'target' => $this->target_version(),
+				)
+			);
+			return false;
+		}
 		if ( ! $this->acquire_lock() ) {
 			return false;
 		}

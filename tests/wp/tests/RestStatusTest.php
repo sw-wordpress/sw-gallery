@@ -67,6 +67,7 @@ class RestStatusTest extends SwgTestCase {
 				'stored'           => Schema::CURRENT,
 				'current'          => Schema::CURRENT,
 				'migrationPending' => false,
+				'newerThanCode'    => false,
 				'itemTablePresent' => true,
 			),
 			$data['schema']

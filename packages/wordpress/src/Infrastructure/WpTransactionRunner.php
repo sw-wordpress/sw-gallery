@@ -13,6 +13,7 @@ use SWGallery\Core\Contract\LoggerInterface;
 use SWGallery\Core\Contract\TransactionRunnerInterface;
 use SWGallery\Core\Logging\LogLevel;
 use SWGallery\WordPress\Database\Schema;
+use SWGallery\WordPress\Database\SchemaNewerException;
 
 final class WpTransactionRunner implements TransactionRunnerInterface {
 
@@ -44,6 +45,7 @@ final class WpTransactionRunner implements TransactionRunnerInterface {
 	 * @template T
 	 * @param callable(): T $work
 	 * @return T
+	 * @throws SchemaNewerException When the stored schema is newer than this plugin version (downgrade guard).
 	 * @throws \RuntimeException When the transaction cannot be started or committed.
 	 * @throws \Throwable Whatever the work throws, after the rollback.
 	 */
@@ -58,6 +60,10 @@ final class WpTransactionRunner implements TransactionRunnerInterface {
 			} finally {
 				--self::$depth;
 			}
+		}
+
+		if ( Schema::newer_than_code() ) {
+			throw new SchemaNewerException();
 		}
 
 		if ( ! $this->supports_transactions() ) {
