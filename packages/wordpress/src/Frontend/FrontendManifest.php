@@ -21,8 +21,8 @@ final class FrontendManifest {
 	public const STYLE_KEY  = 'style.css';
 	/** Optional: the layout stylesheet (frontend CSS stream). */
 	public const LAYOUT_KEY = 'frontend/src/layouts.css';
-	/** Optional: the masonry progressive-enhancement script (classic script). */
-	public const MASONRY_KEY = 'frontend/src/masonry.ts';
+	/** Optional: the masonry progressive-enhancement script (classic script); all layout scripts are listed in {@see LayoutScripts}. */
+	public const MASONRY_KEY = LayoutScripts::MANIFEST_KEYS['masonry'];
 
 	private const MAX_MANIFEST_BYTES = 262144;
 	private const FILE_PATTERN       = '#^[A-Za-z0-9_][A-Za-z0-9_./-]*\.(js|css)$#';
@@ -31,6 +31,9 @@ final class FrontendManifest {
 
 	/** @var array{script: ?string, style: ?string, layout: ?string, masonry: ?string}|null */
 	private ?array $resolved = null;
+
+	/** @var array<string, ?string>|null */
+	private ?array $layout_scripts = null;
 
 	public function __construct( string $build_dir ) {
 		$this->build_dir = rtrim( $build_dir, '/\\' );
@@ -62,6 +65,25 @@ final class FrontendManifest {
 			'masonry' => $this->entry_file( $manifest, self::MASONRY_KEY, 'js' ),
 		);
 		return $this->resolved;
+	}
+
+	/**
+	 * Build-relative file of every layout script ({@see LayoutScripts}) keyed by RenderAsset value; null when the entry
+	 * is absent or not trustworthy.
+	 *
+	 * @return array<string, ?string>
+	 */
+	public function layout_scripts(): array {
+		if ( null !== $this->layout_scripts ) {
+			return $this->layout_scripts;
+		}
+		$manifest = $this->read();
+		$files    = array();
+		foreach ( LayoutScripts::MANIFEST_KEYS as $value => $key ) {
+			$files[ $value ] = null === $manifest ? null : $this->entry_file( $manifest, $key, 'js' );
+		}
+		$this->layout_scripts = $files;
+		return $files;
 	}
 
 	/**

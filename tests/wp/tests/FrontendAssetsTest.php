@@ -321,6 +321,103 @@ class FrontendAssetsTest extends SwgTestCase {
 		$this->assertSame( 'https://assets.example.test/build/masonry-abc.js?ver=' . SWGALLERY_VERSION, $with_masonry['js'][1] );
 	}
 
+	/**
+	 * Writes the base build plus one script file per given asset and returns nothing.
+	 *
+	 * @param list<string> $names Asset values (`carousel`, `focus`).
+	 */
+	private function write_layout_scripts( array $names, string $hostile = '' ): void {
+		$this->write_build();
+		$manifest = json_decode( (string) file_get_contents( $this->build . '/.vite/manifest.json' ), true );
+		foreach ( $names as $name ) {
+			$key              = SWGallery\WordPress\Frontend\LayoutScripts::MANIFEST_KEYS[ $name ];
+			$manifest[ $key ] = array( 'file' => '' !== $hostile ? $hostile : $name . '-abc.js' );
+			file_put_contents( $this->build . '/' . $name . '-abc.js', '/* ' . $name . ' */' );
+		}
+		file_put_contents( $this->build . '/.vite/manifest.json', (string) wp_json_encode( $manifest ) );
+	}
+
+	/**
+	 * @return iterable<string, array{RenderAsset}>
+	 */
+	public static function layout_script_assets(): iterable {
+		yield 'carousel' => array( RenderAsset::Carousel );
+		yield 'focus'    => array( RenderAsset::Focus );
+		yield 'masonry'  => array( RenderAsset::Masonry );
+	}
+
+	/**
+	 * @dataProvider layout_script_assets
+	 */
+	public function test_every_layout_script_loads_only_for_rendered_galleries_with_the_version( RenderAsset $asset ): void {
+		$this->write_layout_scripts( array( 'carousel', 'focus', 'masonry' ) );
+		$handle = SWGallery\WordPress\Frontend\LayoutScripts::handle( $asset );
+		$this->rendered();
+		$assets = $this->assets();
+		$assets->enqueue_collected();
+		$this->assertTrue( wp_script_is( $handle, 'registered' ) );
+		$this->assertFalse( wp_script_is( $handle, 'enqueued' ), 'A grid gallery needs no layout script.' );
+
+		$this->collector->record( 7, new RenderResult( '<div></div>', RenderAccess::Render, array(), array( RenderAsset::Lightbox, $asset ), 1, 1, 1, 1, $asset->value ) );
+		$assets->enqueue_collected();
+		$this->assertTrue( wp_script_is( $handle, 'enqueued' ) );
+		foreach ( SWGallery\WordPress\Frontend\LayoutScripts::assets() as $other ) {
+			if ( $other !== $asset ) {
+				$this->assertFalse( wp_script_is( SWGallery\WordPress\Frontend\LayoutScripts::handle( $other ), 'enqueued' ), $other->value );
+			}
+		}
+		$this->assertSame( SWGALLERY_VERSION, wp_scripts()->registered[ $handle ]->ver );
+		$this->assertSame( 1, wp_scripts()->get_data( $handle, 'group' ), 'footer' );
+		ob_start();
+		wp_scripts()->do_item( $handle, 1 );
+		$tag = (string) ob_get_clean();
+		$this->assertStringContainsString( $asset->value . '-abc.js?ver=' . SWGALLERY_VERSION, $tag );
+		$this->assertStringContainsString( 'defer', $tag );
+		$this->assertStringNotContainsString( 'type="module"', $tag );
+	}
+
+	/**
+	 * @dataProvider layout_script_assets
+	 */
+	public function test_layout_scripts_do_not_depend_on_the_lightbox_setting( RenderAsset $asset ): void {
+		$this->write_layout_scripts( array( 'carousel', 'focus', 'masonry' ) );
+		Services::settings()->update( array( 'lightbox' => false ) );
+		$this->collector->record( 7, new RenderResult( '<div></div>', RenderAccess::Render, array(), array( RenderAsset::Lightbox, $asset ), 1, 1, 1, 1, $asset->value ) );
+		$this->assets()->enqueue_collected();
+
+		$this->assertFalse( wp_script_is( FrontendAssets::HANDLE_SCRIPT, 'enqueued' ) );
+		$this->assertTrue( wp_script_is( SWGallery\WordPress\Frontend\LayoutScripts::handle( $asset ), 'enqueued' ) );
+	}
+
+	/**
+	 * @dataProvider layout_script_assets
+	 */
+	public function test_a_hostile_layout_script_entry_enqueues_nothing( RenderAsset $asset ): void {
+		$this->write_layout_scripts( array( $asset->value ), '../../etc/passwd.js' );
+		$this->collector->record( 7, new RenderResult( '<div></div>', RenderAccess::Render, array(), array( $asset ), 1, 1, 1, 1, $asset->value ) );
+		$assets = $this->assets();
+		$assets->enqueue_collected();
+
+		$handle = SWGallery\WordPress\Frontend\LayoutScripts::handle( $asset );
+		$this->assertFalse( wp_script_is( $handle, 'registered' ) );
+		$this->assertFalse( wp_script_is( $handle, 'enqueued' ) );
+		$this->assertCount( 1, $assets->preview_assets()['js'], 'Only the lightbox script is listed.' );
+	}
+
+	public function test_the_preview_lists_every_available_layout_script_with_the_version(): void {
+		$this->write_layout_scripts( array( 'carousel', 'focus', 'masonry' ) );
+		$js = $this->assets()->preview_assets()['js'];
+		$this->assertSame(
+			array(
+				'https://assets.example.test/build/lightbox-abc.js?ver=' . SWGALLERY_VERSION,
+				'https://assets.example.test/build/masonry-abc.js?ver=' . SWGALLERY_VERSION,
+				'https://assets.example.test/build/carousel-abc.js?ver=' . SWGALLERY_VERSION,
+				'https://assets.example.test/build/focus-abc.js?ver=' . SWGALLERY_VERSION,
+			),
+			$js
+		);
+	}
+
 	public function test_the_registrar_hooks_are_in_place(): void {
 		$registrar = new SWGallery\WordPress\Frontend\FrontendRegistrar();
 		$registrar->register();
