@@ -36,7 +36,7 @@ final class PrivacyRegistrar implements RegistrarInterface {
 			__( 'SW Gallery sets no cookie of its own. For a password-protected gallery, WordPress core\'s password form is shown; after the correct password is entered, WordPress sets its own cookie (wp-postpass_ followed by a hash), which by default expires after 10 days.', 'sw-gallery' ),
 			__( 'When the plugin is deleted, its data is kept unless the setting "Delete all plugin data when the plugin is deleted" is enabled; in that case the galleries, their image relations and the plugin settings are removed. Images in the Media Library are never deleted by the plugin.', 'sw-gallery' ),
 		);
-		$html  = '<p class="privacy-policy-tutorial">' . esc_html__( 'Suggested text for your privacy policy. Review it and adapt it to your site.', 'sw-gallery' ) . '</p>';
+		$html       = '<p class="privacy-policy-tutorial">' . esc_html__( 'Suggested text for your privacy policy. Review it and adapt it to your site.', 'sw-gallery' ) . '</p>';
 		foreach ( $paragraphs as $paragraph ) {
 			$html .= '<p>' . esc_html( $paragraph ) . '</p>';
 		}
