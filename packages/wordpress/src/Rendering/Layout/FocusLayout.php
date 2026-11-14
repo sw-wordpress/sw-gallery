@@ -136,7 +136,7 @@ final class FocusLayout implements GalleryLayoutInterface, ImageHintsProviderInt
 		$thumb_size = ResponsiveSetting::integer( $values['thumbSize'] ?? null, self::DEFAULT_THUMB_SIZE, self::MIN_THUMB_SIZE, self::MAX_THUMB_SIZE );
 		$panels     = '';
 		$thumbs     = '';
-		foreach ( array_values( $request->items ) as $index => $item ) {
+		foreach ( $request->items as $index => $item ) {
 			$id      = sprintf( '%s-s%d', $request->instanceId, $index + 1 );
 			$panels .= sprintf(
 				'<li class="swg-item swg-panel"><span class="swg-anchor" id="%1$s"></span>%2$s%3$s</li>',
@@ -150,7 +150,7 @@ final class FocusLayout implements GalleryLayoutInterface, ImageHintsProviderInt
 		if ( 'start' === ( $values['thumbs'] ?? 'bottom' ) ) {
 			$classes .= ' swg-thumbs-start';
 		}
-		$css = sprintf( '--swg-stage-ratio:%s;', $this->stage_ratio( $values['stageRatio'] ?? null, $request->items[0] ?? null ) )
+		$css = sprintf( '--swg-stage-ratio:%s;', $this->stage_ratio( $values['stageRatio'] ?? null, $request->items[0] ) )
 			. sprintf( '--swg-thumb-size:%dpx;', $thumb_size )
 			. sprintf( '--swg-gap:%dpx;', ResponsiveSetting::integer( $values['gap'] ?? null, self::DEFAULT_GAP, 0, self::MAX_GAP ) )
 			. sprintf( '--swg-thumb-radius:%dpx', ResponsiveSetting::integer( $values['radius'] ?? null, self::DEFAULT_RADIUS, 0, self::MAX_RADIUS ) );
@@ -207,15 +207,15 @@ final class FocusLayout implements GalleryLayoutInterface, ImageHintsProviderInt
 	/**
 	 * CSS ratio of the stage: a fixed one from the allowlist, or the first image's ratio (clamped, locale independent).
 	 *
-	 * @param mixed           $setting Raw setting.
-	 * @param RenderItem|null $first   First item.
+	 * @param mixed      $setting Raw setting.
+	 * @param RenderItem $first   First item.
 	 */
-	private function stage_ratio( mixed $setting, ?RenderItem $first ): string {
+	private function stage_ratio( mixed $setting, RenderItem $first ): string {
 		$key = is_string( $setting ) && isset( self::RATIOS[ $setting ] ) ? $setting : '3:2';
 		if ( 'auto' !== $key ) {
 			return self::RATIOS[ $key ];
 		}
-		$ratio = null === $first || $first->thumbnail->width <= 0 || $first->thumbnail->height <= 0 ? 1.5 : $first->thumbnail->width / $first->thumbnail->height;
+		$ratio = $first->thumbnail->width <= 0 || $first->thumbnail->height <= 0 ? 1.5 : $first->thumbnail->width / $first->thumbnail->height;
 		return rtrim( rtrim( sprintf( '%.4F', max( self::AUTO_MIN, min( self::AUTO_MAX, $ratio ) ) ), '0' ), '.' );
 	}
 }
