@@ -298,6 +298,7 @@ describe('save pipeline', () => {
     expect(session.stagedSummary()).toEqual({
       details: ['title'],
       overrides: [3],
+      itemSettings: [],
       order: true,
       removed: 0,
     });

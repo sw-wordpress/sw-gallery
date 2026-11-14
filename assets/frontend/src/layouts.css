@@ -26,6 +26,7 @@
 
 @import './carousel.css';
 @import './focus.css';
+@import './mosaic.css';
 
 .swg-gallery {
   --swg-col-0: var(--swg-columns, 3);

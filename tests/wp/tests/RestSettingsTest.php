@@ -174,11 +174,11 @@ class RestSettingsTest extends SwgTestCase {
 	}
 
 	public function test_a_registered_layout_can_become_the_default(): void {
-		Services::layouts()->register( new \SWGallery\Tests\Support\StubLayout( 'mosaic' ) );
+		Services::layouts()->register( new \SWGallery\Tests\Support\StubLayout( 'wallpaper' ) );
 
-		$response = $this->call( 'PATCH', '/settings', array( 'defaultLayout' => 'mosaic' ), $this->admin );
+		$response = $this->call( 'PATCH', '/settings', array( 'defaultLayout' => 'wallpaper' ), $this->admin );
 
-		$this->assertSame( 'mosaic', $this->data( $response )['defaultLayout'] );
+		$this->assertSame( 'wallpaper', $this->data( $response )['defaultLayout'] );
 	}
 
 	public function test_the_response_holds_no_secrets_or_paths(): void {

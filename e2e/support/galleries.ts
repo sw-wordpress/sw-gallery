@@ -183,6 +183,20 @@ export class GalleryFixtures {
     await this.json(response, [200]);
   }
 
+  /** Replaces the layout settings of one item (`PATCH items/{id}` with `settings`, validated by the layout's `x-item-settings`). */
+  async setItemSettings(
+    galleryId: number,
+    itemId: number,
+    settings: Record<string, unknown>,
+  ): Promise<void> {
+    const gallery = await this.detail(galleryId);
+    const response = await this.request.patch(
+      joinUrl(this.bootstrap.restRoot, `galleries/${galleryId}/items/${itemId}`),
+      { headers: this.headers(), data: { settings, expectedRevision: gallery.revision } },
+    );
+    await this.json(response, [200]);
+  }
+
   /** Uploads a tiny real image through `POST /media` (type and decodability are checked by the server). */
   async uploadImage(title: string, buffer: Buffer, filename = 'e2e.png'): Promise<MediaRecord> {
     const response = await this.request.post(joinUrl(this.bootstrap.restRoot, 'media'), {

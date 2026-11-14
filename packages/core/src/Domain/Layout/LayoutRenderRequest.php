@@ -23,8 +23,10 @@ final class LayoutRenderRequest
         public readonly string $instanceId,
         public readonly array $items,
         public readonly GallerySettings $settings,
+        /** Stored gallery revision (0 when unknown); with the gallery id it is the deterministic seed of plan layouts. */
+        public readonly int $revision = 0,
     ) {
-        if ($galleryId <= 0 || preg_match(self::INSTANCE_ID_PATTERN, $instanceId) !== 1) {
+        if ($galleryId <= 0 || $revision < 0 || preg_match(self::INSTANCE_ID_PATTERN, $instanceId) !== 1) {
             throw new \InvalidArgumentException('Invalid layout render request.');
         }
     }

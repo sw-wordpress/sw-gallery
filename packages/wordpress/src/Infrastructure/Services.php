@@ -30,6 +30,7 @@ use SWGallery\WordPress\Hooks\ExtensionPoints;
 use SWGallery\WordPress\Media\ThumbnailResolver;
 use SWGallery\WordPress\Media\WpMediaRepository;
 use SWGallery\WordPress\Rendering\GalleryRenderer;
+use SWGallery\WordPress\Rendering\ItemSettingsRenderSource;
 use SWGallery\WordPress\Rendering\MediaEpoch;
 use SWGallery\WordPress\Rendering\RenderCache;
 use SWGallery\WordPress\Rendering\Layout\BuiltInLayouts;
@@ -186,13 +187,14 @@ final class Services {
 		return self::$render_pipeline ??= new RenderGallery(
 			self::galleries(),
 			self::access(),
-			self::items(),
+			new ItemSettingsRenderSource( self::items() ),
 			self::media(),
 			self::thumbnails(),
 			self::layouts(),
 			new FeedMarkup(),
 			new SettingsSchemaValidator(),
-			self::logger()
+			self::logger(),
+			self::revisions()
 		);
 	}
 
@@ -221,13 +223,14 @@ final class Services {
 		$pipeline  = new RenderGallery(
 			$galleries,
 			self::access(),
-			self::items(),
+			new ItemSettingsRenderSource( self::items() ),
 			self::media(),
 			self::thumbnails(),
 			self::layouts(),
 			new FeedMarkup(),
 			new SettingsSchemaValidator(),
-			self::logger()
+			self::logger(),
+			self::revisions()
 		);
 		// Previews are never cached (the renderer skips the cache for EntryPoint::Preview).
 		return new GalleryRenderer( $pipeline, $galleries, self::access(), self::settings(), self::render_cache() );

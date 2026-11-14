@@ -153,7 +153,7 @@ class RenderLayoutsPipelineTest extends SwgTestCase {
 	}
 
 	public function test_an_unknown_layout_still_falls_back_to_the_grid(): void {
-		$result = $this->render( $this->gallery( 2 ), array( 'layout' => 'mosaic' ) );
+		$result = $this->render( $this->gallery( 2 ), array( 'layout' => 'wallpaper' ) );
 
 		$this->assertSame( 'grid', $result->layoutId );
 		$this->assertSame( array( RenderAsset::Lightbox ), $result->assets );

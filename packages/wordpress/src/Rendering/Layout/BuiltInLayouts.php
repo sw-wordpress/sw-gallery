@@ -20,5 +20,6 @@ final class BuiltInLayouts {
 		$registry->register( new GridLayout() );
 		$registry->register( new JustifiedLayout() );
 		$registry->register( new MasonryLayout() );
+		$registry->register( new MosaicLayout() );
 	}
 }

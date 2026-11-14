@@ -10,6 +10,7 @@ import type { EditorApi } from './injection';
 import {
   buildPlan,
   changedDetailKeys,
+  changedItemSettingsIds,
   changedOverrideIds,
   countChanges,
   deepEqual,
@@ -286,7 +287,9 @@ export function createEditorSession(galleryId: number, api: EditorApi) {
     if (count === 0) return 0;
     const overrides = { ...current.overrides };
     for (const id of drop) delete overrides[id];
-    commit({ ...current, order, overrides });
+    const itemSettings = { ...current.itemSettings };
+    for (const id of drop) delete itemSettings[id];
+    commit({ ...current, order, overrides, itemSettings });
     return count;
   }
 
@@ -322,6 +325,23 @@ export function createEditorSession(galleryId: number, api: EditorApi) {
     if (deepEqual(next, stored.overrides)) delete overrides[id];
     else overrides[id] = next;
     commit({ ...current, overrides }, `item:${id}:${Object.keys(patch).join(',')}`);
+  }
+
+  /** Stage the complete settings map of one item (keys with `undefined` are dropped: layout default applies). */
+  function setItemSettings(id: number, settings: Record<string, unknown>): void {
+    const current = working.value;
+    const stored = storedItem(id);
+    if (current === null || stored === undefined) return;
+    const next = Object.fromEntries(Object.entries(settings).filter(([, v]) => v !== undefined));
+    const staged = { ...current.itemSettings };
+    if (deepEqual(next, stored.settings)) delete staged[id];
+    else staged[id] = next;
+    commit({ ...current, itemSettings: staged }, `itemSettings:${id}`);
+  }
+
+  /** Staged settings map of an item, else the stored one. */
+  function itemSettingsOf(id: number): Record<string, unknown> {
+    return { ...(working.value?.itemSettings?.[id] ?? storedItem(id)?.settings ?? {}) };
   }
 
   function itemView(id: number): ItemView | null {
@@ -471,6 +491,20 @@ export function createEditorSession(galleryId: number, api: EditorApi) {
           galleryId,
           step.itemId,
           { overrides: step.overrides },
+          current.revision,
+        );
+        updateBase((b) => ({
+          ...b,
+          revision: result.revision,
+          items: new Map(b.items).set(step.itemId, result.item),
+        }));
+        break;
+      }
+      case 'itemSettings': {
+        const result = await api.items.patch(
+          galleryId,
+          step.itemId,
+          { settings: step.settings },
           current.revision,
         );
         updateBase((b) => ({
@@ -651,6 +685,8 @@ export function createEditorSession(galleryId: number, api: EditorApi) {
     move,
     moveTo,
     setItemTexts,
+    setItemSettings,
+    itemSettingsOf,
     itemView,
     save,
     publish,
@@ -666,6 +702,7 @@ export function createEditorSession(galleryId: number, api: EditorApi) {
         ? {
             details: changedDetailKeys(detailsOf(base.value.gallery), working.value.details),
             overrides: changedOverrideIds(base.value, working.value),
+            itemSettings: changedItemSettingsIds(base.value, working.value),
             order: orderChanged(base.value, working.value),
             removed: removedIds(base.value, working.value).length,
           }

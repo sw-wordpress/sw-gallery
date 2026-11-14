@@ -13,6 +13,12 @@ final class GalleryItem
         public readonly int $attachmentId,
         public readonly int $position,
         public readonly ItemOverrides $overrides = new ItemOverrides(),
+        /**
+         * Layout settings of the item; empty unless the source loaded them (the renderer's source does).
+         *
+         * @var array<string, mixed>
+         */
+        public readonly array $settings = [],
     ) {
         if ($id < 0 || $galleryId <= 0 || $attachmentId <= 0 || $position < 0) {
             throw new \InvalidArgumentException('Invalid gallery item identifiers.');

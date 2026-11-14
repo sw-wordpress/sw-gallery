@@ -51,6 +51,46 @@ export const LAYOUTS: LayoutsResponse = {
       label: 'Masonry',
       settingsSchema: { type: 'object', properties: {} },
     },
+    {
+      id: 'mosaic',
+      label: 'Mosaic',
+      settingsSchema: {
+        type: 'object',
+        properties: { gap: { type: 'integer', minimum: 0, maximum: 64, default: 6 } },
+        'x-item-settings': {
+          type: 'object',
+          properties: {
+            emphasis: {
+              title: 'Size in the mosaic',
+              type: 'integer',
+              enum: [1, 2, 3],
+              'x-enum-titles': { '1': 'Normal', '2': 'Large', '3': 'Extra large' },
+              default: 1,
+            },
+            focal: {
+              title: 'Focal point',
+              type: 'object',
+              properties: {
+                x: {
+                  title: 'Focal point, horizontal (%)',
+                  type: 'number',
+                  minimum: 0,
+                  maximum: 100,
+                  default: 50,
+                },
+                y: {
+                  title: 'Focal point, vertical (%)',
+                  type: 'number',
+                  minimum: 0,
+                  maximum: 100,
+                  default: 50,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   ],
 };
 
@@ -189,6 +229,7 @@ export class FakeServer {
           const updated = makeItem(itemId, {
             ...current,
             overrides,
+            settings: body.settings ?? current.settings,
             effective: {
               title: overrides.title ?? current.global?.title ?? '',
               caption: overrides.caption ?? current.global?.caption ?? '',

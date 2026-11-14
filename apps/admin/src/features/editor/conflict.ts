@@ -1,6 +1,13 @@
 import type { Gallery } from '@/api/galleries';
 import type { GalleryItem } from '@/api/items';
-import { changedDetailKeys, changedOverrideIds, deepEqual, detailsOf, orderChanged } from './model';
+import {
+  changedDetailKeys,
+  changedItemSettingsIds,
+  changedOverrideIds,
+  deepEqual,
+  detailsOf,
+  orderChanged,
+} from './model';
 import type { Base, DetailKey, Details, Working } from './model';
 
 /** The server state fetched after a conflict or failure. */
@@ -155,5 +162,12 @@ export function rebase(base: Base, work: Working, freshState: FreshState): Rebas
     overrides[id] = staged;
   }
 
-  return { base: fresh, working: { details, order, overrides }, notices };
+  // item settings: kept for items that still exist (the staged map is complete, so it replaces the server's)
+  const itemSettings: Record<number, Record<string, unknown>> = {};
+  for (const id of changedItemSettingsIds(base, work)) {
+    const staged = work.itemSettings?.[id];
+    if (staged !== undefined && fresh.items.has(id)) itemSettings[id] = { ...staged };
+  }
+
+  return { base: fresh, working: { details, order, overrides, itemSettings }, notices };
 }

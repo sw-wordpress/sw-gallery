@@ -13,6 +13,7 @@ use SWGallery\Core\Contract\LayoutRegistryInterface;
 use SWGallery\Core\Contract\LoggerInterface;
 use SWGallery\Core\Contract\MediaReferenceRepositoryInterface;
 use SWGallery\Core\Contract\RenderItemSourceInterface;
+use SWGallery\Core\Contract\RevisionStoreInterface;
 use SWGallery\Core\Contract\SimpleMarkupRendererInterface;
 use SWGallery\Core\Contract\ThumbnailResolverInterface;
 use SWGallery\Core\Domain\Access\RenderAccess;
@@ -51,6 +52,7 @@ final class RenderGallery
         private readonly SimpleMarkupRendererInterface $simpleMarkup,
         private readonly SettingsSchemaValidator $validator = new SettingsSchemaValidator(),
         private readonly ?LoggerInterface $logger = null,
+        private readonly ?RevisionStoreInterface $revisions = null,
     ) {
     }
 
@@ -131,6 +133,7 @@ final class RenderGallery
                 $this->loading(count($renderItems), $page['page'], $hints, $context),
                 $offset + $index + 1,
                 $page['items']->total,
+                $item->settings,
             );
         }
 
@@ -145,14 +148,15 @@ final class RenderGallery
             return $this->result('', $diagnosticsVisible ? $diagnostics : [], [], $page, 0, $layoutId);
         }
 
-        $request = new LayoutRenderRequest($gallery->id, $context->instanceId, $renderItems, $settings);
+        $revision = $this->revisions?->current($gallery->id)->value ?? 0;
+        $request = new LayoutRenderRequest($gallery->id, $context->instanceId, $renderItems, $settings, $revision);
         if ($context->entryPoint->isInteractive()) {
             try {
                 $html = $layout->render($request);
             } catch (\Throwable $e) {
                 [$layout, $layoutId] = $this->failedLayout($layoutId, $e, $diagnostics);
                 $html = $layout->render(
-                    new LayoutRenderRequest($gallery->id, $context->instanceId, $renderItems, $gallery->settings->withLayout($layoutId))
+                    new LayoutRenderRequest($gallery->id, $context->instanceId, $renderItems, $gallery->settings->withLayout($layoutId), $revision)
                 );
             }
 

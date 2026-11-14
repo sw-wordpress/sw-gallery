@@ -23,6 +23,12 @@ final class RenderItem
         public readonly int $position = 0,
         /** Number of items of the gallery; 0 when unknown. */
         public readonly int $total = 0,
+        /**
+         * Stored per-item layout settings (the item's `settings` map; layouts clamp what they read). Empty when none.
+         *
+         * @var array<string, mixed>
+         */
+        public readonly array $settings = [],
     ) {
         if ($itemId <= 0 || $attachmentId <= 0 || $position < 0 || $total < 0) {
             throw new \InvalidArgumentException('Invalid render item.');
