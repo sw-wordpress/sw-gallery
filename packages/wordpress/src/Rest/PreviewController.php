@@ -74,7 +74,7 @@ final class PreviewController extends AbstractController {
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'create_item' ),
 				'permission_callback' => array( $this, 'create_item_permissions_check' ),
-				'args'                => $this->validated( $this->route_args() ),
+				'args'                => $this->with_settings_limits( $this->validated( $this->route_args() ) ),
 			)
 		);
 	}

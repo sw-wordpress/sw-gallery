@@ -468,6 +468,12 @@ msgstr "Nächste Seite"
 msgid "Page %1$d of %2$d"
 msgstr "Seite %1$d von %2$d"
 
+#. translators: %s: argument name.
+#: packages/wordpress/src/Rest/AbstractController.php:125
+#, php-format
+msgid "%s is too large or nested too deeply."
+msgstr "%s ist zu groß oder zu tief verschachtelt."
+
 #: packages/wordpress/src/Rest/ErrorMapper.php:54
 msgid "The gallery data was written by a newer version of SW Gallery. Update the plugin before making changes; nothing was saved."
 msgstr "Die Galeriedaten wurden von einer neueren Version von SW Gallery geschrieben. Aktualisieren Sie das Plugin, bevor Sie Änderungen vornehmen; es wurde nichts gespeichert."
@@ -481,7 +487,7 @@ msgid "An unexpected error occurred."
 msgstr "Es ist ein unerwarteter Fehler aufgetreten."
 
 #: packages/wordpress/src/Rest/GalleryController.php:322
-#: packages/wordpress/src/Rest/ItemController.php:299
+#: packages/wordpress/src/Rest/ItemController.php:301
 #: packages/wordpress/src/Rest/SettingsController.php:92
 msgid "The request does not change anything."
 msgstr "Die Anfrage ändert nichts."
@@ -504,11 +510,11 @@ msgstr "Das Titelbild muss ein Bild sein, das Sie verwenden dürfen."
 msgid "You are not allowed to publish galleries."
 msgstr "Sie dürfen keine Galerien veröffentlichen."
 
-#: packages/wordpress/src/Rest/ItemController.php:470
+#: packages/wordpress/src/Rest/ItemController.php:472
 msgid "The settings must be an object."
 msgstr "Die Einstellungen müssen ein Objekt sein."
 
-#: packages/wordpress/src/Rest/ItemController.php:492
+#: packages/wordpress/src/Rest/ItemController.php:494
 msgid "A required parameter is missing."
 msgstr "Ein erforderlicher Parameter fehlt."
 

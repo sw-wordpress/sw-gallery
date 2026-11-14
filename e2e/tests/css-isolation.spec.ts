@@ -274,3 +274,78 @@ test('the app itself is styled (Quasar CSS is actually applied inside the root)'
   expect(await item.evaluate((el) => getComputedStyle(el).borderRadius)).toBe('12px');
   await expect(page.locator('#swg-admin-root')).toHaveClass(/swg-root/);
 });
+
+// M2-16: screens that have nothing to do with the plugin must not load a single plugin asset, so nothing of the app can
+// restyle them. Checked on the dashboard and the posts list (a heavy core screen with tables, buttons and forms).
+for (const screen of ['/wp-admin/', '/wp-admin/edit.php', '/wp-admin/options-general.php']) {
+  test(`foreign admin screen ${screen} loads no plugin asset and carries no app styles`, async ({
+    page,
+  }) => {
+    const requests: string[] = [];
+    page.on('request', (request) => requests.push(request.url()));
+    const monitor = monitorPage(page);
+
+    await page.goto(screen);
+    await expect(page.locator('#adminmenu')).toBeVisible();
+
+    // No plugin stylesheet, script, font or image was requested or embedded.
+    expect(
+      requests.filter((url) => url.includes('/plugins/sw-gallery/')),
+      'requests to the plugin directory',
+    ).toEqual([]);
+    await expect(page.locator('script[src*="sw-gallery"], link[href*="sw-gallery"]')).toHaveCount(
+      0,
+    );
+    await expect(page.locator('#swg-admin-root, .swg-root, .swg-portal')).toHaveCount(0);
+    expect(
+      await page.evaluate(() => (window as unknown as { swgAdmin?: unknown }).swgAdmin),
+      'the bootstrap object exists only on the plugin screen',
+    ).toBeUndefined();
+
+    // No rule of any loaded stylesheet belongs to Quasar or the plugin (Quasar and swg classes, body theme classes).
+    const leaked = await page.evaluate(() => {
+      const found: string[] = [];
+      for (const sheet of Array.from(document.styleSheets)) {
+        let rules: CSSRuleList;
+        try {
+          rules = sheet.cssRules;
+        } catch {
+          continue; // cross-origin sheet: not ours (the plugin serves from this origin)
+        }
+        for (const rule of Array.from(rules)) {
+          const selector = (rule as CSSStyleRule).selectorText ?? '';
+          if (/\.q-|\.swg-|\.body--(dark|light)/.test(selector)) {
+            found.push(selector.slice(0, 80));
+          }
+        }
+      }
+      return found;
+    });
+    expect(leaked, 'Quasar or plugin selectors in the page styles').toEqual([]);
+
+    // WordPress' own look is intact: core colours and fonts, none of the app's tokens.
+    const look = await page.evaluate(() => {
+      const css = (selector: string, property: string): string => {
+        const el = document.querySelector(selector);
+        return el
+          ? ((getComputedStyle(el) as unknown as Record<string, string>)[property] ?? 'missing')
+          : 'missing';
+      };
+      return {
+        menuBackground: css('#adminmenu', 'backgroundColor'),
+        barBackground: css('#wpadminbar', 'backgroundColor'),
+        bodyFontSize: css('body', 'fontSize'),
+        bodyFont: css('body', 'fontFamily'),
+        bodyBackground: css('body', 'backgroundColor'),
+        appTokenOnRoot: getComputedStyle(document.documentElement).getPropertyValue('--q-primary'),
+      };
+    });
+    expect(look.menuBackground).toBe('rgb(29, 35, 39)');
+    expect(look.barBackground).toBe('rgb(29, 35, 39)');
+    expect(look.bodyFontSize).toBe('13px');
+    expect(look.bodyFont).not.toMatch(/Inter|JetBrains/i);
+    expect(look.bodyBackground).toBe('rgb(240, 240, 241)');
+    expect(look.appTokenOnRoot.trim()).toBe('');
+    expect(monitor.failedRequests, 'failed requests').toEqual([]);
+  });
+}
