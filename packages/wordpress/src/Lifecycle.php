@@ -71,27 +71,22 @@ final class Lifecycle {
 		}
 	}
 
-	/** Deletes galleries in bounded batches; stops when a batch makes no progress. */
+	/**
+	 * Deletes galleries of every status in bounded batches; stops when a batch makes no progress. The ids come straight
+	 * from the posts table: `get_posts( post_status: any )` skips the trash and, without a logged-in user (WP-CLI
+	 * `wp plugin uninstall`), private galleries, which would stay behind with their meta.
+	 */
 	private static function delete_galleries(): void {
+		global $wpdb;
 		$previous = array();
 		$full     = false;
 		do {
-			$ids = get_posts(
-				array(
-					'post_type'      => PostTypes::GALLERY,
-					'post_status'    => 'any',
-					'fields'         => 'ids',
-					'posts_per_page' => self::BATCH_SIZE,
-					'orderby'        => 'ID',
-					'order'          => 'ASC',
-					'no_found_rows'  => true,
-				)
-			);
+			$ids = array_map( 'intval', (array) $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s ORDER BY ID ASC LIMIT %d", PostTypes::GALLERY, self::BATCH_SIZE ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- core table name; the uninstall path must see every status.
 			if ( array() === $ids || $ids === $previous ) {
 				return;
 			}
 			foreach ( $ids as $gallery_id ) {
-				wp_delete_post( (int) $gallery_id, true );
+				wp_delete_post( $gallery_id, true );
 			}
 			$previous = $ids;
 			$full     = count( $ids ) >= self::BATCH_SIZE;

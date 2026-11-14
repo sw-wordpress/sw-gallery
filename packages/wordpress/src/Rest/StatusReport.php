@@ -62,6 +62,7 @@ final class StatusReport {
 				'stored'           => $stored,
 				'current'          => Schema::CURRENT,
 				'migrationPending' => $stored < Schema::CURRENT,
+				'newerThanCode'    => $stored > Schema::CURRENT,
 				'itemTablePresent' => $present,
 			),
 			'counts'       => array(

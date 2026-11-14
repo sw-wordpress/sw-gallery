@@ -24,6 +24,7 @@ use SWGallery\Core\Exception\RevisionConflictException;
 use SWGallery\Core\Exception\UnknownLayoutException;
 use SWGallery\Core\Exception\ValidationFailedException;
 use SWGallery\Core\Logging\LogLevel;
+use SWGallery\WordPress\Database\SchemaNewerException;
 use SWGallery\WordPress\Support\CoreMessages;
 
 /**
@@ -46,6 +47,13 @@ final class ErrorMapper {
 	public function map( \Throwable $error, Actor $actor ): \WP_Error {
 		if ( $error instanceof GalleryException ) {
 			return $this->map_domain( $error, $actor );
+		}
+		if ( $error instanceof SchemaNewerException ) {
+			return new \WP_Error(
+				SchemaNewerException::CODE,
+				__( 'The gallery data was written by a newer version of SW Gallery. Update the plugin before making changes; nothing was saved.', 'sw-gallery' ),
+				array( 'status' => 503 )
+			);
 		}
 		if ( $error instanceof \InvalidArgumentException ) {
 			// Domain validation text is developer English and may echo input; the response stays generic.

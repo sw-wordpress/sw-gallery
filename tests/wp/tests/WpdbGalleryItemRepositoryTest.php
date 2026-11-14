@@ -138,7 +138,7 @@ class WpdbGalleryItemRepositoryTest extends SwgTestCase {
 		$b = $this->repository->append( 10, 102 )->id;
 
 		$fail = static function ( string $query ): string {
-			return str_contains( $query, 'SET `position` = 2' ) ? 'SELECT * FROM swg_missing_table_for_rollback' : $query;
+			return str_contains( $query, 'SET position = CASE id' ) ? 'SELECT * FROM swg_missing_table_for_rollback' : $query;
 		};
 		add_filter( 'query', $fail );
 		$wpdb->suppress_errors( true );

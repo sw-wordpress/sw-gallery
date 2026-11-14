@@ -52,6 +52,7 @@
         "test:wp": "cd tests/wp && vendor/bin/phpunit -c phpunit.xml.dist",
         "test:wp:ms": "cd tests/wp && vendor/bin/phpunit -c phpunit-ms.xml.dist",
         "version:check": "bin/version.sh check",
+        "test:perf": "cd tests/wp && vendor/bin/phpunit -c phpunit.xml.dist --group performance",
         "check": ["@version:check", "@cs", "@cs:wp", "@stan", "@test"]
     }
 }

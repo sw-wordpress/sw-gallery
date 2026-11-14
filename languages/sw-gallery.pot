@@ -461,16 +461,20 @@ msgstr ""
 msgid "Page %1$d of %2$d"
 msgstr ""
 
-#: packages/wordpress/src/Rest/ErrorMapper.php:52
+#: packages/wordpress/src/Rest/ErrorMapper.php:54
+msgid "The gallery data was written by a newer version of SW Gallery. Update the plugin before making changes; nothing was saved."
+msgstr ""
+
+#: packages/wordpress/src/Rest/ErrorMapper.php:60
 msgid "The request contains invalid values."
 msgstr ""
 
-#: packages/wordpress/src/Rest/ErrorMapper.php:131
+#: packages/wordpress/src/Rest/ErrorMapper.php:139
 msgid "An unexpected error occurred."
 msgstr ""
 
 #: packages/wordpress/src/Rest/GalleryController.php:322
-#: packages/wordpress/src/Rest/ItemController.php:297
+#: packages/wordpress/src/Rest/ItemController.php:299
 #: packages/wordpress/src/Rest/SettingsController.php:92
 msgid "The request does not change anything."
 msgstr ""
@@ -493,11 +497,11 @@ msgstr ""
 msgid "You are not allowed to publish galleries."
 msgstr ""
 
-#: packages/wordpress/src/Rest/ItemController.php:468
+#: packages/wordpress/src/Rest/ItemController.php:470
 msgid "The settings must be an object."
 msgstr ""
 
-#: packages/wordpress/src/Rest/ItemController.php:490
+#: packages/wordpress/src/Rest/ItemController.php:492
 msgid "A required parameter is missing."
 msgstr ""
 
@@ -551,7 +555,7 @@ msgstr ""
 msgid "When the plugin is deleted, all galleries and their image relations are removed. Images in the Media Library are never deleted."
 msgstr ""
 
-#: packages/wordpress/src/Rest/StatusReport.php:88
+#: packages/wordpress/src/Rest/StatusReport.php:89
 msgid "Galleries are not exported in 1.0. WordPress export and migration tools move galleries without their images, and attachment IDs change on import. A gallery export with ID remapping is planned."
 msgstr ""
 

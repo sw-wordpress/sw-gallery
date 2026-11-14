@@ -20,6 +20,14 @@ final class Schema {
 		return $wpdb->prefix . 'swg_gallery_items';
 	}
 
+	/**
+	 * Whether the stored schema version is newer than this code knows (the plugin was downgraded). Writes are refused
+	 * (WpTransactionRunner) and nothing is migrated (Migrator), so a newer schema is never altered by older code.
+	 */
+	public static function newer_than_code(): bool {
+		return (int) get_option( self::OPTION, 0 ) > self::CURRENT;
+	}
+
 	/** Cheap check on normal requests; DDL only runs when the stored version is behind. */
 	public static function maybe_migrate(): void {
 		$migrator = self::migrator();

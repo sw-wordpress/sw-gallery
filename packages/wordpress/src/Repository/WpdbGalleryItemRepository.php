@@ -26,6 +26,9 @@ final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface,
 	/** Upper bound of the stored JSON of one item's settings, in bytes. */
 	public const MAX_SETTINGS_BYTES = 65536;
 
+	/** Rows per `CASE` UPDATE of applyOrder() (keeps one statement far below max_allowed_packet). */
+	public const ORDER_CHUNK = 1000;
+
 	public function __construct( private readonly ?WpTransactionRunner $transactions = null ) {
 	}
 
@@ -163,23 +166,33 @@ final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface,
 		return 1 === $deleted;
 	}
 
+	/**
+	 * Stores the new order: one SELECT of the current positions, then one `CASE` UPDATE per ORDER_CHUNK rows whose
+	 * position actually changes (M2-07, measured in docs/performance.md). A single move touches only the span between
+	 * the old and the new place; positions become contiguous (1..n) as before.
+	 */
 	public function applyOrder( int $galleryId, array $itemIds ): void {
 		global $wpdb;
 		$table = Schema::items_table();
 		// Joins the caller's transaction when there is one; a stand-alone call is atomic by itself.
 		( $this->transactions ?? new WpTransactionRunner() )->run(
 			static function () use ( $wpdb, $table, $galleryId, $itemIds ): void {
+				$stored  = $wpdb->get_results( $wpdb->prepare( "SELECT id, position FROM {$table} WHERE gallery_id = %d", $galleryId ), OBJECT_K ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from prefix.
+				$changed = array();
 				foreach ( $itemIds as $index => $item_id ) {
-					$result = $wpdb->update(
-						$table,
-						array( 'position' => $index + 1 ),
-						array(
-							'id'         => $item_id,
-							'gallery_id' => $galleryId,
-						),
-						array( '%d' ),
-						array( '%d', '%d' )
-					);
+					$position = $index + 1;
+					$row      = $stored[ $item_id ] ?? null;
+					if ( null === $row || (int) $row->position !== $position ) {
+						$changed[ (int) $item_id ] = $position;
+					}
+				}
+				foreach ( array_chunk( $changed, self::ORDER_CHUNK, true ) as $chunk ) {
+					$cases = '';
+					foreach ( $chunk as $item_id => $position ) {
+						$cases .= $wpdb->prepare( ' WHEN %d THEN %d', $item_id, $position );
+					}
+					$ids    = implode( ',', array_map( 'intval', array_keys( $chunk ) ) );
+					$result = $wpdb->query( $wpdb->prepare( "UPDATE {$table} SET position = CASE id{$cases} END WHERE gallery_id = %d AND id IN ({$ids})", $galleryId ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- table name from prefix, ids are integers and the CASE arms were prepared above.
 					if ( false === $result ) {
 						throw new \RuntimeException( 'The order could not be stored.' );
 					}
