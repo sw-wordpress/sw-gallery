@@ -15,6 +15,8 @@ final class BuiltInLayouts {
 
 	/** Registers every built-in layout. The public extension point (`swg_register_layouts`) runs after this. */
 	public static function register( LayoutRegistry $registry ): void {
+		$registry->register( new CarouselLayout() );
+		$registry->register( new FocusLayout() );
 		$registry->register( new GridLayout() );
 		$registry->register( new JustifiedLayout() );
 		$registry->register( new MasonryLayout() );

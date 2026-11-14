@@ -131,6 +131,37 @@ class RenderSnapshotTest extends SwgTestCase {
 		$this->assert_snapshot( 'masonry', $this->normalise( $this->render( $fixture['gallery'] )->html, $fixture ) );
 	}
 
+	public function test_snapshot_carousel(): void {
+		$fixture = $this->fixed_gallery( 'carousel', array( 'height' => 240, 'gap' => 10 ) );
+		$result  = $this->render( $fixture['gallery'] );
+		$this->assertSame( array( RenderAsset::Lightbox, RenderAsset::Carousel ), $result->assets );
+		$this->assert_snapshot( 'carousel', $this->normalise( $result->html, $fixture ) );
+	}
+
+	public function test_snapshot_focus(): void {
+		$fixture = $this->fixed_gallery( 'focus', array( 'thumbs' => 'start', 'stageRatio' => '16:9' ) );
+		$result  = $this->render( $fixture['gallery'] );
+		$this->assertSame( array( RenderAsset::Lightbox, RenderAsset::Focus ), $result->assets );
+		$this->assert_snapshot( 'focus', $this->normalise( $result->html, $fixture ) );
+	}
+
+	public function test_focus_anchors_stay_unique_when_a_cached_result_is_reused_by_another_instance(): void {
+		$fixture = $this->fixed_gallery( 'focus' );
+		// Fills the cache: variant of the first embed (instance 1) and of later embeds (stored from instance 2).
+		wp_set_current_user( 0 );
+		Services::reset();
+		do_shortcode( '[sw_gallery id="' . $fixture['gallery'] . '"][sw_gallery id="' . $fixture['gallery'] . '"]' );
+		Services::reset();
+		$html = do_shortcode( '[sw_gallery id="' . $fixture['gallery'] . '"][sw_gallery id="' . $fixture['gallery'] . '"][sw_gallery id="' . $fixture['gallery'] . '"]' );
+
+		preg_match_all( '/ id="(swg-[^"]+)"/', $html, $ids );
+		$this->assertCount( 15, $ids[1] );
+		$this->assertCount( 15, array_unique( $ids[1] ), 'The third embed (cache hit stored for the second) must not reuse the anchors of the first.' );
+		preg_match_all( '/href="#(swg-[^"]+)"/', $html, $links );
+		$this->assertEqualsCanonicalizing( $ids[1], $links[1], 'Every thumbnail links to an anchor of its own instance.' );
+		$this->assertStringNotContainsString( 'swg-instance-placeholder', $html );
+	}
+
 	public function test_snapshot_feed(): void {
 		$fixture = $this->fixed_gallery();
 		$this->assert_snapshot( 'feed', $this->normalise( $this->render( $fixture['gallery'], 0, EntryPoint::Feed )->html, $fixture ) );

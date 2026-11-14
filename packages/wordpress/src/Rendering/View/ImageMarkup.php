@@ -44,7 +44,7 @@ final class ImageMarkup {
 	 * names the link and an aria-label would duplicate it): the item's title, else "Image N of M" with the position
 	 * among the items of the whole gallery. Empty when nothing applies (position unknown).
 	 */
-	private static function link_label( RenderItem $item ): string {
+	public static function link_label( RenderItem $item ): string {
 		if ( '' !== trim( $item->alt ) ) {
 			return '';
 		}
@@ -59,12 +59,9 @@ final class ImageMarkup {
 	}
 
 	/**
-	 * `<li class="swg-item">` with the lightbox link, the thumbnail and the optional caption.
-	 *
-	 * @param RenderItem $item       The item.
-	 * @param string     $item_style Optional style attribute value of the `li`; callers pass validated numbers only.
+	 * The lightbox link `<a class="swg-link">` with the thumbnail image (the only element the lightbox enhances).
 	 */
-	public static function lightbox_item( RenderItem $item, string $item_style = '' ): string {
+	public static function lightbox_link( RenderItem $item ): string {
 		$full = $item->full ?? $item->thumbnail;
 		$link = sprintf( ' href="%s"', esc_url( $full->url ) );
 		if ( $full->width > 0 && $full->height > 0 ) {
@@ -80,12 +77,25 @@ final class ImageMarkup {
 		if ( '' !== $label ) {
 			$link .= sprintf( ' aria-label="%s"', esc_attr( $label ) );
 		}
-		$caption = '' === $item->caption ? '' : sprintf( '<p class="swg-caption">%s</p>', CaptionPolicy::html( $item->caption ) );
+		return sprintf( '<a class="swg-link"%s>%s</a>', $link, self::image( $item->thumbnail, $item->alt, $item->loading ) );
+	}
+
+	/** The caption paragraph (allowlisted markup) or an empty string. */
+	public static function caption( RenderItem $item ): string {
+		return '' === $item->caption ? '' : sprintf( '<p class="swg-caption">%s</p>', CaptionPolicy::html( $item->caption ) );
+	}
+
+	/**
+	 * `<li class="swg-item">` with the lightbox link, the thumbnail and the optional caption.
+	 *
+	 * @param RenderItem $item       The item.
+	 * @param string     $item_style Optional style attribute value of the `li`; callers pass validated numbers only.
+	 */
+	public static function lightbox_item( RenderItem $item, string $item_style = '' ): string {
 		return sprintf(
-			'<li class="swg-item"%4$s><a class="swg-link"%1$s>%2$s</a>%3$s</li>',
-			$link,
-			self::image( $item->thumbnail, $item->alt, $item->loading ),
-			$caption,
+			'<li class="swg-item"%3$s>%1$s%2$s</li>',
+			self::lightbox_link( $item ),
+			self::caption( $item ),
 			'' === $item_style ? '' : sprintf( ' style="%s"', esc_attr( $item_style ) )
 		);
 	}

@@ -5,12 +5,14 @@ import { defineConfig } from 'vitest/config';
  * Public frontend assets, built in two runs that scripts/build-all.mjs merges into one manifest
  * (rolldown cannot emit several IIFE entries in one build, hence one run per entry, selected by SWG_ENTRY):
  * - `lightbox`: a classic (non-module) script, an IIFE bundle without runtime dependencies, plus its stylesheet;
- * - `masonry`: the progressive-enhancement script of the masonry layout (`frontend/src/masonry.ts`), classic IIFE too;
- * - `layouts`: the CSS-only layout stylesheet (`frontend/src/layouts.css`; grid, justified, masonry), no script.
+ * - `masonry`, `carousel`, `focus`: the progressive-enhancement scripts of those layouts (`frontend/src/<name>.ts`), classic IIFE too;
+ * - `layouts`: the CSS-only layout stylesheet (`frontend/src/layouts.css`; grid, justified, masonry, carousel, focus), no script.
  */
 const entries: Record<string, string> = {
   lightbox: resolve(import.meta.dirname, 'lightbox/src/main.ts'),
   masonry: resolve(import.meta.dirname, 'frontend/src/masonry.ts'),
+  carousel: resolve(import.meta.dirname, 'frontend/src/carousel.ts'),
+  focus: resolve(import.meta.dirname, 'frontend/src/focus.ts'),
   layouts: resolve(import.meta.dirname, 'frontend/src/layouts.css'),
 };
 const name = process.env.SWG_ENTRY ?? 'lightbox';
@@ -31,6 +33,11 @@ export default defineConfig({
     // Matches the shared browserslist (package.json): evergreen browsers, Safari >= 16.
     target: ['es2021', 'chrome100', 'edge100', 'firefox100', 'safari16', 'ios16'],
     modulePreload: false,
+    // The stylesheet uses `:dir(rtl)` (carousel chevrons). A lower CSS target would lower it to `:lang(ar), ...` rules that
+    // miss `dir="rtl"` documents; Chrome/Edge 120 and Safari 16.4 support it natively (older ones only lose the chevron mirroring).
+    ...(cssOnly
+      ? { cssTarget: ['chrome120', 'edge120', 'firefox100', 'safari16.4', 'ios16.4'] }
+      : {}),
     // Library mode (IIFE) keeps the CSS as a separate file instead of injecting it from the script.
     ...(cssOnly
       ? {}

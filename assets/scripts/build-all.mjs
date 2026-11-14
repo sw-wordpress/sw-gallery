@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-const ENTRIES = ['lightbox', 'masonry', 'layouts'];
+const ENTRIES = ['lightbox', 'masonry', 'carousel', 'focus', 'layouts'];
 const root = fileURLToPath(new URL('..', import.meta.url));
 const manifestFile = new URL('../build/.vite/manifest.json', import.meta.url);
 const vite = fileURLToPath(new URL('../node_modules/vite/bin/vite.js', import.meta.url));

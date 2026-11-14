@@ -117,7 +117,7 @@ final class RenderCache {
 			}
 		}
 		return new RenderResult(
-			str_replace( self::instance_attribute( self::PLACEHOLDER ), self::instance_attribute( $instance_id ), $data['html'] ),
+			self::swap_instance( $data['html'], self::PLACEHOLDER, $instance_id ),
 			RenderAccess::Render,
 			array(),
 			$assets,
@@ -143,7 +143,7 @@ final class RenderCache {
 		wp_cache_set(
 			$key,
 			array(
-				'html'          => str_replace( self::instance_attribute( $instance_id ), self::instance_attribute( self::PLACEHOLDER ), $result->html ),
+				'html'          => self::swap_instance( $result->html, $instance_id, self::PLACEHOLDER ),
 				'assets'        => array_map( static fn ( RenderAsset $asset ): string => $asset->value, $result->assets ),
 				'page'          => $result->page,
 				'totalPages'    => $result->totalPages,
@@ -158,6 +158,22 @@ final class RenderCache {
 
 	private static function instance_attribute( string $instance_id ): string {
 		return 'data-swg-instance="' . $instance_id . '"';
+	}
+
+	/**
+	 * Replaces the instance id in the places a layout writes it: the instance attribute and element ids or in-page
+	 * links derived from it (`id="<instance>-…"`, `href="#<instance>-…"`; e.g. the `focus` layout's `:target` anchors).
+	 *
+	 * @param string $html Markup.
+	 * @param string $from Instance id (or placeholder) to replace.
+	 * @param string $to   Replacement.
+	 */
+	private static function swap_instance( string $html, string $from, string $to ): string {
+		return str_replace(
+			array( self::instance_attribute( $from ), 'id="' . $from . '-', 'href="#' . $from . '-' ),
+			array( self::instance_attribute( $to ), 'id="' . $to . '-', 'href="#' . $to . '-' ),
+			$html
+		);
 	}
 
 	/**

@@ -1,0 +1,179 @@
+/*
+ * Focus (spotlight, layout `focus`): one stage image and a thumbnail strip. Without JavaScript the stage shows the panel
+ * that is `:target` (the first one by default; thumbnails are in-page links); focus.ts adds `.swg-focus-active` and
+ * `.swg-current` for instant switching. The stage image is never cropped (`object-fit: contain` on a neutral
+ * background), so any ratio of image can be shown.
+ *
+ * Public custom properties: --swg-stage-ratio (3/2), --swg-thumb-size (80px), --swg-gap, --swg-thumb-radius,
+ * --swg-stage-bg (neutral stage background), --swg-focus-ring, --swg-current-ring (ring of the current thumbnail).
+ */
+
+.swg-layout-focus {
+  container-type: inline-size;
+}
+
+/* A container cannot restyle itself from its own container query, hence the inner body. */
+.swg-focus__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--swg-gap, 8px);
+}
+
+.swg-stage > .swg-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+ * Panels: only one is displayed. Without JavaScript that is the panel whose anchor is the target, or the first panel
+ * when nothing is targeted. The anchor is fixed and empty: browsers have nothing to scroll to, so a click on a thumbnail
+ * does not move the page (a plain target would align the stage with the top of the viewport). Needs :has() (Firefox
+ * >= 121); older browsers keep showing the first image.
+ */
+.swg-anchor {
+  position: fixed;
+  inset-block-start: 0;
+  inline-size: 0;
+  block-size: 0;
+}
+
+.swg-gallery.swg-layout-focus .swg-panel {
+  display: none;
+}
+
+.swg-gallery.swg-layout-focus:not(.swg-focus-active) .swg-panel:first-child,
+.swg-gallery.swg-layout-focus:not(.swg-focus-active) .swg-panel:has(.swg-anchor:target) {
+  display: flex;
+}
+
+.swg-gallery.swg-layout-focus:not(.swg-focus-active)
+  .swg-stage:has(.swg-anchor:target)
+  .swg-panel:first-child:not(:has(.swg-anchor:target)) {
+  display: none;
+}
+
+.swg-gallery.swg-layout-focus.swg-focus-active .swg-panel.swg-current {
+  display: flex;
+}
+
+.swg-gallery.swg-layout-focus .swg-stage .swg-link {
+  aspect-ratio: var(--swg-stage-ratio, 3 / 2);
+  max-block-size: 80vh;
+  background: var(--swg-stage-bg, color-mix(in srgb, CanvasText 8%, Canvas));
+}
+
+.swg-gallery.swg-layout-focus .swg-stage .swg-link img {
+  block-size: 100%;
+  object-fit: contain;
+}
+
+/* The stage is a click target for the lightbox, not a hover effect. */
+.swg-gallery.swg-layout-focus .swg-stage .swg-link:hover img,
+.swg-gallery.swg-layout-focus .swg-stage .swg-link:focus-visible img {
+  transform: none;
+}
+
+.swg-gallery.swg-layout-focus .swg-stage .swg-link {
+  cursor: zoom-in;
+}
+
+/* Thumbnails: a scrolling strip below the stage (or a column beside it in wide containers). */
+.swg-thumbs {
+  display: flex;
+  gap: var(--swg-gap, 8px);
+  overflow: auto hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+}
+
+.swg-thumb-item {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.swg-gallery .swg-thumb {
+  display: block;
+  inline-size: var(--swg-thumb-size, 80px);
+  block-size: var(--swg-thumb-size, 80px);
+  overflow: hidden;
+  border-radius: var(--swg-thumb-radius, 4px);
+  line-height: 0;
+}
+
+.swg-gallery .swg-thumb img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  margin: 0;
+  border-radius: 0;
+}
+
+.swg-gallery .swg-thumb:focus-visible {
+  outline: var(--swg-focus-ring, 3px solid Highlight);
+  outline-offset: 2px;
+}
+
+.swg-focus-active .swg-thumb {
+  opacity: 0.6;
+}
+
+.swg-focus-active .swg-thumb:hover,
+.swg-focus-active .swg-thumb[aria-current='true'] {
+  opacity: 1;
+}
+
+.swg-gallery .swg-thumb[aria-current='true'] {
+  outline: var(--swg-current-ring, 2px solid currentcolor);
+  outline-offset: 2px;
+}
+
+.swg-gallery .swg-thumb[aria-current='true']:focus-visible {
+  outline: var(--swg-focus-ring, 3px solid Highlight);
+}
+
+@container (min-width: 600px) {
+  .swg-thumbs-start .swg-focus__body {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .swg-thumbs-start .swg-thumbs {
+    order: -1;
+    flex-direction: column;
+    overflow: hidden auto;
+    contain: size;
+    inline-size: calc(var(--swg-thumb-size, 80px) + 8px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .swg-focus-moved .swg-panel.swg-current {
+    animation: swg-focus-in 0.25s ease;
+  }
+
+  .swg-thumb {
+    transition: opacity 0.15s ease;
+  }
+}
+
+@keyframes swg-focus-in {
+  from {
+    opacity: 0.2;
+  }
+}
+
+/* Visually hidden text for the live region added by focus.ts. */
+.swg-sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

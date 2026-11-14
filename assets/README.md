@@ -127,3 +127,9 @@ Dialog (`role="dialog"`, `aria-modal`, no native `<dialog>`), siblings of the po
 - `justified` (CSS only): `li` flex items, `--swg-ar` (ratio, set per item by PHP from validated numbers) drives `flex-grow` and `flex-basis = ratio * row height`; a zero-width filler keeps the last row at its natural height unless `.swg-last-justify`. Settings become `--swg-row-height[-sm|md|lg|xl]`, `--swg-gap`. Rows break greedily, so a very narrow item can end up alone in a row on narrow containers and then fills the width.
 - `masonry`: grid in editor order; `masonry.ts` adds `.swg-masonry-active` (1px rows) and `grid-row-end: span N` per item from the measured height plus gap. DOM order is never changed; a `ResizeObserver` re-packs. Ratios come from the `width`/`height` attributes, so nothing shifts while images load.
 - `aspect-ratio` is only set by CSS when the layout emitted `--swg-aspect` (an author `auto` would disable the attribute-derived ratio).
+
+## Carousel and focus
+
+- `frontend/src/carousel.ts` / `focus.ts`: classic IIFE scripts (`window.swgCarousel` / `window.swgFocus` = `{ init(root?), destroy(container) }`, idempotent), registered like masonry (manifest keys `frontend/src/carousel.ts`, `frontend/src/focus.ts`; budget 2 KB gzip each, currently about 1.6 and 1.5 KB). Styles: `carousel.css`, `focus.css`, imported by `layouts.css`.
+- Extra `data-swg-labels` keys (ignored by the lightbox): `carousel`, `stage`, `thumbnails`. Properties: `--swg-carousel-height[-sm|md|lg|xl]`, `--swg-stage-ratio`, `--swg-thumb-size`, `--swg-carousel-button-bg|fg`, `--swg-stage-bg`, `--swg-current-ring`.
+- Fixtures: `frontend/fixtures/carousel.html`, `focus.html` (CSS works from the file; `npx vite --open /frontend/fixtures/<name>.html` adds the script).

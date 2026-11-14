@@ -360,7 +360,7 @@ msgstr "Galerie bearbeiten"
 msgid "Edit gallery: %s"
 msgstr "Galerie bearbeiten: %s"
 
-#: packages/wordpress/src/Frontend/FrontendAssets.php:83
+#: packages/wordpress/src/Frontend/FrontendAssets.php:87
 msgid "Gallery diagnostic (visible to editors only): the gallery frontend assets are missing or invalid. Run \"npm run build\" in assets or install the release package."
 msgstr "Galerie-Diagnose (nur für Redakteure sichtbar): Die Frontend-Dateien der Galerie fehlen oder sind ungültig. Führe \"npm run build\" in assets aus oder installiere das Release-Paket."
 
@@ -403,6 +403,84 @@ msgstr[1] "Galerie-Hinweis (nur für Redakteure sichtbar): %d Bilder fehlen oder
 msgid "Gallery diagnostic (visible to editors only)."
 msgstr "Galerie-Hinweis (nur für Redakteure sichtbar)."
 
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:66
+msgid "Slide height (px)"
+msgstr "Höhe der Folien (px)"
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:67
+msgid "Every slide is as wide as its height times its aspect ratio."
+msgstr "Jede Folie ist so breit wie ihre Höhe mal ihr Seitenverhältnis."
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:85
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:117
+#: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:74
+msgid "Corner radius (px)"
+msgstr "Eckenradius (px)"
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:88
+msgid "Previous/next buttons"
+msgstr "Vor-/Zurück-Schaltflächen"
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:89
+msgid "Shows buttons when JavaScript is available; swiping, scrolling and the arrow keys always work."
+msgstr "Zeigt Schaltflächen, wenn JavaScript verfügbar ist; Wischen, Scrollen und die Pfeiltasten funktionieren immer."
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:94
+msgid "Snap position"
+msgstr "Einrastposition"
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:98
+msgid "Slide starts at the edge"
+msgstr "Folie beginnt am Rand"
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:99
+msgid "Slide is centred"
+msgstr "Folie ist zentriert"
+
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:134
+#: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:136
+msgid "Image carousel"
+msgstr "Bilder-Karussell"
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:79
+msgid "Stage ratio"
+msgstr "Seitenverhältnis der Bühne"
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:80
+msgid "Images are never cropped on the stage; auto uses the ratio of the first image."
+msgstr "Bilder werden auf der Bühne nie beschnitten; „Wie das erste Bild“ nutzt dessen Seitenverhältnis."
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:84
+msgid "Like the first image"
+msgstr "Wie das erste Bild"
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:93
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:164
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:170
+msgid "Thumbnails"
+msgstr "Vorschaubilder"
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:94
+msgid "Narrow containers always show the thumbnails below."
+msgstr "Schmale Container zeigen die Vorschaubilder immer darunter."
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:98
+msgid "Below the stage"
+msgstr "Unter der Bühne"
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:99
+msgid "Beside the stage"
+msgstr "Neben der Bühne"
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:104
+msgid "Thumbnail size (px)"
+msgstr "Größe der Vorschaubilder (px)"
+
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:163
+#: packages/wordpress/src/Rendering/Layout/FocusLayout.php:168
+msgid "Selected image"
+msgstr "Ausgewähltes Bild"
+
 #: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:69
 msgid "Row height (px)"
 msgstr "Zeilenhöhe (px)"
@@ -422,10 +500,6 @@ msgstr "Natürliche Höhe (linksbündig)"
 #: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:90
 msgid "Stretch to full width"
 msgstr "Auf volle Breite strecken"
-
-#: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:74
-msgid "Corner radius (px)"
-msgstr "Eckenradius (px)"
 
 #: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:75
 msgid "0 keeps the images square, which suits a tightly packed masonry wall."

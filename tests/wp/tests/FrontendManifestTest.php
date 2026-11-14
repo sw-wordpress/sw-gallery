@@ -104,6 +104,25 @@ class FrontendManifestTest extends SwgTestCase {
 		}
 	}
 
+	public function test_every_layout_script_is_resolved_from_the_table_and_validated(): void {
+		$this->touch_build( 'lightbox-abc.js', 'lightbox-abc.css', 'layouts-abc.css', 'carousel-abc.js', 'focus-abc.js', 'x.css' );
+		$manifest = $this->entries();
+		$manifest[ SWGallery\WordPress\Frontend\LayoutScripts::MANIFEST_KEYS['carousel'] ] = array( 'file' => 'carousel-abc.js' );
+		$manifest[ SWGallery\WordPress\Frontend\LayoutScripts::MANIFEST_KEYS['focus'] ]    = array( 'file' => 'x.css' );
+		$this->write_manifest( $manifest );
+
+		$this->assertSame(
+			array(
+				'masonry'  => null,
+				'carousel' => 'carousel-abc.js',
+				'focus'    => null,
+			),
+			( new FrontendManifest( $this->build ) )->layout_scripts()
+		);
+		$this->assertSame( array( 'masonry', 'carousel', 'focus' ), array_keys( ( new FrontendManifest( $this->root . '/does-not-exist' ) )->layout_scripts() ) );
+		$this->assertSame( array( null, null, null ), array_values( ( new FrontendManifest( $this->root . '/does-not-exist' ) )->layout_scripts() ) );
+	}
+
 	public function test_a_missing_build_or_manifest_yields_nothing(): void {
 		$none = array(
 			'script'  => null,

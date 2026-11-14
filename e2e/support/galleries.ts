@@ -317,3 +317,35 @@ export function tinyPngSized(rgb: [number, number, number], width: number, heigh
     chunk('IEND', Buffer.alloc(0)),
   ]);
 }
+
+/** A valid PNG with a diagonal two-colour gradient and a darker lower third (review screenshots look like photos, not flat tiles). */
+export function gradientPng(
+  from: [number, number, number],
+  to: [number, number, number],
+  width: number,
+  height: number,
+): Buffer {
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header[8] = 8;
+  header[9] = 2;
+  const stride = width * 3 + 1;
+  const raw = Buffer.alloc(stride * height);
+  for (let y = 0; y < height; y += 1) {
+    const shade = y > height * 0.62 ? 0.72 : 1;
+    for (let x = 0; x < width; x += 1) {
+      const t = (x / width + y / height) / 2;
+      for (let c = 0; c < 3; c += 1) {
+        const value = (from[c] as number) + ((to[c] as number) - (from[c] as number)) * t;
+        raw[y * stride + 1 + x * 3 + c] = Math.round(value * shade);
+      }
+    }
+  }
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', header),
+    chunk('IDAT', deflateSync(raw)),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
+}

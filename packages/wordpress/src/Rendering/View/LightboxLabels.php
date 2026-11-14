@@ -28,8 +28,12 @@ final class LightboxLabels {
 		);
 	}
 
-	/** The escaped attribute value. */
-	public static function attribute(): string {
-		return esc_attr( (string) wp_json_encode( self::all() ) );
+	/**
+	 * The escaped attribute value.
+	 *
+	 * @param array<string, string> $extra Additional translated labels of a layout script (carousel, focus), merged after the lightbox keys.
+	 */
+	public static function attribute( array $extra = array() ): string {
+		return esc_attr( (string) wp_json_encode( array_merge( self::all(), $extra ) ) );
 	}
 }

@@ -26,9 +26,10 @@ use SWGallery\WordPress\Settings\PluginSettings;
  */
 final class FrontendAssets {
 
-	public const HANDLE_LAYOUT  = 'swg-frontend-layouts';
-	public const HANDLE_STYLE   = 'swg-lightbox';
-	public const HANDLE_SCRIPT  = 'swg-lightbox';
+	public const HANDLE_LAYOUT = 'swg-frontend-layouts';
+	public const HANDLE_STYLE  = 'swg-lightbox';
+	public const HANDLE_SCRIPT = 'swg-lightbox';
+	/** Handle of the masonry script; the handles of all layout scripts come from {@see LayoutScripts::handle()}. */
 	public const HANDLE_MASONRY = 'swg-masonry';
 	public const SHORTCODE      = 'sw_gallery';
 	public const BLOCK          = 'sw-gallery/gallery';
@@ -68,8 +69,11 @@ final class FrontendAssets {
 			wp_enqueue_script( self::HANDLE_SCRIPT );
 		}
 		// Independent of the lightbox setting: without it a masonry gallery would stay a plain grid.
-		if ( $this->collector->needs( RenderAsset::Masonry ) && wp_script_is( self::HANDLE_MASONRY, 'registered' ) ) {
-			wp_enqueue_script( self::HANDLE_MASONRY );
+		foreach ( LayoutScripts::assets() as $asset ) {
+			$handle = LayoutScripts::handle( $asset );
+			if ( $this->collector->needs( $asset ) && wp_script_is( $handle, 'registered' ) ) {
+				wp_enqueue_script( $handle );
+			}
 		}
 	}
 
@@ -104,8 +108,10 @@ final class FrontendAssets {
 				$js[] = $this->versioned_url( $files['script'] );
 			}
 		}
-		if ( null !== $files['masonry'] ) {
-			$js[] = $this->versioned_url( $files['masonry'] );
+		foreach ( $this->manifest->layout_scripts() as $file ) {
+			if ( null !== $file ) {
+				$js[] = $this->versioned_url( $file );
+			}
 		}
 		return array(
 			'css' => $css,
@@ -124,8 +130,12 @@ final class FrontendAssets {
 		if ( null !== $files['script'] && ! wp_script_is( self::HANDLE_SCRIPT, 'registered' ) ) {
 			$this->register_script( self::HANDLE_SCRIPT, $files['script'] );
 		}
-		if ( null !== $files['masonry'] && ! wp_script_is( self::HANDLE_MASONRY, 'registered' ) ) {
-			$this->register_script( self::HANDLE_MASONRY, $files['masonry'] );
+		foreach ( LayoutScripts::assets() as $asset ) {
+			$file   = $this->manifest->layout_scripts()[ $asset->value ] ?? null;
+			$handle = LayoutScripts::handle( $asset );
+			if ( null !== $file && ! wp_script_is( $handle, 'registered' ) ) {
+				$this->register_script( $handle, $file );
+			}
 		}
 	}
 
@@ -161,7 +171,7 @@ final class FrontendAssets {
 
 	private function build_usable(): bool {
 		$files = $this->manifest->resolve();
-		return null !== $files['layout'] || null !== $files['style'] || null !== $files['script'] || null !== $files['masonry'];
+		return null !== $files['layout'] || null !== $files['style'] || null !== $files['script'] || array() !== array_filter( $this->manifest->layout_scripts() );
 	}
 
 	private function versioned_url( string $file ): string {
