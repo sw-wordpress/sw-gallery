@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       SW Gallery
- * Plugin URI:        https://example.com/sw-gallery
+ * Plugin URI:        https://github.com/sw-wordpress/sw-gallery
  * Description:       Gallery management and presentation on top of the WordPress Media Library.
  * Version:           0.1.0
  * Requires at least: 6.4
