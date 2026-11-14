@@ -17,6 +17,7 @@ use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\Core\Exception\GalleryException;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\InvalidOrderException;
+use SWGallery\Core\Exception\InvalidOwnerException;
 use SWGallery\Core\Exception\InvalidStateException;
 use SWGallery\Core\Exception\ItemNotFoundException;
 use SWGallery\Core\Exception\OperationVetoedException;
@@ -117,7 +118,7 @@ final class ErrorMapper {
 				)
 			);
 		}
-		if ( $error instanceof InvalidOrderException || $error instanceof UnknownLayoutException ) {
+		if ( $error instanceof InvalidOrderException || $error instanceof UnknownLayoutException || $error instanceof InvalidOwnerException ) {
 			return self::unprocessable( $code, $message );
 		}
 		if ( $error instanceof ValidationFailedException ) {

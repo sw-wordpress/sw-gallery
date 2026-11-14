@@ -281,9 +281,9 @@ class WpGalleryAccessPolicyTest extends SwgTestCase {
 			'editor foreign'        => array( 'editor', false, true, true ),
 			'author own'            => array( 'author', true, true, true ),
 			'author foreign'        => array( 'author', false, true, false ),
-			// No access to the Media Library without upload_files (a contributor may still edit what they own).
-			'contributor own'       => array( 'contributor', true, false, true ),
-			'contributor foreign'   => array( 'contributor', false, false, false ),
+			// FU-16: contributors may use every image they can read (no upload right needed); editing stays with edit_post.
+			'contributor own'       => array( 'contributor', true, true, true ),
+			'contributor foreign'   => array( 'contributor', false, true, false ),
 			'subscriber own'        => array( 'subscriber', true, false, false ),
 			'subscriber foreign'    => array( 'subscriber', false, false, false ),
 		);
@@ -318,6 +318,67 @@ class WpGalleryAccessPolicyTest extends SwgTestCase {
 			$result
 		);
 		$this->assertTrue( $this->policy->canUseAttachment( new Actor( $this->stranger ), $image ), 'The owner reads their private upload.' );
+	}
+
+	public function test_contributors_may_use_attachments_of_readable_parents_but_never_unreadable_ones(): void {
+		$contributor = new Actor( $this->users['contributor'] );
+		$published   = self::factory()->post->create( array( 'post_author' => $this->stranger, 'post_status' => 'publish' ) );
+		$draft       = self::factory()->post->create( array( 'post_author' => $this->stranger, 'post_status' => 'draft' ) );
+		$private     = self::factory()->post->create( array( 'post_author' => $this->stranger, 'post_status' => 'private' ) );
+		$protected   = self::factory()->post->create( array( 'post_author' => $this->stranger, 'post_status' => 'publish', 'post_password' => 'secret' ) );
+		$own_draft   = self::factory()->post->create( array( 'post_author' => $this->users['contributor'], 'post_status' => 'draft' ) );
+
+		// Uploaded by an author, attached to a published post: readable for everybody, so usable.
+		$this->assertTrue( $this->policy->canUseAttachment( $contributor, $this->makeAttachment( $this->stranger, 'image/jpeg', array( 'post_parent' => $published ) ) ) );
+		$this->assertTrue( $this->policy->canUseAttachment( $contributor, $this->makeAttachment( $this->users['contributor'], 'image/jpeg', array( 'post_parent' => $own_draft ) ) ), 'Own upload on the contributor\'s own draft.' );
+		// Unreadable for the contributor: all indistinguishable from a missing id (false).
+		$this->assertFalse( $this->policy->canUseAttachment( $contributor, $this->makeAttachment( $this->stranger, 'image/jpeg', array( 'post_parent' => $draft ) ) ), 'Foreign draft parent.' );
+		$this->assertFalse( $this->policy->canUseAttachment( $contributor, $this->makeAttachment( $this->stranger, 'image/jpeg', array( 'post_parent' => $private ) ) ), 'Foreign private parent.' );
+		$this->assertFalse( $this->policy->canUseAttachment( $contributor, $this->makeAttachment( $this->stranger, 'image/jpeg', array( 'post_status' => 'private' ) ) ), 'Foreign private attachment.' );
+		$this->assertFalse( $this->policy->canUseAttachment( $contributor, $this->makeAttachment( $this->stranger, 'image/jpeg', array( 'post_status' => 'trash' ) ) ), 'Trashed.' );
+		$this->assertFalse( $this->policy->canUseAttachment( $contributor, $this->makeAttachment( $this->stranger, 'application/pdf' ) ), 'No image.' );
+		$this->assertFalse( $this->policy->canUseAttachment( $contributor, $this->makeAttachment( $this->stranger, 'image/svg+xml' ) ), 'SVG is excluded.' );
+		$this->assertFalse( $this->policy->canUseAttachment( $contributor, 987654 ), 'Unknown id.' );
+		// WordPress itself treats a password-protected PUBLISHED parent as readable (the password only gates the front-end content).
+		$this->assertTrue( $this->policy->canUseAttachment( $contributor, $this->makeAttachment( $this->stranger, 'image/jpeg', array( 'post_parent' => $protected ) ) ), 'Pinned: core read_post ignores the post password.' );
+		// Uploading stays a separate right.
+		$this->assertFalse( user_can( $contributor->userId, 'upload_files' ) );
+	}
+
+	public function test_owner_changes_need_edit_others_posts_and_a_new_owner_with_edit_posts(): void {
+		$privileged = array( 'administrator', 'editor' );
+		$foreign    = $this->repository->create( new NewGallery( 'F', $this->stranger ) );
+		foreach ( self::ROLES as $role ) {
+			$actor = new Actor( $this->users[ $role ] );
+			$own   = $this->repository->create( new NewGallery( 'Own', $this->users[ $role ] ) );
+			$allow = in_array( $role, $privileged, true );
+			$this->assertSame( $allow, $this->policy->canChangeOwner( $actor, $own ), "$role hands over own gallery" );
+			$this->assertSame( $allow, $this->policy->canChangeOwner( $actor, $foreign ), "$role hands over foreign gallery" );
+		}
+		$this->assertFalse( $this->policy->canChangeOwner( Actor::anonymous(), $foreign ) );
+
+		$this->assertTrue( $this->policy->canOwnGalleries( $this->users['contributor'] ) );
+		$this->assertTrue( $this->policy->canOwnGalleries( $this->users['administrator'] ) );
+		$this->assertFalse( $this->policy->canOwnGalleries( $this->users['subscriber'] ) );
+		$this->assertFalse( $this->policy->canOwnGalleries( 987654 ) );
+		$this->assertFalse( $this->policy->canOwnGalleries( 0 ) );
+		$this->assertFalse( $this->policy->canOwnGalleries( -3 ) );
+	}
+
+	public function test_a_user_outside_the_current_site_cannot_become_owner_on_multisite(): void {
+		if ( ! is_multisite() ) {
+			$this->markTestSkipped( 'Network suite only.' );
+		}
+		$member = self::factory()->user->create( array( 'role' => 'author' ) );
+		$this->assertTrue( is_user_member_of_blog( $member ) );
+		$this->assertTrue( $this->policy->canOwnGalleries( $member ), 'a member with edit_posts may own' );
+
+		$other_blog = self::factory()->blog->create();
+		$stranger   = self::factory()->user->create( array( 'role' => 'subscriber' ) );
+		remove_user_from_blog( $stranger, get_current_blog_id() );
+		add_user_to_blog( $other_blog, $stranger, 'administrator' );
+		$this->assertFalse( is_user_member_of_blog( $stranger ) );
+		$this->assertFalse( $this->policy->canOwnGalleries( $stranger ), 'an administrator of another site is no member here' );
 	}
 
 	public function test_only_allowed_raster_images_that_exist_can_be_used(): void {

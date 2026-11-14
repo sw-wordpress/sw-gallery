@@ -75,6 +75,18 @@ class PreviewRouteTest extends SwgTestCase {
 		$this->assertSame( 'no-store', $response->get_headers()['Cache-Control'] );
 	}
 
+	public function test_a_contributor_previews_their_own_gallery_with_images_uploaded_by_others(): void {
+		$contributor = $this->makeUser( 'contributor' );
+		$id          = $this->makeGalleryPost( $contributor, 'draft' );
+		$images      = array( $this->makeImage( 'One', 2000, 1500 ), $this->makeImage( 'Two', 2000, 1500 ) );
+		$this->addItems( $id, $images );
+
+		$data = $this->data( $this->preview( $id, array(), $contributor ) );
+
+		$this->assertSame( 2, substr_count( $data['html'], '<img' ) );
+		$this->assertSame( array(), $data['diagnostics'] );
+	}
+
 	/**
 	 * @return iterable<string, array{string, string, string, int}>
 	 */

@@ -93,6 +93,41 @@ class RenderViewTest extends SwgTestCase {
 		$this->assertStringContainsString( 'href="https://example.test/a.jpg"', $html );
 	}
 
+	/**
+	 * FU-25: the link only gets an aria-label when the image has no alt text; title first, then the position.
+	 */
+	public function test_the_link_gets_an_accessible_name_only_for_images_without_alt_text(): void {
+		$image = new ResolvedImage( 'https://example.test/a.jpg', 10, 10 );
+
+		$with_alt = ImageMarkup::lightbox_item( new RenderItem( 1, 2, 'Title', '', 'Alt', $image, null, LoadingStrategy::Lazy, 3, 9 ) );
+		$this->assertStringNotContainsString( 'aria-label', $with_alt, 'a non-empty alt names the link; no duplicate' );
+
+		$titled = ImageMarkup::lightbox_item( new RenderItem( 1, 2, 'A "quoted" <b>title</b>', '', '', $image, null, LoadingStrategy::Lazy, 3, 9 ) );
+		$this->assertStringContainsString( 'data-swg-full-height="10" aria-label="A &quot;quoted&quot; &lt;b&gt;title&lt;/b&gt;">', $titled );
+		$this->assertStringContainsString( 'alt=""', $titled );
+
+		$numbered = ImageMarkup::lightbox_item( new RenderItem( 1, 2, '  ', '', ' ', $image, null, LoadingStrategy::Lazy, 3, 9 ) );
+		$this->assertStringContainsString( 'aria-label="Image 3 of 9"', $numbered );
+
+		$unknown = ImageMarkup::lightbox_item( new RenderItem( 1, 2, '', '', '', $image ) );
+		$this->assertStringNotContainsString( 'aria-label', $unknown, 'no position known: nothing invented' );
+	}
+
+	public function test_the_numbered_link_name_is_translated(): void {
+		$image    = new ResolvedImage( 'https://example.test/a.jpg', 10, 10 );
+		$switched = switch_to_locale( 'de_DE' );
+		load_textdomain( 'sw-gallery', SWGALLERY_DIR . 'languages/sw-gallery-de_DE.mo' );
+		try {
+			$html = ImageMarkup::lightbox_item( new RenderItem( 1, 2, '', '', '', $image, null, LoadingStrategy::Lazy, 2, 5 ) );
+			$this->assertStringContainsString( 'aria-label="Bild 2 von 5"', $html );
+		} finally {
+			unload_textdomain( 'sw-gallery' );
+			if ( $switched ) {
+				restore_previous_locale();
+			}
+		}
+	}
+
 	public function test_empty_feed_markup_is_empty(): void {
 		$request = new LayoutRenderRequest( 1, 'swg-1-1', array(), new GallerySettings() );
 

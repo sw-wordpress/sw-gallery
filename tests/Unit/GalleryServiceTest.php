@@ -19,6 +19,7 @@ use SWGallery\Core\Event\EventDispatcher;
 use SWGallery\Core\Event\EventInterface;
 use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\Core\Exception\GalleryNotFoundException;
+use SWGallery\Core\Exception\InvalidOwnerException;
 use SWGallery\Core\Exception\InvalidStateException;
 use SWGallery\Core\Exception\OperationVetoedException;
 use SWGallery\Core\Exception\RevisionConflictException;
@@ -228,6 +229,28 @@ final class GalleryServiceTest extends TestCase
         $this->service->trash(new Actor(self::ADMIN), $id, new Revision(2));
         $this->expectException(InvalidStateException::class);
         $this->service->update(new Actor(self::ADMIN), $gallery, new Revision(3));
+    }
+
+    public function testOwnerTransferNeedsAnOwnerWhoMayOwnGalleriesAndAnUnchangedOwnerIsNoTransfer(): void
+    {
+        $id = $this->create();
+        $gallery = $this->galleries->find($id) ?? throw new \LogicException();
+
+        try {
+            $this->service->update(
+                new Actor(self::ADMIN),
+                $gallery->withOwner(ConfigurableAccessPolicy::NON_OWNER_ID),
+                new Revision(1)
+            );
+            self::fail('A user who may not own galleries cannot become owner.');
+        } catch (InvalidOwnerException $e) {
+            self::assertSame('swg_invalid_owner', $e->errorCode());
+            self::assertSame(self::OWNER, $this->galleries->find($id)?->ownerId);
+            self::assertSame(1, $this->items->current($id)->value);
+        }
+
+        $same = $this->service->update(new Actor(self::OWNER), $gallery->withTitle('Same owner'), new Revision(1));
+        self::assertSame(self::OWNER, $same->gallery->ownerId);
     }
 
     public function testUpdateOnlyValidatesChangedSettings(): void

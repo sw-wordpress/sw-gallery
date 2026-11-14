@@ -62,7 +62,7 @@ final class MediaController extends AbstractController {
 	}
 
 	/**
-	 * The Media Library audience (decision D11 requires `upload_files`).
+	 * The Media Overview audience: it lists the Media Library and so stays on `upload_files` (assigning images by id does not, FU-16).
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request

@@ -35,7 +35,13 @@ interface GalleryAccessPolicyInterface
     /** Trash, restore and permanently delete the gallery (never any attachment). */
     public function canDelete(Actor $actor, Gallery $gallery): bool;
 
-    /** Decision D11: any image the actor can read in the Media Library may be assigned. */
+    /** Decision S-04: handing a gallery to another owner needs the right to edit other users' galleries. */
+    public function canChangeOwner(Actor $actor, Gallery $gallery): bool;
+
+    /** Decision S-04: whether the user exists and may own galleries (holds the right to write posts). */
+    public function canOwnGalleries(int $userId): bool;
+
+    /** Decision D11: any image the actor may read may be assigned (FU-16: no upload right needed). */
     public function canUseAttachment(Actor $actor, int $attachmentId): bool;
 
     /** Changing global attachment metadata needs edit rights on the attachment itself. */

@@ -17,6 +17,9 @@ use SWGallery\Core\Domain\Gallery\GalleryStatus;
  */
 final class ConfigurableAccessPolicy implements GalleryAccessPolicyInterface
 {
+    /** A user id that exists but may not own galleries (e.g. a subscriber). */
+    public const NON_OWNER_ID = 99;
+
     /**
      * @param list<int> $admins
      * @param list<int> $unusableAttachments Attachment IDs nobody may use.
@@ -66,6 +69,16 @@ final class ConfigurableAccessPolicy implements GalleryAccessPolicyInterface
     public function canDelete(Actor $actor, Gallery $gallery): bool
     {
         return $this->isAdmin($actor) || ($this->ownersMayDelete && $this->isOwner($actor, $gallery));
+    }
+
+    public function canChangeOwner(Actor $actor, Gallery $gallery): bool
+    {
+        return $this->isAdmin($actor);
+    }
+
+    public function canOwnGalleries(int $userId): bool
+    {
+        return $userId > 0 && $userId !== self::NON_OWNER_ID;
     }
 
     public function canUseAttachment(Actor $actor, int $attachmentId): bool

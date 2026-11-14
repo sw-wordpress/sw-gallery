@@ -24,7 +24,7 @@ use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 
 /**
  * Visibility follows decision D11: a user may use every image attachment they can read
- * ({@see WpGalleryAccessPolicy::canUseAttachment()}: allowed type, not trashed, `upload_files`, `read_post`), the same
+ * ({@see WpGalleryAccessPolicy::canUseAttachment()}: allowed type, not trashed, `edit_posts`, `read_post`), the same
  * rule that the item services apply when an image is added to a gallery. Changing attachment metadata is not part of
  * this provider.
  */

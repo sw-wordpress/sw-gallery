@@ -38,7 +38,6 @@ final class GalleryController extends AbstractController {
 
 	public const CODE_CANNOT_PUBLISH = 'swg_cannot_publish';
 	public const CODE_INVALID_COVER  = 'swg_invalid_cover';
-	public const CODE_INVALID_OWNER  = 'swg_invalid_owner';
 	public const CODE_NO_CHANGES     = 'swg_no_changes';
 
 	private const WRITABLE_STATUSES = array( 'draft', 'pending', 'publish', 'private' );
@@ -598,11 +597,8 @@ final class GalleryController extends AbstractController {
 			$changed = $changed->withStatus( $this->status_param( $request ) ?? $current->status );
 		}
 		if ( $request->has_param( 'ownerId' ) ) {
-			$owner = absint( $request->get_param( 'ownerId' ) );
-			if ( false === get_userdata( $owner ) ) {
-				return ErrorMapper::unprocessable( self::CODE_INVALID_OWNER, __( 'The owner does not exist.', 'sw-gallery' ) );
-			}
-			$changed = $changed->withOwner( $owner );
+			// Authorisation (403) and validity (422 swg_invalid_owner) of a changed owner are decided by the service.
+			$changed = $changed->withOwner( absint( $request->get_param( 'ownerId' ) ) );
 		}
 		if ( $request->has_param( 'coverAttachmentId' ) ) {
 			$cover = $request->get_param( 'coverAttachmentId' );

@@ -157,15 +157,39 @@ class RestItemTest extends SwgTestCase {
 		$this->assertNull( $as_author->get_data()[0]['media'] );
 	}
 
-	public function test_contributors_cannot_use_attachments_so_their_items_read_as_missing(): void {
+	public function test_contributors_see_readable_attachments_as_available_and_assign_them_by_id(): void {
 		$gallery = $this->makeGallery( $this->contributor );
-		$image   = $this->makeAttachment( $this->admin );
-		Services::item_service()->assign( new Actor( $this->admin ), $gallery, array( $image ), new Revision( 1 ) );
+		$parent  = $this->factory()->post->create( array( 'post_author' => $this->author, 'post_status' => 'publish' ) );
+		$image   = $this->makeAttachment( $this->author, 'image/jpeg', array( 'post_parent' => $parent ) );
+		$own     = $this->makeAttachment( $this->contributor );
+
+		$assign = $this->call( 'POST', '/galleries/' . $gallery . '/items', array( 'attachmentIds' => array( $image, $own ), 'expectedRevision' => 1 ), $this->contributor );
+		$this->assertSame( 200, $assign->get_status() );
+		$this->assertSame( array( $image, $own ), $assign->get_data()['added'] );
+		$this->assertSame( array(), $assign->get_data()['missing'] );
 
 		$data = $this->call( 'GET', '/galleries/' . $gallery . '/items', array(), $this->contributor )->get_data();
+		$this->assertSame( array( false, false ), array_column( $data, 'missing' ) );
+		$this->assertNotNull( $data[0]['media'] );
+		$this->assertFalse( user_can( $this->contributor, 'upload_files' ), 'assigning does not need the upload right' );
+	}
 
-		$this->assertTrue( $data[0]['missing'] );
-		$this->assertNull( $data[0]['media'] );
+	public function test_a_contributor_gets_the_identical_missing_answer_for_every_unusable_attachment(): void {
+		$gallery  = $this->makeGallery( $this->contributor );
+		$draft    = $this->factory()->post->create( array( 'post_author' => $this->author, 'post_status' => 'draft' ) );
+		$unusable = array(
+			$this->makeAttachment( $this->author, 'image/jpeg', array( 'post_status' => 'private' ) ),
+			$this->makeAttachment( $this->author, 'image/jpeg', array( 'post_parent' => $draft ) ),
+			$this->makeAttachment( $this->author, 'image/jpeg', array( 'post_status' => 'trash' ) ),
+			$this->makeAttachment( $this->author, 'application/pdf' ),
+			424242,
+		);
+		$response = $this->call( 'POST', '/galleries/' . $gallery . '/items', array( 'attachmentIds' => $unusable, 'expectedRevision' => 1 ), $this->contributor );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( array(), $response->get_data()['added'] );
+		$this->assertSame( $unusable, $response->get_data()['missing'], 'no existence leak: all unusable ids are reported alike' );
+		$this->assertSame( 0, Services::items()->count( $gallery ) );
 	}
 
 	public function test_responses_never_expose_file_paths(): void {

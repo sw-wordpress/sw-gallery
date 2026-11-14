@@ -62,7 +62,10 @@ async function createPost(title: string, content: string): Promise<string> {
   return body.link;
 }
 
-/** An empty alt text leaves the link without an accessible name (axe `link-name`): the fixtures carry alt texts. */
+/**
+ * An empty alt text would leave the link without an accessible name (axe `link-name`) were it not for the
+ * aria-label of FU-25; most fixtures carry alt texts anyway, the `noAlt` post deliberately has none.
+ */
 async function setAlt(attachmentId: number, alt: string): Promise<void> {
   const response = await site.request.post(
     site.restRoot.replace('swg/v1', 'wp/v2') + `media/${attachmentId}`,
@@ -222,6 +225,18 @@ test.beforeAll(async ({ browser }) => {
     many.push(image.id);
   }
 
+  // Images WITHOUT alt text for the accessible link name (FU-25): their titles name the links.
+  const noAlt: number[] = [];
+  for (let i = 0; i < 3; i += 1) {
+    const image = await fixtures.uploadImage(
+      `${prefix} noalt ${i + 1}`,
+      tinyPngSized(COLORS[i] as [number, number, number], 120 + i * 40, 90),
+    );
+    noAlt.push(image.id);
+  }
+  const noAltGallery = await fixtures.create({ title: `${prefix} noalt`, status: 'publish' });
+  await fixtures.assign(noAltGallery.id, noAlt);
+
   const justified = await fixtures.create({
     title: `${prefix} justified`,
     status: 'publish',
@@ -269,6 +284,12 @@ test.beforeAll(async ({ browser }) => {
     `[sw_gallery id="${paged.id}" layout="justified"]`,
   );
   urls.pagedId = String(paged.id);
+  urls.noAlt = await createPost(
+    'no alt',
+    ['grid', 'justified', 'masonry']
+      .map((layout) => `[sw_gallery id="${noAltGallery.id}" layout="${layout}"]`)
+      .join('\n\n'),
+  );
 });
 
 test.afterAll(async () => {
@@ -608,6 +629,40 @@ for (const surface of ['justified', 'masonry'] as const) {
       await context.close();
     });
   }
+}
+
+for (const scheme of ['light', 'dark'] as const) {
+  test(`images without alt text: named links and no serious axe violation (${scheme})`, async ({
+    browser,
+  }) => {
+    const context = await visitor(browser, { colorScheme: scheme });
+    const page = await context.newPage();
+    await page.goto(urls.noAlt as string);
+    await loadAll(page);
+
+    const links = page.locator('.swg-gallery a.swg-link');
+    await expect(links).toHaveCount(9);
+    for (let index = 0; index < 9; index += 1) {
+      const link = links.nth(index);
+      await expect(link.locator('img')).toHaveAttribute('alt', '');
+      // The label is the item title (the attachment title of the fixture), set on the link only.
+      await expect(link).toHaveAttribute('aria-label', new RegExp(`noalt ${(index % 3) + 1}$`));
+      await expect(link.locator('img')).not.toHaveAttribute('aria-label', /.*/);
+    }
+    await expect(page.getByRole('link', { name: new RegExp(`noalt 1$`) })).toHaveCount(3);
+
+    const results = await new AxeBuilder({ page })
+      .include('.swg-gallery')
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'])
+      .analyze();
+    expect(results.violations.some((v) => v.id === 'link-name')).toBe(false);
+    expect(
+      results.violations
+        .filter((v) => v.impact === 'serious' || v.impact === 'critical')
+        .map((v) => `${v.id}: ${v.help}`),
+    ).toEqual([]);
+    await context.close();
+  });
 }
 
 for (const width of [375, 768, 1280]) {

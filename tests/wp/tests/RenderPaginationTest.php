@@ -65,6 +65,30 @@ class RenderPaginationTest extends SwgTestCase {
 		return array_map( 'html_entity_decode', $matches[1] );
 	}
 
+	/**
+	 * FU-25: an image without alt text and title is named "Image N of M" by its position in the WHOLE gallery, on
+	 * every layout and also for anonymous visitors.
+	 */
+	public function test_links_of_images_without_alt_text_are_numbered_by_the_position_in_the_gallery(): void {
+		$gallery = $this->makeGalleryPost( $this->author );
+		$ids     = array();
+		for ( $i = 1; $i <= 5; $i++ ) {
+			$ids[] = $this->makeImage( '', 1600, 1200 );
+		}
+		$ids[] = $this->makeImage( 'Titled', 1600, 1200 );
+		$this->addItems( $gallery, $ids );
+		$_SERVER['REQUEST_URI'] = "/photos/?swg_page_{$gallery}=2";
+		$_GET                   = array( "swg_page_$gallery" => '2' );
+
+		foreach ( array( 'grid', 'justified', 'masonry' ) as $layout ) {
+			$html = $this->render( $gallery, EntryPoint::Shortcode, array( 'per_page' => 2, 'layout' => $layout ) )->html;
+			$this->assertSame( 2, substr_count( $html, '<a class="swg-link"' ), $layout );
+			$this->assertStringContainsString( 'aria-label="Image 3 of 6"', $html, $layout );
+			$this->assertStringContainsString( 'aria-label="Image 4 of 6"', $html, $layout );
+			$this->assertStringNotContainsString( 'aria-label="Image 1 of 6"', $html, $layout );
+		}
+	}
+
 	public function test_a_multi_page_gallery_gets_a_nav_with_links_built_from_the_request_url(): void {
 		$gallery                = $this->gallery( 5 );
 		$_SERVER['REQUEST_URI'] = "/photos/?utm=1&swg_page_{$gallery}=2";
