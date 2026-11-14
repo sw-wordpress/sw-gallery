@@ -76,6 +76,31 @@ export function parsePreviewResponse(body: unknown): PreviewResponse {
   };
 }
 
+/** Stable diagnostic codes of the renderer (core `RenderDiagnostic`) with their catalog message. */
+const DIAGNOSTIC_KEYS: Record<string, string> = {
+  gallery_not_found: 'editor.preview.diagnostics.codes.gallery_not_found',
+  gallery_not_public: 'editor.preview.diagnostics.codes.gallery_not_public',
+  unknown_layout: 'editor.preview.diagnostics.codes.unknown_layout',
+  layout_failed: 'editor.preview.diagnostics.codes.layout_failed',
+  invalid_override: 'editor.preview.diagnostics.codes.invalid_override',
+  empty_gallery: 'editor.preview.diagnostics.codes.empty_gallery',
+  images_unavailable: 'editor.preview.diagnostics.codes.images_unavailable',
+};
+
+/**
+ * Text of one preview note: the catalog translation of a known code, else the server's own text (a code this app
+ * does not know yet, e.g. from an extension). The server text is only ever rendered as text, never as HTML.
+ */
+export function diagnosticMessage(
+  diagnostic: PreviewDiagnostic,
+  t: (key: string) => string,
+): string {
+  const key = Object.hasOwn(DIAGNOSTIC_KEYS, diagnostic.code)
+    ? DIAGNOSTIC_KEYS[diagnostic.code]
+    : undefined;
+  return key === undefined ? diagnostic.message : t(key);
+}
+
 export function createPreviewApi(client: ApiClient) {
   return {
     /** Server-side render of the gallery with the given UNSAVED state; cancellable. */

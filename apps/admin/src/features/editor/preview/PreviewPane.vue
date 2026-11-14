@@ -9,6 +9,7 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vu
 import { useI18n } from 'vue-i18n';
 import SegmentedControl from '@/components/ui/SegmentedControl.vue';
 import { useAppStore } from '@/stores/app';
+import { diagnosticMessage } from '@/api/preview';
 import { useEditorApi } from '../injection';
 import type { EditorSession } from '../useGalleryEditor';
 import PreviewFrame from './PreviewFrame.vue';
@@ -358,7 +359,9 @@ watch(preview.error, (error) => {
         </summary>
         <p class="swg-pv__hint">{{ t('editor.preview.diagnostics.hint') }}</p>
         <ul>
-          <li v-for="(d, index) in diagnostics" :key="`${d.code}:${index}`">{{ d.message }}</li>
+          <li v-for="(d, index) in diagnostics" :key="`${d.code}:${index}`">
+            {{ diagnosticMessage(d, t) }}
+          </li>
         </ul>
       </details>
     </div>

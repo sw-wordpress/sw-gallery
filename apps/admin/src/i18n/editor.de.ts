@@ -367,6 +367,17 @@ const editor: Shape<typeof editorEn> = {
     diagnostics: {
       title: 'Hinweise für Redakteure ({count})',
       hint: 'Nur hier sichtbar, nie auf der Website.',
+      codes: {
+        gallery_not_found: 'Diese Galerie existiert nicht.',
+        gallery_not_public: 'Diese Galerie ist nicht veröffentlicht, Besucher sehen hier nichts.',
+        unknown_layout:
+          'Das gewählte Layout ist nicht verfügbar, stattdessen wird das Raster verwendet.',
+        layout_failed:
+          'Das gewählte Layout ist fehlgeschlagen, stattdessen wird das Raster verwendet.',
+        invalid_override: 'Die Einstellungen dieser Einbettung sind ungültig und wurden ignoriert.',
+        empty_gallery: 'Diese Galerie enthält noch keine Bilder.',
+        images_unavailable: 'Einige Bilder sind nicht mehr verfügbar und werden übersprungen.',
+      },
     },
     empty: {
       title: 'Noch nichts zur Vorschau',

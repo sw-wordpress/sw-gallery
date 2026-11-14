@@ -370,7 +370,7 @@ describe('preview pane: diagnostics, empty and errors', () => {
     const server = new FakeServer();
     server.previewHandler = async () =>
       makePreview({
-        diagnostics: [{ code: 'images_unavailable', message: '2 images <b>skipped</b>' }],
+        diagnostics: [{ code: 'x_ext_note', message: '2 images <b>skipped</b>' }],
       });
     await open(server);
     await showPreview();

@@ -546,6 +546,15 @@
 }
 
 /* ---------- RTL helpers ---------- */
+/*
+ * Quasar's reset sets `direction: ltr` on the scoped root, which beats the `dir` attribute's UA rule. Restore the
+ * direction the PHP page asked for (`dir` on the root). Portals live in <body> and follow WordPress' <html dir>.
+ */
+.swg-root[dir='rtl'],
+.swg-root[dir='rtl'] #q-app,
+.swg-root.swg-portal:where(html[dir='rtl'] *) {
+  direction: rtl;
+}
 .swg-root[dir='rtl'] .swg-flip-rtl {
   transform: scaleX(-1);
 }
