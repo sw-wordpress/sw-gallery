@@ -24,6 +24,11 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^(_|createElement$|Fragment$)' },
       ],
       'no-console': ['error', { allow: ['warn', 'error'] }],
+      // Code from strings and javascript: URLs (docs/security.md).
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-script-url': 'error',
       'no-restricted-properties': [
         'error',
         ...htmlSinks,
@@ -41,7 +46,7 @@ export default tseslint.config(
   {
     // Tests build fixture DOMs from trusted literals.
     files: ['**/tests/**/*.ts', '**/tests/**/*.tsx'],
-    rules: { 'no-restricted-properties': 'off' },
+    rules: { 'no-restricted-properties': 'off', 'no-script-url': 'off' },
   },
   {
     files: ['scripts/**/*.mjs', 'vite.config.ts', 'eslint.config.js'],

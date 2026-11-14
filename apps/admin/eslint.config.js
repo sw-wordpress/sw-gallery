@@ -5,6 +5,11 @@ import pluginVue from 'eslint-plugin-vue';
 import vueParser from 'vue-eslint-parser';
 import prettier from 'eslint-config-prettier';
 
+const htmlSinks = ['innerHTML', 'outerHTML', 'insertAdjacentHTML'].map((property) => ({
+  property,
+  message: 'Never insert markup: render elements or text (CODE-STYLE §8).',
+}));
+
 export default tseslint.config(
   { ignores: ['node_modules/**', 'coverage/**', '../../assets/**'] },
   js.configs.recommended,
@@ -35,7 +40,23 @@ export default tseslint.config(
       'vue/define-props-declaration': ['error', 'type-based'],
       'vue/define-emits-declaration': ['error', 'type-based'],
       'no-console': ['error', { allow: ['warn', 'error'] }],
+      // Security sinks (docs/security.md): no markup insertion, no code from strings.
+      'no-restricted-properties': [
+        'error',
+        ...htmlSinks,
+        { object: 'document', property: 'write', message: 'document.write is forbidden.' },
+        { object: 'document', property: 'writeln', message: 'document.writeln is forbidden.' },
+      ],
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-script-url': 'error',
     },
+  },
+  {
+    // Fixture DOMs of the unit tests are built from trusted literals; hostile `javascript:` samples are test data.
+    files: ['**/*.test.ts', '**/tests/**/*.ts'],
+    rules: { 'no-restricted-properties': 'off', 'no-script-url': 'off' },
   },
   {
     files: ['scripts/**/*.{ts,mjs}', 'vite.config.ts', 'eslint.config.js'],
