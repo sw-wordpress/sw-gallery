@@ -361,4 +361,50 @@ class InputValidationTest extends SwgTestCase {
 		$this->assertSame( 200, $give->get_status() );
 		$this->assertSame( $victim, (int) get_post( $gallery )->post_author );
 	}
+
+	public function test_settings_patch_validates_every_known_key_and_ignores_the_rest(): void {
+		$admin = $this->makeUser( 'administrator' );
+		$cases = array(
+			array( 'itemsPerPage' => 10 ** 12 ),
+			array( 'itemsPerPage' => -1 ),
+			array( 'itemsPerPage' => array( 24 ) ),
+			array( 'lightbox' => array( true ) ),
+			array( 'defaultLayout' => str_repeat( 'a', 10000 ) ),
+			array( 'defaultLayout' => array( 'grid' ) ),
+			array( 'deleteDataOnUninstall' => 'yes please' ),
+		);
+		foreach ( $cases as $case ) {
+			$response = $this->call( 'PATCH', '/settings', $case, $admin );
+			$this->assertContains( $response->get_status(), array( 400, 422 ), wp_json_encode( $case ) . ' ' . wp_json_encode( $response->get_data() ) );
+		}
+		$before = get_option( 'swg_settings' );
+		$ignored = $this->call( 'PATCH', '/settings', array( 'unknownKey' => '<script>', 'schemaVersion' => 99 ), $admin );
+		$this->assertSame( 400, $ignored->get_status(), 'a body without a known key is a no-op request' );
+		$this->assertSame( $before, get_option( 'swg_settings' ) );
+		$stored = (string) get_option( 'swg_settings' );
+		$this->assertStringNotContainsString( '<script>', $stored );
+
+		// Turning on the destructive uninstall needs the explicit confirmation in the same request.
+		$unconfirmed = $this->call( 'PATCH', '/settings', array( 'deleteDataOnUninstall' => true ), $admin );
+		$this->assertSame( 422, $unconfirmed->get_status() );
+		$this->assertNotSame( '1', (string) get_option( 'swg_delete_data_on_uninstall', '0' ) );
+	}
+
+	public function test_the_owner_and_uploader_filters_cannot_be_used_to_browse_others(): void {
+		$author = $this->makeUser( 'author' );
+		$other  = $this->makeUser( 'author' );
+		$mine   = $this->makeGallery( $author, GalleryStatus::Draft, 'Mine' );
+		$theirs = $this->makeGallery( $other, GalleryStatus::Publish, 'Theirs' );
+		$this->makeAttachment( $other );
+
+		$list = $this->call( 'GET', '/galleries', array( 'owner' => $other, 'status' => 'draft,pending,publish,private' ), $author );
+		$this->assertSame( array( $mine ), array_column( $list->get_data(), 'id' ), 'the owner filter is forced to the caller' );
+		$trash = $this->call( 'GET', '/galleries', array( 'status' => 'trash', 'owner' => $other ), $author );
+		$this->assertSame( array(), $trash->get_data() );
+		$this->assertNotContains( $theirs, array_column( $list->get_data(), 'id' ) );
+		$media = $this->call( 'GET', '/media', array( 'uploadedBy' => $other ), $author );
+		foreach ( $media->get_data() as $row ) {
+			$this->assertSame( $author, $row['uploadedBy'], 'the uploader filter is forced to the caller' );
+		}
+	}
 }
