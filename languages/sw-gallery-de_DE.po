@@ -250,6 +250,26 @@ msgstr "%d der ausgewählten Bilder wird in Galerien verwendet. Wenn Sie sie end
 msgid "%d of the selected images are used in galleries. If you delete them permanently, they are removed from those galleries. Delete them anyway?"
 msgstr "%d der ausgewählten Bilder werden in Galerien verwendet. Wenn Sie sie endgültig löschen, werden sie aus diesen Galerien entfernt. Trotzdem löschen?"
 
+#: packages/wordpress/src/Admin/PrivacyRegistrar.php:34
+msgid "SW Gallery stores gallery definitions (titles, descriptions, settings) and the relations between galleries and images in this site's database. It does not collect or store any data about visitors, does not set tracking cookies and makes no requests to external services; scripts, styles and fonts are served from this site."
+msgstr "SW Gallery speichert Galeriedefinitionen (Titel, Beschreibungen, Einstellungen) und die Zuordnung zwischen Galerien und Bildern in der Datenbank dieser Website. Das Plugin erhebt oder speichert keine Daten über Besucher, setzt keine Tracking-Cookies und stellt keine Anfragen an externe Dienste; Skripte, Stylesheets und Schriften werden von dieser Website ausgeliefert."
+
+#: packages/wordpress/src/Admin/PrivacyRegistrar.php:35
+msgid "Images in galleries are served from this site's own Media Library. Metadata such as EXIF or GPS data that is present in the original image files stays in the served files unless it is removed before upload."
+msgstr "Bilder in Galerien werden aus der eigenen Mediathek dieser Website ausgeliefert. Metadaten wie EXIF- oder GPS-Daten, die in den originalen Bilddateien enthalten sind, bleiben in den ausgelieferten Dateien erhalten, sofern sie nicht vor dem Hochladen entfernt werden."
+
+#: packages/wordpress/src/Admin/PrivacyRegistrar.php:36
+msgid "SW Gallery sets no cookie of its own. For a password-protected gallery, WordPress core's password form is shown; after the correct password is entered, WordPress sets its own cookie (wp-postpass_ followed by a hash), which by default expires after 10 days."
+msgstr "SW Gallery setzt kein eigenes Cookie. Für eine passwortgeschützte Galerie wird das Passwortformular von WordPress angezeigt; nach Eingabe des richtigen Passworts setzt WordPress sein eigenes Cookie (wp-postpass_ gefolgt von einem Hash), das standardmäßig nach 10 Tagen abläuft."
+
+#: packages/wordpress/src/Admin/PrivacyRegistrar.php:37
+msgid "When the plugin is deleted, its data is kept unless the setting \"Delete all plugin data when the plugin is deleted\" is enabled; in that case the galleries, their image relations and the plugin settings are removed. Images in the Media Library are never deleted by the plugin."
+msgstr "Beim Löschen des Plugins bleiben seine Daten erhalten, außer die Einstellung „Alle Plugin-Daten löschen, wenn das Plugin gelöscht wird“ ist aktiviert; dann werden die Galerien, ihre Bildzuordnungen und die Plugin-Einstellungen entfernt. Bilder in der Mediathek werden vom Plugin nie gelöscht."
+
+#: packages/wordpress/src/Admin/PrivacyRegistrar.php:39
+msgid "Suggested text for your privacy policy. Review it and adapt it to your site."
+msgstr "Textvorschlag für Ihre Datenschutzerklärung. Bitte prüfen und an Ihre Website anpassen."
+
 #: packages/wordpress/src/Block/BlockRegistrar.php:171
 msgid "No gallery selected. Choose one in the block settings."
 msgstr "Keine Galerie ausgewählt. Wähle in den Blockeinstellungen eine aus."

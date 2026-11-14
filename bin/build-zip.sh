@@ -81,9 +81,10 @@ step "staging production files"
 copy_file sw-gallery.php
 copy_file uninstall.php
 copy_file CHANGELOG.md
-for optional in LICENSE LICENSE.txt README.md readme.txt; do
-  if [ -f "$ROOT/$optional" ]; then copy_file "$optional"; fi
-done
+copy_file LICENSE
+copy_file THIRD-PARTY-NOTICES.md
+# The GitHub README is not shipped; a wordpress.org readme.txt would be (none exists yet).
+if [ -f "$ROOT/readme.txt" ]; then copy_file readme.txt; fi
 copy_tree packages -name '*.php'
 copy_tree languages \( -name '*.pot' -o -name '*.po' -o -name '*.json' \)
 copy_tree assets/build ! -name '*.map'
