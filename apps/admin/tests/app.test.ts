@@ -97,6 +97,8 @@ describe('bootstrap (main.ts)', () => {
     expect(root?.classList.contains('swg-fullbleed')).toBe(true);
     expect(root?.textContent).toContain('Gallery');
     expect(root?.textContent).toContain('v9.9.9');
+    // Quasar knows about RTL (components read $q.lang.rtl) but never rewrites WordPress' <html lang/dir>.
+    expect(document.documentElement.getAttribute('dir')).not.toBe('rtl');
   });
 
   it('keeps every id in the DOM unique, with exactly one #q-notify, also after toasts and a second bootstrap (FU-07)', async () => {

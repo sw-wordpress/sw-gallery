@@ -53,10 +53,12 @@ export function bootstrap(): void {
   app.use(Quasar, {
     plugins: { Notify },
     iconSet,
-    lang: quasarLang(resolveUiLocale(config.locale)),
+    // The pack carries Quasar's `rtl` flag (components such as sliders and the table read `$q.lang.rtl`), but
+    // `noHtmlAttrs` stops Quasar from rewriting `<html lang/dir>`, which belongs to WordPress.
+    lang: { ...quasarLang(resolveUiLocale(config.locale)), rtl: config.isRtl },
     // Quasar portals (dialogs, menus, notifications) are appended to <body>; give them the root
     // class so the scoped Quasar CSS applies there as well.
-    config: { globalNodes: { class: `${ROOT_CLASS} swg-portal` } },
+    config: { lang: { noHtmlAttrs: true }, globalNodes: { class: `${ROOT_CLASS} swg-portal` } },
   });
   el.dataset.swgBooted = '1';
   app.mount(el);
