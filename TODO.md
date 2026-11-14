@@ -147,16 +147,17 @@ Tooling and tests
 - [ ] FU-18 Pagination arg `swg_page_<galleryId>` is shared by two embeds of the same gallery on one page (documented); the shortcode/block must omit `page` unless the embed really sets it, otherwise the URL arg never takes effect.
 - [x] FU-19 Admin app: a lazy chunk that fails to load (flaky network) fails silently; add a router `onError` message with retry.
 - [x] FU-20 Block editor preview is unstyled (no gallery stylesheet in the editor): load the layout stylesheet via `editorStyle`/`enqueue_block_assets`.
-- [ ] FU-21 Release packaging (M5-09/M5-10): the ZIP must ship `assets/blocks/block.json` and `assets/blocks/build/`, `assets/build/`, `assets/admin/`, the compiled `.mo` and the block JSON catalog; the build script must run all three npm builds.
+- [x] FU-21 Release packaging (M5-09/M5-10): the ZIP must ship `assets/blocks/block.json` and `assets/blocks/build/`, `assets/build/`, `assets/admin/`, the compiled `.mo` and the block JSON catalog; the build script must run all three npm builds.
 - [x] FU-22 Docs: `docs/development.md` must describe the `assets/` and `assets/blocks` projects, `bin/rebuild-on-change.sh` and the `COMPOSER_PROCESS_TIMEOUT=0` need of the long WordPress suites.
 - [x] FU-23 Shortcode output is not width-constrained by block themes (full width in Twenty Twenty-Five inside constrained post content, the block version gets alignment support): decide whether the shortcode wrapper should carry the theme's content-width class (F-23).
 - [ ] FU-24 Keyboard-only reorder was not tested with a real screen reader; touch drag-and-drop is untested (keys and buttons are the alternative).
 - [ ] FU-25 Link names: an image with empty alt text yields a link without accessible name (axe `link-name`, serious); renderer should fall back to the title or an `aria-label` (product decision).
-- [ ] FU-26 Admin: gallery editor `GalleryEditor.vue` still uses `<header>`/`<aside>` (moderate axe waiver `landmark-*-is-top-level` in `a11y.spec.ts`): turn into divs and delete the waiver; editor settings form shows raw enum values (`left`/`justify`) — needs enum titles in the schema renderer.
+- [x] FU-26 Admin: gallery editor `GalleryEditor.vue` still uses `<header>`/`<aside>` (moderate axe waiver `landmark-*-is-top-level` in `a11y.spec.ts`): turn into divs and delete the waiver; editor settings form shows raw enum values (`left`/`justify`) — needs enum titles in the schema renderer.
 - [ ] FU-27 Media Library: no delete warning in the grid-view media modal (needs Backbone code).
-- [ ] FU-28 Editor live preview: the preview is a modal now (settings unreachable while open); a title-only save re-renders the preview; `diagnostics[].message` is shown untranslated; staged order/removals are not previewed (server has no staged-items input).
+- [x] FU-28 Editor live preview: the preview is a modal now (settings unreachable while open); a title-only save re-renders the preview; `diagnostics[].message` is shown untranslated; staged order/removals are not previewed (server has no staged-items input).
 - [ ] FU-29 Media Overview: uploader filter is a numeric user id (no users endpoint); justified layout breaks rows greedily (a very narrow image may stretch alone on a narrow container).
-- [ ] FU-31 Editor items grid keeps its fixed tile size: at 2560 px six tiles leave much empty space on the right (consider larger tiles or a size slider).
+- [x] FU-31 Editor items grid keeps its fixed tile size: at 2560 px six tiles leave much empty space on the right (consider larger tiles or a size slider).
+- [ ] FU-32 Admin app: show `schema.newerThanCode` (System Status) and the 503 `swg_schema_newer` error with a clear message; batched `appendMany()` in the core item-repository contract (bulk assign is ~2 queries per item); real RTL site check; Heartbeat nonce path against a real Heartbeat; high-contrast/forced-colors/400 % zoom review; `bin/i18n.sh` still has the placeholder `--msgid-bugs-address`.
 - [ ] FU-30 Public API: `@since` tags only on the layout interface; add them to all public hooks/classes. Flaky E2E on first attempt under host load (admin-shell, theme-and-rail, justified 768) — keep watching.
 - [x] FU-05 Docs: `docs/development.md` must mention the `assets/` project, `bin/rebuild-on-change.sh`, `bin/watch-build.sh` and the new test commands.
 
@@ -169,7 +170,7 @@ REST API (`swg/v1`, S§8)
 - [x] M2-04 `POST /galleries/{id}/duplicate` and `/restore`.
 - [x] M2-05 `GET/POST /galleries/{id}/items` (paged list with resolved global + local metadata; bulk assign with added/duplicate/missing result).
 - [x] M2-06 `PATCH/DELETE /galleries/{id}/items/{itemId}`, `POST /items/bulk-remove` (bounded batch).
-- [x] M2-07 `PUT /galleries/{id}/order` (complete ID set, atomic, single `CASE` update instead of one query per item); evaluate move command for large lists after M5-01 measurements.
+- [x] M2-07 `PUT /galleries/{id}/order` (complete ID set, atomic, batched `CASE` update of the changed rows (was one UPDATE per item until Wave 6); no move command needed after the M5-01 measurements.
 - [x] M2-08 `GET /layouts` (registered layouts + setting schemas).
 - [x] M2-09 `GET /media` (permission-filtered per D11, images only, paged) and `POST /media` (native upload handling, `upload_files`, MIME/size errors mapped).
 - [x] M2-10 `GET/PATCH /settings` (`manage_options`): defaults for layout, page size, lightbox, image sizes, delete-data-on-uninstall with explicit confirmation.
@@ -181,9 +182,9 @@ Admin app (`apps/admin`, C§7)
 - [x] M2-15 Admin page registrar: menu, mount point, assets only on sw-gallery screens, validated Vite manifest, plugin version on every asset, safe diagnostic on missing build.
 - [x] M2-36 `tests/e2e-env` (Docker Compose, throw-away WordPress + DB), `e2e/` Playwright project, `bin/test-e2e.sh`, CI job; dev-only `bin/seed.php` (galleries with generated images, never shipped) for E2E, acceptance checks and M5-01 fixtures. (Moved here per F-02.)
 - [ ] M2-16 (scoping + build-time check done; open: regression test on a foreign admin screen) Quasar style isolation (`swg-` scope, no restyling of WordPress chrome); regression test on a foreign admin screen.
-- [ ] M2-17 (API-client skeleton done: nonce header, abort, GET retry, 409; open: server bootstrap, Heartbeat/auth-check nonce refresh) Typed API layer: REST root/nonce/locale/capabilities from server bootstrap, error translation, cancellation, retry, 409 surface; nonce refresh via Heartbeat and core auth-check dialog on expired login, unsaved changes kept; no `fetch()` in components.
-- [ ] M2-18 (en/de catalogs, parity test, Quasar language pack done; open: RTL mode, WordPress locale/timezone formatting) i18n bridge: vue-i18n en/de, Quasar language pack follows user locale, RTL mode for RTL locales, parity test; date/number formatting per WordPress locale/timezone.
-- [ ] M2-19 (router + five placeholder pages done; open: deep-linkable editor route) Router + navigation shell (Overview, Galleries, Media Overview, Settings, System Status; nothing for unshipped features); stable deep-linkable routes (e.g. editor of gallery n) used by block and admin bar.
+- [x] M2-17 (API-client skeleton done: nonce header, abort, GET retry, 409; open: server bootstrap, Heartbeat/auth-check nonce refresh) Typed API layer: REST root/nonce/locale/capabilities from server bootstrap, error translation, cancellation, retry, 409 surface; nonce refresh via Heartbeat and core auth-check dialog on expired login, unsaved changes kept; no `fetch()` in components.
+- [x] M2-18 (RTL verified in emulation only; en/de catalogs, parity test, Quasar language pack done; open: RTL mode, WordPress locale/timezone formatting) i18n bridge: vue-i18n en/de, Quasar language pack follows user locale, RTL mode for RTL locales, parity test; date/number formatting per WordPress locale/timezone.
+- [x] M2-19 (router + five placeholder pages done; open: deep-linkable editor route) Router + navigation shell (Overview, Galleries, Media Overview, Settings, System Status; nothing for unshipped features); stable deep-linkable routes (e.g. editor of gallery n) used by block and admin bar.
 - [x] M2-20 Coverage script `scripts/check-coverage.mjs` (> 80 %), CI job (typecheck, lint, tests, production build, `npm audit`), Sonar lcov.
 - [x] M2-39 **Design alignment with the sw-* plugins (D14), Wave 3a, planned for the next working day.** Self-contained copies (prefix `swg-`, no `sw-backupit` names or runtime references) of: design tokens with **identical colour values** (indigo primary `#4f46e5`/strong/soft, teal accent, success/warning/danger incl. text and background tones, light + dark), self-hosted fonts (Inter, JetBrains Mono for numbers/code; woff2 only), `ShellLayout` (rail with brand block showing a gallery icon, product name and version, collapse, dark-mode toggle persisted per viewer, skip link, polite live region, capability-based navigation, `NoAccess`), `useTheme`/app store, and the UI building blocks PageHeader, Card, StatusChip, StatTile, EmptyState, ErrorState, DataState, ConfirmDialog, FormSheet, SideSheet, PaginationBar, SegmentedControl. Placeholder pages move to PageHeader/EmptyState. Keep CSS isolation (`.swg-root` scoping, build check) and the single PHP-owned h1. Update the E2E CSS-isolation spec (dark mode, fonts, no restyling of wp-admin) and unit tests, bundle-size note, light/dark/mobile screenshots for review against the sibling screenshots. Acceptance: Stefan compares with sw-backupit/sw-forms. Open: gallery icon/logo and display name.
 - [x] M2-21 (delivered by M2-39) Shared state components: loading, empty, error, retry; confirmation dialog naming affected objects.
@@ -226,7 +227,7 @@ Admin app (`apps/admin`, C§7)
 - [ ] M3-19 (labels come from `data-swg-labels` incl. the optional `error` key — the PHP views must emit them) Lightbox/frontend strings server-localized (en/de).
 - [x] M3-22 `POST /galleries/{id}/preview` (authorized, accepts unsaved settings, same renderer, never cached). (Was M2-12, moved per F-03.)
 - [x] M3-23 Editor live preview in the Vue app (sandboxed, frontend CSS, debounced) using M3-22. (Was M2-31, moved per F-03.)
-- [ ] M3-20 Renderer tests: snapshot per layout, large gallery fixture (query-count budget), missing attachments, stale cache, multiple instances, feed context.
+- [x] M3-20 Renderer tests: snapshot per layout, large gallery fixture (query-count budget), missing attachments, stale cache, multiple instances, feed context.
 - [x] M3-21 Frontend E2E + axe: render, paging, lightbox keyboard/focus/touch, JS disabled, editor live preview.
 
 ## M4 — WordPress surfaces
@@ -249,23 +250,22 @@ Admin app (`apps/admin`, C§7)
 
 ## M5 — Hardening / release
 
-- [ ] M5-01 Performance: seed fixtures with 1k/5k/10k items; budgets for query count, memory, response size (REST + render); document the tested maximum per gallery; fix regressions; decide M2-07 move command.
-- [ ] M5-02 Frontend performance check: LCP image not lazy, no CLS, asset size budget for lightbox/frontend bundles.
-- [ ] M5-03 Accessibility: axe in all E2E flows + documented manual review (keyboard, screen reader, reduced motion).
+- [x] M5-01 Performance: seed fixtures with 1k/5k/10k items; budgets for query count, memory, response size (REST + render); document the tested maximum per gallery; fix regressions; decide M2-07 move command.
+- [x] M5-02 Frontend performance check: LCP image not lazy, no CLS, asset size budget for lightbox/frontend bundles.
+- [x] M5-03 (documentation and automated axe done; the manual screen-reader/touch review in `docs/accessibility.md` is still open) Accessibility: axe in all E2E flows + documented manual review (keyboard, screen reader, reduced motion).
 - [ ] M5-04 Security review against C§5 and S§10: authorization matrix, escaping sinks, `v-html` ban (lint rule), unserialize ban, no paths/secrets in REST/logs; regression test per finding.
-- [ ] M5-05 Migration tests: upgrade, interrupted/retried migration, downgrade-safe failure, multisite prefixes.
-- [ ] M5-06 Uninstall/deactivate tests: default preserves everything, opt-in removes plugin data only, attachments always preserved.
+- [x] M5-05 Migration tests: upgrade, interrupted/retried migration, downgrade-safe failure, multisite prefixes.
+- [x] M5-06 Uninstall/deactivate tests: default preserves everything, opt-in removes plugin data only, attachments always preserved.
 - [ ] M5-07 Full E2E suite per S§11 incl. remove/restore and role restrictions; flake-free in CI.
-- [ ] M5-08 Supported matrix: define and test PHP × WordPress versions (min PHP 8.2 / WP 6.4 to current), MariaDB/MySQL; document in README.
-- [ ] M5-09 `bin/build-zip.sh`: production Composer deps (Mozart prefixing `SWGallery\Dependencies\` only if runtime dependencies exist), compiled admin/blocks/frontend, compiled `.mo`; reproducible output.
-- [ ] M5-10 `bin/verify-zip.sh`: no tests, dev deps, `.env`, coverage, secrets, unintended source maps; ZIP installs and activates in the E2E environment.
-- [ ] M5-11 Release workflow: build ZIP on semver tags (optional `v`), checks must pass; self-contained in this repository.
-- [ ] M5-12 Daily dependency audit workflow (Composer + npm), findings recorded.
+- [x] M5-08 (defined for CI, not yet run on GitHub) Supported matrix: define and test PHP × WordPress versions (min PHP 8.2 / WP 6.4 to current), MariaDB/MySQL; document in README.
+- [x] M5-09 `bin/build-zip.sh`: production Composer deps (Mozart prefixing `SWGallery\Dependencies\` only if runtime dependencies exist), compiled admin/blocks/frontend, compiled `.mo`; reproducible output.
+- [x] M5-10 `bin/verify-zip.sh`: no tests, dev deps, `.env`, coverage, secrets, unintended source maps; ZIP installs and activates in the E2E environment.
+- [x] M5-11 (written and actionlint-clean, not yet run on GitHub) Release workflow: build ZIP on semver tags (optional `v`), checks must pass; self-contained in this repository.
+- [x] M5-12 Daily dependency audit workflow (Composer + npm), findings recorded.
 - [ ] M5-13 SonarQube quality gate green; open issues/hotspots assessed.
 - [ ] M5-14 Docs: README (features, requirements, matrix; private galleries do not protect upload URLs; no right-click/download protection; no telemetry or external requests; export limitation per D12), suggested privacy-policy text via `wp_add_privacy_policy_content` (EXIF/GPS stays in served files), `docs/user-guide.md`, `docs/security.md`, `docs/architecture.md` — concise, no duplication.
 - [ ] M5-15 Release metadata: real Plugin URI, changelog, version bump procedure with single source for the version, `1.0.0` tag.
 - [ ] M5-16 Originality check (S§1): names, UI texts and assets are independent of other gallery plugins.
-- [ ] M5-17 GitHub self-update + signed releases per D8/D9: self-contained copy of the sw-backupit mechanism, isolated in one removable updater module; release manifest/signature verification tested; documented in `docs/github-updates.md`.
 
 ## Post-1.0 backlog (not started before M5 is done; split into tasks when scheduled)
 

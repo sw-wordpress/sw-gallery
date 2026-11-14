@@ -101,3 +101,6 @@ Vitest thresholds alone would accept exactly 80 %). Unmeasured production code i
 
 ## Conventions
 See `AGENTS.md`, `CODE-STYLE.md`, `SPECIFICATION.md`, `decisions.md`, `translations.md`, `hooks.md`, `extending.md`, `integrations.md`.
+
+E2E notes: the RTL spec is emulated (no RTL language pack in the stack: `isRtl` and `dir="rtl"` are injected, the wp-admin chrome is not mirrored). Specs added in Wave 6: `session`, `session-deeplink`, `rtl`, `tile-size`, `frontend-perf`.
+

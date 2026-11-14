@@ -45,6 +45,7 @@ JSON `{code, message, data: {status, ...}}`, messages translated (en/de), never 
 | 403 | missing right; veto | `swg_forbidden`, `swg_cannot_publish`, `swg_operation_vetoed` (`data.reason`) |
 | 404 | missing **or not viewable** gallery (existence does not leak) | `swg_gallery_not_found` |
 | 409 | stale revision; wrong state (trashed update/duplicate, restore of a live gallery, trashing twice) | `swg_revision_conflict`, `swg_invalid_state` |
+| 503 | the stored schema is newer than this plugin version: writes are refused, reads keep working | `swg_schema_newer` |
 | 422 | well-formed but invalid | `swg_validation_failed` (`data.errors[]` with `path`, `code`, `message`), `swg_unknown_layout`, `swg_invalid_cover`, `swg_invalid_owner`, `swg_invalid_request` |
 | 500 | unexpected failure; logged as `swg_rest_unexpected_error` with the exception class only | `swg_internal_error` |
 
@@ -133,3 +134,8 @@ PATCH is partial; unknown request keys are ignored, a body without a known key i
 `POST /galleries/{id}/preview` (`edit_posts`; the actor must be able to edit the gallery: 404 when it is not viewable, 403 when viewable but not editable, 401 anonymous). Body, all optional and **never persisted**: `layout` (registered id, else 422 `swg_unknown_layout`), `sortMode`, `settings` (object; replaces the stored map, validated against the layout schema, else 422 `swg_validation_failed`), `page` (>= 1), `perPage` (1..200). Malformed values are 400. Drafts, pending, private and password-protected galleries render for their editors; the trash renders nothing (`html: ""`).
 
 Response 200 (`Cache-Control: no-store`): `{ html, layoutId, page, totalPages, totalItems, diagnostics: [{code, message}], assets: { css: [url], js: [url] } }`. `html` is the renderer's markup without the editor diagnostics (they are in `diagnostics`). `assets` are the validated build files with `?ver=<plugin version>` (empty arrays when the build is missing; the lightbox files only when the `lightbox` setting is on) for the editor's sandboxed iframe.
+
+## Admin bootstrap (`window.swgAdmin`)
+
+Printed inline by the plugin page (JSON with hex escaping, `JSON_HEX_TAG|AMP|APOS|QUOT`): `restRoot` and `nonce` (required, validated once by the admin app), `locale`, `version`, `adminUrl`, `capabilities[]`, `isRtl`, `timezone`, `ajaxUrl`, `loginUrl`, `assetsUrl` (optional URLs must be http(s), otherwise dropped). The only secret is the per-user REST nonce. The client replays a request once after `rest_cookie_invalid_nonce` with a fresh nonce from `admin-ajax.php?action=rest-nonce` (WordPress rejects before executing, so the replay is safe); 401 shows the session-expired banner without unmounting the views. `GET /status` reports `schema.newerThanCode` when the stored schema version is newer than the code.
+

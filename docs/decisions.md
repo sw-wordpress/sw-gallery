@@ -143,3 +143,18 @@ Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und
 | Portal z-index | Quasar names portal containers `q-portal--<type>--<n>`, so the old `.q-portal--dialog` rule never matched; dialogs now use `.swg-root .q-dialog { z-index: 100100 }` (above the WP admin menu and bar). |
 | E2E retries | Two retries: Chromium aborts requests with `net::ERR_NETWORK_CHANGED` on host network changes, leaving the app unmounted; WordPress core's Gravatar requests are ignored by the failed-request monitor. |
 
+## Wave 6 decisions
+
+| Topic | Decision |
+|---|---|
+| Version source | The plugin header `Version:` is the single source; `bin/version.sh check|set` keeps `SWGALLERY_VERSION`, the npm packages and the CHANGELOG in sync, drift fails CI (`composer check`, `VersionScriptTest`). |
+| Release ZIP | `bin/build-zip.sh` is reproducible (same commit, same sha256), ships no `docs`/`bin`/tests, no vendor prefixing (no runtime dependencies; the script fails if one appears). `bin/verify-zip.sh` plus an install smoke test (`bin/test-zip-install.sh`) gate it. The block catalog name is md5 of the path string. |
+| Release workflows | `release.yml` on tags `v?X.Y.Z[-suffix]` reuses the CI workflows via `workflow_call`, publishes with `GITHUB_TOKEN` (pre-release for suffixed tags); nothing is signed (hook marked). `security-audit.yml` daily: shipped dependencies block, dev tooling and e2e are report-only. Action pinning stays on full tags. Supported matrix PHP 8.2-8.4 × WP 6.4/6.9/latest (+ trunk experimental, MariaDB/MySQL variants), defined for CI, not run locally. |
+| Reorder | A CASE-batched UPDATE of the rows that change (chunks of 1000) in the existing transaction; no move command needed (10k items: 21 queries, ~250 ms). Supersedes the M2-07 wording. |
+| Supported maximum | 10 000 items per gallery (measured; `PUT /order` refuses more with 400). Numbers in `docs/performance.md`. The `performance` test group stays in the default run (~10 s). Snapshots update with `UPDATE_SNAPSHOTS=1`, refused when `CI` is set. |
+| Downgrade policy | A stored schema version newer than the code: no DDL, writes refused (503 `swg_schema_newer`, `SchemaNewerException`), reads and rendering keep working, System Status reports `newerThanCode`. |
+| Uninstall | Opt-in deletion reads galleries straight from the posts table (all statuses incl. trash and private, also under WP-CLI). |
+| Admin session | Nonce replay once per request with a shared refresh; 401 shows a banner and keeps the views mounted so staged editor state survives. Heartbeat nonces are applied. |
+| i18n/RTL | One formatter (`utils/format.ts`, site timezone, WP locale); Quasar `noHtmlAttrs` plus an explicit `direction` on the root and portals. |
+| Editor | Tile size S/M/L (110/150/240 px, per viewer `swg-tile-size`); deep link route `#/galleries/%d` is a documented contract shared by PHP and router; `x-enum-titles` for enum labels; preview diagnostics translated by code only. |
+
