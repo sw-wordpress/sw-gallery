@@ -110,6 +110,7 @@ Public custom properties (set them on `.swg-gallery`, an ancestor or `:root`):
 
 Rules:
 
+- `a.swg-link` carries an `aria-label` (item title, else "Image N of M") only when the image has no alt text.
 - Without JS the links open the image. Only `a.swg-link` inside `[data-swg-gallery]` is enhanced; items are read when the dialog opens.
 - `href` must be `http(s):` or `data:image/`; other or empty values are skipped (link keeps default behaviour).
 - `data-swg-labels` is JSON (HTML-escaped attribute). Keys: `dialog`, `close`, `previous`, `next`, `counter` (placeholders `{current}`, `{total}`), `error` (added to the draft contract; English default if missing). Invalid JSON or empty values fall back to English defaults. All strings are set via `textContent`/attributes.

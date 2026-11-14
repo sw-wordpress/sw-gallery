@@ -17,7 +17,7 @@ Recorded decisions that fill gaps in `SPECIFICATION.md` (S§) / `CODE-STYLE.md` 
 | D13 | 2026-11-10 | Galleries are embed-only in 1.0 (no own URL). Own URLs/SEO are decided again before R1.1-05. |
 | D14 | 2026-11-10 | The admin app follows the visual language of the other sw-* plugins (sw-backupit, sw-cloudcalendar, sw-forms): **identical colour palette** (indigo primary `#4f46e5`, teal accent, same success/warning/danger sets, light and dark), Inter + JetBrains Mono, rail layout with brand block, collapse and dark-mode toggle, same UI building blocks. Taken over as self-contained copies with the `swg-` prefix, no shared runtime package. Implemented in Wave 3a (M2-39). |
 | D10 | 2026-11-10 | Masonry markup is row-ordered in editor order (grid-like without JS); a small JS enhancement packs columns without changing DOM order. |
-| D11 | 2026-11-10 | Users may add any image attachment they can read in the Media Library to galleries they may edit; changing global attachment metadata still requires `edit_post` on the attachment. |
+| D11 | 2026-11-10 | Users may add any image attachment they can read (`read_post`) to galleries they may edit; the actor needs `edit_posts`, not `upload_files` (revised 2026-11-14, FU-16: contributors may use readable images but still cannot upload); changing global attachment metadata still requires `edit_post` on the attachment. |
 | F-01 | 2026-11-10 | No walking-skeleton milestone; implementation order M1 → M5 (S§14.4) stays. |
 | F-02 | 2026-11-10 | The Playwright/Docker E2E environment is built directly after the admin page registrar (M2-15), not at the end of M2. |
 | F-03 | 2026-11-10 | Preview route and editor live preview are implemented in M3 together with the renderer; no placeholder route. |
@@ -157,4 +157,6 @@ Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und
 | Admin session | Nonce replay once per request with a shared refresh; 401 shows a banner and keeps the views mounted so staged editor state survives. Heartbeat nonces are applied. |
 | i18n/RTL | One formatter (`utils/format.ts`, site timezone, WP locale); Quasar `noHtmlAttrs` plus an explicit `direction` on the root and portals. |
 | Editor | Tile size S/M/L (110/150/240 px, per viewer `swg-tile-size`); deep link route `#/galleries/%d` is a documented contract shared by PHP and router; `x-enum-titles` for enum labels; preview diagnostics translated by code only. |
+| Owner handover (S-04) | Changing a gallery's owner needs `edit_others_posts` (also for the current owner); the new owner must exist, hold `edit_posts` and (multisite) belong to the site. Decided 2026-11-14. |
+| Link names (FU-25) | `a.swg-link` gets an `aria-label` only when the image has no alt text: the item title, else "Image N of M" (position in the whole gallery). With alt text the image names the link. Decided 2026-11-14. |
 
