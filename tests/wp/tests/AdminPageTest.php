@@ -202,7 +202,7 @@ class AdminPageTest extends SwgTestCase {
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
 		$hostile = static fn (): string => 'https://example.test/wp-login.php?a=1&b=</script><b>\'"';
 		add_filter( 'login_url', $hostile );
-		$json = $registrar->bootstrap_json();
+		$json    = $registrar->bootstrap_json();
 		remove_filter( 'login_url', $hostile );
 
 		$this->assertDoesNotMatchRegularExpression( '/[<>&\']/', $json );
@@ -277,27 +277,27 @@ class AdminPageTest extends SwgTestCase {
 	public static function untrusted_manifests(): array {
 		$ok_style = array( 'file' => 'style-abc.css' );
 		return array(
-			'no script entry'           => array( array( 'style.css' => $ok_style ) ),
-			'no style entry'            => array( array( 'src/main.ts' => array( 'file' => 'app-abc.js' ) ) ),
-			'path traversal'            => array(
+			'no script entry'            => array( array( 'style.css' => $ok_style ) ),
+			'no style entry'             => array( array( 'src/main.ts' => array( 'file' => 'app-abc.js' ) ) ),
+			'path traversal'             => array(
 				array(
 					'src/main.ts' => array( 'file' => '../app-abc.js' ),
 					'style.css'   => $ok_style,
 				),
 			),
-			'absolute path'             => array(
+			'absolute path'              => array(
 				array(
 					'src/main.ts' => array( 'file' => '/etc/passwd.js' ),
 					'style.css'   => $ok_style,
 				),
 			),
-			'url scheme'                => array(
+			'url scheme'                 => array(
 				array(
 					'src/main.ts' => array( 'file' => 'https://evil.test/a.js' ),
 					'style.css'   => $ok_style,
 				),
 			),
-			'wrong extension'           => array(
+			'wrong extension'            => array(
 				array(
 					'src/main.ts' => array( 'file' => 'app-abc.php' ),
 					'style.css'   => $ok_style,
@@ -309,26 +309,26 @@ class AdminPageTest extends SwgTestCase {
 					'style.css'   => $ok_style,
 				),
 			),
-			'file does not exist'       => array(
+			'file does not exist'        => array(
 				array(
 					'src/main.ts' => array( 'file' => 'missing.js' ),
 					'style.css'   => $ok_style,
 				),
 			),
-			'file is not a string'      => array(
+			'file is not a string'       => array(
 				array(
 					'src/main.ts' => array( 'file' => array( 'x' ) ),
 					'style.css'   => $ok_style,
 				),
 			),
-			'entry is not an object'    => array(
+			'entry is not an object'     => array(
 				array(
 					'src/main.ts' => 'app-abc.js',
 					'style.css'   => $ok_style,
 				),
 			),
-			'not json'                  => array( '{ not json' ),
-			'json scalar'               => array( '"text"' ),
+			'not json'                   => array( '{ not json' ),
+			'json scalar'                => array( '"text"' ),
 		);
 	}
 

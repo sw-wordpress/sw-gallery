@@ -18,16 +18,16 @@ use SWGallery\WordPress\Bootstrap\RegistrarInterface;
  */
 final class AdminRegistrar implements RegistrarInterface {
 
-	public const PAGE_SLUG      = 'swg-galleries';
-	public const CAPABILITY     = 'edit_posts';
-	public const ASSET_HANDLE   = 'swg-admin';
-	public const MOUNT_ID       = 'swg-admin-root';
+	public const PAGE_SLUG    = 'swg-galleries';
+	public const CAPABILITY   = 'edit_posts';
+	public const ASSET_HANDLE = 'swg-admin';
+	public const MOUNT_ID     = 'swg-admin-root';
 
 	/**
 	 * Hash route of the gallery editor (`sprintf` pattern with the gallery id). Contract with the app's router
 	 * (`/galleries/:id(\d+)`, apps/admin/src/router) and with assets/blocks `editGalleryUrl`; a Vitest test pins both.
 	 */
-	public const EDITOR_ROUTE = '#/galleries/%d';
+	public const EDITOR_ROUTE   = '#/galleries/%d';
 	private const JSON_FLAGS    = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
 	private const HINT_CAPS     = array( 'edit_posts', 'edit_others_posts', 'delete_others_posts', 'upload_files', 'manage_options' );
 	private const MENU_POSITION = 26;
