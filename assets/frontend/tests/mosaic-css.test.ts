@@ -42,7 +42,8 @@ describe('mosaic.css', () => {
     expect(rules).not.toMatch(
       /(^|[\s;{])(left|right|top|bottom|width|height|max-width|min-width)\s*:/,
     );
-    expect(rules).toContain('inset-inline-start');
+    expect(rules).toContain('margin-inline-start');
+    expect(rules).not.toContain('inset-inline');
     expect(rules).toContain('inset-block-start');
   });
 
@@ -75,7 +76,7 @@ describe('mosaic.css', () => {
   });
 
   it('keeps a visible inner focus ring and hides captions only in plan mode', () => {
-    expect(rules).toMatch(/\.swg-link:focus-visible\s*\{[^}]*outline-offset:\s*-\d+px/);
+    expect(rules).toMatch(/\.swg-link:focus-visible::after\s*\{[^}]*outline-offset:\s*-\d+px/);
     expect(rules).toMatch(/\.swg-caption\s*\{\s*display:\s*none/);
     const inContainer = rules.indexOf('@container');
     expect(rules.indexOf('.swg-caption')).toBeGreaterThan(inContainer);

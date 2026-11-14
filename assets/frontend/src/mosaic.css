@@ -5,7 +5,7 @@
  *   < 480px  plain 2 column grid (also the default for browsers without container queries)
  *   >= 480px n (4:5)   >= 720px m (1:1)   >= 1024px w (16:10 or the `ratio` setting)
  * The list is widened by the gap and pulled back with a negative margin, every tile is padded by half the gap, so the
- * outer edges are flush and the gutter between tiles is exactly --swg-gap. Inset properties are logical: RTL mirrors
+ * outer edges are flush and the gutter between tiles is exactly --swg-gap. The horizontal offset is a logical margin on an abspos box with auto insets (the build lowers inset-inline-start to :lang() rules that ignore dir): RTL mirrors
  * the arrangement. --swg-fx/--swg-fy (focal point) become object-position. Captions stay in the lightbox (plan mode).
  */
 .swg-gallery.swg-layout-mosaic {
@@ -42,7 +42,7 @@
     --swg-w: var(--swg-n-w, 100);
     --swg-h: var(--swg-n-h, 100);
     position: absolute;
-    inset-inline-start: calc(var(--swg-x) * 1%);
+    margin-inline-start: calc(var(--swg-x) * 1%);
     inset-block-start: calc(var(--swg-y) * 1%);
     inline-size: calc(var(--swg-w) * 1%);
     block-size: calc(var(--swg-h) * 1%);
@@ -67,8 +67,18 @@
     aspect-ratio: auto;
   }
 
+  /* The image is absolutely positioned and would cover the link's own outline: the ring is drawn on top of it. */
   .swg-gallery.swg-layout-mosaic .swg-link:focus-visible {
+    outline: none;
+  }
+
+  .swg-gallery.swg-layout-mosaic .swg-link:focus-visible::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    outline: var(--swg-focus-ring, 3px solid Highlight);
     outline-offset: -4px;
+    pointer-events: none;
   }
 
   .swg-gallery.swg-layout-mosaic .swg-caption {
