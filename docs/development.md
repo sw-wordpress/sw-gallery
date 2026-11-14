@@ -55,6 +55,9 @@ composer stan          # PHPStan level 8, no baseline
 composer test          # unit + integration (no database)
 composer test:wp       # WordPress integration tests (single site, needs the private DB)
 composer test:wp:ms    # same environment as multisite (sequentially, never in parallel with test:wp)
+composer test:perf     # performance budgets with 5k/10k seeded items (group `performance`, ~10 s; also part of test:wp), see `performance.md`
+wp eval-file bin/seed.php -- --items=5000 --galleries=2   # dev-only fixture seeder (refuses unless WP_ENVIRONMENT_TYPE is local/development/staging)
+UPDATE_SNAPSHOTS=1 composer test:wp -- --filter RenderSnapshotTest   # renderer snapshots in tests/wp/fixtures/render-snapshots (refused when CI is set)
 composer test:coverage # unit + WordPress suite Clover, merged (tests/coverage/merge.php), strict gate > 80 %
 composer test:coverage:unit | test:coverage:wp | test:coverage:merge   # the parts of the above
 composer check         # style + analysis + tests

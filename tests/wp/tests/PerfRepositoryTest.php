@@ -138,6 +138,23 @@ class PerfRepositoryTest extends SwgTestCase {
 		$this->assertLessThanOrEqual( 3, abs( $counts[25] - $counts[5] ), 'Queries for 5 and 25 covers: ' . wp_json_encode( $counts ) );
 	}
 
+	public function test_a_reorder_of_more_than_ten_thousand_ids_is_rejected_up_front(): void {
+		$admin   = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		$gallery = SwgSeeder::gallery( 'Too big', array(), $admin );
+		wp_set_current_user( $admin );
+		global $wp_rest_server;
+		$wp_rest_server = null;
+		rest_get_server();
+		$request = new WP_REST_Request( 'PUT', '/swg/v1/galleries/' . $gallery . '/order' );
+		$request->set_header( 'content-type', 'application/json' );
+		$request->set_body( (string) wp_json_encode( array( 'itemIds' => range( 1, 10001 ), 'expectedRevision' => 0 ) ) );
+
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'rest_invalid_param', $response->get_data()['code'] );
+	}
+
 	public function test_bulk_assign_does_not_query_every_attachment_for_the_access_check(): void {
 		$admin   = self::factory()->user->create( array( 'role' => 'administrator' ) );
 		$gallery = SwgSeeder::gallery( 'Assign', array(), $admin );
