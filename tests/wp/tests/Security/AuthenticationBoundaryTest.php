@@ -163,6 +163,22 @@ class AuthenticationBoundaryTest extends SwgTestCase {
 		}
 	}
 
+	public function test_options_requests_describe_the_schema_but_expose_no_data(): void {
+		// WordPress core answers OPTIONS without calling the permission callbacks: route and argument definitions are public
+		// by design (the plugin is open source). They must never carry gallery data.
+		$admin = $this->makeUser( 'administrator' );
+		$id    = $this->makeGallery( $admin, GalleryStatus::Draft, 'Secret title of a draft' );
+		foreach ( array( '/galleries', '/galleries/' . $id, '/settings', '/status' ) as $path ) {
+			wp_set_current_user( 0 );
+			$response = rest_do_request( new WP_REST_Request( 'OPTIONS', '/swg/v1' . $path ) );
+			$this->assertSame( 200, $response->get_status(), $path );
+			$this->assertSame( array( 'namespace', 'methods', 'endpoints', 'schema' ), array_keys( (array) $response->get_data() ), $path );
+			$flat = (string) wp_json_encode( $response->get_data() );
+			$this->assertStringNotContainsString( 'Secret title', $flat );
+			$this->assertStringNotContainsString( ABSPATH, $flat );
+		}
+	}
+
 	public function test_wrong_methods_are_refused_before_any_handler_runs(): void {
 		$admin = $this->makeUser( 'administrator' );
 		$id    = $this->makeGallery( $admin );
