@@ -12,6 +12,7 @@ use SWGallery\Core\Contract\RevisionStoreInterface;
 use SWGallery\Core\Contract\TransactionRunnerInterface;
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Gallery\AssignResult;
+use SWGallery\Core\Domain\Gallery\GalleryStatus;
 use SWGallery\Core\Domain\Gallery\RemoveResult;
 use SWGallery\Core\Domain\Gallery\Revision;
 use SWGallery\Core\Event\EventDispatcherInterface;
@@ -21,6 +22,7 @@ use SWGallery\Core\Event\ItemsReordered;
 use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\InvalidOrderException;
+use SWGallery\Core\Exception\InvalidStateException;
 use SWGallery\Core\Exception\ItemNotFoundException;
 
 /**
@@ -179,6 +181,10 @@ final class GalleryItemService
         $gallery = $this->galleries->find($galleryId) ?? throw new GalleryNotFoundException();
         if (!$this->access->canEdit($actor, $gallery)) {
             throw new AccessDeniedException();
+        }
+        // A trashed gallery is read-only until it is restored (same rule as updating the gallery itself).
+        if ($gallery->status === GalleryStatus::Trash) {
+            throw new InvalidStateException();
         }
     }
 

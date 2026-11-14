@@ -84,7 +84,7 @@ final class GalleryController extends AbstractController {
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'create_item' ),
 					'permission_callback' => array( $this, 'create_item_permissions_check' ),
-					'args'                => $this->get_endpoint_args_for_item_schema( \WP_REST_Server::CREATABLE ),
+					'args'                => $this->with_settings_limits( $this->get_endpoint_args_for_item_schema( \WP_REST_Server::CREATABLE ) ),
 				),
 				'schema' => array( $this, 'get_public_item_schema' ),
 			)
@@ -108,7 +108,7 @@ final class GalleryController extends AbstractController {
 							'id'               => $id_arg,
 							'expectedRevision' => $this->expected_revision_arg(),
 						)
-					) + $this->get_endpoint_args_for_item_schema( \WP_REST_Server::EDITABLE ),
+					) + $this->with_settings_limits( $this->get_endpoint_args_for_item_schema( \WP_REST_Server::EDITABLE ) ),
 				),
 				array(
 					'methods'             => \WP_REST_Server::DELETABLE,

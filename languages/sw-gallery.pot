@@ -461,6 +461,12 @@ msgstr ""
 msgid "Page %1$d of %2$d"
 msgstr ""
 
+#. translators: %s: argument name.
+#: packages/wordpress/src/Rest/AbstractController.php:125
+#, php-format
+msgid "%s is too large or nested too deeply."
+msgstr ""
+
 #: packages/wordpress/src/Rest/ErrorMapper.php:52
 msgid "The request contains invalid values."
 msgstr ""
@@ -470,7 +476,7 @@ msgid "An unexpected error occurred."
 msgstr ""
 
 #: packages/wordpress/src/Rest/GalleryController.php:322
-#: packages/wordpress/src/Rest/ItemController.php:297
+#: packages/wordpress/src/Rest/ItemController.php:299
 #: packages/wordpress/src/Rest/SettingsController.php:92
 msgid "The request does not change anything."
 msgstr ""
@@ -493,11 +499,11 @@ msgstr ""
 msgid "You are not allowed to publish galleries."
 msgstr ""
 
-#: packages/wordpress/src/Rest/ItemController.php:468
+#: packages/wordpress/src/Rest/ItemController.php:470
 msgid "The settings must be an object."
 msgstr ""
 
-#: packages/wordpress/src/Rest/ItemController.php:490
+#: packages/wordpress/src/Rest/ItemController.php:492
 msgid "A required parameter is missing."
 msgstr ""
 

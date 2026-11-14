@@ -26,6 +26,11 @@ abstract class AbstractController extends \WP_REST_Controller {
 	public const PER_PAGE     = 20;
 	public const MAX_PAGE     = 100000;
 
+	/** Bounds of a submitted settings map (layout or item settings): legitimate maps are a few hundred bytes. */
+	public const SETTINGS_MAX_BYTES = 32768;
+	public const SETTINGS_MAX_DEPTH = 6;
+	public const SETTINGS_MAX_KEYS  = 200;
+
 	/**
 	 * REST namespace of every route.
 	 *
@@ -94,6 +99,61 @@ abstract class AbstractController extends \WP_REST_Controller {
 	protected function validated( array $args ): array {
 		foreach ( $args as $name => $definition ) {
 			$args[ $name ]['validate_callback'] = $definition['validate_callback'] ?? 'rest_validate_request_arg';
+		}
+		return $args;
+	}
+
+	/**
+	 * Schema validation plus the size bounds of a settings map. Unknown keys inside a map are kept on purpose (they
+	 * belong to layouts that are not active), so the bounds are what keeps a request from filling the database.
+	 *
+	 * @param mixed            $value   Submitted value.
+	 * @param \WP_REST_Request $request Request.
+	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
+	 * @param string           $param   Argument name.
+	 * @return true|\WP_Error
+	 */
+	public static function validate_settings_map( mixed $value, \WP_REST_Request $request, string $param ) {
+		$valid = rest_validate_request_arg( $value, $request, $param );
+		if ( true !== $valid ) {
+			return $valid;
+		}
+		if ( is_array( $value ) && ( ! self::settings_shape_ok( $value, 1 ) || strlen( (string) wp_json_encode( $value ) ) > self::SETTINGS_MAX_BYTES ) ) {
+			return new \WP_Error(
+				'rest_invalid_param',
+				/* translators: %s: argument name. */
+				sprintf( __( '%s is too large or nested too deeply.', 'sw-gallery' ), $param ),
+				array( 'status' => 400 )
+			);
+		}
+		return true;
+	}
+
+	/**
+	 * @param array<mixed> $value Map or list.
+	 * @param int          $depth Nesting level of $value.
+	 */
+	private static function settings_shape_ok( array $value, int $depth ): bool {
+		if ( $depth > self::SETTINGS_MAX_DEPTH || count( $value ) > self::SETTINGS_MAX_KEYS ) {
+			return false;
+		}
+		foreach ( $value as $entry ) {
+			if ( is_array( $entry ) && ! self::settings_shape_ok( $entry, $depth + 1 ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Adds the size bounds to the `settings` argument of a route.
+	 *
+	 * @param array<string, array<string, mixed>> $args Argument definitions.
+	 * @return array<string, array<string, mixed>>
+	 */
+	protected function with_settings_limits( array $args ): array {
+		if ( isset( $args['settings'] ) ) {
+			$args['settings']['validate_callback'] = array( self::class, 'validate_settings_map' );
 		}
 		return $args;
 	}

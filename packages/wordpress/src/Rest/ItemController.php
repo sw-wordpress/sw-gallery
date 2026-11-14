@@ -139,35 +139,37 @@ final class ItemController extends AbstractController {
 					'methods'             => 'PATCH',
 					'callback'            => array( $this, 'update_item' ),
 					'permission_callback' => array( $this, 'permissions_check' ),
-					'args'                => $this->validated(
-						array(
-							'id'        => $id_arg,
-							'itemId'    => $item_arg,
-							'overrides' => array(
-								'description'          => 'Partial overrides; absent fields keep their stored value, null inherits, an empty string is an intentional blank.',
-								'type'                 => 'object',
-								'properties'           => array(
-									'title'   => array(
-										'type'      => array( 'string', 'null' ),
-										'maxLength' => self::TITLE_MAX,
+					'args'                => $this->with_settings_limits(
+						$this->validated(
+							array(
+								'id'        => $id_arg,
+								'itemId'    => $item_arg,
+								'overrides' => array(
+									'description'          => 'Partial overrides; absent fields keep their stored value, null inherits, an empty string is an intentional blank.',
+									'type'                 => 'object',
+									'properties'           => array(
+										'title'   => array(
+											'type'      => array( 'string', 'null' ),
+											'maxLength' => self::TITLE_MAX,
+										),
+										'caption' => array(
+											'type'      => array( 'string', 'null' ),
+											'maxLength' => self::CAPTION_MAX,
+										),
+										'alt'     => array(
+											'type'      => array( 'string', 'null' ),
+											'maxLength' => self::ALT_MAX,
+										),
 									),
-									'caption' => array(
-										'type'      => array( 'string', 'null' ),
-										'maxLength' => self::CAPTION_MAX,
-									),
-									'alt'     => array(
-										'type'      => array( 'string', 'null' ),
-										'maxLength' => self::ALT_MAX,
-									),
+									'additionalProperties' => false,
+									'sanitize_callback'    => array( self::class, 'sanitize_overrides' ),
 								),
-								'additionalProperties' => false,
-								'sanitize_callback'    => array( self::class, 'sanitize_overrides' ),
-							),
-							'settings'  => array(
-								'description' => 'Item settings map; replaces the stored map and is validated against the layout.',
-								'type'        => 'object',
-							),
-						) + $revision
+								'settings'  => array(
+									'description' => 'Item settings map; replaces the stored map and is validated against the layout.',
+									'type'        => 'object',
+								),
+							) + $revision
+						)
 					),
 				),
 				array(
