@@ -43,7 +43,7 @@ class RestLayoutTest extends SwgTestCase {
 		$data     = $this->data( $response );
 
 		$this->assertSame( 'grid', $data['fallbackId'] );
-		$this->assertSame( array( 'carousel', 'grid', 'justified', 'masonry' ), array_column( $data['layouts'], 'id' ) );
+		$this->assertSame( array( 'carousel', 'focus', 'grid', 'justified', 'masonry' ), array_column( $data['layouts'], 'id' ) );
 		$grid = array_column( $data['layouts'], null, 'id' )['grid'];
 		$this->assertSame( array( 'id', 'label', 'settingsSchema' ), array_keys( $grid ) );
 		$this->assertSame( 'grid', $grid['id'] );
@@ -69,7 +69,7 @@ class RestLayoutTest extends SwgTestCase {
 		$this->assertTrue( $by['masonry']['settingsSchema']['properties']['columns']['x-responsive'] );
 	}
 
-	public function test_carousel_is_listed_with_their_schemas(): void {
+	public function test_carousel_and_focus_are_listed_with_their_schemas(): void {
 		$data = $this->data( $this->call( 'GET', '/layouts', array(), $this->makeUser( 'author' ) ) );
 		$by   = array_column( $data['layouts'], null, 'id' );
 
@@ -78,6 +78,10 @@ class RestLayoutTest extends SwgTestCase {
 		$this->assertTrue( $by['carousel']['settingsSchema']['properties']['height']['x-responsive'] );
 		$this->assertSame( 'boolean', $by['carousel']['settingsSchema']['properties']['buttons']['type'] );
 		$this->assertSame( array( 'start', 'center' ), array_keys( $by['carousel']['settingsSchema']['properties']['snap']['x-enum-titles'] ) );
+		$this->assertSame( 'Focus', $by['focus']['label'] );
+		$this->assertSame( array( 'stageRatio', 'thumbs', 'thumbSize', 'gap', 'radius' ), array_keys( $by['focus']['settingsSchema']['properties'] ) );
+		$this->assertSame( array( 'auto', '16:9', '3:2', '4:3', '1:1' ), $by['focus']['settingsSchema']['properties']['stageRatio']['enum'] );
+		$this->assertSame( array( 'bottom', 'start' ), $by['focus']['settingsSchema']['properties']['thumbs']['enum'] );
 	}
 
 	public function test_extra_layouts_keep_unknown_labels_and_item_settings_keys(): void {
@@ -93,7 +97,7 @@ class RestLayoutTest extends SwgTestCase {
 
 		$data = $this->data( $this->call( 'GET', '/layouts', array(), $this->makeUser( 'editor' ) ) );
 
-		$this->assertSame( array( 'carousel', 'grid', 'justified', 'masonry', 'mosaic' ), array_column( $data['layouts'], 'id' ) );
+		$this->assertSame( array( 'carousel', 'focus', 'grid', 'justified', 'masonry', 'mosaic' ), array_column( $data['layouts'], 'id' ) );
 		$masonry = array_column( $data['layouts'], null, 'id' )['mosaic'];
 		$this->assertSame( 'Mosaic', $masonry['label'] );
 		$this->assertArrayHasKey( 'x-item-settings', $masonry['settingsSchema'] );

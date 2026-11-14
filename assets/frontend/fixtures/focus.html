@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>sw-gallery focus fixture</title>
+        <!-- Works without the script (the stage follows the in-page links via :target). With it: `npx vite --open /frontend/fixtures/focus.html` in assets adds instant switching and arrow keys. Review: thumbnails, arrows, stage click, dir=rtl, thumbs=start (second gallery, wide window), JS off. -->
+        <link rel="stylesheet" href="../src/layouts.css" />
+        <style>
+            :root {
+                color-scheme: light dark;
+            }
+            body {
+                font-family: system-ui, sans-serif;
+                margin: 1rem auto;
+                max-width: 64rem;
+                padding: 0 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Focus, thumbnails below (3:2 stage, 80px)</h1>
+        <div
+            class="swg-gallery swg-layout-focus"
+            data-swg-gallery
+            data-swg-instance="swg-1-1"
+            data-swg-labels='{"previous":"Previous image","next":"Next image","counter":"{current} of {total}","stage":"Selected image","thumbnails":"Thumbnails"}'
+            style="
+                --swg-stage-ratio: 3/2;
+                --swg-thumb-size: 80px;
+                --swg-gap: 8px;
+                --swg-thumb-radius: 4px;
+            "
+        >
+            <div class="swg-focus__body">
+                <div class="swg-stage" role="region" aria-label="Selected image">
+                    <ul class="swg-items" role="list">
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-1-s1"></span
+                            ><a class="swg-link" href="#f1"
+                                ><img
+                                    alt="Image 1"
+                                    width="1200"
+                                    height="800"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e74c3c'/%3E%3Cstop offset='1' stop-color='%238e44ad'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='800' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L360.0 440.00000000000006 L600.0 640.0 L900.0 360.0 L1200 600.0 L1200 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E1%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E1200x800%3C/text%3E%3C/svg%3E"
+                                    loading="eager"
+                                    decoding="async"
+                            /></a>
+                            <p class="swg-caption">Caption 1</p>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-1-s2"></span
+                            ><a class="swg-link" href="#f2"
+                                ><img
+                                    alt="Image 2"
+                                    width="800"
+                                    height="1200"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1200' viewBox='0 0 800 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2316a085'/%3E%3Cstop offset='1' stop-color='%232980b9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='560.0' cy='420.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L240.0 660.0 L400.0 960.0 L600.0 540.0 L800 900.0 L800 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E2%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E800x1200%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-1-s3"></span
+                            ><a class="swg-link" href="#f3"
+                                ><img
+                                    alt="Image 3"
+                                    width="1200"
+                                    height="1200"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='1200' viewBox='0 0 1200 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23f39c12'/%3E%3Cstop offset='1' stop-color='%23d35400'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='420.0' r='144.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L360.0 660.0 L600.0 960.0 L900.0 540.0 L1200 900.0 L1200 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='168.00000000000003' text-anchor='middle' font-family='sans-serif'%3E3%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='72.0' text-anchor='middle' font-family='sans-serif'%3E1200x1200%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-1-s4"></span
+                            ><a class="swg-link" href="#f4"
+                                ><img
+                                    alt="Image 4"
+                                    width="1600"
+                                    height="900"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='900' viewBox='0 0 1600 900'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232c3e50'/%3E%3Cstop offset='1' stop-color='%237f8c8d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1600' height='900' fill='url(%23g)'/%3E%3Ccircle cx='1120.0' cy='315.0' r='108.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 900 L480.0 495.00000000000006 L800.0 720.0 L1200.0 405.0 L1600 675.0 L1600 900 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='126.00000000000001' text-anchor='middle' font-family='sans-serif'%3E4%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='54.0' text-anchor='middle' font-family='sans-serif'%3E1600x900%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                            <p class="swg-caption">Caption 4</p>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-1-s5"></span
+                            ><a class="swg-link" href="#f5"
+                                ><img
+                                    alt="Image 5"
+                                    width="900"
+                                    height="1200"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='1200' viewBox='0 0 900 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2327ae60'/%3E%3Cstop offset='1' stop-color='%23f1c40f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='900' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='630.0' cy='420.0' r='108.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L270.0 660.0 L450.0 960.0 L675.0 540.0 L900 900.0 L900 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='126.00000000000001' text-anchor='middle' font-family='sans-serif'%3E5%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='54.0' text-anchor='middle' font-family='sans-serif'%3E900x1200%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-1-s6"></span
+                            ><a class="swg-link" href="#f6"
+                                ><img
+                                    alt="Image 6"
+                                    width="1200"
+                                    height="800"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238e44ad'/%3E%3Cstop offset='1' stop-color='%233498db'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='800' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L360.0 440.00000000000006 L600.0 640.0 L900.0 360.0 L1200 600.0 L1200 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E6%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E1200x800%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-1-s7"></span
+                            ><a class="swg-link" href="#f7"
+                                ><img
+                                    alt="Image 7"
+                                    width="2000"
+                                    height="800"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2000' height='800' viewBox='0 0 2000 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23c0392b'/%3E%3Cstop offset='1' stop-color='%23e67e22'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='2000' height='800' fill='url(%23g)'/%3E%3Ccircle cx='1400.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L600.0 440.00000000000006 L1000.0 640.0 L1500.0 360.0 L2000 600.0 L2000 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E7%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E2000x800%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                            <p class="swg-caption">Caption 7</p>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-1-s8"></span
+                            ><a class="swg-link" href="#f8"
+                                ><img
+                                    alt="Image 8"
+                                    width="1000"
+                                    height="1000"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000' viewBox='0 0 1000 1000'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231abc9c'/%3E%3Cstop offset='1' stop-color='%2334495e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1000' height='1000' fill='url(%23g)'/%3E%3Ccircle cx='700.0' cy='350.0' r='120.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1000 L300.0 550.0 L500.0 800.0 L750.0 450.0 L1000 750.0 L1000 1000 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='140.0' text-anchor='middle' font-family='sans-serif'%3E8%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='60.0' text-anchor='middle' font-family='sans-serif'%3E1000x1000%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-1-s9"></span
+                            ><a class="swg-link" href="#f9"
+                                ><img
+                                    alt="Image 9"
+                                    width="1200"
+                                    height="800"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e84393'/%3E%3Cstop offset='1' stop-color='%23fd79a8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='800' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L360.0 440.00000000000006 L600.0 640.0 L900.0 360.0 L1200 600.0 L1200 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E9%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E1200x800%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-1-s10"></span
+                            ><a class="swg-link" href="#f10"
+                                ><img
+                                    alt="Image 10"
+                                    width="800"
+                                    height="1200"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1200' viewBox='0 0 800 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300b894'/%3E%3Cstop offset='1' stop-color='%230984e3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='560.0' cy='420.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L240.0 660.0 L400.0 960.0 L600.0 540.0 L800 900.0 L800 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E10%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E800x1200%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                            <p class="swg-caption">Caption 10</p>
+                        </li>
+                    </ul>
+                </div>
+                <ul class="swg-thumbs" role="list" aria-label="Thumbnails">
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-1-s1"
+                            ><img
+                                alt="Image 1"
+                                width="1200"
+                                height="800"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e74c3c'/%3E%3Cstop offset='1' stop-color='%238e44ad'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='800' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L360.0 440.00000000000006 L600.0 640.0 L900.0 360.0 L1200 600.0 L1200 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E1%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E1200x800%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-1-s2"
+                            ><img
+                                alt="Image 2"
+                                width="800"
+                                height="1200"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1200' viewBox='0 0 800 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2316a085'/%3E%3Cstop offset='1' stop-color='%232980b9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='560.0' cy='420.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L240.0 660.0 L400.0 960.0 L600.0 540.0 L800 900.0 L800 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E2%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E800x1200%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-1-s3"
+                            ><img
+                                alt="Image 3"
+                                width="1200"
+                                height="1200"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='1200' viewBox='0 0 1200 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23f39c12'/%3E%3Cstop offset='1' stop-color='%23d35400'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='420.0' r='144.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L360.0 660.0 L600.0 960.0 L900.0 540.0 L1200 900.0 L1200 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='168.00000000000003' text-anchor='middle' font-family='sans-serif'%3E3%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='72.0' text-anchor='middle' font-family='sans-serif'%3E1200x1200%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-1-s4"
+                            ><img
+                                alt="Image 4"
+                                width="1600"
+                                height="900"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='900' viewBox='0 0 1600 900'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232c3e50'/%3E%3Cstop offset='1' stop-color='%237f8c8d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1600' height='900' fill='url(%23g)'/%3E%3Ccircle cx='1120.0' cy='315.0' r='108.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 900 L480.0 495.00000000000006 L800.0 720.0 L1200.0 405.0 L1600 675.0 L1600 900 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='126.00000000000001' text-anchor='middle' font-family='sans-serif'%3E4%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='54.0' text-anchor='middle' font-family='sans-serif'%3E1600x900%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-1-s5"
+                            ><img
+                                alt="Image 5"
+                                width="900"
+                                height="1200"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='1200' viewBox='0 0 900 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2327ae60'/%3E%3Cstop offset='1' stop-color='%23f1c40f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='900' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='630.0' cy='420.0' r='108.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L270.0 660.0 L450.0 960.0 L675.0 540.0 L900 900.0 L900 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='126.00000000000001' text-anchor='middle' font-family='sans-serif'%3E5%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='54.0' text-anchor='middle' font-family='sans-serif'%3E900x1200%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-1-s6"
+                            ><img
+                                alt="Image 6"
+                                width="1200"
+                                height="800"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238e44ad'/%3E%3Cstop offset='1' stop-color='%233498db'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='800' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L360.0 440.00000000000006 L600.0 640.0 L900.0 360.0 L1200 600.0 L1200 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E6%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E1200x800%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-1-s7"
+                            ><img
+                                alt="Image 7"
+                                width="2000"
+                                height="800"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2000' height='800' viewBox='0 0 2000 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23c0392b'/%3E%3Cstop offset='1' stop-color='%23e67e22'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='2000' height='800' fill='url(%23g)'/%3E%3Ccircle cx='1400.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L600.0 440.00000000000006 L1000.0 640.0 L1500.0 360.0 L2000 600.0 L2000 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E7%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E2000x800%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-1-s8"
+                            ><img
+                                alt="Image 8"
+                                width="1000"
+                                height="1000"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000' viewBox='0 0 1000 1000'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231abc9c'/%3E%3Cstop offset='1' stop-color='%2334495e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1000' height='1000' fill='url(%23g)'/%3E%3Ccircle cx='700.0' cy='350.0' r='120.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1000 L300.0 550.0 L500.0 800.0 L750.0 450.0 L1000 750.0 L1000 1000 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='140.0' text-anchor='middle' font-family='sans-serif'%3E8%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='60.0' text-anchor='middle' font-family='sans-serif'%3E1000x1000%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-1-s9"
+                            ><img
+                                alt="Image 9"
+                                width="1200"
+                                height="800"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e84393'/%3E%3Cstop offset='1' stop-color='%23fd79a8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='800' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L360.0 440.00000000000006 L600.0 640.0 L900.0 360.0 L1200 600.0 L1200 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E9%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E1200x800%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-1-s10"
+                            ><img
+                                alt="Image 10"
+                                width="800"
+                                height="1200"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1200' viewBox='0 0 800 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300b894'/%3E%3Cstop offset='1' stop-color='%230984e3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='560.0' cy='420.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L240.0 660.0 L400.0 960.0 L600.0 540.0 L800 900.0 L800 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E10%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E800x1200%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <h1>Focus, thumbnails at the start (16:9 stage, 64px)</h1>
+        <div
+            class="swg-gallery swg-layout-focus swg-thumbs-start"
+            data-swg-gallery
+            data-swg-instance="swg-1-2"
+            style="
+                --swg-stage-ratio: 16/9;
+                --swg-thumb-size: 64px;
+                --swg-gap: 8px;
+                --swg-thumb-radius: 4px;
+            "
+        >
+            <div class="swg-focus__body">
+                <div class="swg-stage" role="region" aria-label="Selected image">
+                    <ul class="swg-items" role="list">
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-2-s1"></span
+                            ><a class="swg-link" href="#f1"
+                                ><img
+                                    alt="Image 1"
+                                    width="1200"
+                                    height="800"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e74c3c'/%3E%3Cstop offset='1' stop-color='%238e44ad'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='800' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L360.0 440.00000000000006 L600.0 640.0 L900.0 360.0 L1200 600.0 L1200 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E1%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E1200x800%3C/text%3E%3C/svg%3E"
+                                    loading="eager"
+                                    decoding="async"
+                            /></a>
+                            <p class="swg-caption">Caption 1</p>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-2-s2"></span
+                            ><a class="swg-link" href="#f2"
+                                ><img
+                                    alt="Image 2"
+                                    width="800"
+                                    height="1200"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1200' viewBox='0 0 800 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2316a085'/%3E%3Cstop offset='1' stop-color='%232980b9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='560.0' cy='420.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L240.0 660.0 L400.0 960.0 L600.0 540.0 L800 900.0 L800 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E2%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E800x1200%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-2-s3"></span
+                            ><a class="swg-link" href="#f3"
+                                ><img
+                                    alt="Image 3"
+                                    width="1200"
+                                    height="1200"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='1200' viewBox='0 0 1200 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23f39c12'/%3E%3Cstop offset='1' stop-color='%23d35400'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='420.0' r='144.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L360.0 660.0 L600.0 960.0 L900.0 540.0 L1200 900.0 L1200 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='168.00000000000003' text-anchor='middle' font-family='sans-serif'%3E3%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='72.0' text-anchor='middle' font-family='sans-serif'%3E1200x1200%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-2-s4"></span
+                            ><a class="swg-link" href="#f4"
+                                ><img
+                                    alt="Image 4"
+                                    width="1600"
+                                    height="900"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='900' viewBox='0 0 1600 900'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232c3e50'/%3E%3Cstop offset='1' stop-color='%237f8c8d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1600' height='900' fill='url(%23g)'/%3E%3Ccircle cx='1120.0' cy='315.0' r='108.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 900 L480.0 495.00000000000006 L800.0 720.0 L1200.0 405.0 L1600 675.0 L1600 900 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='126.00000000000001' text-anchor='middle' font-family='sans-serif'%3E4%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='54.0' text-anchor='middle' font-family='sans-serif'%3E1600x900%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                            <p class="swg-caption">Caption 4</p>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-2-s5"></span
+                            ><a class="swg-link" href="#f5"
+                                ><img
+                                    alt="Image 5"
+                                    width="900"
+                                    height="1200"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='1200' viewBox='0 0 900 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2327ae60'/%3E%3Cstop offset='1' stop-color='%23f1c40f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='900' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='630.0' cy='420.0' r='108.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L270.0 660.0 L450.0 960.0 L675.0 540.0 L900 900.0 L900 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='126.00000000000001' text-anchor='middle' font-family='sans-serif'%3E5%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='54.0' text-anchor='middle' font-family='sans-serif'%3E900x1200%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-2-s6"></span
+                            ><a class="swg-link" href="#f6"
+                                ><img
+                                    alt="Image 6"
+                                    width="1200"
+                                    height="800"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238e44ad'/%3E%3Cstop offset='1' stop-color='%233498db'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='800' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L360.0 440.00000000000006 L600.0 640.0 L900.0 360.0 L1200 600.0 L1200 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E6%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E1200x800%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-2-s7"></span
+                            ><a class="swg-link" href="#f7"
+                                ><img
+                                    alt="Image 7"
+                                    width="2000"
+                                    height="800"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2000' height='800' viewBox='0 0 2000 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23c0392b'/%3E%3Cstop offset='1' stop-color='%23e67e22'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='2000' height='800' fill='url(%23g)'/%3E%3Ccircle cx='1400.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L600.0 440.00000000000006 L1000.0 640.0 L1500.0 360.0 L2000 600.0 L2000 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E7%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E2000x800%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                            <p class="swg-caption">Caption 7</p>
+                        </li>
+                        <li class="swg-item swg-panel">
+                            <span class="swg-anchor" id="swg-1-2-s8"></span
+                            ><a class="swg-link" href="#f8"
+                                ><img
+                                    alt="Image 8"
+                                    width="1000"
+                                    height="1000"
+                                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000' viewBox='0 0 1000 1000'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231abc9c'/%3E%3Cstop offset='1' stop-color='%2334495e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1000' height='1000' fill='url(%23g)'/%3E%3Ccircle cx='700.0' cy='350.0' r='120.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1000 L300.0 550.0 L500.0 800.0 L750.0 450.0 L1000 750.0 L1000 1000 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='140.0' text-anchor='middle' font-family='sans-serif'%3E8%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='60.0' text-anchor='middle' font-family='sans-serif'%3E1000x1000%3C/text%3E%3C/svg%3E"
+                                    loading="lazy"
+                                    decoding="async"
+                            /></a>
+                        </li>
+                    </ul>
+                </div>
+                <ul class="swg-thumbs" role="list" aria-label="Thumbnails">
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-2-s1"
+                            ><img
+                                alt="Image 1"
+                                width="1200"
+                                height="800"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e74c3c'/%3E%3Cstop offset='1' stop-color='%238e44ad'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='800' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L360.0 440.00000000000006 L600.0 640.0 L900.0 360.0 L1200 600.0 L1200 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E1%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E1200x800%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-2-s2"
+                            ><img
+                                alt="Image 2"
+                                width="800"
+                                height="1200"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1200' viewBox='0 0 800 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2316a085'/%3E%3Cstop offset='1' stop-color='%232980b9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='560.0' cy='420.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L240.0 660.0 L400.0 960.0 L600.0 540.0 L800 900.0 L800 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E2%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E800x1200%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-2-s3"
+                            ><img
+                                alt="Image 3"
+                                width="1200"
+                                height="1200"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='1200' viewBox='0 0 1200 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23f39c12'/%3E%3Cstop offset='1' stop-color='%23d35400'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='420.0' r='144.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L360.0 660.0 L600.0 960.0 L900.0 540.0 L1200 900.0 L1200 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='168.00000000000003' text-anchor='middle' font-family='sans-serif'%3E3%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='72.0' text-anchor='middle' font-family='sans-serif'%3E1200x1200%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-2-s4"
+                            ><img
+                                alt="Image 4"
+                                width="1600"
+                                height="900"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='900' viewBox='0 0 1600 900'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232c3e50'/%3E%3Cstop offset='1' stop-color='%237f8c8d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1600' height='900' fill='url(%23g)'/%3E%3Ccircle cx='1120.0' cy='315.0' r='108.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 900 L480.0 495.00000000000006 L800.0 720.0 L1200.0 405.0 L1600 675.0 L1600 900 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='126.00000000000001' text-anchor='middle' font-family='sans-serif'%3E4%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='54.0' text-anchor='middle' font-family='sans-serif'%3E1600x900%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-2-s5"
+                            ><img
+                                alt="Image 5"
+                                width="900"
+                                height="1200"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='1200' viewBox='0 0 900 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2327ae60'/%3E%3Cstop offset='1' stop-color='%23f1c40f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='900' height='1200' fill='url(%23g)'/%3E%3Ccircle cx='630.0' cy='420.0' r='108.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1200 L270.0 660.0 L450.0 960.0 L675.0 540.0 L900 900.0 L900 1200 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='126.00000000000001' text-anchor='middle' font-family='sans-serif'%3E5%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='54.0' text-anchor='middle' font-family='sans-serif'%3E900x1200%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-2-s6"
+                            ><img
+                                alt="Image 6"
+                                width="1200"
+                                height="800"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238e44ad'/%3E%3Cstop offset='1' stop-color='%233498db'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='800' fill='url(%23g)'/%3E%3Ccircle cx='840.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L360.0 440.00000000000006 L600.0 640.0 L900.0 360.0 L1200 600.0 L1200 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E6%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E1200x800%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-2-s7"
+                            ><img
+                                alt="Image 7"
+                                width="2000"
+                                height="800"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2000' height='800' viewBox='0 0 2000 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23c0392b'/%3E%3Cstop offset='1' stop-color='%23e67e22'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='2000' height='800' fill='url(%23g)'/%3E%3Ccircle cx='1400.0' cy='280.0' r='96.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 800 L600.0 440.00000000000006 L1000.0 640.0 L1500.0 360.0 L2000 600.0 L2000 800 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='112.00000000000001' text-anchor='middle' font-family='sans-serif'%3E7%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='48.0' text-anchor='middle' font-family='sans-serif'%3E2000x800%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                    <li class="swg-thumb-item">
+                        <a class="swg-thumb" href="#swg-1-2-s8"
+                            ><img
+                                alt="Image 8"
+                                width="1000"
+                                height="1000"
+                                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='1000' viewBox='0 0 1000 1000'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231abc9c'/%3E%3Cstop offset='1' stop-color='%2334495e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1000' height='1000' fill='url(%23g)'/%3E%3Ccircle cx='700.0' cy='350.0' r='120.0' fill='white' fill-opacity='0.35'/%3E%3Cpath d='M0 1000 L300.0 550.0 L500.0 800.0 L750.0 450.0 L1000 750.0 L1000 1000 Z' fill='black' fill-opacity='0.25'/%3E%3Ctext x='50%25' y='45%25' fill='white' font-size='140.0' text-anchor='middle' font-family='sans-serif'%3E8%3C/text%3E%3Ctext x='50%25' y='58%25' fill='white' fill-opacity='0.85' font-size='60.0' text-anchor='middle' font-family='sans-serif'%3E1000x1000%3C/text%3E%3C/svg%3E"
+                                loading="lazy"
+                                decoding="async"
+                        /></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <script type="module" src="../src/focus.ts"></script>
+    </body>
+</html>
