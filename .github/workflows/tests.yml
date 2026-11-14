@@ -8,6 +8,8 @@ on:
     branches:
       - main
   workflow_dispatch: null
+  # Called by release.yml (the same checks gate a release).
+  workflow_call: null
 
 concurrency:
   group: tests-${{ github.event.pull_request.number || github.ref }}
@@ -46,25 +48,38 @@ jobs:
       - run: composer test
       - run: bin/i18n.sh check
 
+  # Supported matrix (docs/development.md, "Supported matrix"): PHP 8.2-8.4 x WordPress 6.4 (minimum), 6.9 and the newest stable release
+  # on MariaDB 11.4, plus database variants (oldest MariaDB LTS, MySQL 8.0/8.4) and WordPress trunk (experimental: may fail).
   wordpress:
-    name: WordPress suite (PHP ${{ matrix.php }}, WordPress ${{ matrix.wp }})
+    name: WordPress suite (PHP ${{ matrix.php }}, WordPress ${{ matrix.wp }}, ${{ matrix.db_name }})
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
         php: ['8.2', '8.3', '8.4']
-        wp: ['6.4.*', '6.9.*']
+        wp: ['6.4.*', '6.9.*', 'latest']
+        db_name: ['MariaDB 11.4']
+        db_image: ['mariadb:11.4']
+        db_health: ['healthcheck.sh --connect --innodb_initialized']
+        experimental: [false]
+        include:
+          - { php: '8.4', wp: 'trunk', db_name: 'MariaDB 11.4', db_image: 'mariadb:11.4', db_health: 'healthcheck.sh --connect --innodb_initialized', experimental: true }
+          - { php: '8.2', wp: '6.4.*', db_name: 'MariaDB 10.11', db_image: 'mariadb:10.11', db_health: 'healthcheck.sh --connect --innodb_initialized', experimental: false }
+          - { php: '8.2', wp: '6.4.*', db_name: 'MySQL 8.0', db_image: 'mysql:8.0', db_health: 'mysqladmin ping -h 127.0.0.1 -uroot -pwordpress-test', experimental: false }
+          - { php: '8.3', wp: 'latest', db_name: 'MySQL 8.4', db_image: 'mysql:8.4', db_health: 'mysqladmin ping -h 127.0.0.1 -uroot -pwordpress-test', experimental: false }
     services:
-      mariadb:
-        image: mariadb:11.4
+      database:
+        image: ${{ matrix.db_image }}
+        # MariaDB and MySQL images both understand the MYSQL_* variables.
         env:
-          MARIADB_ROOT_PASSWORD: wordpress-test
-          MARIADB_ROOT_HOST: '%'
-          MARIADB_DATABASE: swg_wp_tests
+          MYSQL_ROOT_PASSWORD: wordpress-test
+          MYSQL_ROOT_HOST: '%'
+          MYSQL_DATABASE: swg_wp_tests
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-cmd="${{ matrix.db_health }}"
           --health-interval=5s --health-timeout=5s --health-retries=20
     steps:
       - uses: actions/checkout@v4.2.2
@@ -74,12 +89,10 @@ jobs:
           extensions: mysqli, mbstring, gd
           tools: composer:v2
           coverage: none
-      - name: Install the WordPress test environment for this WordPress version
-        working-directory: tests/wp
-        run: |
-          composer require --dev --no-update --no-interaction \
-            "johnpbloch/wordpress-core:${{ matrix.wp }}" "wp-phpunit/wp-phpunit:${{ matrix.wp }}"
-          composer update --prefer-dist --no-interaction --no-progress
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - run: composer install --working-dir=tests/wp --prefer-dist --no-interaction --no-progress
+      - name: Select the WordPress version (${{ matrix.wp }})
+        run: bin/wp-version.sh '${{ matrix.wp }}'
       - name: Single site
         run: composer test:wp
       # Both suites share one disposable database: keep these steps sequential.

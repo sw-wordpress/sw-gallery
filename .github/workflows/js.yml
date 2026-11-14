@@ -8,6 +8,8 @@ on:
     branches:
       - main
   workflow_dispatch: null
+  # Called by release.yml (the same checks gate a release).
+  workflow_call: null
 
 concurrency:
   group: js-${{ github.event.pull_request.number || github.ref }}
