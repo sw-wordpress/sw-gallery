@@ -11,6 +11,7 @@ namespace SWGallery\WordPress\Bootstrap;
 
 use SWGallery\WordPress\Admin\AdminRegistrar;
 use SWGallery\WordPress\Admin\MediaLibraryRegistrar;
+use SWGallery\WordPress\Admin\PrivacyRegistrar;
 use SWGallery\WordPress\Block\BlockRegistrar;
 use SWGallery\WordPress\Cli\CliRegistrar;
 use SWGallery\WordPress\Database\SchemaRegistrar;
@@ -41,6 +42,7 @@ final class Registrars {
 			new GalleryLifecycleRegistrar(),
 			new ImportProvidersRegistrar(),
 			new MediaLibraryRegistrar(),
+			new PrivacyRegistrar(),
 			new RestRegistrar(),
 			new SchemaRegistrar(),
 			new ShortcodeRegistrar(),

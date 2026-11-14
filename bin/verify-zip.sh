@@ -11,7 +11,7 @@
 #   4. Content heuristics: private keys, GitHub/AWS/Slack tokens, npm auth tokens, absolute developer paths (/var/www, /home/<user>, C:\Users).
 #   5. Header Version == file name version == SWGALLERY_VERSION; Plugin URI is not a placeholder.
 #   6. Every PHP file lints (php -l) and the generated autoloader loads the plugin classes.
-#   7. Required files exist: main file, uninstall.php, vendor/autoload.php, block.json, block and admin/frontend build with every file
+#   7. Required files exist: main file, uninstall.php, LICENSE, THIRD-PARTY-NOTICES.md, vendor/autoload.php, block.json, block and admin/frontend build with every file
 #      the Vite manifests reference, a compiled .mo per .po, the block JSON catalog named after the md5 of assets/blocks/build/index.js.
 #   8. Size budget: compressed size <= SWG_ZIP_MAX_BYTES (default 3 MiB; the current build is below 1 MiB).
 # "TODO" markers are deliberately not checked: minified bundles and third-party code contain them legitimately.
@@ -51,7 +51,7 @@ if grep -Eq '(^|/)\.\.(/|$)|^/' "$TMP/entries.txt"; then err "entries with absol
 # 2. allowlists
 while IFS= read -r top; do
   case "$top" in
-    sw-gallery.php | uninstall.php | CHANGELOG.md | LICENSE | LICENSE.txt | README.md | readme.txt | packages | vendor | languages | assets) ;;
+    sw-gallery.php | uninstall.php | CHANGELOG.md | LICENSE | THIRD-PARTY-NOTICES.md | readme.txt | packages | vendor | languages | assets) ;;
     *) err "top-level entry not allowed: $top" ;;
   esac
 done < <(grep -E "^$SLUG/." "$TMP/entries.txt" | cut -d/ -f2 | sort -u)
@@ -123,6 +123,8 @@ fi
 require() { [ -f "$PKG/$1" ] || err "required file missing: $1"; }
 require sw-gallery.php
 require uninstall.php
+require LICENSE
+require THIRD-PARTY-NOTICES.md
 require vendor/autoload.php
 require assets/blocks/block.json
 require assets/blocks/build/index.js

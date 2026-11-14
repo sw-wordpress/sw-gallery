@@ -57,6 +57,9 @@ final class VerifyZipScriptTest extends TestCase
             ),
             'developer path' => array(array('assets/build/x.js' => 'var p="/home/stefan/project";'), 'absolute developer paths'),
             'php syntax error' => array(array('packages/core/src/Broken.php' => '<?php function ('), 'PHP syntax error'),
+            'missing LICENSE' => array(array('LICENSE' => null), 'required file missing: LICENSE'),
+            'missing third-party notices' => array(array('THIRD-PARTY-NOTICES.md' => null), 'required file missing: THIRD-PARTY-NOTICES.md'),
+            'GitHub README is not shipped' => array(array('README.md' => '# x'), 'top-level entry not allowed: README.md'),
             'missing .mo' => array(array('languages/sw-gallery-de_DE.mo' => null), 'sw-gallery-de_DE.mo'),
             'missing block build' => array(array('assets/blocks/build/index.js' => null), 'assets/blocks/build/index.js'),
             'manifest references missing file' => array(
@@ -119,6 +122,8 @@ final class VerifyZipScriptTest extends TestCase
         $files = array(
             'sw-gallery.php' => "<?php\n/**\n * Version: 1.0.0\n * Plugin URI: https://github.com/x/y\n */\ndefine( 'SWGALLERY_VERSION', '1.0.0' );\n",
             'uninstall.php' => '<?php',
+            'LICENSE' => "GNU GENERAL PUBLIC LICENSE\n",
+            'THIRD-PARTY-NOTICES.md' => "# Third-party notices\n",
             'CHANGELOG.md' => "# Changelog\n\n## [1.0.0] - 2026-01-01\n",
             'vendor/autoload.php' => '<?php class_alias( \\stdClass::class, "SWGallery\\\\WordPress\\\\Plugin" );'
                 . ' class_alias( \\stdClass::class, "SWGallery\\\\Core\\\\Domain\\\\Gallery\\\\Gallery" );',

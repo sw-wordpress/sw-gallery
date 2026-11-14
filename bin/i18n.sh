@@ -22,7 +22,7 @@ make_pot() {
     xargs xgettext --language=PHP --from-code=UTF-8 --add-comments=translators \
       --keyword=__:1 --keyword=_e:1 --keyword=esc_html__:1 --keyword=esc_attr__:1 --keyword=esc_html_e:1 \
       --keyword=_x:1,2c --keyword=_n:1,2 --keyword=_nx:1,2,4c \
-      --package-name="sw-gallery" --package-version="$VERSION" --msgid-bugs-address="https://example.com/sw-gallery" \
+      --package-name="sw-gallery" --package-version="$VERSION" --msgid-bugs-address="https://github.com/sw-wordpress/sw-gallery/issues" \
       --copyright-holder="sw-gallery contributors" --sort-by-file --no-wrap -o "$php_pot")
   # Block: JS strings (src/**/*.ts(x)) and block.json metadata, merged into the same catalog.
   node "$ROOT/assets/blocks/scripts/i18n.mjs" pot "$block_pot"
