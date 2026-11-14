@@ -89,6 +89,12 @@ final class WpGalleryRepository implements GalleryRepositoryInterface {
 				$galleries[] = $this->hydrate( $post );
 			}
 		}
+		// The covers of one page are resolved to URLs by the caller: prime their posts and meta in two queries instead
+		// of two per gallery (measured in docs/performance.md).
+		$covers = array_values( array_unique( array_filter( array_map( static fn( Gallery $gallery ): ?int => $gallery->coverAttachmentId, $galleries ) ) ) );
+		if ( array() !== $covers ) {
+			_prime_post_caches( $covers, false, true );
+		}
 		return new GalleryPage( $galleries, max( count( $galleries ), (int) $wp_query->found_posts ) );
 	}
 

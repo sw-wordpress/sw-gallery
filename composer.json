@@ -51,6 +51,7 @@
         "test:coverage:merge": "php tests/coverage/merge.php coverage/unit.xml coverage/wordpress.xml && php tests/coverage/check.php coverage/clover.xml",
         "test:wp": "cd tests/wp && vendor/bin/phpunit -c phpunit.xml.dist",
         "test:wp:ms": "cd tests/wp && vendor/bin/phpunit -c phpunit-ms.xml.dist",
+        "test:perf": "cd tests/wp && vendor/bin/phpunit -c phpunit.xml.dist --exclude-group none --group performance",
         "check": ["@cs", "@cs:wp", "@stan", "@test"]
     }
 }

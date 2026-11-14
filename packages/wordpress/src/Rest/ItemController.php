@@ -258,6 +258,8 @@ final class ItemController extends AbstractController {
 				if ( $ids instanceof \WP_Error ) {
 					return $ids;
 				}
+				// The access checks and the existence query of the service read every attachment: one query for the batch.
+				_prime_post_caches( array_slice( array_values( array_filter( $ids, static fn( int $id ): bool => $id > 0 ) ), 0, GalleryItemService::MAX_BATCH ), false, false );
 				$result = $this->items->assign( $actor, $gallery->id, $ids, $this->expected_revision( $request ) );
 				return new \WP_REST_Response(
 					array(
