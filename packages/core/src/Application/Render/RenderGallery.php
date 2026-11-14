@@ -108,7 +108,8 @@ final class RenderGallery
         }
         $renderItems = [];
         $unavailable = 0;
-        foreach ($page['items']->items as $item) {
+        $offset = ($page['page'] - 1) * $context->perPage;
+        foreach ($page['items']->items as $index => $item) {
             $reference = $referencesByAttachment[$item->attachmentId] ?? null;
             $thumbnail = $reference === null ? null : $this->thumbnails->resolve(
                 new ImageRequest($item->attachmentId, $hints->displayWidth, $hints->sizes)
@@ -128,6 +129,8 @@ final class RenderGallery
                     new ImageRequest($item->attachmentId, self::LIGHTBOX_DISPLAY_WIDTH, '100vw', ImageRole::Lightbox)
                 ),
                 $this->loading(count($renderItems), $page['page'], $hints, $context),
+                $offset + $index + 1,
+                $page['items']->total,
             );
         }
 

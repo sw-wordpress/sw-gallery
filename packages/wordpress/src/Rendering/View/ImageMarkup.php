@@ -40,6 +40,25 @@ final class ImageMarkup {
 	}
 
 	/**
+	 * Accessible name of the thumbnail link (FU-25), only needed when the image has no alt text (otherwise the image
+	 * names the link and an aria-label would duplicate it): the item's title, else "Image N of M" with the position
+	 * among the items of the whole gallery. Empty when nothing applies (position unknown).
+	 */
+	private static function link_label( RenderItem $item ): string {
+		if ( '' !== trim( $item->alt ) ) {
+			return '';
+		}
+		if ( '' !== trim( $item->title ) ) {
+			return $item->title;
+		}
+		if ( $item->position <= 0 || $item->total < $item->position ) {
+			return '';
+		}
+		/* translators: 1: position of the image in the gallery, 2: number of images in the gallery. */
+		return sprintf( __( 'Image %1$d of %2$d', 'sw-gallery' ), $item->position, $item->total );
+	}
+
+	/**
 	 * `<li class="swg-item">` with the lightbox link, the thumbnail and the optional caption.
 	 *
 	 * @param RenderItem $item       The item.
@@ -56,6 +75,10 @@ final class ImageMarkup {
 		}
 		if ( null !== $full->sizes && '' !== $full->sizes ) {
 			$link .= sprintf( ' data-swg-full-sizes="%s"', esc_attr( $full->sizes ) );
+		}
+		$label = self::link_label( $item );
+		if ( '' !== $label ) {
+			$link .= sprintf( ' aria-label="%s"', esc_attr( $label ) );
 		}
 		$caption = '' === $item->caption ? '' : sprintf( '<p class="swg-caption">%s</p>', CaptionPolicy::html( $item->caption ) );
 		return sprintf(
