@@ -37,6 +37,7 @@ final class CoreMessages {
 			__( 'The gallery was not found.', 'sw-gallery' ),
 			__( 'The import provider reported an error.', 'sw-gallery' ),
 			__( 'The layout is not registered.', 'sw-gallery' ),
+			__( 'The new owner must be an existing user who may write posts.', 'sw-gallery' ),
 			__( 'The operation was prevented by an extension.', 'sw-gallery' ),
 			__( 'The order must contain every item of the gallery exactly once.', 'sw-gallery' ),
 			__( 'The settings are invalid.', 'sw-gallery' ),

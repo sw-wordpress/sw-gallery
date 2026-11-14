@@ -29,6 +29,7 @@ use SWGallery\Core\Event\GalleryTrashed;
 use SWGallery\Core\Event\GalleryUpdated;
 use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\Core\Exception\GalleryNotFoundException;
+use SWGallery\Core\Exception\InvalidOwnerException;
 use SWGallery\Core\Exception\InvalidStateException;
 use SWGallery\Core\Exception\OperationVetoedException;
 use SWGallery\Core\Exception\ValidationFailedException;
@@ -83,10 +84,12 @@ final class GalleryService
 
     /**
      * Saves title, description, status, cover and settings of an existing gallery. Trash and restore have their
-     * own use cases. Changing the owner additionally needs the delete right.
+     * own use cases. Changing the owner additionally needs canChangeOwner() (403) and a new owner who may own
+     * galleries (422).
      *
      * @throws GalleryNotFoundException
      * @throws AccessDeniedException
+     * @throws InvalidOwnerException       When the new owner does not exist or may not own galleries.
      * @throws InvalidStateException       When the stored gallery is trashed or the new status is trash.
      * @throws ValidationFailedException
      * @throws \SWGallery\Core\Exception\RevisionConflictException
@@ -97,8 +100,13 @@ final class GalleryService
         if (!$this->access->canEdit($actor, $current)) {
             throw new AccessDeniedException();
         }
-        if ($changed->ownerId !== $current->ownerId && !$this->access->canDelete($actor, $current)) {
-            throw new AccessDeniedException();
+        if ($changed->ownerId !== $current->ownerId) {
+            if (!$this->access->canChangeOwner($actor, $current)) {
+                throw new AccessDeniedException();
+            }
+            if (!$this->access->canOwnGalleries($changed->ownerId)) {
+                throw new InvalidOwnerException();
+            }
         }
         if ($current->status === GalleryStatus::Trash || $changed->status === GalleryStatus::Trash) {
             throw new InvalidStateException();

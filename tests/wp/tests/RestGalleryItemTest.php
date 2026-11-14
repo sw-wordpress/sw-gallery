@@ -248,25 +248,46 @@ class RestGalleryItemTest extends SwgTestCase {
 		$this->assertSame( 'swg_invalid_state', $this->data( $response )['code'] );
 	}
 
-	public function test_owner_changes_need_the_rights_the_service_demands(): void {
+	public function test_owner_changes_need_edit_others_posts_and_a_new_owner_who_may_write_posts(): void {
 		$own = $this->makeGallery( $this->author );
 
-		$moved = $this->call( 'PATCH', '/galleries/' . $own, array( 'ownerId' => $this->author2, 'expectedRevision' => 1 ), $this->author );
-		$this->assertSame( 200, $moved->get_status() );
-		$this->assertSame( $this->author2, $this->data( $moved )['ownerId'] );
-
-		// A contributor owns a draft but may not delete it once it is pending? Deletion of own drafts is allowed; use a
-		// custom role that can edit but not delete to prove the delete right is required.
-		add_role( 'swg_edit_only', 'Edit only', array( 'read' => true, 'edit_posts' => true ) );
-		try {
-			$user = $this->makeUser( 'swg_edit_only' );
+		// S-04: even the owner cannot hand a gallery over without `edit_others_posts`.
+		foreach ( array( $this->author, $this->contributor ) as $user ) {
 			$id   = $this->makeGallery( $user );
-			$deny = $this->call( 'PATCH', '/galleries/' . $id, array( 'ownerId' => $this->author, 'expectedRevision' => 1 ), $user );
+			$deny = $this->call( 'PATCH', '/galleries/' . $id, array( 'ownerId' => $this->author2, 'expectedRevision' => 1 ), $user );
 			$this->assertSame( 403, $deny->get_status() );
 			$this->assertSame( $user, Services::galleries()->find( $id )->ownerId );
-		} finally {
-			remove_role( 'swg_edit_only' );
+			$this->assertSame( 1, Services::revisions()->current( $id )->value );
 		}
+
+		// An unchanged owner is no transfer and stays allowed.
+		$same = $this->call( 'PATCH', '/galleries/' . $own, array( 'ownerId' => $this->author, 'title' => 'T', 'expectedRevision' => 1 ), $this->author );
+		$this->assertSame( 200, $same->get_status() );
+
+		foreach ( array( $this->editor, $this->admin ) as $actor ) {
+			$moved = $this->call( 'PATCH', '/galleries/' . $own, array( 'ownerId' => $this->contributor, 'expectedRevision' => $this->data( $this->call( 'GET', '/galleries/' . $own, array(), $actor ) )['revision'] ), $actor );
+			$this->assertSame( 200, $moved->get_status() );
+			$this->assertSame( $this->contributor, $this->data( $moved )['ownerId'] );
+			$own_back = $this->call( 'PATCH', '/galleries/' . $own, array( 'ownerId' => $this->author, 'expectedRevision' => $this->data( $moved )['revision'] ), $actor );
+			$this->assertSame( 200, $own_back->get_status() );
+		}
+
+		$revision = Services::revisions()->current( $own )->value;
+		foreach ( array(
+			'subscriber'  => $this->subscriber,
+			'nonexistent' => 99999999,
+		) as $label => $target ) {
+			$bad = $this->call( 'PATCH', '/galleries/' . $own, array( 'ownerId' => $target, 'expectedRevision' => $revision ), $this->editor );
+			$this->assertSame( 422, $bad->get_status(), $label );
+			$this->assertSame( 'swg_invalid_owner', $this->data( $bad )['code'], $label );
+		}
+		$this->assertSame( $this->author, Services::galleries()->find( $own )->ownerId );
+		$this->assertSame( $revision, Services::revisions()->current( $own )->value );
+
+		// The existence-leak policy stays: a gallery the actor may not view is a 404, not a 403.
+		$foreign = $this->makeGallery( $this->author2, GalleryStatus::Draft );
+		$hidden  = $this->call( 'PATCH', '/galleries/' . $foreign, array( 'ownerId' => $this->author, 'expectedRevision' => 1 ), $this->author );
+		$this->assertSame( 404, $hidden->get_status() );
 	}
 
 	// Publish rule (FU-03).
@@ -337,17 +358,23 @@ class RestGalleryItemTest extends SwgTestCase {
 	}
 
 	public function test_the_cover_url_is_only_shown_to_users_who_may_use_the_attachment(): void {
-		$id    = $this->makeGallery( $this->contributor );
-		$image = $this->makeAttachment( $this->contributor );
+		$id      = $this->makeGallery( $this->contributor );
+		$image   = $this->makeAttachment( $this->contributor );
+		$private = $this->makeAttachment( $this->author2, 'image/jpeg', array( 'post_status' => 'private' ) );
 		update_post_meta( $image, '_wp_attached_file', '2026/01/cover.jpg' );
+		update_post_meta( $private, '_wp_attached_file', '2026/01/private.jpg' );
 		Services::gallery_service()->update( new Actor( $this->admin ), Services::galleries()->find( $id )->withCover( $image ), new Revision( 1 ) );
 
 		$contributor_view = $this->data( $this->call( 'GET', '/galleries/' . $id, array(), $this->contributor ) );
 		$admin_view       = $this->data( $this->call( 'GET', '/galleries/' . $id, array(), $this->admin ) );
 
 		$this->assertSame( $image, $contributor_view['coverAttachmentId'] );
-		$this->assertNull( $contributor_view['coverUrl'], 'Contributors lack upload_files, so the attachment may not be used.' );
+		$this->assertIsString( $contributor_view['coverUrl'], 'FU-16: contributors may use the images they can read.' );
 		$this->assertIsString( $admin_view['coverUrl'] );
+
+		Services::gallery_service()->update( new Actor( $this->admin ), Services::galleries()->find( $id )->withCover( $private ), new Revision( 2 ) );
+		$hidden = $this->data( $this->call( 'GET', '/galleries/' . $id, array(), $this->contributor ) );
+		$this->assertNull( $hidden['coverUrl'], 'Another user\'s private upload stays hidden.' );
 	}
 
 	public function test_an_unchanged_cover_does_not_fail_when_other_fields_change(): void {

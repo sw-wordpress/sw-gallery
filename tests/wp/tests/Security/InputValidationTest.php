@@ -201,8 +201,9 @@ class InputValidationTest extends SwgTestCase {
 	 */
 	public function test_invalid_patch_bodies_change_nothing( string $method, array $body ): void {
 		$author  = $this->makeUser( 'author' );
+		$editor  = $this->makeUser( 'editor' ); // May hand galleries over (S-04), so owner values are validated, not refused.
 		$gallery = $this->makeGallery( $author );
-		$response = $this->call( $method, "/galleries/{$gallery}", $body, $author );
+		$response = $this->call( $method, "/galleries/{$gallery}", $body, $editor );
 		$this->assertContains( $response->get_status(), array( 400, 422 ), wp_json_encode( $response->get_data() ) );
 		$this->assertSame( 1, $this->revisionOf( $gallery ) );
 		$this->assertSame( 'Gallery', get_post( $gallery )->post_title );
@@ -345,7 +346,7 @@ class InputValidationTest extends SwgTestCase {
 		}
 	}
 
-	public function test_a_contributor_cannot_publish_and_ownership_transfer_is_characterised(): void {
+	public function test_a_contributor_cannot_publish_and_cannot_hand_a_gallery_over(): void {
 		$contributor = $this->makeUser( 'contributor' );
 		$victim      = $this->makeUser( 'administrator' );
 		$gallery     = $this->makeGallery( $contributor );
@@ -355,11 +356,10 @@ class InputValidationTest extends SwgTestCase {
 		$create = $this->call( 'POST', '/galleries', array( 'title' => 'x', 'status' => 'private' ), $contributor );
 		$this->assertSame( 403, $create->get_status() );
 
-		// OPEN FINDING S-04 (docs/security.md): decision "changing the owner needs canEdit and canDelete" lets every
-		// owner give a gallery to any existing user. Characterised, not changed: the owner needs a product decision.
+		// S-04 (decided): handing a gallery over needs `edit_others_posts` and a new owner who holds `edit_posts`.
 		$give = $this->call( 'PATCH', "/galleries/{$gallery}", array( 'ownerId' => $victim, 'expectedRevision' => 1 ), $contributor );
-		$this->assertSame( 200, $give->get_status() );
-		$this->assertSame( $victim, (int) get_post( $gallery )->post_author );
+		$this->assertSame( 403, $give->get_status() );
+		$this->assertSame( $contributor, (int) get_post( $gallery )->post_author );
 	}
 
 	public function test_settings_patch_validates_every_known_key_and_ignores_the_rest(): void {

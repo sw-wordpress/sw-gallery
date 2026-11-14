@@ -412,6 +412,12 @@ msgstr ""
 msgid "0 keeps the images square, which suits a tightly packed masonry wall."
 msgstr ""
 
+#. translators: 1: position of the image in the gallery, 2: number of images in the gallery.
+#: packages/wordpress/src/Rendering/View/ImageMarkup.php:58
+#, php-format
+msgid "Image %1$d of %2$d"
+msgstr ""
+
 #: packages/wordpress/src/Rendering/View/LightboxLabels.php:21
 msgid "Image viewer"
 msgstr ""
@@ -475,39 +481,35 @@ msgstr ""
 msgid "%s is too large or nested too deeply."
 msgstr ""
 
-#: packages/wordpress/src/Rest/ErrorMapper.php:54
+#: packages/wordpress/src/Rest/ErrorMapper.php:55
 msgid "The gallery data was written by a newer version of SW Gallery. Update the plugin before making changes; nothing was saved."
 msgstr ""
 
-#: packages/wordpress/src/Rest/ErrorMapper.php:60
+#: packages/wordpress/src/Rest/ErrorMapper.php:61
 msgid "The request contains invalid values."
 msgstr ""
 
-#: packages/wordpress/src/Rest/ErrorMapper.php:139
+#: packages/wordpress/src/Rest/ErrorMapper.php:140
 msgid "An unexpected error occurred."
 msgstr ""
 
-#: packages/wordpress/src/Rest/GalleryController.php:322
+#: packages/wordpress/src/Rest/GalleryController.php:321
 #: packages/wordpress/src/Rest/ItemController.php:301
 #: packages/wordpress/src/Rest/SettingsController.php:92
 msgid "The request does not change anything."
 msgstr ""
 
 #. translators: %s: title of the duplicated gallery
-#: packages/wordpress/src/Rest/GalleryController.php:390
+#: packages/wordpress/src/Rest/GalleryController.php:389
 #, php-format
 msgid "%s (copy)"
 msgstr ""
 
-#: packages/wordpress/src/Rest/GalleryController.php:603
-msgid "The owner does not exist."
-msgstr ""
-
-#: packages/wordpress/src/Rest/GalleryController.php:611
+#: packages/wordpress/src/Rest/GalleryController.php:607
 msgid "The cover must be an image you may use."
 msgstr ""
 
-#: packages/wordpress/src/Rest/GalleryController.php:636
+#: packages/wordpress/src/Rest/GalleryController.php:632
 msgid "You are not allowed to publish galleries."
 msgstr ""
 
@@ -602,79 +604,83 @@ msgid "The layout is not registered."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:40
-msgid "The operation was prevented by an extension."
+msgid "The new owner must be an existing user who may write posts."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:41
-msgid "The order must contain every item of the gallery exactly once."
+msgid "The operation was prevented by an extension."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:42
-msgid "The settings are invalid."
+msgid "The order must contain every item of the gallery exactly once."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:43
-msgid "You are not allowed to do this."
+msgid "The settings are invalid."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:44
-msgid "A required value is missing."
+msgid "You are not allowed to do this."
 msgstr ""
 
 #: packages/wordpress/src/Support/CoreMessages.php:45
+msgid "A required value is missing."
+msgstr ""
+
+#: packages/wordpress/src/Support/CoreMessages.php:46
 msgid "A responsive value must be a plain value or an object."
 msgstr ""
 
 #. translators: %d or %s: a number or a schema type
-#: packages/wordpress/src/Support/CoreMessages.php:47
+#: packages/wordpress/src/Support/CoreMessages.php:48
 #, php-format
 msgid "At least %d entries are needed."
 msgstr ""
 
 #. translators: %d or %s: a number or a schema type
-#: packages/wordpress/src/Support/CoreMessages.php:49
+#: packages/wordpress/src/Support/CoreMessages.php:50
 #, php-format
 msgid "At most %d entries are allowed."
 msgstr ""
 
-#: packages/wordpress/src/Support/CoreMessages.php:50
+#: packages/wordpress/src/Support/CoreMessages.php:51
 msgid "The breakpoint is not supported."
 msgstr ""
 
 #. translators: %d or %s: a number or a schema type
-#: packages/wordpress/src/Support/CoreMessages.php:52
+#: packages/wordpress/src/Support/CoreMessages.php:53
 #, php-format
 msgid "The value allows at most %d characters."
 msgstr ""
 
-#: packages/wordpress/src/Support/CoreMessages.php:53
+#: packages/wordpress/src/Support/CoreMessages.php:54
 msgid "The value is not one of the allowed options."
 msgstr ""
 
-#: packages/wordpress/src/Support/CoreMessages.php:54
+#: packages/wordpress/src/Support/CoreMessages.php:55
 msgid "The value is not valid UTF-8."
 msgstr ""
 
 #. translators: %d or %s: a number or a schema type
-#: packages/wordpress/src/Support/CoreMessages.php:56
+#: packages/wordpress/src/Support/CoreMessages.php:57
 #, php-format
 msgid "The value must be at least %s."
 msgstr ""
 
 #. translators: %d or %s: a number or a schema type
-#: packages/wordpress/src/Support/CoreMessages.php:58
+#: packages/wordpress/src/Support/CoreMessages.php:59
 #, php-format
 msgid "The value must be at most %s."
 msgstr ""
 
 #. translators: %d or %s: a number or a schema type
-#: packages/wordpress/src/Support/CoreMessages.php:60
+#: packages/wordpress/src/Support/CoreMessages.php:61
 #, php-format
 msgid "The value must be of type %s."
 msgstr ""
 
 #. translators: %d or %s: a number or a schema type
-#: packages/wordpress/src/Support/CoreMessages.php:62
+#: packages/wordpress/src/Support/CoreMessages.php:63
 #, php-format
 msgid "The value needs at least %d characters."
 msgstr ""

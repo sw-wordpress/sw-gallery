@@ -147,7 +147,7 @@ final class MediaLibraryProviderTest extends MediaImportProviderContract
             'administrator' => array( 'administrator', true ),
             'editor'        => array( 'editor', true ),
             'author'        => array( 'author', true ),
-            'contributor'   => array( 'contributor', false ),
+            'contributor'   => array( 'contributor', true ), // FU-16: readable images need no upload right.
             'subscriber'    => array( 'subscriber', false ),
         );
     }
@@ -165,6 +165,12 @@ final class MediaLibraryProviderTest extends MediaImportProviderContract
         $policy = new \SWGallery\WordPress\Security\WpGalleryAccessPolicy();
 
         self::assertSame($allowed, $policy->canUseAttachment(new \SWGallery\Core\Domain\Access\Actor($user), (int) $ids[0]));
+        if ($role === 'contributor') {
+            // FU-16: by id a contributor may use readable images; browsing the library still needs `upload_files`.
+            self::assertSame($ids[0], $provider->getMediaMetadata($connection, $ids[0])->remoteObjectId);
+            $this->expectPermanent(fn () => $provider->listMedia($connection, null, null, 10), 'swg_import_forbidden');
+            return;
+        }
         if ($allowed) {
             self::assertSame($ids[0], $provider->getMediaMetadata($connection, $ids[0])->remoteObjectId);
             self::assertCount(1, $provider->listMedia($connection, null, null, 10)->objects);

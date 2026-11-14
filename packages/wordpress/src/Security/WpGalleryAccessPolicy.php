@@ -71,6 +71,22 @@ final class WpGalleryAccessPolicy implements GalleryAccessPolicyInterface {
 		return $this->can( $actor, 'delete_post', $gallery->id );
 	}
 
+	/** Decision S-04: handing a gallery over needs `edit_others_posts`, even for the current owner. */
+	public function canChangeOwner( Actor $actor, Gallery $gallery ): bool {
+		return $this->canEdit( $actor, $gallery ) && $this->can( $actor, 'edit_others_posts' );
+	}
+
+	/** Decision S-04: the new owner must exist, hold `edit_posts` and (multisite) belong to the current site. */
+	public function canOwnGalleries( int $userId ): bool {
+		if ( $userId <= 0 || false === get_userdata( $userId ) ) {
+			return false;
+		}
+		if ( is_multisite() && ! is_user_member_of_blog( $userId ) ) {
+			return false;
+		}
+		return user_can( $userId, 'edit_posts' );
+	}
+
 	/**
 	 * Publishing is stricter than editing: contributors may only keep drafts or pending galleries. Not part of the core
 	 * interface; the adapter's REST layer must call it when a request changes the status to `publish`.
@@ -88,9 +104,10 @@ final class WpGalleryAccessPolicy implements GalleryAccessPolicyInterface {
 	}
 
 	/**
-	 * Decision D11: a usable image is an existing, non-trashed attachment with an allowed raster MIME type that the
-	 * actor can read in the Media Library (access to the library plus `read_post` on the attachment, which keeps other
-	 * users' private uploads out).
+	 * Decision D11 (FU-16): a usable image is an existing, non-trashed attachment with an allowed raster MIME type that
+	 * the actor may read (`read_post` on the attachment, which keeps other users' private uploads out) and who may write
+	 * posts at all (`edit_posts`: contributors included). Uploading (`upload_files`) is a separate right and no longer
+	 * required to assign images.
 	 */
 	public function canUseAttachment( Actor $actor, int $attachmentId ): bool {
 		$attachment = $this->attachment( $attachmentId );
@@ -98,7 +115,7 @@ final class WpGalleryAccessPolicy implements GalleryAccessPolicyInterface {
 			return false;
 		}
 		return AllowedMimeTypes::is_allowed( (string) $attachment->post_mime_type )
-			&& $this->can( $actor, 'upload_files' )
+			&& $this->can( $actor, 'edit_posts' )
 			&& $this->can( $actor, 'read_post', $attachmentId );
 	}
 
