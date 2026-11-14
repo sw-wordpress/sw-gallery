@@ -298,6 +298,18 @@ function useAsCover(attachmentId: number): void {
   session.setDetail('coverAttachmentId', attachmentId);
   app.announce(t('editor.details.coverSet'));
 }
+/** Active layout and its per-item settings schema (`x-item-settings`); null when it declares none. */
+const itemLayout = computed(() => {
+  const layout = layouts.value?.layouts.find((l) => l.id === working.value?.details.layout);
+  const schema = layout?.settingsSchema['x-item-settings'];
+  return layout === undefined || schema === undefined
+    ? null
+    : { id: layout.id, label: layout.label, schema };
+});
+/** Item settings are validated against the SAVED layout, so a pending layout change blocks the form. */
+const itemLayoutStale = computed(
+  () => working.value?.details.layout !== session.base.value?.gallery.layout,
+);
 const coverId = computed(() => working.value?.details.coverAttachmentId ?? null);
 const singleAttachment = computed<number | null>(() => {
   if (selection.count.value !== 1) return null;
@@ -871,6 +883,8 @@ const reportAlert = computed(() => {
       :session="session"
       :item-id="detailsItemId"
       :cover-attachment-id="coverId"
+      :item-layout="itemLayout"
+      :item-layout-stale="itemLayoutStale"
       :readonly="readonly"
       @use-cover="useAsCover"
       @remove="(id) => requestRemove([id])"

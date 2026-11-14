@@ -3,6 +3,9 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SideSheet from '@/components/ui/SideSheet.vue';
 import type { ItemTexts } from '@/api/items';
+import type { JsonSchema } from '@/api/layouts';
+import { itemFieldsOf, valueAtPath, withPath } from '../schema';
+import SettingField from './SettingField.vue';
 import type { EditorSession } from '../useGalleryEditor';
 
 /**
@@ -15,6 +18,10 @@ const props = defineProps<{
   session: EditorSession;
   itemId: number | null;
   coverAttachmentId: number | null;
+  /** Active layout when it declares per-item settings (`x-item-settings`), else null (no form). */
+  itemLayout?: { id: string; label: string; schema: JsonSchema } | null;
+  /** The working layout differs from the saved one: item settings cannot be validated yet. */
+  itemLayoutStale?: boolean;
   readonly: boolean;
 }>();
 const emit = defineEmits<{
@@ -64,6 +71,20 @@ function toggleOwn(field: Field, on: boolean): void {
 function setOwn(field: Field, value: string | number | null): void {
   if (props.itemId === null) return;
   props.session.setItemTexts(props.itemId, { [field]: value === null ? '' : String(value) });
+}
+const itemFields = computed(() => itemFieldsOf(props.itemLayout?.schema));
+const itemSettings = computed(() =>
+  props.itemId === null ? {} : props.session.itemSettingsOf(props.itemId),
+);
+function labelOfItemField(path: string[], title: string | undefined): string {
+  return title ?? (path.at(-1) ?? '').replace(/^./, (c) => c.toUpperCase());
+}
+function setItemSetting(path: string[], value: unknown): void {
+  if (props.itemId === null) return;
+  props.session.setItemSettings(props.itemId, withPath(itemSettings.value, path, value));
+}
+function resetItemSettings(): void {
+  if (props.itemId !== null) props.session.setItemSettings(props.itemId, {});
 }
 const dimensions = computed(() => {
   const media = view.value?.item.media;
@@ -155,6 +176,37 @@ const isCover = computed(
         <p v-if="f.field === 'alt' && !isOwn(f.field)" class="swg-ids__hint">
           {{ t('editor.details.altHint') }}
         </p>
+      </section>
+
+      <section v-if="itemLayout && !view.item.missing" class="swg-ids__field swg-ids__layout">
+        <h3 class="swg-ids__h">{{ t('editor.details.layoutSettings') }}</h3>
+        <p v-if="itemLayoutStale" class="swg-ids__hint" role="status">
+          {{ t('editor.details.layoutSettingsStale') }}
+        </p>
+        <template v-else>
+          <p class="swg-ids__hint">
+            {{ t('editor.details.layoutSettingsIntro', { layout: itemLayout.label }) }}
+          </p>
+          <SettingField
+            v-for="f in itemFields"
+            :key="`${itemLayout.id}:${f.path.join('.')}`"
+            :def="f.def"
+            :label="labelOfItemField(f.path, f.def.title)"
+            :value="valueAtPath(itemSettings, f.path)"
+            :server-issues="[]"
+            :readonly="readonly"
+            @update="(value) => setItemSetting(f.path, value)"
+          />
+          <q-btn
+            v-if="!readonly && Object.keys(itemSettings).length > 0"
+            flat
+            dense
+            no-caps
+            icon="r_restart_alt"
+            :label="t('editor.details.layoutSettingsReset')"
+            @click="resetItemSettings"
+          />
+        </template>
       </section>
     </div>
 

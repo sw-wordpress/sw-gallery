@@ -162,3 +162,55 @@ export function validateSettings(
   }
   return problems;
 }
+
+export interface ItemFieldDef {
+  /** Key path inside the item settings map (one level of nesting is expanded, e.g. `focal.x`). */
+  path: string[];
+  def: FieldDef;
+}
+
+/** Form fields of a layout's `x-item-settings` schema; object properties are expanded one level. */
+export function itemFieldsOf(schema: JsonSchema | undefined): ItemFieldDef[] {
+  const out: ItemFieldDef[] = [];
+  for (const def of fieldsOf(schema)) {
+    const raw = schema?.properties?.[def.key];
+    const type = Array.isArray(raw?.type) ? raw.type[0] : raw?.type;
+    if (type === 'object' && raw?.properties !== undefined) {
+      for (const child of fieldsOf(raw)) out.push({ path: [def.key, child.key], def: child });
+    } else {
+      out.push({ path: [def.key], def });
+    }
+  }
+  return out;
+}
+
+/** Value at a key path of a settings map (`undefined` when any step is missing). */
+export function valueAtPath(map: Record<string, unknown>, path: string[]): unknown {
+  let current: unknown = map;
+  for (const key of path) {
+    if (!isPlainObject(current)) return undefined;
+    current = current[key];
+  }
+  return current;
+}
+
+/** Copy of a settings map with one path set (`undefined` removes it; emptied parents are removed too). */
+export function withPath(
+  map: Record<string, unknown>,
+  path: string[],
+  value: unknown,
+): Record<string, unknown> {
+  const [head, ...rest] = path;
+  if (head === undefined) return map;
+  const copy = { ...map };
+  if (rest.length === 0) {
+    if (value === undefined) delete copy[head];
+    else copy[head] = value;
+    return copy;
+  }
+  const existing = copy[head];
+  const child = withPath(isPlainObject(existing) ? existing : {}, rest, value);
+  if (Object.keys(child).length === 0) delete copy[head];
+  else copy[head] = child;
+  return copy;
+}

@@ -112,6 +112,12 @@ const editor: Shape<typeof editorEn> = {
       'Absichtlich leer: In dieser Galerie wird nichts angezeigt, auch nicht der globale Text.',
     altHint:
       'Beschreiben Sie, was das Bild zeigt, für Menschen, die es nicht sehen können. Nur bei rein dekorativen Bildern leer lassen.',
+    layoutSettings: 'Layout-Einstellungen für dieses Bild',
+    layoutSettingsIntro:
+      'Gilt für das Layout „{layout}“ und wird mit der Galerie gespeichert. Leere Werte verwenden den Layout-Standard.',
+    layoutSettingsStale:
+      'Speichern Sie zuerst die Layout-Änderung: Bild-Einstellungen folgen dem gespeicherten Layout der Galerie.',
+    layoutSettingsReset: 'Auf Standard zurücksetzen',
   },
   grid: {
     label: 'Bilder in dieser Galerie ({count})',

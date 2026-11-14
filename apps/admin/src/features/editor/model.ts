@@ -51,6 +51,8 @@ export interface Working {
   order: readonly number[];
   /** Staged text overrides, only for items the user touched. */
   overrides: Readonly<Record<number, ItemTexts>>;
+  /** Staged complete item settings maps (layout `x-item-settings`), only for items the user touched. */
+  itemSettings?: Readonly<Record<number, Readonly<Record<string, unknown>>>>;
 }
 
 export function detailsOf(gallery: Gallery): Details {
@@ -108,6 +110,19 @@ export function changedOverrideIds(base: Base, work: Working): number[] {
   return out;
 }
 
+/** Items whose staged settings map differs from the stored one (items that remain). */
+export function changedItemSettingsIds(base: Base, work: Working): number[] {
+  const out: number[] = [];
+  for (const id of work.order) {
+    const staged = work.itemSettings?.[id];
+    const stored = base.items.get(id);
+    if (staged !== undefined && stored !== undefined && !deepEqual(staged, stored.settings)) {
+      out.push(id);
+    }
+  }
+  return out;
+}
+
 /** The order differs from the server's, ignoring items that are staged for removal. */
 export function orderChanged(base: Base, work: Working): boolean {
   const keep = new Set(work.order);
@@ -123,6 +138,7 @@ export function countChanges(base: Base, work: Working): number {
     changedDetailKeys(detailsOf(base.gallery), work.details).length +
     removedIds(base, work).length +
     changedOverrideIds(base, work).length +
+    changedItemSettingsIds(base, work).length +
     (orderChanged(base, work) ? 1 : 0)
   );
 }
@@ -130,12 +146,13 @@ export function countChanges(base: Base, work: Working): number {
 export type SaveStep =
   | { kind: 'remove'; itemIds: number[] }
   | { kind: 'override'; itemId: number; overrides: Partial<ItemTexts> }
+  | { kind: 'itemSettings'; itemId: number; settings: Record<string, unknown> }
   | { kind: 'order'; itemIds: number[] }
   | { kind: 'details'; changes: Partial<Details> };
 
 /**
  * Defined save order: removals first (so the order list is an exact permutation), then text
- * overrides, then the order with the complete remaining list, finally the gallery details, so a
+ * overrides and item settings, then the order with the complete remaining list, finally the gallery details, so a
  * publish never happens before the rest was saved.
  */
 export function buildPlan(base: Base, work: Working): SaveStep[] {
@@ -153,6 +170,10 @@ export function buildPlan(base: Base, work: Working): SaveStep[] {
       if (staged[field] !== stored.overrides[field]) overrides[field] = staged[field];
     }
     plan.push({ kind: 'override', itemId, overrides });
+  }
+  for (const itemId of changedItemSettingsIds(base, work)) {
+    const staged = work.itemSettings?.[itemId];
+    if (staged !== undefined) plan.push({ kind: 'itemSettings', itemId, settings: { ...staged } });
   }
   if (orderChanged(base, work)) plan.push({ kind: 'order', itemIds: [...work.order] });
   const keys = changedDetailKeys(detailsOf(base.gallery), work.details);

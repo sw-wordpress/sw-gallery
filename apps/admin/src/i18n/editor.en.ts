@@ -105,6 +105,12 @@ export default {
     blankHint: 'Empty on purpose: nothing is shown in this gallery, not even the global text.',
     altHint:
       'Describe what the image shows for people who cannot see it. Leave empty only for purely decorative images.',
+    layoutSettings: 'Layout settings for this image',
+    layoutSettingsIntro:
+      'Applies to the layout "{layout}" and is saved with the gallery. Empty values use the layout default.',
+    layoutSettingsStale:
+      'Save the layout change first: image settings follow the saved layout of the gallery.',
+    layoutSettingsReset: 'Reset to defaults',
   },
   grid: {
     label: 'Images in this gallery ({count})',
