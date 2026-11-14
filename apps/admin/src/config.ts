@@ -6,14 +6,35 @@ function str(value: unknown, fallback: string): string {
   return typeof value === 'string' ? value : fallback;
 }
 
-/** Validate/normalise the PHP-provided bootstrap. Throws if the REST root is missing. */
-export function normaliseConfig(raw: Partial<SwgAdminBootstrap> | undefined): SwgConfig {
-  if (!raw || typeof raw.restRoot !== 'string' || raw.restRoot === '') {
-    throw new Error('window.swgAdmin.restRoot is missing');
+/** An absolute http(s) URL or `''`: a bootstrap value that is not one (e.g. `javascript:`) is dropped, never used. */
+function webUrl(value: unknown): string {
+  if (typeof value !== 'string' || value === '') return '';
+  try {
+    const url = new URL(value, window.location.href);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? value : '';
+  } catch {
+    return '';
   }
+}
+
+/**
+ * Validate/normalise the PHP-provided bootstrap once. Throws if the REST root or the nonce is missing or not
+ * a web URL / string (the caller shows a translated error screen). Optional fields get safe defaults.
+ */
+export function normaliseConfig(raw: Partial<SwgAdminBootstrap> | undefined): SwgConfig {
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('window.swgAdmin is missing');
+  }
+  if (webUrl(raw.restRoot) === '') {
+    throw new Error('window.swgAdmin.restRoot is missing or not a web URL');
+  }
+  if (typeof raw.nonce !== 'string' || raw.nonce === '') {
+    throw new Error('window.swgAdmin.nonce is missing');
+  }
+  const restRoot = raw.restRoot as string;
   return {
-    restRoot: raw.restRoot.endsWith('/') ? raw.restRoot : `${raw.restRoot}/`,
-    nonce: str(raw.nonce, ''),
+    restRoot: restRoot.endsWith('/') ? restRoot : `${restRoot}/`,
+    nonce: raw.nonce,
     locale: str(raw.locale, 'en_US'),
     version: str(raw.version, ''),
     adminUrl: str(raw.adminUrl, ''),
@@ -22,6 +43,9 @@ export function normaliseConfig(raw: Partial<SwgAdminBootstrap> | undefined): Sw
       : [],
     isRtl: raw.isRtl === true,
     timezone: str(raw.timezone, ''),
+    ajaxUrl: webUrl(raw.ajaxUrl),
+    loginUrl: webUrl(raw.loginUrl),
+    assetsUrl: webUrl(raw.assetsUrl),
   };
 }
 

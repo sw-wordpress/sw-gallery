@@ -7,6 +7,7 @@ import { NAV_ITEMS, loadFailure } from '@/router';
 import { useAppStore } from '@/stores/app';
 import LoadFailure from '@/layouts/LoadFailure.vue';
 import NoAccess from '@/layouts/NoAccess.vue';
+import SessionBanner from '@/layouts/SessionBanner.vue';
 
 /** Capability every user of the app needs; the PHP page enforces it, this is a UX hint. */
 const ACCESS_CAPABILITY = 'edit_posts';
@@ -190,6 +191,7 @@ watch(
       :aria-label="t('app.content')"
       tabindex="-1"
     >
+      <SessionBanner v-if="app.sessionExpired" />
       <NoAccess v-if="!routeAllowed" />
       <LoadFailure
         v-else-if="loadFailure !== null"

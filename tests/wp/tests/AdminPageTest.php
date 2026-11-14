@@ -190,7 +190,32 @@ class AdminPageTest extends SwgTestCase {
 		$this->assertContains( 'edit_posts', $data['capabilities'] );
 		$this->assertContains( 'upload_files', $data['capabilities'] );
 		$this->assertNotContains( 'manage_options', $data['capabilities'] );
-		$this->assertSame( array( 'restRoot', 'nonce', 'locale', 'version', 'adminUrl', 'capabilities', 'isRtl', 'timezone' ), array_keys( $data ) );
+		$this->assertSame( array( 'restRoot', 'nonce', 'locale', 'version', 'adminUrl', 'capabilities', 'isRtl', 'timezone', 'ajaxUrl', 'loginUrl', 'assetsUrl' ), array_keys( $data ) );
+		$this->assertSame( admin_url( 'admin-ajax.php' ), $data['ajaxUrl'] );
+		$this->assertStringStartsWith( wp_login_url(), $data['loginUrl'] );
+		$this->assertStringContainsString( 'redirect_to=', $data['loginUrl'] );
+		$this->assertSame( 'https://example.test/build/', $data['assetsUrl'] );
+	}
+
+	public function test_the_bootstrap_json_is_hex_escaped_and_holds_no_secret_besides_the_nonce(): void {
+		$registrar = $this->registrar();
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+		$hostile = static fn (): string => 'https://example.test/wp-login.php?a=1&b=</script><b>\'"';
+		add_filter( 'login_url', $hostile );
+		$json    = $registrar->bootstrap_json();
+		remove_filter( 'login_url', $hostile );
+
+		$this->assertDoesNotMatchRegularExpression( '/[<>&\']/', $json );
+		$this->assertStringNotContainsString( '</script', strtolower( $json ) );
+		$data = json_decode( $json, true );
+		$this->assertIsArray( $data );
+		// Only the REST nonce is secret-like: no cookies, salts, keys or password material.
+		$this->assertDoesNotMatchRegularExpression( '/AUTH_KEY|SECURE_AUTH|LOGGED_IN_|password|salt|cookie/i', $json );
+	}
+
+	public function test_the_editor_url_builder_matches_the_documented_route_format(): void {
+		$this->assertSame( '#/galleries/%d', AdminRegistrar::EDITOR_ROUTE );
+		$this->assertSame( admin_url( 'admin.php?page=swg-galleries#/galleries/42' ), AdminRegistrar::editor_url( 42 ) );
 	}
 
 	public function test_an_author_does_not_get_capabilities_of_an_editor(): void {
@@ -252,27 +277,27 @@ class AdminPageTest extends SwgTestCase {
 	public static function untrusted_manifests(): array {
 		$ok_style = array( 'file' => 'style-abc.css' );
 		return array(
-			'no script entry'           => array( array( 'style.css' => $ok_style ) ),
-			'no style entry'            => array( array( 'src/main.ts' => array( 'file' => 'app-abc.js' ) ) ),
-			'path traversal'            => array(
+			'no script entry'            => array( array( 'style.css' => $ok_style ) ),
+			'no style entry'             => array( array( 'src/main.ts' => array( 'file' => 'app-abc.js' ) ) ),
+			'path traversal'             => array(
 				array(
 					'src/main.ts' => array( 'file' => '../app-abc.js' ),
 					'style.css'   => $ok_style,
 				),
 			),
-			'absolute path'             => array(
+			'absolute path'              => array(
 				array(
 					'src/main.ts' => array( 'file' => '/etc/passwd.js' ),
 					'style.css'   => $ok_style,
 				),
 			),
-			'url scheme'                => array(
+			'url scheme'                 => array(
 				array(
 					'src/main.ts' => array( 'file' => 'https://evil.test/a.js' ),
 					'style.css'   => $ok_style,
 				),
 			),
-			'wrong extension'           => array(
+			'wrong extension'            => array(
 				array(
 					'src/main.ts' => array( 'file' => 'app-abc.php' ),
 					'style.css'   => $ok_style,
@@ -284,26 +309,26 @@ class AdminPageTest extends SwgTestCase {
 					'style.css'   => $ok_style,
 				),
 			),
-			'file does not exist'       => array(
+			'file does not exist'        => array(
 				array(
 					'src/main.ts' => array( 'file' => 'missing.js' ),
 					'style.css'   => $ok_style,
 				),
 			),
-			'file is not a string'      => array(
+			'file is not a string'       => array(
 				array(
 					'src/main.ts' => array( 'file' => array( 'x' ) ),
 					'style.css'   => $ok_style,
 				),
 			),
-			'entry is not an object'    => array(
+			'entry is not an object'     => array(
 				array(
 					'src/main.ts' => 'app-abc.js',
 					'style.css'   => $ok_style,
 				),
 			),
-			'not json'                  => array( '{ not json' ),
-			'json scalar'               => array( '"text"' ),
+			'not json'                   => array( '{ not json' ),
+			'json scalar'                => array( '"text"' ),
 		);
 	}
 

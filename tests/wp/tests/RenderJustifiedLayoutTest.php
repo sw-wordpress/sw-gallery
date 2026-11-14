@@ -154,6 +154,21 @@ class RenderJustifiedLayoutTest extends SwgTestCase {
 		$this->assertSame( '', $this->render( array() ) );
 	}
 
+	public function test_every_enum_value_has_a_translated_display_title(): void {
+		$schema = ( new JustifiedLayout() )->getSettingsSchema();
+		$last   = $schema['properties']['lastRow'];
+
+		$this->assertSame( $last['enum'], array_keys( $last['x-enum-titles'] ), 'One title per enum value, in enum order.' );
+		foreach ( $last['x-enum-titles'] as $value => $title ) {
+			$this->assertIsString( $title );
+			$this->assertNotSame( '', $title );
+			$this->assertNotSame( $value, $title, 'A title is a label, not the raw value.' );
+		}
+		// The extra keyword never changes validation.
+		$this->assertTrue( ( new SettingsSchemaValidator() )->validate( $schema, array( 'lastRow' => 'justify' ) )->isValid() );
+		$this->assertFalse( ( new SettingsSchemaValidator() )->validate( $schema, array( 'lastRow' => 'Stretch to full width' ) )->isValid() );
+	}
+
 	public function test_the_schema_validation_matrix(): void {
 		$layout    = new JustifiedLayout();
 		$schema    = $layout->getSettingsSchema();

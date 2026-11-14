@@ -13,6 +13,8 @@ export interface JsonSchema {
   maxLength?: number;
   properties?: Record<string, JsonSchema>;
   'x-responsive'?: boolean;
+  /** Translated display labels of the `enum` values (`{ value: label }`); values without one show the raw value. */
+  'x-enum-titles'?: Record<string, unknown>;
   'x-item-settings'?: JsonSchema;
   [key: string]: unknown;
 }

@@ -12,6 +12,7 @@ import SwgCard from '@/components/ui/SwgCard.vue';
 import { getConfig } from '@/config';
 import { copyToClipboard, useFeedback } from '@/features/galleries/feedback';
 import { formatModified } from '@/features/galleries/format';
+import { formatNumber } from '@/utils/format';
 import { buildSummary, contextText } from './summary';
 import { useStatusApi, useStatusReport } from './useStatusReport';
 
@@ -48,8 +49,7 @@ const fetched = computed(() =>
     ? ''
     : formatModified(status.fetchedAt.value.toISOString(), config.locale, config.timezone),
 );
-const number = (value: number): string =>
-  new Intl.NumberFormat(config.locale.replace('_', '-')).format(value);
+const number = (value: number): string => formatNumber(value, config.locale);
 
 const orphans = computed(() => report.value?.counts.orphanRelations ?? null);
 /** Honest wording: a skipped scan is not "0", an interrupted scan is a lower bound. */

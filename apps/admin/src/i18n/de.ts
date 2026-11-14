@@ -37,7 +37,17 @@ const de: typeof en = {
     retry: 'Erneut versuchen',
     items: 'keine Einträge | ein Eintrag | {count} Einträge',
   },
+  session: {
+    title: 'Deine Sitzung ist abgelaufen',
+    text: 'Melde dich in einem neuen Tab erneut an. Deine offenen Änderungen bleiben auf dieser Seite erhalten; mach danach hier weiter und speichere.',
+    login: 'Erneut anmelden',
+    resume: 'Ich bin angemeldet, weiter',
+    stillExpired: 'Du bist weiterhin abgemeldet.',
+    resumed: 'Sitzung wiederhergestellt.',
+  },
   errors: {
+    sessionExpired:
+      'Deine Sitzung ist abgelaufen. Melde dich erneut an und wiederhole dann die Aktion.',
     loadFailureTitle: 'Dieser Bereich konnte nicht geladen werden',
     loadFailureText:
       'Ein Teil der Anwendung konnte nicht geladen werden. Vielleicht ist die Verbindung abgebrochen, oder das Plugin wurde aktualisiert, während diese Seite offen war.',

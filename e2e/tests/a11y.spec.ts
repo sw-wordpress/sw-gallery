@@ -16,16 +16,6 @@ test.describe.configure({ mode: 'serial' });
  */
 const WAIVED: Record<string, string> = {};
 
-/**
- * Narrow, route-scoped waivers of MODERATE landmark findings in the gallery editor. `features/editor/GalleryEditor.vue`
- * is owned by another work stream in this wave and still uses a `<header>` and an `<aside>` inside the app region
- * (they become nested banner/complementary landmarks). Fix: turn both into `<div>`s (as PageHeader/SwgCard now are),
- * then delete this waiver. Serious and critical findings are never waived.
- */
-const ROUTE_WAIVERS: Array<{ label: RegExp; rule: string }> = [
-  { label: /gallery-editor$/, rule: 'landmark-banner-is-top-level' },
-  { label: /gallery-editor$/, rule: 'landmark-complementary-is-top-level' },
-];
 const PREFIX = uniquePrefix('a11y');
 let admin: GalleryFixtures;
 let gallery: GalleryRecord;
@@ -144,11 +134,7 @@ async function sweep(
       results.violations = results.violations.filter((v) => v !== violation);
   }
   // Moderate and minor findings are listed above too: the gate is "nothing at all except documented waivers".
-  const blocking = results.violations.filter(
-    (v) =>
-      !(v.id in WAIVED) &&
-      !ROUTE_WAIVERS.some((w) => w.label.test(label) && w.rule === v.id && v.impact === 'moderate'),
-  );
+  const blocking = results.violations.filter((v) => !(v.id in WAIVED));
   expect(
     blocking.map((v) => `${label} ${v.impact}: ${v.id}: ${v.help}`),
     `axe violations on ${label}`,

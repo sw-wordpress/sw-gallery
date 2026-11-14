@@ -1,5 +1,15 @@
 /** Windowing math of the items grid (pure; the component only measures and renders). */
 
+/** Thumbnail size choices of the items grid (FU-31) and their minimum tile width in px. */
+export const TILE_SIZES = ['small', 'medium', 'large'] as const;
+export type TileSize = (typeof TILE_SIZES)[number];
+export const DEFAULT_TILE_SIZE: TileSize = 'medium';
+export const TILE_MIN_WIDTH: Record<TileSize, number> = { small: 110, medium: 150, large: 240 };
+
+export function isTileSize(value: unknown): value is TileSize {
+  return typeof value === 'string' && (TILE_SIZES as readonly string[]).includes(value);
+}
+
 export interface WindowInput {
   count: number;
   /** Inner width of the scroller in px. */

@@ -36,7 +36,16 @@ export default {
     retry: 'Retry',
     items: 'no items | one item | {count} items',
   },
+  session: {
+    title: 'Your session has expired',
+    text: 'Log in again in a new tab. Your open changes stay on this page; then continue here and save.',
+    login: 'Log in again',
+    resume: 'I have logged in, continue',
+    stillExpired: 'You are still logged out.',
+    resumed: 'Session restored.',
+  },
   errors: {
+    sessionExpired: 'Your session has expired. Log in again, then repeat this action.',
     loadFailureTitle: 'This section could not be loaded',
     loadFailureText:
       'A part of the application failed to load. Your connection may have dropped, or the plugin was updated while this page was open.',

@@ -1,10 +1,13 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
+import { DEFAULT_TILE_SIZE, isTileSize } from '@/features/editor/virtual';
+import type { TileSize } from '@/features/editor/virtual';
 
 export const THEME_KEY = 'swg-theme';
 export const RAIL_KEY = 'swg-rail-collapsed';
 export const GALLERY_VIEW_KEY = 'swg-gallery-view';
 export const MEDIA_VIEW_KEY = 'swg-media-view';
+export const TILE_SIZE_KEY = 'swg-tile-size';
 export type GalleryView = 'grid' | 'table';
 export type ThemePreference = 'light' | 'dark' | 'system';
 
@@ -46,8 +49,13 @@ export const useAppStore = defineStore('app', () => {
     readStorage(GALLERY_VIEW_KEY) === 'table' ? 'table' : 'grid',
   );
   const mediaView = ref<GalleryView>(readStorage(MEDIA_VIEW_KEY) === 'table' ? 'table' : 'grid');
+  const storedTile = readStorage(TILE_SIZE_KEY);
+  /** Thumbnail size of the editor's items grid (per viewer, localStorage). */
+  const tileSize = ref<TileSize>(isTileSize(storedTile) ? storedTile : DEFAULT_TILE_SIZE);
   /** Text for the polite live region. */
   const announcement = ref('');
+  /** The login session is gone (HTTP 401): the shell shows a banner, the views stay mounted with their unsaved state. */
+  const sessionExpired = ref(false);
 
   const isDark = computed(() =>
     themePreference.value === 'system' ? systemDark.value : themePreference.value === 'dark',
@@ -75,6 +83,13 @@ export const useAppStore = defineStore('app', () => {
     mediaView.value = value;
     writeStorage(MEDIA_VIEW_KEY, value === 'table' ? 'table' : null);
   }
+  function setSessionExpired(value: boolean): void {
+    sessionExpired.value = value;
+  }
+  function setTileSize(value: TileSize): void {
+    tileSize.value = value;
+    writeStorage(TILE_SIZE_KEY, value === DEFAULT_TILE_SIZE ? null : value);
+  }
   function announce(message: string): void {
     // Reset first so an identical message is announced again.
     announcement.value = '';
@@ -89,6 +104,10 @@ export const useAppStore = defineStore('app', () => {
     isDark,
     railCollapsed,
     announcement,
+    tileSize,
+    setTileSize,
+    sessionExpired,
+    setSessionExpired,
     galleryView,
     setGalleryView,
     mediaView,

@@ -116,6 +116,16 @@ export default {
     isCover: 'cover image',
     edited: 'unsaved text changes',
   },
+  tileSize: {
+    label: 'Thumbnail size',
+    short: 'Size',
+    small: 'Small thumbnails',
+    medium: 'Medium thumbnails',
+    large: 'Large thumbnails',
+    smallSet: 'Small thumbnails',
+    mediumSet: 'Medium thumbnails',
+    largeSet: 'Large thumbnails',
+  },
   images: {
     region: 'Gallery images',
     unavailableCount: '{count} unavailable',
@@ -343,6 +353,15 @@ export default {
     diagnostics: {
       title: 'Notes for editors ({count})',
       hint: 'Only shown here, never on the website.',
+      codes: {
+        gallery_not_found: 'This gallery does not exist.',
+        gallery_not_public: 'This gallery is not published, so visitors see nothing here.',
+        unknown_layout: 'The chosen layout is not available, the grid layout is used instead.',
+        layout_failed: 'The chosen layout failed, the grid layout is used instead.',
+        invalid_override: 'The settings of this embed are invalid and were ignored.',
+        empty_gallery: 'This gallery has no images yet.',
+        images_unavailable: 'Some images are no longer available and are skipped.',
+      },
     },
     empty: { title: 'Nothing to preview yet', text: 'Add images to see the gallery here.' },
     stale: 'Showing the last successful preview.',

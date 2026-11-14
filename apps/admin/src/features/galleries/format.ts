@@ -1,36 +1,7 @@
 import type { Gallery, GalleryStatus } from '@/api/galleries';
 import type { ChipKind } from '@/components/ui/StatusChip.vue';
 
-/** `de_DE_formal` -> `de-DE`, `ar` -> `ar`; anything Intl rejects falls back to English. */
-export function localeTag(wpLocale: string): string {
-  const [language, region] = wpLocale.split('_');
-  const tag =
-    region !== undefined && /^[A-Za-z]{2}$/.test(region) ? `${language}-${region}` : language;
-  try {
-    return Intl.getCanonicalLocales(tag ?? 'en')[0] ?? 'en';
-  } catch {
-    return 'en';
-  }
-}
-
-/**
- * Formats the ISO UTC `modified` value in the user's locale and the WordPress timezone.
- * An unknown timezone falls back to UTC, an unparsable date to the raw value.
- */
-export function formatModified(iso: string, wpLocale: string, timezone: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  const locale = localeTag(wpLocale);
-  const options: Intl.DateTimeFormatOptions = { dateStyle: 'medium', timeStyle: 'short' };
-  try {
-    return new Intl.DateTimeFormat(locale, {
-      ...options,
-      ...(timezone === '' ? {} : { timeZone: timezone }),
-    }).format(date);
-  } catch {
-    return new Intl.DateTimeFormat(locale, { ...options, timeZone: 'UTC' }).format(date);
-  }
-}
+export { formatDateTime as formatModified, localeTag } from '@/utils/format';
 
 /** Deep link of the gallery editor (hash route). Only galleries the user may edit and that are not trashed. */
 export function editorPath(gallery: Pick<Gallery, 'id' | 'canEdit' | 'status'>): string | null {

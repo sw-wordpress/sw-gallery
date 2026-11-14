@@ -31,6 +31,7 @@ export function errorMessage(error: unknown, t: Translate): string {
     case 422:
       return t('errors.validation');
     case 401:
+      return t('errors.sessionExpired');
     case 403:
       return t('errors.forbidden');
     case 404:

@@ -29,6 +29,7 @@ import ConflictDialog from './components/ConflictDialog.vue';
 import GalleryDetailsPanel from './components/GalleryDetailsPanel.vue';
 import ImageDetailsSheet from './components/ImageDetailsSheet.vue';
 import ItemsGrid from './components/ItemsGrid.vue';
+import TileSizeControl from './components/TileSizeControl.vue';
 import LayoutSettingsPanel from './components/LayoutSettingsPanel.vue';
 import UploadPanel from './components/UploadPanel.vue';
 import { useEditorApi } from './injection';
@@ -500,7 +501,7 @@ const reportAlert = computed(() => {
       </template>
 
       <template v-if="gallery && working">
-        <header class="swg-ed__head">
+        <div class="swg-ed__head">
           <div class="swg-ed__titles">
             <h2 class="swg-ed__title">{{ displayTitle }}</h2>
             <GalleryStatusChip
@@ -580,7 +581,7 @@ const reportAlert = computed(() => {
               @click="onSave"
             />
           </div>
-        </header>
+        </div>
 
         <p class="swg-ed__state" :class="{ 'is-dirty': session.dirty.value }">
           <q-spinner
@@ -679,6 +680,7 @@ const reportAlert = computed(() => {
                     {{ t('editor.images.unavailableCount', { count: missingCount }, missingCount) }}
                   </template>
                 </span>
+                <TileSizeControl v-if="itemCount > 0" />
               </div>
 
               <UploadPanel
@@ -828,7 +830,7 @@ const reportAlert = computed(() => {
             </section>
           </div>
 
-          <aside class="swg-ed__side" :aria-label="t('editor.panel.label')">
+          <div class="swg-ed__side" role="region" :aria-label="t('editor.panel.label')">
             <SegmentedControl
               v-model="panel"
               :options="panelOptions"
@@ -851,7 +853,7 @@ const reportAlert = computed(() => {
                 @retry="loadLayouts"
               />
             </div>
-          </aside>
+          </div>
         </div>
       </template>
     </DataState>

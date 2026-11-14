@@ -96,7 +96,17 @@ export interface ClientOptions {
   xhrFactory?: () => XMLHttpRequest;
   /** Injectable for tests; must reject with an AbortError-like DOMException when aborted. */
   sleep?: (ms: number, signal?: AbortSignal) => Promise<void>;
+  /**
+   * Fetches a fresh REST nonce (same-origin, with cookies). Resolves with the nonce, or `null` when the answer shows the
+   * session is gone. Rejects on network errors. Without it the client never refreshes on its own.
+   */
+  refreshNonce?: (signal?: AbortSignal) => Promise<string | null>;
+  /** Called when the session itself is gone (HTTP 401, or a refresh that proves it). The UI shows "log in again". */
+  onSessionExpired?: () => void;
 }
+
+/** WordPress' answer to a request whose nonce is invalid/expired; it is rejected before anything executes. */
+export const NONCE_ERROR_CODE = 'rest_cookie_invalid_nonce';
 
 export const MAX_RETRIES = 3;
 const RETRYABLE_STATUS = new Set([502, 503, 504]);
@@ -176,11 +186,17 @@ export class ApiClient {
   private readonly policy: RetryPolicy;
   private readonly sleep: (ms: number, signal?: AbortSignal) => Promise<void>;
   private readonly xhrFactory: () => XMLHttpRequest;
+  private readonly refreshNonceImpl: ClientOptions['refreshNonce'];
+  private readonly onSessionExpired: (() => void) | undefined;
+  /** One refresh at a time: concurrent requests that fail on the same stale nonce share it. */
+  private refreshing: Promise<boolean> | null = null;
 
   constructor(options: ClientOptions) {
     this.xhrFactory = options.xhrFactory ?? (() => new XMLHttpRequest());
     this.root = options.restRoot.endsWith('/') ? options.restRoot : `${options.restRoot}/`;
     this.nonce = options.nonce;
+    this.refreshNonceImpl = options.refreshNonce;
+    this.onSessionExpired = options.onSessionExpired;
     this.fetchImpl = options.fetchImpl ?? ((...args) => fetch(...args));
     this.sleep = options.sleep ?? defaultSleep;
     this.policy = {
@@ -217,6 +233,75 @@ export class ApiClient {
     method: string,
     path: string,
     options: RequestOptions = {},
+  ): Promise<ApiResponse<T>> {
+    return this.withSession(
+      () => this.requestWithRetries<T>(method, path, options),
+      options.signal,
+    );
+  }
+
+  /**
+   * Whether the current nonce is still accepted: asks the server for a fresh one. `true` when it was obtained
+   * (the "I have logged in again" path), `false` when the session is still gone or the server is unreachable.
+   */
+  async renewSession(signal?: AbortSignal): Promise<boolean> {
+    return this.refresh(signal);
+  }
+
+  /**
+   * Runs `run`; if it fails because the nonce was rejected, refreshes the nonce and runs it exactly once more. A nonce
+   * failure is rejected by WordPress before the route executes, so the replay is safe for writes as well. The second
+   * attempt is never retried again (no loop). A 401 means the session is gone: the UI is told, the error still thrown.
+   */
+  private async withSession<T>(run: () => Promise<T>, signal?: AbortSignal): Promise<T> {
+    const used = this.nonce;
+    try {
+      return await run();
+    } catch (error) {
+      if (!(error instanceof ApiError)) throw error;
+      if (error.code === NONCE_ERROR_CODE && this.refreshNonceImpl !== undefined) {
+        // Another request may already have refreshed it while this one was in flight.
+        const ready = this.nonce !== used || (await this.refresh(signal));
+        if (ready) {
+          try {
+            return await run();
+          } catch (second) {
+            if (second instanceof ApiError && second.status === 401) this.onSessionExpired?.();
+            throw second;
+          }
+        }
+      } else if (error.status === 401) {
+        this.onSessionExpired?.();
+      }
+      throw error;
+    }
+  }
+
+  private refresh(signal?: AbortSignal): Promise<boolean> {
+    const refresher = this.refreshNonceImpl;
+    if (refresher === undefined) return Promise.resolve(false);
+    this.refreshing ??= (async (): Promise<boolean> => {
+      try {
+        const fresh = await refresher(signal);
+        if (fresh === null || fresh === '') {
+          this.onSessionExpired?.();
+          return false;
+        }
+        this.nonce = fresh;
+        return true;
+      } catch {
+        return false; // unreachable server: the original error is reported, not a false "expired"
+      } finally {
+        this.refreshing = null;
+      }
+    })();
+    return this.refreshing;
+  }
+
+  private async requestWithRetries<T>(
+    method: string,
+    path: string,
+    options: RequestOptions,
   ): Promise<ApiResponse<T>> {
     const idempotent = method === 'GET' || method === 'HEAD';
     const maxAttempts = idempotent ? this.policy.retries + 1 : 1;
@@ -292,6 +377,10 @@ export class ApiClient {
    * progress, so this is the one place that uses `XMLHttpRequest`. Never retried (a write).
    */
   upload<T>(path: string, file: Blob, options: UploadOptions = {}): Promise<T> {
+    return this.withSession(() => this.uploadOnce<T>(path, file, options), options.signal);
+  }
+
+  private uploadOnce<T>(path: string, file: Blob, options: UploadOptions): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const { signal } = options;
       if (signal?.aborted) {
