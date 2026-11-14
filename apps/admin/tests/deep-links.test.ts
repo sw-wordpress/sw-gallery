@@ -69,7 +69,7 @@ describe('editor deep link contract (M2-19)', () => {
       resolve(repo, 'packages/wordpress/src/Admin/AdminRegistrar.php'),
       'utf8',
     );
-    const match = /const EDITOR_ROUTE = '([^']+)';/.exec(php);
+    const match = /const EDITOR_ROUTE\s*=\s*'([^']+)';/.exec(php);
     expect(match?.[1]).toBe('#/galleries/%d');
     // The route record behind the contract (see src/router/index.ts): `/galleries/:id(\d+)`.
     const route = createAppRouter(createMemoryHistory(), views)
