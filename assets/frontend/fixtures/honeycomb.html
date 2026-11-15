@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>sw-gallery honeycomb fixture</title>
+        <!-- CSS only. Review: resize (container < 480px plain grid; the second gallery has 2 / 3 / 5 cells), diamond shape, the dir="rtl" gallery mirrors the offset, hover lifts, Tab shows a ring that follows the shape.
+             The --swg-hsN:1 flags (item sits in an odd row at breakpoint N) are what HoneycombLayout writes. -->
+        <link rel="stylesheet" href="../src/layouts.css" />
+        <style>
+            :root {
+                color-scheme: light dark;
+            }
+            body {
+                font-family: system-ui, sans-serif;
+                margin: 1rem auto;
+                max-width: 72rem;
+                padding: 0 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Honeycomb (11 pictures, 4 cells per row, gap 6px)</h1>
+        <div
+            class="swg-gallery swg-layout-honeycomb swg-honeycomb-hexagon"
+            data-swg-gallery
+            style="--swg-columns: 4; --swg-gap: 6px"
+        >
+            <ul class="swg-items" role="list">
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%280%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2850%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27150%27%20cy%3D%27150%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E1%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%280%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2850%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27150%27%20cy%3D%27150%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E1%3C/text%3E%3C/svg%3E"
+                            alt="Picture 1"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2832%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2882%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27247%27%20cy%3D%27203%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E2%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2832%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2882%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27247%27%20cy%3D%27203%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E2%3C/text%3E%3C/svg%3E"
+                            alt="Picture 2"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2865%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28115%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27344%27%20cy%3D%27256%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E3%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2865%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28115%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27344%27%20cy%3D%27256%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E3%3C/text%3E%3C/svg%3E"
+                            alt="Picture 3"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2898%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28148%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27441%27%20cy%3D%27309%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E4%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2898%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28148%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27441%27%20cy%3D%27309%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E4%3C/text%3E%3C/svg%3E"
+                            alt="Picture 4"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li
+                    class="swg-item"
+                    style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs2: 1; --swg-hs3: 1; --swg-hs4: 1"
+                >
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28130%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28180%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27238%27%20cy%3D%27362%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E5%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28130%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28180%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27238%27%20cy%3D%27362%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E5%3C/text%3E%3C/svg%3E"
+                            alt="Picture 5"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li
+                    class="swg-item"
+                    style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs2: 1; --swg-hs3: 1; --swg-hs4: 1"
+                >
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28163%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28213%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27335%27%20cy%3D%27415%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E6%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28163%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28213%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27335%27%20cy%3D%27415%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E6%3C/text%3E%3C/svg%3E"
+                            alt="Picture 6"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li
+                    class="swg-item"
+                    style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs2: 1; --swg-hs3: 1; --swg-hs4: 1"
+                >
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28196%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28246%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27432%27%20cy%3D%27168%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E7%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28196%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28246%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27432%27%20cy%3D%27168%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E7%3C/text%3E%3C/svg%3E"
+                            alt="Picture 7"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li
+                    class="swg-item"
+                    style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs2: 1; --swg-hs3: 1; --swg-hs4: 1"
+                >
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28229%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28279%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27229%27%20cy%3D%27221%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E8%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28229%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28279%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27229%27%20cy%3D%27221%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E8%3C/text%3E%3C/svg%3E"
+                            alt="Picture 8"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28261%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28311%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27326%27%20cy%3D%27274%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E9%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28261%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28311%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27326%27%20cy%3D%27274%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E9%3C/text%3E%3C/svg%3E"
+                            alt="Picture 9"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28294%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28344%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27423%27%20cy%3D%27327%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E10%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28294%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28344%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27423%27%20cy%3D%27327%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E10%3C/text%3E%3C/svg%3E"
+                            alt="Picture 10"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28327%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2817%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27220%27%20cy%3D%27380%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E11%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28327%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2817%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27220%27%20cy%3D%27380%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E11%3C/text%3E%3C/svg%3E"
+                            alt="Picture 11"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+            </ul>
+        </div>
+        <h2>Responsive 2 / 3 / 5 cells, diamond, gap 4px</h2>
+        <div
+            class="swg-gallery swg-layout-honeycomb swg-honeycomb-diamond"
+            data-swg-gallery
+            style="--swg-columns: 2; --swg-columns-md: 3; --swg-columns-xl: 5; --swg-gap: 4px"
+        >
+            <ul class="swg-items" role="list">
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%280%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2850%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27150%27%20cy%3D%27150%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E1%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%280%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2850%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27150%27%20cy%3D%27150%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E1%3C/text%3E%3C/svg%3E"
+                            alt="Picture 1"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2830%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2880%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27247%27%20cy%3D%27203%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E2%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2830%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2880%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27247%27%20cy%3D%27203%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E2%3C/text%3E%3C/svg%3E"
+                            alt="Picture 2"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item" style="--swg-hs0: 1; --swg-hs1: 1">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2860%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28110%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27344%27%20cy%3D%27256%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E3%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2860%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28110%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27344%27%20cy%3D%27256%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E3%3C/text%3E%3C/svg%3E"
+                            alt="Picture 3"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item" style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs2: 1; --swg-hs3: 1">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2890%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28140%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27441%27%20cy%3D%27309%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E4%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2890%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28140%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27441%27%20cy%3D%27309%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E4%3C/text%3E%3C/svg%3E"
+                            alt="Picture 4"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item" style="--swg-hs2: 1; --swg-hs3: 1">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28120%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28170%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27238%27%20cy%3D%27362%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E5%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28120%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28170%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27238%27%20cy%3D%27362%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E5%3C/text%3E%3C/svg%3E"
+                            alt="Picture 5"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item" style="--swg-hs2: 1; --swg-hs3: 1; --swg-hs4: 1">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28150%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28200%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27335%27%20cy%3D%27415%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E6%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28150%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28200%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27335%27%20cy%3D%27415%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E6%3C/text%3E%3C/svg%3E"
+                            alt="Picture 6"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item" style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs4: 1">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28180%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28230%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27432%27%20cy%3D%27168%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E7%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28180%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28230%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27432%27%20cy%3D%27168%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E7%3C/text%3E%3C/svg%3E"
+                            alt="Picture 7"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item" style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs4: 1">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28210%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28260%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27229%27%20cy%3D%27221%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E8%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28210%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28260%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27229%27%20cy%3D%27221%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E8%3C/text%3E%3C/svg%3E"
+                            alt="Picture 8"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item" style="--swg-hs4: 1">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28240%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28290%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27326%27%20cy%3D%27274%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E9%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28240%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28290%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27326%27%20cy%3D%27274%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E9%3C/text%3E%3C/svg%3E"
+                            alt="Picture 9"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item" style="--swg-hs2: 1; --swg-hs3: 1; --swg-hs4: 1">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28270%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28320%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27423%27%20cy%3D%27327%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E10%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28270%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28320%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27423%27%20cy%3D%27327%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E10%3C/text%3E%3C/svg%3E"
+                            alt="Picture 10"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item" style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs2: 1; --swg-hs3: 1">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28300%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28350%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27220%27%20cy%3D%27380%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E11%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28300%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28350%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27220%27%20cy%3D%27380%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E11%3C/text%3E%3C/svg%3E"
+                            alt="Picture 11"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+                <li class="swg-item" style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs2: 1; --swg-hs3: 1">
+                    <a
+                        class="swg-link"
+                        href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28330%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2820%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27317%27%20cy%3D%27433%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E12%3C/text%3E%3C/svg%3E"
+                        ><img
+                            src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28330%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2820%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27317%27%20cy%3D%27433%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E12%3C/text%3E%3C/svg%3E"
+                            alt="Picture 12"
+                            width="600"
+                            height="600"
+                            loading="lazy"
+                    /></a>
+                </li>
+            </ul>
+        </div>
+        <h2>RTL, 7 cells per row, gap 0</h2>
+        <div dir="rtl">
+            <div
+                class="swg-gallery swg-layout-honeycomb swg-honeycomb-hexagon"
+                data-swg-gallery
+                style="--swg-columns: 7; --swg-gap: 0px"
+            >
+                <ul class="swg-items" role="list">
+                    <li class="swg-item">
+                        <a
+                            class="swg-link"
+                            href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%280%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2850%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27150%27%20cy%3D%27150%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E1%3C/text%3E%3C/svg%3E"
+                            ><img
+                                src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%280%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2850%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27150%27%20cy%3D%27150%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E1%3C/text%3E%3C/svg%3E"
+                                alt="Picture 1"
+                                width="600"
+                                height="600"
+                                loading="lazy"
+                        /></a>
+                    </li>
+                    <li class="swg-item">
+                        <a
+                            class="swg-link"
+                            href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2836%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2886%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27247%27%20cy%3D%27203%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E2%3C/text%3E%3C/svg%3E"
+                            ><img
+                                src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2836%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2886%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27247%27%20cy%3D%27203%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E2%3C/text%3E%3C/svg%3E"
+                                alt="Picture 2"
+                                width="600"
+                                height="600"
+                                loading="lazy"
+                        /></a>
+                    </li>
+                    <li class="swg-item">
+                        <a
+                            class="swg-link"
+                            href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2872%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28122%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27344%27%20cy%3D%27256%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E3%3C/text%3E%3C/svg%3E"
+                            ><img
+                                src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%2872%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28122%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27344%27%20cy%3D%27256%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E3%3C/text%3E%3C/svg%3E"
+                                alt="Picture 3"
+                                width="600"
+                                height="600"
+                                loading="lazy"
+                        /></a>
+                    </li>
+                    <li class="swg-item">
+                        <a
+                            class="swg-link"
+                            href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28108%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28158%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27441%27%20cy%3D%27309%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E4%3C/text%3E%3C/svg%3E"
+                            ><img
+                                src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28108%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28158%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27441%27%20cy%3D%27309%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E4%3C/text%3E%3C/svg%3E"
+                                alt="Picture 4"
+                                width="600"
+                                height="600"
+                                loading="lazy"
+                        /></a>
+                    </li>
+                    <li class="swg-item">
+                        <a
+                            class="swg-link"
+                            href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28144%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28194%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27238%27%20cy%3D%27362%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E5%3C/text%3E%3C/svg%3E"
+                            ><img
+                                src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28144%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28194%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27238%27%20cy%3D%27362%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E5%3C/text%3E%3C/svg%3E"
+                                alt="Picture 5"
+                                width="600"
+                                height="600"
+                                loading="lazy"
+                        /></a>
+                    </li>
+                    <li class="swg-item">
+                        <a
+                            class="swg-link"
+                            href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28180%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28230%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27335%27%20cy%3D%27415%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E6%3C/text%3E%3C/svg%3E"
+                            ><img
+                                src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28180%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28230%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27335%27%20cy%3D%27415%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E6%3C/text%3E%3C/svg%3E"
+                                alt="Picture 6"
+                                width="600"
+                                height="600"
+                                loading="lazy"
+                        /></a>
+                    </li>
+                    <li class="swg-item">
+                        <a
+                            class="swg-link"
+                            href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28216%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28266%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27432%27%20cy%3D%27168%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E7%3C/text%3E%3C/svg%3E"
+                            ><img
+                                src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28216%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28266%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27432%27%20cy%3D%27168%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E7%3C/text%3E%3C/svg%3E"
+                                alt="Picture 7"
+                                width="600"
+                                height="600"
+                                loading="lazy"
+                        /></a>
+                    </li>
+                    <li
+                        class="swg-item"
+                        style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs2: 1; --swg-hs3: 1; --swg-hs4: 1"
+                    >
+                        <a
+                            class="swg-link"
+                            href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28251%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28302%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27229%27%20cy%3D%27221%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E8%3C/text%3E%3C/svg%3E"
+                            ><img
+                                src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28251%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28302%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27229%27%20cy%3D%27221%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E8%3C/text%3E%3C/svg%3E"
+                                alt="Picture 8"
+                                width="600"
+                                height="600"
+                                loading="lazy"
+                        /></a>
+                    </li>
+                    <li
+                        class="swg-item"
+                        style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs2: 1; --swg-hs3: 1; --swg-hs4: 1"
+                    >
+                        <a
+                            class="swg-link"
+                            href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28288%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28338%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27326%27%20cy%3D%27274%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E9%3C/text%3E%3C/svg%3E"
+                            ><img
+                                src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28288%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%28338%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27326%27%20cy%3D%27274%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E9%3C/text%3E%3C/svg%3E"
+                                alt="Picture 9"
+                                width="600"
+                                height="600"
+                                loading="lazy"
+                        /></a>
+                    </li>
+                    <li
+                        class="swg-item"
+                        style="--swg-hs0: 1; --swg-hs1: 1; --swg-hs2: 1; --swg-hs3: 1; --swg-hs4: 1"
+                    >
+                        <a
+                            class="swg-link"
+                            href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28324%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2814%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27423%27%20cy%3D%27327%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E10%3C/text%3E%3C/svg%3E"
+                            ><img
+                                src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%27600%27%20height%3D%27600%27%3E%3Cdefs%3E%3ClinearGradient%20id%3D%27g%27%20x1%3D%270%27%20y1%3D%270%27%20x2%3D%271%27%20y2%3D%271%27%3E%3Cstop%20offset%3D%270%27%20stop-color%3D%27hsl%28324%2C70%25%2C55%25%29%27/%3E%3Cstop%20offset%3D%271%27%20stop-color%3D%27hsl%2814%2C75%25%2C30%25%29%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%27600%27%20height%3D%27600%27%20fill%3D%27url%28%23g%29%27/%3E%3Ccircle%20cx%3D%27423%27%20cy%3D%27327%27%20r%3D%2790%27%20fill%3D%27white%27%20fill-opacity%3D%27.35%27/%3E%3Ctext%20x%3D%27300%27%20y%3D%27350%27%20font-size%3D%27160%27%20text-anchor%3D%27middle%27%20fill%3D%27white%27%20font-family%3D%27sans-serif%27%3E10%3C/text%3E%3C/svg%3E"
+                                alt="Picture 10"
+                                width="600"
+                                height="600"
+                                loading="lazy"
+                        /></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </body>
+</html>

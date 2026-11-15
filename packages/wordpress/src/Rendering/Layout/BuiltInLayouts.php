@@ -18,6 +18,7 @@ final class BuiltInLayouts {
 		$registry->register( new CarouselLayout() );
 		$registry->register( new FocusLayout() );
 		$registry->register( new GridLayout() );
+		$registry->register( new HoneycombLayout() );
 		$registry->register( new JustifiedLayout() );
 		$registry->register( new MasonryLayout() );
 		$registry->register( new MosaicLayout() );

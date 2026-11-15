@@ -1,1 +1,181 @@
-/* sw-gallery: `honeycomb` layout styles (imported by layouts.css; filled by the layout's own work). */
+/*
+ * Honeycomb (L-07): hexagon (or diamond) cells in half-cell offset, interlocking rows. Pure CSS, no JavaScript.
+ *
+ * The list is a grid of `columns` tracks, each `container / (columns + 0.5)` wide (half a cell stays free); items of
+ * odd rows are pushed by half a cell with `margin-inline-start: 50%` (percent of the grid area = one cell). Which items
+ * sit in odd rows depends on the column count of the current breakpoint, so the PHP view writes `--swg-hs0..4:1` on
+ * exactly those items (0 base, 1 sm, 2 md, 3 lg, 4 xl; the media queries of layouts.css) and the stylesheet reads the
+ * variable of the active breakpoint. A partly filled last row keeps the offset and starts at the inline start (RTL
+ * mirrors: the margin is logical).
+ * Geometry (cell width w = container / (columns + 0.5)):
+ *   hexagon (pointy top): height = w * 1.1547, rows overlap by a quarter of the height (pitch 0.75)
+ *   diamond:              height = w,          rows overlap by half the height   (pitch 0.5)
+ * A percentage margin of a grid item resolves against its grid area (= w), so the overlap is a negative block-end
+ * margin in percent. The gap shrinks the cell inside its slot (padding): hexagon x = gap / 2 and y = gap * 0.57735 (a
+ * regular hexagon has height = 1.1547 * width), diamond gap * 0.7071 both ways, so the visible gutter is uniform.
+ * The shape is a clip-path on the link; the lift (shadow, focus ring) is a drop-shadow filter on the item, outside the
+ * clip. Below 480px container width (and without container queries) the list is a plain two column grid.
+ */
+.swg-gallery.swg-layout-honeycomb {
+  --swg-hc-ar: 1.1547;
+  --swg-hc-pitch: 0.75;
+  --swg-hc-pad-x: calc(var(--swg-gap, 6px) * 0.5);
+  --swg-hc-pad-y: calc(var(--swg-gap, 6px) * 0.57735);
+  --swg-hc-clip: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+
+  container: swg-honeycomb / inline-size;
+}
+
+.swg-gallery.swg-layout-honeycomb.swg-honeycomb-diamond {
+  --swg-hc-ar: 1;
+  --swg-hc-pitch: 0.5;
+  --swg-hc-pad-x: calc(var(--swg-gap, 6px) * 0.7071);
+  --swg-hc-pad-y: calc(var(--swg-gap, 6px) * 0.7071);
+  --swg-hc-clip: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.swg-gallery.swg-layout-honeycomb > .swg-items {
+  --swg-hc-cols: var(--swg-col-0);
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--swg-gap, 6px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swg-gallery.swg-layout-honeycomb .swg-item {
+  --swg-hc-odd: var(--swg-hs0, 0);
+}
+
+.swg-gallery.swg-layout-honeycomb .swg-link img {
+  aspect-ratio: 1;
+}
+
+@media (min-width: 576px) {
+  .swg-gallery.swg-layout-honeycomb > .swg-items {
+    --swg-hc-cols: var(--swg-col-1);
+  }
+
+  .swg-gallery.swg-layout-honeycomb .swg-item {
+    --swg-hc-odd: var(--swg-hs1, 0);
+  }
+}
+
+@media (min-width: 768px) {
+  .swg-gallery.swg-layout-honeycomb > .swg-items {
+    --swg-hc-cols: var(--swg-col-2);
+  }
+
+  .swg-gallery.swg-layout-honeycomb .swg-item {
+    --swg-hc-odd: var(--swg-hs2, 0);
+  }
+}
+
+@media (min-width: 1024px) {
+  .swg-gallery.swg-layout-honeycomb > .swg-items {
+    --swg-hc-cols: var(--swg-col-3);
+  }
+
+  .swg-gallery.swg-layout-honeycomb .swg-item {
+    --swg-hc-odd: var(--swg-hs3, 0);
+  }
+}
+
+@media (min-width: 1280px) {
+  .swg-gallery.swg-layout-honeycomb > .swg-items {
+    --swg-hc-cols: var(--swg-col-4);
+  }
+
+  .swg-gallery.swg-layout-honeycomb .swg-item {
+    --swg-hc-odd: var(--swg-hs4, 0);
+  }
+}
+
+@container swg-honeycomb (min-width: 480px) {
+  .swg-gallery.swg-layout-honeycomb > .swg-items {
+    grid-template-columns: repeat(var(--swg-hc-cols), calc(100% / (var(--swg-hc-cols) + 0.5)));
+    gap: 0;
+
+    /* The last row sticks out by the overlap of the rows: reserve it (percent of the list width). */
+    padding-block-end: calc(
+      100% * var(--swg-hc-ar) * (1 - var(--swg-hc-pitch)) / (var(--swg-hc-cols) + 0.5)
+    );
+  }
+
+  .swg-gallery.swg-layout-honeycomb .swg-item {
+    inline-size: 100%;
+    margin-inline-start: calc(var(--swg-hc-odd) * 50%);
+    aspect-ratio: calc(1 / var(--swg-hc-ar));
+    margin-block-end: calc(-100% * var(--swg-hc-ar) * (1 - var(--swg-hc-pitch)));
+    padding-block: var(--swg-hc-pad-y);
+    padding-inline: var(--swg-hc-pad-x);
+    position: relative;
+    flex-direction: row;
+  }
+
+  .swg-gallery.swg-layout-honeycomb .swg-item:hover,
+  .swg-gallery.swg-layout-honeycomb .swg-item:focus-within {
+    z-index: 2;
+  }
+
+  .swg-gallery.swg-layout-honeycomb .swg-item:hover {
+    filter: drop-shadow(0 6px 8px rgb(0 0 0 / 45%));
+  }
+
+  /* The ring follows the shape: stacked hard shadows around the clipped link (outside the clip, so it is not cut). */
+  .swg-gallery.swg-layout-honeycomb .swg-item:has(.swg-link:focus-visible) {
+    filter: drop-shadow(3px 0 0 Highlight) drop-shadow(-3px 0 0 Highlight)
+      drop-shadow(0 3px 0 Highlight) drop-shadow(0 -3px 0 Highlight);
+  }
+
+  .swg-gallery.swg-layout-honeycomb .swg-link {
+    position: relative;
+    flex: 1;
+    min-inline-size: 0;
+    border-radius: 0;
+    clip-path: var(--swg-hc-clip);
+  }
+
+  .swg-gallery.swg-layout-honeycomb .swg-link:focus-visible {
+    outline: none;
+  }
+
+  .swg-gallery.swg-layout-honeycomb .swg-link img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    aspect-ratio: auto;
+  }
+
+  .swg-gallery.swg-layout-honeycomb .swg-caption {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .swg-gallery.swg-layout-honeycomb .swg-item {
+      transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
+    }
+
+    .swg-gallery.swg-layout-honeycomb .swg-item:hover,
+    .swg-gallery.swg-layout-honeycomb .swg-item:focus-within {
+      transform: translateY(-3px) scale(1.05);
+    }
+
+    .swg-gallery.swg-layout-honeycomb .swg-link:hover img,
+    .swg-gallery.swg-layout-honeycomb .swg-link:focus-visible img {
+      transform: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .swg-gallery.swg-layout-honeycomb .swg-link:focus-visible {
+      outline: 3px solid Highlight;
+      clip-path: none;
+    }
+  }
+}
