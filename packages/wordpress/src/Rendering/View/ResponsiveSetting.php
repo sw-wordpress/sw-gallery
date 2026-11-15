@@ -61,6 +61,26 @@ final class ResponsiveSetting {
 	}
 
 	/**
+	 * Value at every breakpoint: a breakpoint without its own value inherits the previous one (`base` first).
+	 *
+	 * @param mixed $value    Raw setting (integer or object keyed by breakpoint).
+	 * @param int   $fallback Fallback for `base`.
+	 * @param int   $min      Lower bound.
+	 * @param int   $max      Upper bound.
+	 * @return non-empty-array<string, int>
+	 */
+	public static function effective( mixed $value, int $fallback, int $min, int $max ): array {
+		$set       = self::integers( $value, $fallback, $min, $max );
+		$current   = $set['base'];
+		$effective = array( 'base' => $current );
+		foreach ( self::BREAKPOINTS as $breakpoint ) {
+			$current                  = $set[ $breakpoint ] ?? $current;
+			$effective[ $breakpoint ] = $current;
+		}
+		return $effective;
+	}
+
+	/**
 	 * Custom property declarations, e.g. `--swg-columns:2;--swg-columns-md:4;` (trailing semicolon). The base value is
 	 * always written so the stylesheet default never depends on the theme.
 	 *

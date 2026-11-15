@@ -1,1 +1,188 @@
-/* sw-gallery: `jigsaw` layout styles (imported by layouts.css; filled by the layout's own work). */
+/*
+ * Jigsaw (L-04): a uniform grid whose tiles interlock like puzzle pieces. CSS and one inline SVG, no JavaScript.
+ *
+ * The PHP view writes one `<clipPath clipPathUnits="objectBoundingBox">` per edge combination into a zero sized inline
+ * SVG (ids `<instance>-jc<code>`) and, per item, `--swg-cp0..4:url(#...)` for the breakpoints (0 base, 1 sm, 2 md, 3
+ * lg, 4 xl; the media queries of layouts.css) where the clip differs: the rows of the puzzle depend on the column
+ * count, so tabs and blanks are computed per column count. The gallery carries `--swg-tab` (tab depth in percent of the
+ * piece width), `--swg-jr` (piece width / height) and `--swg-jaspect` (the same as an aspect-ratio value).
+ * Geometry: the grid slot is the piece without its tabs. The link is larger than the slot by the tab depth d on every
+ * side (an absolutely positioned box with negative insets: d = tab% of the slot width horizontally and tab% * ratio of
+ * the slot height vertically) and clipped to the puzzle outline, so a tab reaches into the neighbour's blank. The image
+ * covers the whole box. Tabs are drawn for a left to right page; on a right to left page the piece (and its image) is
+ * mirrored with scaleX(-1), selected by a `dir="rtl"` ancestor (WordPress sets it on `<html>`; `:dir()` is not
+ * available in the build target). The list clips its overflow (the tab box at the outer edges is transparent anyway),
+ * so nothing widens the page. The lift (shadow) and the focus ring (stacked hard shadows) are drop-shadow filters on the
+ * item, outside the clip. Below 480px container width (and without container queries) the list is a plain two column
+ * grid with rounded corners.
+ */
+.swg-gallery.swg-layout-jigsaw {
+  container: swg-jigsaw / inline-size;
+}
+
+.swg-gallery.swg-layout-jigsaw > .swg-jigsaw-defs {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.swg-gallery.swg-layout-jigsaw > .swg-items {
+  --swg-jg-cols: var(--swg-col-0);
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: max(var(--swg-gap, 0px), 4px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swg-gallery.swg-layout-jigsaw .swg-item {
+  --swg-jp0: var(--swg-cp0);
+  --swg-jp1: var(--swg-cp1, var(--swg-jp0));
+  --swg-jp2: var(--swg-cp2, var(--swg-jp1));
+  --swg-jp3: var(--swg-cp3, var(--swg-jp2));
+  --swg-jp4: var(--swg-cp4, var(--swg-jp3));
+  --swg-jp: var(--swg-jp0);
+}
+
+.swg-gallery.swg-layout-jigsaw .swg-link {
+  border-radius: 8px;
+}
+
+.swg-gallery.swg-layout-jigsaw .swg-link img {
+  aspect-ratio: var(--swg-jaspect, 1);
+}
+
+@media (min-width: 576px) {
+  .swg-gallery.swg-layout-jigsaw > .swg-items {
+    --swg-jg-cols: var(--swg-col-1);
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-item {
+    --swg-jp: var(--swg-jp1);
+  }
+}
+
+@media (min-width: 768px) {
+  .swg-gallery.swg-layout-jigsaw > .swg-items {
+    --swg-jg-cols: var(--swg-col-2);
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-item {
+    --swg-jp: var(--swg-jp2);
+  }
+}
+
+@media (min-width: 1024px) {
+  .swg-gallery.swg-layout-jigsaw > .swg-items {
+    --swg-jg-cols: var(--swg-col-3);
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-item {
+    --swg-jp: var(--swg-jp3);
+  }
+}
+
+@media (min-width: 1280px) {
+  .swg-gallery.swg-layout-jigsaw > .swg-items {
+    --swg-jg-cols: var(--swg-col-4);
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-item {
+    --swg-jp: var(--swg-jp4);
+  }
+}
+
+@container swg-jigsaw (min-width: 480px) {
+  .swg-gallery.swg-layout-jigsaw > .swg-items {
+    grid-template-columns: repeat(var(--swg-jg-cols), minmax(0, 1fr));
+    gap: var(--swg-gap, 0px);
+    overflow: clip;
+    overflow-clip-margin: 16px;
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-item {
+    position: relative;
+    aspect-ratio: var(--swg-jaspect, 1);
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-item:hover,
+  .swg-gallery.swg-layout-jigsaw .swg-item:focus-within {
+    z-index: 2;
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-item:hover {
+    filter: drop-shadow(0 6px 7px rgb(0 0 0 / 50%));
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-item:has(.swg-link:focus-visible) {
+    filter: drop-shadow(3px 0 0 Highlight) drop-shadow(-3px 0 0 Highlight) drop-shadow(0 3px 0 Highlight)
+      drop-shadow(0 -3px 0 Highlight);
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-link {
+    position: absolute;
+    inset: calc(var(--swg-tab) * var(--swg-jr) * -1%) calc(var(--swg-tab) * -1%);
+    border-radius: 0;
+    clip-path: var(--swg-jp);
+    overflow: visible;
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-link:focus-visible {
+    outline: none;
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-link img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    aspect-ratio: auto;
+  }
+
+  [dir='rtl'] .swg-gallery.swg-layout-jigsaw .swg-link,
+  [dir='rtl'] .swg-gallery.swg-layout-jigsaw .swg-link img,
+  .swg-gallery.swg-layout-jigsaw[dir='rtl'] .swg-link,
+  .swg-gallery.swg-layout-jigsaw[dir='rtl'] .swg-link img {
+    transform: scaleX(-1);
+  }
+
+  [dir='rtl'] .swg-gallery.swg-layout-jigsaw .swg-link:hover img,
+  [dir='rtl'] .swg-gallery.swg-layout-jigsaw .swg-link:focus-visible img,
+  .swg-gallery.swg-layout-jigsaw[dir='rtl'] .swg-link:hover img,
+  .swg-gallery.swg-layout-jigsaw[dir='rtl'] .swg-link:focus-visible img {
+    transform: scaleX(-1);
+  }
+
+  .swg-gallery.swg-layout-jigsaw .swg-caption {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .swg-gallery.swg-layout-jigsaw .swg-link:hover img,
+    .swg-gallery.swg-layout-jigsaw .swg-link:focus-visible img {
+      transform: none;
+    }
+
+    .swg-gallery.swg-layout-jigsaw .swg-item {
+      transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
+    }
+
+    .swg-gallery.swg-layout-jigsaw .swg-item:hover,
+    .swg-gallery.swg-layout-jigsaw .swg-item:focus-within {
+      transform: translateY(-3px) scale(1.04);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .swg-gallery.swg-layout-jigsaw .swg-link:focus-visible {
+      outline: 3px solid Highlight;
+      clip-path: none;
+    }
+  }
+}

@@ -90,7 +90,7 @@ final class HoneycombLayout implements GalleryLayoutInterface, ImageHintsProvide
 			return '';
 		}
 		$values  = $request->settings->values;
-		$columns = self::effective_columns( $values['columns'] ?? null );
+		$columns = self::columns( $values['columns'] ?? null );
 		$items   = '';
 		foreach ( $request->items as $index => $item ) {
 			$items .= ImageMarkup::lightbox_item( $item, self::offset_style( $index, $columns ) );
@@ -112,7 +112,7 @@ final class HoneycombLayout implements GalleryLayoutInterface, ImageHintsProvide
 	 * breakpoints are the media queries of the stylesheet, `100vw` overestimates in narrow containers.
 	 */
 	public function imageHints( GallerySettings $settings ): ImageHints {
-		$columns = self::effective_columns( $settings->values['columns'] ?? null );
+		$columns = self::columns( $settings->values['columns'] ?? null );
 		$sizes   = array();
 		foreach ( $columns as $breakpoint => $count ) {
 			$sizes[ $breakpoint ] = sprintf( 'calc(100vw / %d.5)', $count );
@@ -126,20 +126,11 @@ final class HoneycombLayout implements GalleryLayoutInterface, ImageHintsProvide
 	}
 
 	/**
-	 * Effective column count at every breakpoint (a breakpoint without its own value inherits the previous one).
-	 *
 	 * @param mixed $value Raw `columns` setting.
 	 * @return non-empty-array<string, int>
 	 */
-	private static function effective_columns( mixed $value ): array {
-		$set       = ResponsiveSetting::integers( $value, self::DEFAULT_COLUMNS, self::MIN_COLUMNS, self::MAX_COLUMNS );
-		$current   = $set['base'];
-		$effective = array();
-		foreach ( ResponsiveSetting::BREAKPOINTS as $breakpoint ) {
-			$current                  = $set[ $breakpoint ] ?? $current;
-			$effective[ $breakpoint ] = $current;
-		}
-		return $effective;
+	private static function columns( mixed $value ): array {
+		return ResponsiveSetting::effective( $value, self::DEFAULT_COLUMNS, self::MIN_COLUMNS, self::MAX_COLUMNS );
 	}
 
 	/**
