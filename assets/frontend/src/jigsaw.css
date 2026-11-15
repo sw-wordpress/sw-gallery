@@ -119,8 +119,8 @@
   }
 
   .swg-gallery.swg-layout-jigsaw .swg-item:has(.swg-link:focus-visible) {
-    filter: drop-shadow(3px 0 0 Highlight) drop-shadow(-3px 0 0 Highlight) drop-shadow(0 3px 0 Highlight)
-      drop-shadow(0 -3px 0 Highlight);
+    filter: drop-shadow(3px 0 0 Highlight) drop-shadow(-3px 0 0 Highlight)
+      drop-shadow(0 3px 0 Highlight) drop-shadow(0 -3px 0 Highlight);
   }
 
   .swg-gallery.swg-layout-jigsaw .swg-link {
