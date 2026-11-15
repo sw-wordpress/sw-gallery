@@ -31,21 +31,25 @@ final class JigsawEdges
     public static function codes(int $count, int $columns, int $seed): array
     {
         $columns = max(1, $columns);
-        $sides = array_fill(0, max(0, $count), [self::FLAT, self::FLAT, self::FLAT, self::FLAT]);
+        $top = $right = $bottom = $left = array_fill(0, max(0, $count), self::FLAT);
         for ($index = 0; $index < $count; ++$index) {
-            // [top, right, bottom, left]
             if ($index % $columns < $columns - 1 && $index + 1 < $count) {
                 $out = self::bit($seed, 'r', $index);
-                $sides[$index][1] = $out ? self::OUT : self::IN;
-                $sides[$index + 1][3] = $out ? self::IN : self::OUT;
+                $right[$index] = $out ? self::OUT : self::IN;
+                $left[$index + 1] = $out ? self::IN : self::OUT;
             }
             if ($index + $columns < $count) {
                 $out = self::bit($seed, 'b', $index);
-                $sides[$index][2] = $out ? self::OUT : self::IN;
-                $sides[$index + $columns][0] = $out ? self::IN : self::OUT;
+                $bottom[$index] = $out ? self::OUT : self::IN;
+                $top[$index + $columns] = $out ? self::IN : self::OUT;
             }
         }
-        return array_map(static fn (array $s): int => $s[0] + 3 * $s[1] + 9 * $s[2] + 27 * $s[3], $sides);
+        $codes = [];
+        for ($index = 0; $index < $count; ++$index) {
+            $codes[] = $top[$index] + 3 * $right[$index] + 9 * $bottom[$index] + 27 * $left[$index];
+        }
+
+        return $codes;
     }
 
     /**
