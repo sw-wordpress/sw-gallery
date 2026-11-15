@@ -24,9 +24,15 @@
  * Properties named --swg-col-<n> and --swg-rh-<n> are internal and may change.
  */
 
+@import './bubbles.css';
 @import './carousel.css';
 @import './focus.css';
+@import './honeycomb.css';
+@import './jigsaw.css';
+@import './magazine.css';
 @import './mosaic.css';
+@import './scattered.css';
+@import './shattered.css';
 
 .swg-gallery {
   --swg-col-0: var(--swg-columns, 3);

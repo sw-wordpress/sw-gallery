@@ -12,7 +12,7 @@ Public frontend assets (npm project, vanilla TypeScript, no runtime dependencies
 | `frontend/fixtures`    | `grid.html`, `justified.html` (CSS only, no build needed), `masonry.html` (needs `npx vite --open /frontend/fixtures/masonry.html` for the script) |
 | `build/` (git-ignored) | Generated output with `.vite/manifest.json`                                                                                                        |
 
-Commands (Node from `.nvmrc`): `npm ci`, `npm run typecheck | lint | format:check | test:coverage | build`. `test:coverage` fails unless line coverage is strictly > 80 %; `build` (`scripts/build-all.mjs`: one Vite run per entry, manifests merged) also checks the manifest, that the script is classic, that no sourcemap exists and the budgets (lightbox JS 12 KB gzip, masonry JS 2 KB gzip, each CSS 4 KB gzip). `build:only` builds without the checks.
+Commands (Node from `.nvmrc`): `npm ci`, `npm run typecheck | lint | format:check | test:coverage | build`. `test:coverage` fails unless line coverage is strictly > 80 %; `build` (`scripts/build-all.mjs`: one Vite run per entry, manifests merged) also checks the manifest, that the script is classic, that no sourcemap exists and the budgets (lightbox JS 12 KB gzip, masonry JS 2 KB gzip, each CSS 10 KB gzip). `build:only` builds without the checks.
 
 ## Build output and manifest (read by the PHP enqueue code)
 

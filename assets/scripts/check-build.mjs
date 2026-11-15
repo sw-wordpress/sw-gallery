@@ -5,7 +5,9 @@ import { gzipSync } from 'node:zlib';
 const BUDGET_JS_GZIP = 12 * 1024;
 const BUDGET_LAYOUT_JS_GZIP = 2 * 1024; // each layout script (masonry, carousel, focus)
 const LAYOUT_SCRIPTS = ['masonry', 'carousel', 'focus'];
-const BUDGET_CSS_GZIP = 4 * 1024;
+// One merged stylesheet carries every layout (each ~0.5-1 KB gzip). Raised from 4 KB when the layout count passed ten;
+// splitting per layout (load only what a page renders) is the next step if this grows again.
+const BUDGET_CSS_GZIP = 10 * 1024;
 const dir = new URL('../build/', import.meta.url);
 const fail = (msg) => {
     console.error(`FAIL: ${msg}`);

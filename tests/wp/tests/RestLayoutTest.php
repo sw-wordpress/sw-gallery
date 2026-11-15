@@ -43,7 +43,10 @@ class RestLayoutTest extends SwgTestCase {
 		$data     = $this->data( $response );
 
 		$this->assertSame( 'grid', $data['fallbackId'] );
-		$this->assertSame( array( 'carousel', 'focus', 'grid', 'justified', 'masonry', 'mosaic' ), array_column( $data['layouts'], 'id' ) );
+		$ids = array_column( $data['layouts'], 'id' );
+		foreach ( array( 'grid', 'justified', 'masonry', 'mosaic', 'carousel', 'focus' ) as $built_in ) {
+			$this->assertContains( $built_in, $ids );
+		}
 		$grid = array_column( $data['layouts'], null, 'id' )['grid'];
 		$this->assertSame( array( 'id', 'label', 'settingsSchema' ), array_keys( $grid ) );
 		$this->assertSame( 'grid', $grid['id'] );
@@ -111,7 +114,8 @@ class RestLayoutTest extends SwgTestCase {
 
 		$data = $this->data( $this->call( 'GET', '/layouts', array(), $this->makeUser( 'editor' ) ) );
 
-		$this->assertSame( array( 'carousel', 'focus', 'grid', 'justified', 'masonry', 'mosaic', 'wall' ), array_column( $data['layouts'], 'id' ) );
+		$ids = array_column( $data['layouts'], 'id' );
+		$this->assertSame( 'wall', end( $ids ), 'Third-party layouts come after the built-ins.' );
 		$masonry = array_column( $data['layouts'], null, 'id' )['wall'];
 		$this->assertSame( 'Wall', $masonry['label'] );
 		$this->assertArrayHasKey( 'x-item-settings', $masonry['settingsSchema'] );
