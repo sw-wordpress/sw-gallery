@@ -568,11 +568,16 @@ test('RTL mirrors the plan: the mirrored centre of every shard hits the same sha
       polygonArea((rtl.shards[0] as Shard).poly) - polygonArea((ltr.shards[0] as Shard).poly),
     ),
   ).toBeLessThan(2);
-  const image = await page
-    .locator('.swg-gallery .swg-link img')
-    .first()
-    .evaluate((el) => getComputedStyle(el).transform);
-  expect(image, 'the picture itself is mirrored back').toBe('matrix(-1, 0, 0, 1, 0, 0)');
+  await expect
+    .poll(
+      () =>
+        page
+          .locator('.swg-gallery .swg-link img')
+          .first()
+          .evaluate((el) => getComputedStyle(el).transform),
+      { message: 'the picture itself is mirrored back' },
+    )
+    .toBe('matrix(-1, 0, 0, 1, 0, 0)');
   await shot(page, 'shattered-rtl');
   await context.close();
 });
@@ -739,15 +744,17 @@ test('a gallery with extreme emphasis keeps healthy shards', async ({ browser })
   }
 });
 
-test('twenty-six shards with grout 5 and a 3:2 wide shape', async ({ browser }) => {
+test('the first page (24 shards) of a 26 picture gallery with grout 5 and a 3:2 wide shape', async ({
+  browser,
+}) => {
   const context = await visitor(browser, { viewport: { width: 1440, height: 1100 } });
   const page = await context.newPage();
   await page.goto(urls.many as string);
   await widen(page);
   await loadAll(page);
   const result = await geometry(page);
-  expect(result.ar).toBe('1.6');
-  expect(result.shards).toHaveLength(26);
+  expect(result.ar).toBe('1.5');
+  expect(result.shards, 'the first page holds 24').toHaveLength(24);
   expect(result.overflow).toBe(false);
   await shot(page, 'shattered-many-1440');
   await context.close();
