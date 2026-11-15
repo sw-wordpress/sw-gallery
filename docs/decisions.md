@@ -179,4 +179,3 @@ Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und
 | Shattered | Seeded blue-noise sites, power-diagram weights for emphasis, grout baked in at reference widths 600/880/1200 px, `variation` re-seeds; reading order is not preserved geometrically (about 10 % of adjacent pairs inverted), DOM order is. |
 | Scattered | `overlap` is a maximum: the planner lowers it so every print stays >= 60 % visible in every grid the CSS can show (narrow, touch included); stacking is a seeded permutation, DOM order unchanged. |
 | Bubbles / jigsaw / honeycomb | Bubbles reuse the plan markup contract (circles as bounding boxes, `border-radius: 50%`); jigsaw edge codes per viewport breakpoint with one inline SVG per gallery (ids prefixed by the instance); honeycomb writes per-item row flags per breakpoint instead of `repeat(calc())`. |
-\n

@@ -95,4 +95,6 @@ Public contracts follow semantic versioning (`MAJOR.MINOR.PATCH`) from 1.0 on. "
 
 Layouts may read `LayoutRenderRequest::$revision` (seed) and `RenderItem::$settings` (the item's `x-item-settings` values). Element ids in layout markup must start with `<instance id>-` (the render cache rewrites the instance id on hits). Layout scripts are registered through the `Frontend/LayoutScripts` table; integer enums with `x-enum-titles` render as selects in the settings form.
 
-\n\nPlan layouts emit a bounding box plus an optional `clip-path` custom property per container variant (`--swg-{n|m|w}-*`); `Rendering/View/PlanValues` and `CssNumber` format validated numbers for `style`. Asymmetric layouts must handle RTL themselves (see the decisions table: `dir="rtl"` attribute). SVG ids and `url(#...)` references must start with `<instance id>-`.\n\n
+
+
+Plan layouts emit a bounding box plus an optional `clip-path` custom property per container variant (`--swg-{n|m|w}-*`); `Rendering/View/PlanValues` and `CssNumber` format validated numbers for `style`. Asymmetric layouts must handle RTL themselves (see the decisions table: `dir="rtl"` attribute). SVG ids and `url(#...)` references must start with `<instance id>-`.

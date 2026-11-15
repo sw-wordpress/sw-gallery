@@ -89,4 +89,3 @@
 - `magazine` (L-12: 18 row templates, cost-minimising DP over the whole page incl. the closing row, nested lists), `shattered` (L-01: weighted Voronoi/power diagram shards with grout and `variation`), `honeycomb` (L-07 hexagon/diamond), `jigsaw` (L-04: seeded interlocking tabs through one SVG of clip paths), `scattered` (L-10: tilted overlapping prints, every print >= 60 % visible by construction) and `bubbles` (L-08: circle packing, optional float).
 - Found while merging: in RTL the scattered offsets and tilt must mirror with the grid (otherwise the visibility guarantee breaks for some seeds): fixed with `--swg-m`.
 - State: 475 unit tests, 1554 WordPress tests (single + multisite), PHP coverage 97.8 %; assets 207 tests / 100 %; E2E 320 passed on the full run (+ the RTL fix verified three times without retries).
-\n
