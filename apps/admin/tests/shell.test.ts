@@ -192,3 +192,32 @@ describe('content width', () => {
     }
   });
 });
+
+describe('editor workspace navigation', () => {
+  it('starts compact, allows expansion and preserves the regular page preference', async () => {
+    const { wrapper, router } = await mountApp({ path: '/galleries/7' });
+    const shell = wrapper.find('.swg-shell');
+    const toggle = wrapper.find('.swg-rail__collapse');
+    expect(shell.classes()).toContain('swg-shell--editor');
+    expect(shell.classes()).toContain('swg-shell--collapsed');
+    expect(toggle.attributes('aria-expanded')).toBe('false');
+    await toggle.trigger('click');
+    expect(shell.classes()).not.toContain('swg-shell--collapsed');
+    expect(toggle.attributes('aria-expanded')).toBe('true');
+    expect(window.localStorage.getItem(RAIL_KEY)).toBeNull();
+    await router.push('/galleries');
+    await flushPromises();
+    expect(shell.classes()).not.toContain('swg-shell--editor');
+    expect(shell.classes()).not.toContain('swg-shell--collapsed');
+    await toggle.trigger('click');
+    expect(window.localStorage.getItem(RAIL_KEY)).toBe('1');
+    await router.push('/galleries/7');
+    await flushPromises();
+    // Expanding the editor has its own state; the list's collapsed preference stays stored.
+    expect(shell.classes()).not.toContain('swg-shell--collapsed');
+    await toggle.trigger('click');
+    expect(shell.classes()).toContain('swg-shell--collapsed');
+    expect(window.localStorage.getItem(RAIL_KEY)).toBe('1');
+    wrapper.unmount();
+  });
+});

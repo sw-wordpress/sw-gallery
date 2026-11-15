@@ -64,6 +64,8 @@ Catalogs `src/i18n/{en,de}.ts` (typed: `de` must match `en` at compile time). `t
 
 ## Gallery editor (`src/features/editor`, route `#/galleries/<id>`)
 
+**Workspace.** Above 900 px, the editor fills the viewport below the WordPress toolbar: compact header and image tools, a scrolling image grid and a separately scrolling 320 px settings panel. Navigation starts collapsed; expanding it does not change the preference on other pages. At 900 px and below, settings follow the grid in the normal page flow.
+
 **Staged editing model.** `model.ts` (pure) and `useGalleryEditor.ts` keep `base` (what the server last confirmed) and a local working copy. Removals, order, text overrides, cover, status, layout, sort mode and settings are _staged_ and only sent by "Save"; undo/redo (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, buttons) work on snapshots, "Discard changes" is itself undoable, a successful or partly successful save clears the history. Adding images (media modal, upload) is applied immediately because the server assigns the item ids; undo = remove the image.
 
 **Save order** (`buildPlan`): remove (batches of 500) → text overrides (one PATCH per item, changed fields only) → order (PUT with the complete remaining list) → gallery details (one PATCH, `settings` is the complete merged map; publishing last). Every response's `revision` becomes the next `expectedRevision` (chaining). A failure stops the pipeline, reports what was saved and what not, keeps the rest staged and re-syncs: if the server revision differs from the chained one, the conflict dialog opens.

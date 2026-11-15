@@ -5,6 +5,11 @@ Order is binding: M1 → M5 (S§14.4). No P1/P2 work before P0 (M1–M5) is comp
 Task IDs are stable identifiers; the list order inside a milestone is the execution order.
 Every task ships with tests, i18n (en/de), docs and passes the Definition of Done (S§12). Decisions referenced as D n are recorded in `docs/decisions.md`.
 
+## Editor workspace follow-up (2026-11-15)
+
+- [x] Compact sw-sliderman-style workspace: viewport layout, icon rail, header, image tools, independent settings scroll; narrow-screen stacking.
+- [ ] Stefan: practical acceptance of the updated editor (desktop, long settings, mobile, save/undo/preview).
+
 ## Open decisions (answer before the blocked task starts)
 
 None at the moment. Decided on 2026-11-10: D1–D13, F-01 (rejected), F-02, F-03, F-09, F-10 — see `docs/decisions.md`.

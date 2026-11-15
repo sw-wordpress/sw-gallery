@@ -709,6 +709,57 @@ test.describe('accessibility and screenshots', () => {
   });
 });
 
+test.describe('editor workspace', () => {
+  test.use({ storageState: authFile('administrator') });
+
+  test('fills the viewport with compact tools and independently scrolling settings', async ({
+    page,
+  }) => {
+    const gallery = await newGallery('Workspace', 6);
+    await page.setViewportSize({ width: 1500, height: 875 });
+    await openEditor(page, gallery);
+    await expect(root(page).locator('.swg-shell')).toHaveClass(/swg-shell--collapsed/);
+    const head = root(page).locator('.swg-ed__head');
+    const side = root(page).locator('.swg-ed__side');
+    const bounds = await root(page).locator('.swg-ed').boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(Math.abs(bounds!.y + bounds!.height - 875)).toBeLessThanOrEqual(2);
+    expect((await head.boundingBox())!.height).toBeLessThanOrEqual(60);
+    expect((await side.boundingBox())!.width).toBe(320);
+    expect((await grid(page).boundingBox())!.height).toBeGreaterThan(500);
+    await showLayoutPanel(page);
+    await expect(
+      root(page).getByRole('radio', { name: 'Layout & settings', exact: true }),
+    ).toBeChecked();
+    await expect.poll(() => side.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+    const headTop = (await head.boundingBox())!.y;
+    await side.evaluate((el) => {
+      el.scrollTop = el.scrollHeight;
+    });
+    expect((await head.boundingBox())!.y).toBe(headTop);
+    expect(await side.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBe(0);
+    await shot(page, 'gallery-editor-workspace');
+
+    await page.setViewportSize({ width: 375, height: 800 });
+    const mainBox = (await root(page).locator('.swg-ed__main').boundingBox())!;
+    const sideBox = (await side.boundingBox())!;
+    expect(sideBox.y).toBeGreaterThanOrEqual(mainBox.y + mainBox.height - 1);
+    await save(page).scrollIntoViewIfNeeded();
+    await expect(save(page)).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBe(0);
+    await shot(page, 'gallery-editor-workspace-mobile');
+  });
+});
+
 test.describe('editor uses the full content width', () => {
   test.use({ storageState: authFile('administrator') });
 

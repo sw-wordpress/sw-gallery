@@ -17,6 +17,15 @@ const route = useRoute();
 const router = useRouter();
 const fullWidth = computed(() => route.meta.fullWidth === true);
 const app = useAppStore();
+// The editor starts compact without changing the navigation preference on other pages.
+const editorRailExpanded = ref(false);
+const railCollapsed = computed(() =>
+  fullWidth.value ? !editorRailExpanded.value : app.railCollapsed,
+);
+function toggleRail(): void {
+  if (fullWidth.value) editorRailExpanded.value = !editorRailExpanded.value;
+  else app.toggleRail();
+}
 const can = (capability: string): boolean => hasCapability(getConfig(), capability);
 const version = getConfig().version;
 const main = ref<HTMLElement | null>(null);
@@ -99,7 +108,10 @@ watch(
 </script>
 
 <template>
-  <div class="swg-shell" :class="{ 'swg-shell--collapsed': app.railCollapsed }">
+  <div
+    class="swg-shell"
+    :class="{ 'swg-shell--collapsed': railCollapsed, 'swg-shell--editor': fullWidth }"
+  >
     <a href="#swg-main" class="swg-skip" @click.prevent="focusMain">{{ t('app.skipToContent') }}</a>
 
     <aside class="swg-rail" :aria-label="t('app.title')">
@@ -135,7 +147,7 @@ watch(
                 <q-icon :name="item.icon" size="22px" aria-hidden="true" />
                 <span class="swg-nav-link__label">{{ t(item.labelKey) }}</span>
                 <q-tooltip
-                  v-if="app.railCollapsed"
+                  v-if="railCollapsed"
                   anchor="center right"
                   self="center left"
                   :offset="[8, 0]"
@@ -171,12 +183,10 @@ watch(
           flat
           round
           dense
-          :icon="
-            app.railCollapsed ? 'r_keyboard_double_arrow_right' : 'r_keyboard_double_arrow_left'
-          "
-          :aria-label="app.railCollapsed ? t('app.expandNav') : t('app.collapseNav')"
-          :aria-expanded="app.railCollapsed ? 'false' : 'true'"
-          @click="app.toggleRail()"
+          :icon="railCollapsed ? 'r_keyboard_double_arrow_right' : 'r_keyboard_double_arrow_left'"
+          :aria-label="railCollapsed ? t('app.expandNav') : t('app.collapseNav')"
+          :aria-expanded="railCollapsed ? 'false' : 'true'"
+          @click="toggleRail"
         />
       </div>
     </aside>
@@ -367,9 +377,50 @@ watch(
   max-width: 1320px;
   margin-inline: auto;
 }
-/* Routes with meta.fullWidth (the gallery editor) use the whole content width; the side padding stays. */
+/* Editor workspace fills the available viewport; other routes keep the regular page shell. */
 .swg-main--full > * {
   max-width: none;
+}
+
+.swg-shell--editor .swg-main {
+  padding: 0;
+  min-height: 0;
+}
+.swg-shell--editor .swg-main > * {
+  margin-inline: 0;
+}
+@media (min-width: 901px) {
+  .swg-shell--editor {
+    height: calc(100dvh - var(--bar-h));
+    min-height: 0;
+    overflow: hidden;
+  }
+  .swg-shell--editor .swg-main {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .swg-shell--editor .swg-rail {
+    height: 100%;
+    min-height: 0;
+    top: 0;
+  }
+  .swg-shell--editor.swg-shell--collapsed {
+    --rail-w: 56px;
+  }
+  .swg-shell--editor.swg-shell--collapsed .swg-rail {
+    padding: 12px 6px;
+  }
+  .swg-shell--editor.swg-shell--collapsed .swg-rail__logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    box-shadow: none;
+  }
+  .swg-shell--editor.swg-shell--collapsed .swg-nav-link {
+    padding: 8px;
+    border-radius: 4px;
+  }
 }
 
 @media (max-width: 860px) {
