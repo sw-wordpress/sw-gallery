@@ -1,1 +1,176 @@
-/* sw-gallery: `shattered` layout styles (imported by layouts.css; filled by the layout's own work). */
+/*
+ * Shattered mosaic (L-01): the PHP view writes, per item and container variant, the bounding box of the shard in percent
+ * of the container (--swg-{n|m|w}-{x|y|w|h}) and its outline as a complete clip-path value in percent of that box
+ * (--swg-{n|m|w}-clip: polygon(...)); the container ratios are --swg-{n|m|w}-ar (width/height). The grout is already
+ * cut into the polygons. Variants follow the CONTAINER width (container query), not the viewport:
+ *   < 480px  plain 2 column grid (also the default for browsers without container queries)
+ *   >= 480px n (4:5)   >= 720px m (1:1)   >= 1024px w (16:10 or the `ratio` setting)
+ * Every tile is an abspos <li> that ignores the pointer; the clipped <a> receives it, so hit-testing, hover and focus
+ * follow the shard. clip-path also clips shadows and outlines, hence the lift and the focus ring are drop-shadow
+ * filters on the <li> (they follow the outline) plus an inner ring on the link for browsers without :has().
+ * RTL: the list is laid out left to right and mirrored as a whole with scaleX(-1) when an ancestor (or the gallery) has
+ * dir="rtl"; the pictures are mirrored back. Captions stay in the lightbox (plan mode). No logical inset properties:
+ * the build lowers them to :lang() rules that ignore dir.
+ */
+.swg-gallery.swg-layout-shattered {
+  container: swg-shattered / inline-size;
+}
+
+.swg-gallery.swg-layout-shattered > .swg-items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swg-gallery.swg-layout-shattered .swg-link img {
+  aspect-ratio: 1;
+  object-position: var(--swg-fx, 50%) var(--swg-fy, 50%);
+}
+
+@container swg-shattered (min-width: 480px) {
+  .swg-gallery.swg-layout-shattered > .swg-items {
+    --swg-ar: var(--swg-n-ar, 0.8);
+    display: block;
+    position: relative;
+    direction: ltr;
+    aspect-ratio: var(--swg-ar);
+  }
+
+  .swg-gallery.swg-layout-shattered .swg-item {
+    --swg-x: var(--swg-n-x, 0);
+    --swg-y: var(--swg-n-y, 0);
+    --swg-w: var(--swg-n-w, 100);
+    --swg-h: var(--swg-n-h, 100);
+    --swg-clip: var(--swg-n-clip);
+    position: absolute;
+    margin-inline-start: calc(var(--swg-x) * 1%);
+    inset-block-start: calc(var(--swg-y) * 1%);
+    inline-size: calc(var(--swg-w) * 1%);
+    block-size: calc(var(--swg-h) * 1%);
+    pointer-events: none;
+  }
+
+  .swg-gallery.swg-layout-shattered .swg-item:hover,
+  .swg-gallery.swg-layout-shattered .swg-item:focus-within {
+    z-index: 2;
+  }
+
+  .swg-gallery.swg-layout-shattered .swg-item:hover {
+    filter: drop-shadow(0 6px 9px rgb(0 0 0 / 45%));
+  }
+
+  .swg-gallery.swg-layout-shattered .swg-link {
+    position: relative;
+    flex: 1;
+    border-radius: 0;
+    clip-path: var(--swg-clip);
+    pointer-events: auto;
+  }
+
+  .swg-gallery.swg-layout-shattered .swg-link img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    aspect-ratio: auto;
+  }
+
+  /* clip-path clips the outline: an inner ring keeps a focus indicator everywhere, the outer one follows the shard. */
+  .swg-gallery.swg-layout-shattered .swg-link:focus-visible {
+    outline: none;
+  }
+
+  .swg-gallery.swg-layout-shattered .swg-link:focus-visible::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    outline: var(--swg-focus-ring, 3px solid Highlight);
+    outline-offset: -6px;
+    pointer-events: none;
+  }
+
+  .swg-gallery.swg-layout-shattered .swg-item:has(.swg-link:focus-visible) {
+    filter: drop-shadow(2px 0 0 Highlight) drop-shadow(-2px 0 0 Highlight)
+      drop-shadow(0 2px 0 Highlight) drop-shadow(0 -2px 0 Highlight);
+  }
+
+  .swg-gallery.swg-layout-shattered .swg-caption {
+    display: none;
+  }
+
+  [dir='rtl'] .swg-gallery.swg-layout-shattered > .swg-items,
+  .swg-gallery.swg-layout-shattered[dir='rtl'] > .swg-items {
+    transform: scaleX(-1);
+  }
+
+  [dir='rtl'] .swg-gallery.swg-layout-shattered .swg-link img,
+  .swg-gallery.swg-layout-shattered[dir='rtl'] .swg-link img {
+    transform: scaleX(-1);
+  }
+
+  .swg-gallery.swg-layout-shattered[dir='ltr'] > .swg-items {
+    transform: none;
+  }
+
+  .swg-gallery.swg-layout-shattered[dir='ltr'] .swg-link img {
+    transform: none;
+  }
+}
+
+@container swg-shattered (min-width: 720px) {
+  .swg-gallery.swg-layout-shattered > .swg-items {
+    --swg-ar: var(--swg-m-ar, 1);
+  }
+
+  .swg-gallery.swg-layout-shattered .swg-item {
+    --swg-x: var(--swg-m-x, 0);
+    --swg-y: var(--swg-m-y, 0);
+    --swg-w: var(--swg-m-w, 100);
+    --swg-h: var(--swg-m-h, 100);
+    --swg-clip: var(--swg-m-clip);
+  }
+}
+
+@container swg-shattered (min-width: 1024px) {
+  .swg-gallery.swg-layout-shattered > .swg-items {
+    --swg-ar: var(--swg-w-ar, 1.6);
+  }
+
+  .swg-gallery.swg-layout-shattered .swg-item {
+    --swg-x: var(--swg-w-x, 0);
+    --swg-y: var(--swg-w-y, 0);
+    --swg-w: var(--swg-w-w, 100);
+    --swg-h: var(--swg-w-h, 100);
+    --swg-clip: var(--swg-w-clip);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .swg-gallery.swg-layout-shattered .swg-item {
+    transition:
+      transform 0.2s ease,
+      filter 0.2s ease;
+  }
+
+  @container swg-shattered (min-width: 480px) {
+    .swg-gallery.swg-layout-shattered .swg-item:hover,
+    .swg-gallery.swg-layout-shattered .swg-item:has(.swg-link:focus-visible) {
+      transform: scale(var(--swg-shard-lift, 1.05));
+    }
+
+    .swg-gallery.swg-layout-shattered .swg-link:hover img,
+    .swg-gallery.swg-layout-shattered .swg-link:focus-visible img {
+      transform: scale(1.04);
+    }
+
+    [dir='rtl'] .swg-gallery.swg-layout-shattered .swg-link:hover img,
+    [dir='rtl'] .swg-gallery.swg-layout-shattered .swg-link:focus-visible img,
+    .swg-gallery.swg-layout-shattered[dir='rtl'] .swg-link:hover img,
+    .swg-gallery.swg-layout-shattered[dir='rtl'] .swg-link:focus-visible img {
+      transform: scaleX(-1) scale(1.04);
+    }
+  }
+}

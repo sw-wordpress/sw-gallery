@@ -149,3 +149,7 @@ Dialog (`role="dialog"`, `aria-modal`, no native `<dialog>`), siblings of the po
 - `frontend/src/carousel.ts` / `focus.ts`: classic IIFE scripts (`window.swgCarousel` / `window.swgFocus` = `{ init(root?), destroy(container) }`, idempotent), registered like masonry (manifest keys `frontend/src/carousel.ts`, `frontend/src/focus.ts`; budget 2 KB gzip each, currently about 1.6 and 1.5 KB). Styles: `carousel.css`, `focus.css`, imported by `layouts.css`.
 - Extra `data-swg-labels` keys (ignored by the lightbox): `carousel`, `stage`, `thumbnails`. Properties: `--swg-carousel-height[-sm|md|lg|xl]`, `--swg-stage-ratio`, `--swg-thumb-size`, `--swg-carousel-button-bg|fg`, `--swg-stage-bg`, `--swg-current-ring`.
 - Fixtures: `frontend/fixtures/carousel.html`, `focus.html` (CSS works from the file; `npx vite --open /frontend/fixtures/<name>.html` adds the script).
+
+## Shattered
+
+- `frontend/src/shattered.css` (CSS only, no script): per item `--swg-{n|m|w}-x|y|w|h|clip` (bounding box and `polygon()` of the shard), container `--swg-{n|m|w}-ar`; `--swg-fx|fy` focal point; optional `--swg-shard-lift` (hover scale, 1.05). Fixture: `frontend/fixtures/shattered.html` (CSS works from the file). Details: `docs/rendering.md` "Shattered mosaic".

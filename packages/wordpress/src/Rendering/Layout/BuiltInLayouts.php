@@ -24,5 +24,6 @@ final class BuiltInLayouts {
 		$registry->register( new MasonryLayout() );
 		$registry->register( new MosaicLayout() );
 		$registry->register( new ScatteredLayout() );
+		$registry->register( new ShatteredLayout() );
 	}
 }
