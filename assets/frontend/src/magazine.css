@@ -1,1 +1,264 @@
-/* sw-gallery: `magazine` layout styles (imported by layouts.css; filled by the layout's own work). */
+/*
+ * Magazine (L-12): rows like a photo book. The PHP view groups the items in stored order into rows (`li.swg-row`
+ * with a template class `swg-tpl-<id>`, the row index in `--swg-row`) and every item names its slot in
+ * `--swg-slot` (a validated area name a..e). Per row one CSS grid; the template rules below are generated from the
+ * core RowTemplate catalogue (RowTemplate::css(), compared by a unit test). Items are in reading order, so the DOM
+ * and Tab order equal the visual order; direction (RTL) mirrors the grids by itself.
+ *   container < 600px  every row is a plain two column stack (also the default without container queries)
+ *   container >= 600px template rows; the row height follows the width (aspect-ratio = 1200 / (rowHeight * factor)),
+ *                      so `rowHeight` is the height of a triptych row in a 1200px wide container and crops stay
+ *                      constant at any width.
+ * Custom properties: --swg-gap, --swg-thumb-radius, --swg-mag-h and --swg-mag-h-sm|md|lg|xl (row height, unitless
+ * pixels, set by the view), --swg-hf (height factor of a template, set below), --swg-fx/--swg-fy (focal point).
+ */
+.swg-gallery.swg-layout-magazine {
+  --swg-mh-0: var(--swg-mag-h, 320);
+  --swg-mh-1: var(--swg-mag-h-sm, var(--swg-mh-0));
+  --swg-mh-2: var(--swg-mag-h-md, var(--swg-mh-1));
+  --swg-mh-3: var(--swg-mag-h-lg, var(--swg-mh-2));
+  --swg-mh-4: var(--swg-mag-h-xl, var(--swg-mh-3));
+  --swg-mh: var(--swg-mh-0);
+
+  container: swg-magazine / inline-size;
+}
+
+@media (min-width: 576px) {
+  .swg-gallery.swg-layout-magazine {
+    --swg-mh: var(--swg-mh-1);
+  }
+}
+
+@media (min-width: 768px) {
+  .swg-gallery.swg-layout-magazine {
+    --swg-mh: var(--swg-mh-2);
+  }
+}
+
+@media (min-width: 1024px) {
+  .swg-gallery.swg-layout-magazine {
+    --swg-mh: var(--swg-mh-3);
+  }
+}
+
+@media (min-width: 1280px) {
+  .swg-gallery.swg-layout-magazine {
+    --swg-mh: var(--swg-mh-4);
+  }
+}
+
+.swg-gallery.swg-layout-magazine > .swg-items {
+  display: grid;
+  gap: var(--swg-gap, 8px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swg-gallery.swg-layout-magazine .swg-row {
+  min-inline-size: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swg-gallery.swg-layout-magazine .swg-row-items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--swg-gap, 8px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Stack: an odd number of pictures starts with a full width one, the rest are squares. */
+.swg-gallery.swg-layout-magazine .swg-row-items > .swg-item:first-child:nth-last-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.swg-gallery.swg-layout-magazine .swg-link img {
+  aspect-ratio: 1;
+  object-position: var(--swg-fx, 50%) var(--swg-fy, 50%);
+}
+
+.swg-gallery.swg-layout-magazine
+  .swg-row-items
+  > .swg-item:first-child:nth-last-child(odd)
+  .swg-link
+  img {
+  aspect-ratio: 3 / 2;
+}
+
+@container swg-magazine (min-width: 600px) {
+  .swg-gallery.swg-layout-magazine .swg-row-items {
+    aspect-ratio: calc(1200 / (var(--swg-mh) * var(--swg-hf, 1)));
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-row-items > .swg-item,
+  .swg-gallery.swg-layout-magazine .swg-row-items > .swg-item:first-child:nth-last-child(odd) {
+    grid-area: var(--swg-slot, auto);
+    min-block-size: 0;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-link {
+    position: relative;
+    flex: 1;
+    min-block-size: 0;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-link img,
+  .swg-gallery.swg-layout-magazine
+    .swg-row-items
+    > .swg-item:first-child:nth-last-child(odd)
+    .swg-link
+    img {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    aspect-ratio: auto;
+  }
+
+  /* The image is absolutely positioned and would cover the link's own outline: the ring is drawn on top of it. */
+  .swg-gallery.swg-layout-magazine .swg-link:focus-visible {
+    outline: none;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-link:focus-visible::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    outline: var(--swg-focus-ring, 3px solid Highlight);
+    outline-offset: -4px;
+    pointer-events: none;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-caption {
+    display: none;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-full > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'a';
+    --swg-hf: 1.875;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-panorama > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'a';
+    --swg-hf: 1.25;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-solo > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: '. a .';
+    --swg-hf: 2.25;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-duo > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'a b';
+    --swg-hf: 1.25;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-duo-split > .swg-row-items {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'a b';
+    --swg-hf: 1.5;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-duo-split-r > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'a b';
+    --swg-hf: 1.5;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-portrait-pair > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'a b';
+    --swg-hf: 2.2;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-triptych > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'a b c';
+    --swg-hf: 1;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-portrait-trio > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'a b c';
+    --swg-hf: 1.67;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-hero-left > .swg-row-items {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: 'a b' 'a c';
+    --swg-hf: 1.67;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-hero-right > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: 'a b' 'c b';
+    --swg-hf: 1.67;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-tall-left > .swg-row-items {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: 'a b' 'a c';
+    --swg-hf: 2.2;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-tall-right > .swg-row-items {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: 'a b' 'c b';
+    --swg-hf: 2.2;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-quartet > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'a b c d';
+    --swg-hf: 1.25;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-banner-three > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-areas: 'a a a' 'b c d';
+    --swg-hf: 2.5;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-hero-four > .swg-row-items {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: 'a b b' 'a c d';
+    --swg-hf: 1.875;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-hero-five > .swg-row-items {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: 'a b c' 'a d e';
+    --swg-hf: 1.875;
+  }
+
+  .swg-gallery.swg-layout-magazine .swg-tpl-hero-five-right > .swg-row-items {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: 'a b c' 'd e c';
+    --swg-hf: 1.875;
+  }
+}
