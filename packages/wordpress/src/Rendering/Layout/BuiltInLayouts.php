@@ -20,6 +20,7 @@ final class BuiltInLayouts {
 		$registry->register( new FocusLayout() );
 		$registry->register( new GridLayout() );
 		$registry->register( new JustifiedLayout() );
+		$registry->register( new MagazineLayout() );
 		$registry->register( new MasonryLayout() );
 		$registry->register( new MosaicLayout() );
 		$registry->register( new ScatteredLayout() );

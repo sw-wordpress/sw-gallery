@@ -474,6 +474,7 @@ msgid "Extra large"
 msgstr "Extragroß"
 
 #: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:119
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:111
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:123
 msgid "Focal point"
 msgstr "Bildschwerpunkt"
@@ -483,11 +484,13 @@ msgid "Which part of the picture stays visible when the bubble crops it, in perc
 msgstr "Welcher Teil des Bildes sichtbar bleibt, wenn die Blase es beschneidet, in Prozent von links und von oben (50 / 50 ist die Mitte)."
 
 #: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:124
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:116
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:128
 msgid "Focal point, horizontal (%)"
 msgstr "Bildschwerpunkt, horizontal (%)"
 
 #: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:131
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:123
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:135
 msgid "Focal point, vertical (%)"
 msgstr "Bildschwerpunkt, vertikal (%)"
@@ -502,6 +505,7 @@ msgstr "Jede Folie ist so breit wie ihre Höhe mal ihr Seitenverhältnis."
 
 #: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:85
 #: packages/wordpress/src/Rendering/Layout/FocusLayout.php:117
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:88
 #: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:74
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:89
 msgid "Corner radius (px)"
@@ -572,6 +576,7 @@ msgid "Selected image"
 msgstr "Ausgewähltes Bild"
 
 #: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:69
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:73
 msgid "Row height (px)"
 msgstr "Zeilenhöhe (px)"
 
@@ -590,6 +595,34 @@ msgstr "Natürliche Höhe (linksbündig)"
 #: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:90
 msgid "Stretch to full width"
 msgstr "Auf volle Breite strecken"
+
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:74
+msgid "Height of a row of three pictures in a container 1200 px wide; other rows are higher or lower in proportion, and all rows scale with the width."
+msgstr "Höhe einer Reihe mit drei Bildern in einem 1200 px breiten Container; andere Reihen sind entsprechend höher oder niedriger, und alle Reihen skalieren mit der Breite."
+
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:95
+msgid "Rhythm"
+msgstr "Rhythmus"
+
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:96
+msgid "Calm prefers even rows (pairs, three or four equal pictures), bold prefers one large picture with smaller ones and full-width plates. The pictures always keep their order."
+msgstr "Ruhig bevorzugt gleichmäßige Reihen (Paare, drei oder vier gleich große Bilder), Kräftig bevorzugt ein großes Bild mit kleineren und Bilder über die volle Breite. Die Reihenfolge der Bilder bleibt immer erhalten."
+
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:100
+msgid "Balanced"
+msgstr "Ausgewogen"
+
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:101
+msgid "Calm"
+msgstr "Ruhig"
+
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:102
+msgid "Bold"
+msgstr "Kräftig"
+
+#: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:112
+msgid "Which part of the picture stays visible when the row crops it, in percent from the left and the top (50 / 50 is the centre)."
+msgstr "Welcher Teil des Bildes sichtbar bleibt, wenn die Reihe es beschneidet, in Prozent von links und von oben (50 / 50 ist die Mitte)."
 
 #: packages/wordpress/src/Rendering/Layout/MasonryLayout.php:75
 msgid "0 keeps the images square, which suits a tightly packed masonry wall."
