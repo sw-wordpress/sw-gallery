@@ -57,6 +57,7 @@ const session = createEditorSession(props.galleryId, api);
 const selection = useItemSelection(session.order);
 const picker = useMediaPicker();
 const grid = ref<InstanceType<typeof ItemsGrid> | null>(null);
+const uploadPanel = ref<InstanceType<typeof UploadPanel> | null>(null);
 
 // ---- load
 const layouts = ref<LayoutsResponse | null>(null);
@@ -227,6 +228,7 @@ function isTextTarget(target: EventTarget | null): boolean {
   );
 }
 function onWindowKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') resetFileDragging();
   const mod = event.ctrlKey || event.metaKey;
   if (!mod) return;
   const key = event.key.toLowerCase();
@@ -361,40 +363,68 @@ async function addFromLibrary(): Promise<void> {
   }
 }
 
-// ---- files dropped on the images area
+// ---- files dropped anywhere in the editor window
 const fileDragging = ref(false);
 let dragDepth = 0;
+function nativeMediaTarget(event: DragEvent): boolean {
+  // WordPress' media modal keeps its own upload handling.
+  return event.target instanceof Element && event.target.closest('.media-modal') !== null;
+}
+function resetFileDragging(): void {
+  dragDepth = 0;
+  fileDragging.value = false;
+}
 function hasFiles(event: DragEvent): boolean {
   return Array.from(event.dataTransfer?.types ?? []).includes('Files');
 }
 function onFileEnter(event: DragEvent): void {
   if (!hasFiles(event)) return;
+  if (nativeMediaTarget(event)) {
+    resetFileDragging();
+    return;
+  }
   event.preventDefault();
   dragDepth += 1;
   fileDragging.value = true;
 }
 function onFileOver(event: DragEvent): void {
-  if (!hasFiles(event)) return;
+  if (!hasFiles(event) || nativeMediaTarget(event)) return;
   event.preventDefault();
   if (event.dataTransfer !== null)
     event.dataTransfer.dropEffect = uploadAllowed.value ? 'copy' : 'none';
 }
 function onFileLeave(event: DragEvent): void {
-  if (!hasFiles(event)) return;
+  if (!hasFiles(event) || nativeMediaTarget(event)) return;
   dragDepth = Math.max(0, dragDepth - 1);
-  if (dragDepth === 0) fileDragging.value = false;
+  if (dragDepth === 0) resetFileDragging();
 }
 function onFileDrop(event: DragEvent): void {
-  if (!hasFiles(event)) return;
+  if (!hasFiles(event) || nativeMediaTarget(event)) return;
   event.preventDefault();
-  dragDepth = 0;
-  fileDragging.value = false;
+  resetFileDragging();
   if (!uploadAllowed.value) {
     feedback.notify(pickerReason.value ?? t('editor.picker.noRight'), 'warning');
     return;
   }
   uploads.add(Array.from(event.dataTransfer?.files ?? []));
 }
+
+onMounted(() => {
+  window.addEventListener('dragenter', onFileEnter);
+  window.addEventListener('dragover', onFileOver);
+  window.addEventListener('dragleave', onFileLeave);
+  window.addEventListener('drop', onFileDrop);
+  window.addEventListener('dragend', resetFileDragging);
+  window.addEventListener('blur', resetFileDragging);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('dragenter', onFileEnter);
+  window.removeEventListener('dragover', onFileOver);
+  window.removeEventListener('dragleave', onFileLeave);
+  window.removeEventListener('drop', onFileDrop);
+  window.removeEventListener('dragend', resetFileDragging);
+  window.removeEventListener('blur', resetFileDragging);
+});
 
 // ---- live preview: a full-viewport dialog behind the "Preview" button
 const previewOpen = ref(false);
@@ -474,6 +504,20 @@ const reportAlert = computed(() => {
 
 <template>
   <div class="swg-ed">
+    <Teleport to="body">
+      <div
+        v-if="fileDragging"
+        class="swg-root swg-ed-drop"
+        :class="{ 'swg-dark': app.isDark }"
+        aria-hidden="true"
+      >
+        <div class="swg-ed-drop__label">
+          <q-icon name="r_cloud_upload" size="48px" />
+          <strong>{{ uploadAllowed ? t('editor.upload.dropNow') : pickerReason }}</strong>
+          <span v-if="uploadAllowed">{{ t('editor.upload.hint') }}</span>
+        </div>
+      </div>
+    </Teleport>
     <nav v-if="!gallery" class="swg-ed__fallback" :aria-label="t('editor.breadcrumb')">
       <router-link to="/galleries">{{ t('nav.galleries') }}</router-link>
     </nav>
@@ -670,14 +714,7 @@ const reportAlert = computed(() => {
 
         <div class="swg-ed__cols">
           <div class="swg-ed__main">
-            <section
-              class="swg-ed__images"
-              :aria-label="t('editor.images.region')"
-              @dragenter="onFileEnter"
-              @dragover="onFileOver"
-              @dragleave="onFileLeave"
-              @drop="onFileDrop"
-            >
+            <section class="swg-ed__images" :aria-label="t('editor.images.region')">
               <div class="swg-ed__bar swg-ed__tools">
                 <q-btn
                   color="primary"
@@ -698,6 +735,22 @@ const reportAlert = computed(() => {
                   </template>
                 </span>
                 <TileSizeControl v-if="itemCount > 0" />
+                <q-btn
+                  v-if="itemCount === 0"
+                  flat
+                  dense
+                  no-caps
+                  size="sm"
+                  color="primary"
+                  icon="r_upload"
+                  :label="t('editor.upload.button')"
+                  class="swg-ed__upload-button"
+                  :aria-label="t('editor.upload.button')"
+                  :disable="!uploadAllowed"
+                  @click="uploadPanel?.pick()"
+                >
+                  <q-tooltip>{{ t('editor.upload.button') }}</q-tooltip>
+                </q-btn>
               </div>
 
               <div
@@ -801,6 +854,21 @@ const reportAlert = computed(() => {
                   class="swg-ed__remove"
                   @click="requestRemove()"
                 />
+                <q-btn
+                  flat
+                  dense
+                  no-caps
+                  size="sm"
+                  color="primary"
+                  icon="r_upload"
+                  :label="t('editor.upload.button')"
+                  class="swg-ed__upload-button"
+                  :aria-label="t('editor.upload.button')"
+                  :disable="!uploadAllowed"
+                  @click="uploadPanel?.pick()"
+                >
+                  <q-tooltip>{{ t('editor.upload.button') }}</q-tooltip>
+                </q-btn>
               </div>
               <p v-if="session.truncated.value" class="swg-ed__reason">
                 {{ t('editor.reorder.disabled') }}
@@ -810,11 +878,11 @@ const reportAlert = computed(() => {
               </p>
 
               <UploadPanel
+                v-show="uploads.entries.value.length > 0"
+                ref="uploadPanel"
                 class="swg-ed__upload"
                 :uploads="uploads"
-                :dragging="fileDragging"
                 :disabled="!uploadAllowed"
-                :reason="pickerReason"
               />
 
               <ItemsGrid
@@ -1105,13 +1173,31 @@ const reportAlert = computed(() => {
   flex: none;
   padding: 8px 12px;
 }
-.swg-ed__upload :deep(.swg-up__zone) {
-  padding: 6px 10px;
-  border-width: 1px;
-  border-radius: 4px;
+.swg-ed__upload-button {
+  margin-inline-start: auto;
 }
-.swg-ed__upload :deep(.swg-up__text) {
-  font-size: 12px;
+.swg-ed-drop {
+  position: fixed;
+  inset: 8px;
+  z-index: 100400;
+  display: grid;
+  place-items: center;
+  border: 3px dashed var(--swg-primary);
+  border-radius: 8px;
+  background: var(--swg-overlay);
+  pointer-events: none;
+}
+.swg-ed-drop__label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-inline-size: calc(100% - 32px);
+  padding: 24px;
+  border-radius: 8px;
+  background: var(--swg-surface);
+  color: var(--swg-text);
+  text-align: center;
 }
 .swg-ed__images :deep(.swg-igrid-wrap) {
   display: flex;

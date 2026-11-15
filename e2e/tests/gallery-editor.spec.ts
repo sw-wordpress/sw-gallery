@@ -290,8 +290,10 @@ test.describe('as administrator', () => {
   }) => {
     const gallery = await newGallery('Upload', 0);
     await openEditor(page, gallery);
-    const fileInput = root(page).locator('input[type="file"]');
-    await fileInput.setInputFiles([
+    const chooserPromise = page.waitForEvent('filechooser');
+    await root(page).getByRole('button', { name: 'Upload images', exact: true }).click();
+    const chooser = await chooserPromise;
+    await chooser.setFiles([
       { name: 'ok-one.png', mimeType: 'image/png', buffer: tinyPng([10, 10, 10]) },
       // passes the client hint (type) and the signature check of the server, but is cut off: not decodable
       { name: 'broken.png', mimeType: 'image/png', buffer: tinyPng([1, 2, 3]).subarray(0, 45) },
@@ -314,20 +316,33 @@ test.describe('as administrator', () => {
     await expect(tiles(page)).toHaveCount(1);
     expect(await admin.items(gallery.id)).toHaveLength(1);
 
-    // drag and drop of files onto the images area
+    // File drops also work outside the app, on the WordPress admin chrome.
     const dropped = tinyPng([90, 20, 140]).toString('base64');
     await page.evaluate(async (data) => {
       const bytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
       const transfer = new DataTransfer();
       transfer.items.add(new File([bytes], 'dropped.png', { type: 'image/png' }));
-      const area = document.querySelector('.swg-ed__images');
+      const area = document.querySelector('#wpadminbar');
       area?.dispatchEvent(
         new DragEvent('dragenter', { dataTransfer: transfer, bubbles: true, cancelable: true }),
       );
-      area?.dispatchEvent(
-        new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true }),
-      );
     }, dropped);
+    const overlay = page.locator('.swg-ed-drop');
+    await expect(overlay).toBeVisible();
+    const bounds = await overlay.boundingBox();
+    expect(bounds?.width).toBeGreaterThan((page.viewportSize()?.width ?? 0) - 20);
+    expect(bounds?.height).toBeGreaterThan((page.viewportSize()?.height ?? 0) - 20);
+    await page.evaluate((data) => {
+      const transfer = new DataTransfer();
+      const bytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
+      transfer.items.add(new File([bytes], 'dropped.png', { type: 'image/png' }));
+      document
+        .querySelector('#wpadminbar')
+        ?.dispatchEvent(
+          new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true }),
+        );
+    }, dropped);
+    await expect(overlay).toHaveCount(0);
     await expect(tiles(page)).toHaveCount(2);
     expect(await admin.items(gallery.id)).toHaveLength(2);
     await root(page).getByRole('button', { name: 'Remove broken.png from the list' }).click();

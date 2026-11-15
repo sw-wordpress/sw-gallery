@@ -95,3 +95,8 @@
 - Navigation expansion in the editor preserves the preference on other pages. Existing gallery operations, translated labels and keyboard controls are retained.
 - Regression coverage: navigation preference isolation and browser checks for viewport geometry, settings scroll and mobile overflow.
 - Validation: 491 admin tests (96.30% lines), build/typecheck/lint, 28 browser scenarios (two network-related retries), i18n parity; PHP style/analysis and 475 unit/integration tests passed; WordPress suite: 1,554 tests, 10 skipped, merged PHP line coverage 97.78%.
+
+## 2026-11-15 — Editor upload controls
+- Replaced the permanent upload strip with a compact toolbar button and a window-wide overlay while dragging external files; progress remains visible after queuing.
+- Regression coverage: window drops, nested drag targets, cancellation/navigation cleanup, native media modal, permission denial and file chooser.
+- Checks: 494 admin tests, 96.38 % lines; typecheck/lint/format/build/i18n and Docker upload browser test passed. PHP: 475 tests, PHPStan and style gates passed (existing warnings); existing coverage report passes at 97.78 %. A fresh full PHP coverage run ended with signal 143 before producing a report; PHP sources are unchanged.
