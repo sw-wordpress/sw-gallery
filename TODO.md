@@ -158,6 +158,7 @@ Tooling and tests
 - [ ] FU-29 Media Overview: uploader filter is a numeric user id (no users endpoint); justified layout breaks rows greedily (a very narrow image may stretch alone on a narrow container).
 - [x] FU-31 Editor items grid keeps its fixed tile size: at 2560 px six tiles leave much empty space on the right (consider larger tiles or a size slider).
 - [ ] FU-32 Admin app: show `schema.newerThanCode` (System Status) and the 503 `swg_schema_newer` error with a clear message; batched `appendMany()` in the core item-repository contract (bulk assign is ~2 queries per item); real RTL site check; Heartbeat nonce path against a real Heartbeat; high-contrast/forced-colors/400 % zoom review; `bin/i18n.sh` still has the placeholder `--msgid-bugs-address`.
+- [ ] FU-33 New layouts: `focus` needs `:has()` without JS (Firefox >= 121); no swipe on the focus stage; mosaic/carousel/focus have no German locale E2E; mosaic item settings (`emphasis`, `focal`) are only editable after the layout change is saved; stored shuffle value (L-00b) and polygon shapes (L-01) are not implemented.
 - [ ] FU-30 Public API: `@since` tags only on the layout interface; add them to all public hooks/classes. Flaky E2E on first attempt under host load (admin-shell, theme-and-rail, justified 768) — keep watching.
 - [x] FU-05 Docs: `docs/development.md` must mention the `assets/` project, `bin/rebuild-on-change.sh`, `bin/watch-build.sh` and the new test commands.
 
@@ -272,7 +273,7 @@ Admin app (`apps/admin`, C§7)
 ### 1.1
 - [ ] R1.1-01 Collections: `swg_collection`, `swg_collection_galleries` table + migration, repository, REST `/collections`, admin feature, block.
 - [ ] R1.1-02 Design presets (`resources/presets`, admin page).
-- [ ] R1.1-03 Layouts carousel, focus, mosaic through the layout registry (candidates: `docs/layout-proposals.md`).
+- [x] R1.1-03 Layouts `mosaic` (L-02 treemap on the new `LayoutPlan` base L-00), `focus` (L-14 spotlight) and `carousel` (L-15 film strip) through the layout registry (done 2026-11-15; further candidates in `docs/layout-proposals.md`: L-01 shattered mosaic, L-12 magazine, L-07 honeycomb, L-10 scattered prints, L-04 jigsaw ...).
 - [ ] R1.1-04 Categorization: `swg_gallery_category`, `swg_gallery_tag`; frontend filtering.
 - [ ] R1.1-05 Lightbox deep links and zoom; first decide whether galleries get own URLs (D13 revisit).
 - [ ] R1.1-06 Load-more UI with access-checked public endpoint (first unauthenticated route: own security review).

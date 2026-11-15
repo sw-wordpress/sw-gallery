@@ -77,3 +77,9 @@
 - I extension points `swg_register_layouts` (API v1) and `swg_register_import_providers` with guarded registries, containment of failing layouts (grid fallback + `layout_failed` diagnostic), `swg_gallery_changed` completeness, Media Library column/field/delete warning, validation messages translated, item SQL moved into the repository, `docs/extending.md`, `docs/integrations.md`, `docs/development.md`.
 - Merge: three conflicts only in docs/languages; two tests assumed `grid` as the only built-in (fixed); Media Library script got a Vitest and a lint scope.
 
+## 2026-11-15 — Layouts: mosaic, carousel, focus (R1.1-03)
+- Shared base L-00: `LayoutPlan`/`TreemapPlanner` in core (order-preserving strip treemap, exact tiling, deterministic seed = gallery id + revision, three container variants), per-item settings `emphasis`/`focal` now reach the renderer (`ItemSettingsRenderSource`) and the editor (per-image layout settings form in the details sheet).
+- `mosaic` (gap-free, area follows emphasis, container-query variants, grid below 480 px), `carousel` (native scroll snap, buttons and position text by script, no autoplay) and `focus` (stage + thumbnails, `:target` without JS, script for instant switching).
+- Layout script wiring is table driven (`Frontend/LayoutScripts`); `RenderCache` rewrites element ids derived from the instance id; the layouts CSS build target is raised (no `inset-inline-*`).
+- State: 1469 WordPress tests (single + multisite), 333 unit tests, PHP coverage 97.5 %; admin 490 tests / 96.3 %, assets 154 / 100 %; E2E 255 passed on the first full run plus one test fixed (hash regex).
+

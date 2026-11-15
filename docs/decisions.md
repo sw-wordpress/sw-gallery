@@ -160,3 +160,15 @@ Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und
 | Owner handover (S-04) | Changing a gallery's owner needs `edit_others_posts` (also for the current owner); the new owner must exist, hold `edit_posts` and (multisite) belong to the site. Decided 2026-11-14. |
 | Link names (FU-25) | `a.swg-link` gets an `aria-label` only when the image has no alt text: the item title, else "Image N of M" (position in the whole gallery). With alt text the image names the link. Decided 2026-11-14. |
 
+## Layouts R1.1-03 decisions
+
+| Topic | Decision |
+|---|---|
+| Plan layouts | Markup contract: per item `--swg-{n|m|w}-{x,y,w,h}` (and `--swg-fx/fy` only off-centre), container `--swg-{n|m|w}-ar`; the variant follows the CONTAINER width (queries at 480/720/1024 px), below 480 px and without container queries it is a plain grid. Seed = gallery id + stored revision; plans are computed per page; areas follow emphasis 1 : 1.8 : 3. The planner is an order-preserving strip treemap (DOM order = reading order). |
+| Item settings | `x-item-settings` values are read by `ItemSettingsRenderSource` into `RenderItem::$settings` (one extra query per page); the editor shows the per-image form only when the SAVED layout declares `x-item-settings`. |
+| Layout scripts | Registered in the `LayoutScripts` table (RenderAsset value => validated manifest key, handle `swg-<value>`); enqueued only for galleries rendered on the page, independent of the lightbox setting. |
+| Element ids | Ids in layout markup must derive from the instance id and start with `<instance>-` (the render cache rewrites them on hits). |
+| Carousel | Native scroll snap, focusable region with an accessible name, JS buttons use `aria-disabled`, position as polite text, no autoplay, no wheel/drag hijacking. |
+| Focus | One `a.swg-link` per stage panel (lightbox lists each image once, in order), thumbnails are plain links `a.swg-thumb` with `aria-current`; without JS `:target` on a fixed empty anchor (no page jump, needs `:has()`); the stage uses `object-fit: contain`. |
+| CSS build | The layouts CSS is built with a raised `cssTarget`; do not use `inset-inline-*` or `:dir()` (lowered to `:lang()` rules that ignore `dir=rtl`); CSS `@import`s must come first in `layouts.css`. |
+

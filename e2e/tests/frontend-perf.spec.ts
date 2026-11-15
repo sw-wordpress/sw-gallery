@@ -226,7 +226,7 @@ test('a page with a gallery loads only the declared plugin assets within the tra
   const names = transfers.map(
     (t) => (new URL(t.url).pathname.split('/').pop() ?? '').split('?')[0],
   );
-  const kinds = names.map((name) => name?.replace(/-[\w]+(\.\w+)$/, '$1'));
+  const kinds = names.map((name) => name?.replace(/-[\w-]+(\.\w+)$/, '$1'));
   expect(kinds.sort(), `declared assets only, got ${names.join(', ')}`).toEqual([
     'layouts.css',
     'lightbox.css',
