@@ -137,6 +137,7 @@ msgid "Overrides the layout of the gallery for this block only."
 msgstr "Überschreibt das Layout der Galerie nur für diesen Block."
 
 #: assets/blocks/src/PresentationControls.tsx:73
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:77
 msgid "Columns"
 msgstr "Spalten"
 
@@ -403,6 +404,94 @@ msgstr[1] "Galerie-Hinweis (nur für Redakteure sichtbar): %d Bilder fehlen oder
 msgid "Gallery diagnostic (visible to editors only)."
 msgstr "Galerie-Hinweis (nur für Redakteure sichtbar)."
 
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:76
+msgid "Gap (px)"
+msgstr "Abstand (px)"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:77
+msgid "Space between the bubbles; the circles shrink by it."
+msgstr "Abstand zwischen den Blasen; die Kreise werden um diesen Wert kleiner."
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:84
+msgid "Shape of the wide bubble field"
+msgstr "Form des breiten Blasenfelds"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:85
+msgid "Width to height ratio of the whole field in a wide container. Narrower containers use 1:1 and 4:5; below 480 px wide two columns of circles are shown."
+msgstr "Seitenverhältnis des gesamten Felds in einem breiten Container. Schmalere Container nutzen 1:1 und 4:5; unter 480 px Breite werden zwei Spalten mit Kreisen angezeigt."
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:89
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:98
+msgid "Automatic (16:10)"
+msgstr "Automatisch (16:10)"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:90
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:99
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:93
+msgid "Square (1:1)"
+msgstr "Quadratisch (1:1)"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:91
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:100
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:92
+msgid "Classic (4:3)"
+msgstr "Klassisch (4:3)"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:92
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:102
+msgid "Widescreen (16:9)"
+msgstr "Breitbild (16:9)"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:97
+msgid "Gentle floating"
+msgstr "Sanftes Schweben"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:98
+msgid "The bubbles drift slowly up and down. Never animated for visitors who prefer reduced motion."
+msgstr "Die Blasen treiben langsam auf und ab. Wird für Besucher mit reduzierter Bewegung nie animiert."
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:107
+msgid "Size of the bubble"
+msgstr "Größe der Blase"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:108
+msgid "How much area this bubble gets: large bubbles take about twice, extra large about three times the area of a normal one."
+msgstr "Wie viel Fläche diese Blase bekommt: große Blasen etwa das Doppelte, extragroße etwa das Dreifache einer normalen."
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:112
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:116
+msgid "Normal"
+msgstr "Normal"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:113
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:117
+msgid "Large"
+msgstr "Groß"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:114
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:118
+msgid "Extra large"
+msgstr "Extragroß"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:119
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:123
+msgid "Focal point"
+msgstr "Bildschwerpunkt"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:120
+msgid "Which part of the picture stays visible when the bubble crops it, in percent from the left and the top (50 / 50 is the centre)."
+msgstr "Welcher Teil des Bildes sichtbar bleibt, wenn die Blase es beschneidet, in Prozent von links und von oben (50 / 50 ist die Mitte)."
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:124
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:128
+msgid "Focal point, horizontal (%)"
+msgstr "Bildschwerpunkt, horizontal (%)"
+
+#: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:131
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:135
+msgid "Focal point, vertical (%)"
+msgstr "Bildschwerpunkt, vertikal (%)"
+
 #: packages/wordpress/src/Rendering/Layout/CarouselLayout.php:66
 msgid "Slide height (px)"
 msgstr "Höhe der Folien (px)"
@@ -518,25 +607,10 @@ msgstr "Form des breiten Mosaiks"
 msgid "Width to height ratio of the whole mosaic in a wide container. Narrower containers use 1:1 and 4:5; below 480 px wide a plain grid is shown."
 msgstr "Verhältnis von Breite zu Höhe des gesamten Mosaiks in einem breiten Container. Schmalere Container nutzen 1:1 und 4:5; unter 480 px Breite wird ein einfaches Raster gezeigt."
 
-#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:98
-msgid "Automatic (16:10)"
-msgstr "Automatisch (16:10)"
-
-#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:99
-msgid "Square (1:1)"
-msgstr "Quadratisch (1:1)"
-
-#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:100
-msgid "Classic (4:3)"
-msgstr "Klassisch (4:3)"
-
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:101
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:91
 msgid "Photo (3:2)"
 msgstr "Foto (3:2)"
-
-#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:102
-msgid "Widescreen (16:9)"
-msgstr "Breitbild (16:9)"
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:111
 msgid "Size in the mosaic"
@@ -546,33 +620,57 @@ msgstr "Größe im Mosaik"
 msgid "How much area this picture gets: large pictures take about twice, extra large about three times the area of a normal one."
 msgstr "Wie viel Fläche dieses Bild bekommt: große Bilder etwa die doppelte, extragroße etwa die dreifache Fläche eines normalen Bildes."
 
-#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:116
-msgid "Normal"
-msgstr "Normal"
-
-#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:117
-msgid "Large"
-msgstr "Groß"
-
-#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:118
-msgid "Extra large"
-msgstr "Extragroß"
-
-#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:123
-msgid "Focal point"
-msgstr "Bildschwerpunkt"
-
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:124
 msgid "Which part of the picture stays visible when the tile crops it, in percent from the left and the top (50 / 50 is the centre)."
 msgstr "Welcher Teil des Bildes sichtbar bleibt, wenn die Kachel es beschneidet, in Prozent von links und von oben (50 / 50 ist die Mitte)."
 
-#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:128
-msgid "Focal point, horizontal (%)"
-msgstr "Bildschwerpunkt, horizontal (%)"
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:78
+msgid "Prints per row. Containers narrower than 480 px always show two columns with half the tilt."
+msgstr "Abzüge pro Reihe. Container unter 480 px zeigen immer zwei Spalten mit halber Neigung."
 
-#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:135
-msgid "Focal point, vertical (%)"
-msgstr "Bildschwerpunkt, vertikal (%)"
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:86
+msgid "Print shape"
+msgstr "Form der Abzüge"
+
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:87
+msgid "Width to height ratio of every print; pictures are cropped to fit."
+msgstr "Seitenverhältnis jedes Abzugs; Bilder werden passend beschnitten."
+
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:94
+msgid "Portrait (2:3)"
+msgstr "Hochformat (2:3)"
+
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:99
+msgid "Overlap (%)"
+msgstr "Überlappung (%)"
+
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:100
+msgid "How far neighbouring prints reach over each other. Larger values are reduced automatically so every print stays at least 60 % visible; touch screens use half."
+msgstr "Wie weit sich benachbarte Abzüge überlagern. Größere Werte werden automatisch reduziert, damit jeder Abzug zu mindestens 60 % sichtbar bleibt; Touch-Geräte nutzen die Hälfte."
+
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:107
+msgid "Tilt (degrees)"
+msgstr "Neigung (Grad)"
+
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:108
+msgid "Largest rotation of a print in either direction. 0 keeps the prints straight."
+msgstr "Größte Drehung eines Abzugs in beide Richtungen. 0 lässt die Abzüge gerade."
+
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:115
+msgid "Print border (px)"
+msgstr "Rand der Abzüge (px)"
+
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:116
+msgid "Width of the white border around every picture."
+msgstr "Breite des weißen Rands um jedes Bild."
+
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:123
+msgid "Variation"
+msgstr "Variation"
+
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:124
+msgid "Another number gives another arrangement of the same pictures."
+msgstr "Eine andere Zahl ergibt eine andere Anordnung derselben Bilder."
 
 #. translators: 1: position of the image in the gallery, 2: number of images in the gallery.
 #: packages/wordpress/src/Rendering/View/ImageMarkup.php:58

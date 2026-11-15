@@ -90,7 +90,10 @@
   box-shadow:
     0 1px 2px rgb(0 0 0 / 0.28),
     0 6px 14px rgb(0 0 0 / 0.18);
-  transform: translate(calc(var(--swg-dx, 0%) * var(--swg-k)), calc(var(--swg-dy, 0%) * var(--swg-k)))
+  transform: translate(
+      calc(var(--swg-dx, 0%) * var(--swg-k)),
+      calc(var(--swg-dy, 0%) * var(--swg-k))
+    )
     rotate(calc(var(--swg-rot, 0deg) * var(--swg-k))) scale(var(--swg-s));
 }
 
@@ -119,8 +122,11 @@
   box-shadow:
     0 2px 4px rgb(0 0 0 / 0.3),
     0 14px 30px rgb(0 0 0 / 0.28);
-  transform: translate(calc(var(--swg-dx, 0%) * var(--swg-k)), calc(var(--swg-dy, 0%) * var(--swg-k))) rotate(0deg)
-    scale(calc(var(--swg-s) + 0.05));
+  transform: translate(
+      calc(var(--swg-dx, 0%) * var(--swg-k)),
+      calc(var(--swg-dy, 0%) * var(--swg-k))
+    )
+    rotate(0deg) scale(calc(var(--swg-s) + 0.05));
 }
 
 .swg-gallery.swg-layout-scattered .swg-link:focus-visible {
