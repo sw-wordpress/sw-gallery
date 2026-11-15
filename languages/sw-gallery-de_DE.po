@@ -427,6 +427,7 @@ msgid "Automatic (16:10)"
 msgstr "Automatisch (16:10)"
 
 #: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:90
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:94
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:99
 #: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:93
 #: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:103
@@ -434,6 +435,7 @@ msgid "Square (1:1)"
 msgstr "Quadratisch (1:1)"
 
 #: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:91
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:95
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:100
 #: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:92
 #: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:104
@@ -585,6 +587,72 @@ msgstr "Größe der Vorschaubilder (px)"
 msgid "Selected image"
 msgstr "Ausgewähltes Bild"
 
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:59
+msgid "Cells per row"
+msgstr "Zellen pro Reihe"
+
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:60
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:74
+msgid "Below 480 px wide a plain two column grid is shown."
+msgstr "Unter 480 px Breite wird ein einfaches zweispaltiges Raster angezeigt."
+
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:68
+msgid "Gap between cells (px)"
+msgstr "Abstand zwischen den Zellen (px)"
+
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:75
+msgid "Cell shape"
+msgstr "Zellenform"
+
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:79
+msgid "Hexagon"
+msgstr "Sechseck"
+
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:80
+msgid "Diamond"
+msgstr "Raute"
+
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:73
+msgid "Pieces per row"
+msgstr "Teile pro Reihe"
+
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:82
+msgid "Gap between pieces (px)"
+msgstr "Abstand zwischen den Teilen (px)"
+
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:83
+msgid "0 lets the pieces touch like a finished puzzle."
+msgstr "Bei 0 berühren sich die Teile wie bei einem fertigen Puzzle."
+
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:90
+msgid "Piece shape"
+msgstr "Form der Teile"
+
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:96
+#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:101
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:91
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:105
+msgid "Photo (3:2)"
+msgstr "Foto (3:2)"
+
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:101
+msgid "Tab size (%)"
+msgstr "Größe der Zapfen (%)"
+
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:102
+msgid "How far the tabs reach out of a piece, in percent of the piece width."
+msgstr "Wie weit die Zapfen aus einem Teil herausragen, in Prozent der Teilbreite."
+
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:109
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:123
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:89
+msgid "Variation"
+msgstr "Variation"
+
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:110
+msgid "Another number gives another arrangement of tabs and blanks."
+msgstr "Eine andere Zahl ergibt eine andere Anordnung von Zapfen und Aussparungen."
+
 #: packages/wordpress/src/Rendering/Layout/JustifiedLayout.php:69
 #: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:73
 msgid "Row height (px)"
@@ -652,12 +720,6 @@ msgstr "Form des breiten Mosaiks"
 msgid "Width to height ratio of the whole mosaic in a wide container. Narrower containers use 1:1 and 4:5; below 480 px wide a plain grid is shown."
 msgstr "Verhältnis von Breite zu Höhe des gesamten Mosaiks in einem breiten Container. Schmalere Container nutzen 1:1 und 4:5; unter 480 px Breite wird ein einfaches Raster gezeigt."
 
-#: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:101
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:91
-#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:105
-msgid "Photo (3:2)"
-msgstr "Foto (3:2)"
-
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:111
 #: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:115
 msgid "Size in the mosaic"
@@ -712,11 +774,6 @@ msgstr "Rand der Abzüge (px)"
 #: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:116
 msgid "Width of the white border around every picture."
 msgstr "Breite des weißen Rands um jedes Bild."
-
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:123
-#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:89
-msgid "Variation"
-msgstr "Variation"
 
 #: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:124
 msgid "Another number gives another arrangement of the same pictures."
