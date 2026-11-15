@@ -17,6 +17,7 @@ on:
       - e2e/package-lock.json
       - .github/workflows/security-audit.yml
       - bin/security-audit.sh
+      - bin/audit-composer-production.php
 
 concurrency:
   group: security-audit-${{ github.event.pull_request.number || github.ref }}

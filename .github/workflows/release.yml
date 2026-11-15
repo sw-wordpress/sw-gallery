@@ -101,7 +101,7 @@ jobs:
   install-test:
     name: Install the ZIP in a throw-away WordPress
     needs: [version, build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4.2.2

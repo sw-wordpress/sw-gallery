@@ -105,3 +105,9 @@
 - Responsive numbers: five device inputs, no override switches; empty removes the override and the placeholder shows the inherited value. Slider/value rows, full-width selects/text inputs and inline reset icons reduce vertical space.
 - Layout schema requests use `_locale=user`; existing German PHP descriptions/options now match the SPA language. Default enum and boolean labels are localized.
 - Checks: 497 admin tests plus four focused setting-field tests; admin line coverage 96.31 %. Typecheck/lint/format/build/i18n and Docker tests for responsive saves and German field geometry/translations passed. PHP: 475 tests, PHPStan/style gates passed (existing warnings); unchanged PHP coverage report passes at 97.78 %.
+
+## 2026-11-15 — PR #2 CI repairs
+- Pin E2E and release browser jobs to Ubuntu 24.04, supported by the locked Playwright.
+- Share the production Composer audit guard between static CI and scheduled audits: an explicitly empty production list passes; invalid/missing locks and failed real audits still fail. Regression tests cover those paths.
+- Calculate mosaic stack midpoints on the integer precision grid, avoiding PHP 8.4 floating-point midpoint drift without changing the render snapshot. A focused regression passes under PHP 8.3 and in a disposable PHP 8.4 container.
+- Local checks: 484 PHP tests, PHPStan/style gates (existing warnings), complete dependency audit, and shell syntax passed. Coverage and the remote CI/review outcome are recorded in PR #2.

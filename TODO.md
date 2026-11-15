@@ -12,6 +12,11 @@ Every task ships with tests, i18n (en/de), docs and passes the Definition of Don
 - [x] Compact layout settings: device inputs with empty overrides, slider/value rows, full-width selects and user-locale schema translations.
 - [ ] Stefan: practical acceptance of the updated editor (desktop, long settings, mobile, save/undo/preview).
 
+## PR #2 CI follow-up
+
+- [x] Guard the production Composer audit for an explicitly empty package list; retain failures for real audits and invalid locks.
+- [x] Pin browser CI runners to Ubuntu 24.04; round mosaic stack midpoints on the integer precision grid for PHP 8.4.
+
 ## Open decisions (answer before the blocked task starts)
 
 None at the moment. Decided on 2026-11-10: D1–D13, F-01 (rejected), F-02, F-03, F-09, F-10 — see `docs/decisions.md`.

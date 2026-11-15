@@ -41,7 +41,7 @@ jobs:
       - run: composer validate --strict
       - run: composer install --prefer-dist --no-interaction --no-progress
       - name: Audit shipped Composer packages
-        run: composer audit --locked --no-dev
+        run: php bin/audit-composer-production.php
       - run: composer cs
       - run: composer cs:wp
       - run: composer stan

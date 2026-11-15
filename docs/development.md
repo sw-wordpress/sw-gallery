@@ -34,7 +34,7 @@ bin/test-e2e.sh [--keep] [--headed] [-- <playwright args>]   # e.g. -- tests/loc
 (cd e2e && npm run typecheck && npm run lint && npm run format:check)
 ```
 `--keep` leaves the stack running (prints the clean-up command), `--headed` shows the browser; everything after `--` goes to Playwright. Playwright runs with **3 workers** (`e2e/playwright.config.ts`): more parallel workers made page loads fail on hosts with many Docker interfaces (FU-14), do not raise it without checking. Tests are retried **twice**: Chromium aborts in-flight requests with `net::ERR_NETWORK_CHANGED` whenever the host (WSL2/Docker) changes a network interface, which leaves the page without its scripts (the app then does not mount). A failure that survives both retries is real.
-Prerequisites: Docker with the compose plugin, Node 22 (`e2e/.nvmrc`), curl, openssl, python3; Chromium system libraries (`npx playwright install-deps chromium` on CI/Linux).
+CI browser jobs use Ubuntu 24.04, supported by the locked Playwright version. Prerequisites: Docker with the compose plugin, Node 22 (`e2e/.nvmrc`), curl, openssl, python3; Chromium system libraries (`npx playwright install-deps chromium` on CI/Linux).
 The script installs production Composer dependencies in a `composer:2` helper container if `vendor/` is missing, builds `apps/admin` if `assets/admin` is missing
 (`SWG_E2E_REBUILD=1` forces both), starts a compose project `swg-e2e-<random>` on random localhost ports (WordPress, MariaDB, wp-cli provisioning), runs
 Playwright and removes containers, network and volumes in every case (also failure/CTRL-C; `--keep` prints the clean-up command). The plugin is mounted read-only.
@@ -91,7 +91,7 @@ coverage gate, Sonar upload (matrix: see above). Further workflows: `js.yml`, `e
 organisation comes from the variable `SONAR_ORGANIZATION` (default `sw-wordpress`).
 
 ## Dependency security
-`composer audit --locked --no-dev` and `npm audit --omit=dev --audit-level=high` fail CI on advisories in shipped dependencies; a daily workflow audits
+`php bin/audit-composer-production.php` (runs `composer audit --locked --no-dev`, explicitly accepts an empty production package list, rejects missing/malformed lockfiles) and `npm audit --omit=dev --audit-level=high` fail CI on advisories in shipped dependencies; a daily workflow audits
 all dependencies. Node version pinned in `apps/admin/.nvmrc`.
 
 ## SonarQube Cloud
