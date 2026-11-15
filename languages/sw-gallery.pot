@@ -512,67 +512,99 @@ msgid "0 keeps the tiles square so the mosaic reads as one surface."
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:93
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:97
 msgid "Shape of the wide mosaic"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:94
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:98
 msgid "Width to height ratio of the whole mosaic in a wide container. Narrower containers use 1:1 and 4:5; below 480 px wide a plain grid is shown."
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:98
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:102
 msgid "Automatic (16:10)"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:99
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:103
 msgid "Square (1:1)"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:100
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:104
 msgid "Classic (4:3)"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:101
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:105
 msgid "Photo (3:2)"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:102
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:106
 msgid "Widescreen (16:9)"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:111
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:115
 msgid "Size in the mosaic"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:112
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:116
 msgid "How much area this picture gets: large pictures take about twice, extra large about three times the area of a normal one."
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:116
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:120
 msgid "Normal"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:117
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:121
 msgid "Large"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:118
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:122
 msgid "Extra large"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:123
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:127
 msgid "Focal point"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:124
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:128
 msgid "Which part of the picture stays visible when the tile crops it, in percent from the left and the top (50 / 50 is the centre)."
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:128
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:132
 msgid "Focal point, horizontal (%)"
 msgstr ""
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:135
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:139
 msgid "Focal point, vertical (%)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:81
+msgid "Grout width (px)"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:82
+msgid "Width of the gaps between the shards. 0 lets the pictures touch."
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:89
+msgid "Variation"
+msgstr ""
+
+#: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:90
+msgid "Changes the shape of the shards without touching the pictures. Try another number until it looks right."
 msgstr ""
 
 #. translators: 1: position of the image in the gallery, 2: number of images in the gallery.
