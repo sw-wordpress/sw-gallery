@@ -11,7 +11,7 @@ namespace SWGallery\Core\Domain\Layout\Scatter;
  *
  * Determinism: every number follows from the seed (gallery id + revision + the `variation` setting) with a xorshift
  * generator. Rotation is the tilt times a signed magnitude of 0.25..1 whose sign mostly alternates between neighbours
- * (so neighbouring prints rarely lean the same way); offsets reach 0.4 times the overlap percent of a cell at most (8 %).
+ * (so neighbouring prints rarely lean the same way); offsets reach 0.9 times the overlap percent of a cell at most (14 %).
  *
  * Visibility guarantee. The stacking order starts as a seeded permutation (reading order with a jitter of 2.5 positions, like prints dealt one after another). For every grid the page can show (each
  * column count, the narrow two column grid with halved tilt and offsets, touch devices with the reduced overlap) the
@@ -38,8 +38,8 @@ final class ScatterPlanner
     public const TOUCH_FACTOR = 0.6;
     public const TOUCH_OVERLAP_FACTOR = 0.5;
 
-    private const MAX_OFFSET = 8.0;
-    private const OFFSET_PER_OVERLAP = 0.4;
+    private const MAX_OFFSET = 14.0;
+    private const OFFSET_PER_OVERLAP = 0.9;
     private const SAMPLES = 10;
     private const BISECTIONS = 5;
     private const Z_JITTER = 2.5;

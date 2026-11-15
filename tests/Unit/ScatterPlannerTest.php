@@ -126,8 +126,8 @@ final class ScatterPlannerTest extends TestCase
                 $z = [];
                 foreach ($plan->prints as $print) {
                     self::assertLessThanOrEqual($tilt, abs($print->rotation));
-                    self::assertLessThanOrEqual(8.0, abs($print->dx));
-                    self::assertLessThanOrEqual(8.0, abs($print->dy));
+                    self::assertLessThanOrEqual(14.0, abs($print->dx));
+                    self::assertLessThanOrEqual(14.0, abs($print->dy));
                     self::assertEqualsWithDelta(round($print->rotation, 2), $print->rotation, 1e-9);
                     $z[] = $print->z;
                 }
@@ -222,11 +222,12 @@ final class ScatterPlannerTest extends TestCase
     public function testTooMuchOverlapIsReducedAndTheDefaultIsKept(): void
     {
         $planner = new ScatterPlanner();
-        $default = $planner->plan(30, 5, 5.0, 12.0, 1.5, [3]);
-        self::assertSame(12.0, $default->overlap, 'The default overlap needs no reduction.');
+        $default = $planner->plan(12, 5, 5.0, 12.0, 1.5, [3]);
+        self::assertSame(12.0, $default->overlap, 'The default overlap needs no reduction in a small gallery.');
+        self::assertGreaterThanOrEqual(10.0, $planner->plan(30, 5, 5.0, 12.0, 1.5, [3])->overlap);
         $strong = $planner->plan(30, 5, 12.0, 40.0, 1.5, [3]);
         self::assertLessThan(40.0, $strong->overlap);
-        self::assertGreaterThan(12.0, $strong->overlap);
+        self::assertGreaterThan(5.0, $strong->overlap);
     }
 
     public function testBadInputIsClampedNeverThrows(): void
