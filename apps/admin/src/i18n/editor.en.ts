@@ -49,6 +49,7 @@ export default {
       'Saving was interrupted. Saved: {saved}. Not saved: {failed} ({reason}). The remaining changes are still staged; the editor shows the current server state.',
     step: {
       remove: 'removed images',
+      emptyDefault: 'Empty = default (inherits the previous size).',
       override: 'image texts',
       order: 'new order',
       details: 'gallery details',
@@ -255,6 +256,7 @@ export default {
     none: 'This layout has no settings.',
     default: 'Default: {value}',
     reset: 'Reset to default',
+    emptyDefault: 'Empty = default (inherits the previous size).',
     override: 'Override',
     unsupported: 'This setting cannot be edited here and is kept as it is.',
     serverIssues: 'The server rejected one setting. | The server rejected {count} settings.',

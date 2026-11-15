@@ -54,6 +54,7 @@ const editor: Shape<typeof editorEn> = {
       'Das Speichern wurde unterbrochen. Gespeichert: {saved}. Nicht gespeichert: {failed} ({reason}). Die übrigen Änderungen bleiben vorgemerkt; der Editor zeigt den aktuellen Serverstand.',
     step: {
       remove: 'entfernte Bilder',
+      emptyDefault: 'Leer = Standard (übernimmt die vorherige Größe).',
       override: 'Bildtexte',
       order: 'neue Reihenfolge',
       details: 'Galeriedetails',
@@ -262,6 +263,7 @@ const editor: Shape<typeof editorEn> = {
     none: 'Dieses Layout hat keine Einstellungen.',
     default: 'Standard: {value}',
     reset: 'Auf Standard zurücksetzen',
+    emptyDefault: 'Leer = Standard (übernimmt die vorherige Größe).',
     override: 'Abweichen',
     unsupported: 'Diese Einstellung kann hier nicht bearbeitet werden und bleibt unverändert.',
     serverIssues:

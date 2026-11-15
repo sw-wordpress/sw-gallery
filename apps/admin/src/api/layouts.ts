@@ -33,7 +33,7 @@ export interface LayoutsResponse {
 export function createLayoutsApi(client: ApiClient) {
   return {
     list(signal?: AbortSignal): Promise<LayoutsResponse> {
-      return client.get<LayoutsResponse>('layouts', undefined, signal);
+      return client.get<LayoutsResponse>('layouts', { _locale: 'user' }, signal);
     },
   };
 }

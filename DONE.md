@@ -100,3 +100,8 @@
 - Replaced the permanent upload strip with a compact toolbar button and a window-wide overlay while dragging external files; progress remains visible after queuing.
 - Regression coverage: window drops, nested drag targets, cancellation/navigation cleanup, native media modal, permission denial and file chooser.
 - Checks: 494 admin tests, 96.38 % lines; typecheck/lint/format/build/i18n and Docker upload browser test passed. PHP: 475 tests, PHPStan and style gates passed (existing warnings); existing coverage report passes at 97.78 %. A fresh full PHP coverage run ended with signal 143 before producing a report; PHP sources are unchanged.
+
+## 2026-11-15 — Compact editor settings sidebar
+- Responsive numbers: five device inputs, no override switches; empty removes the override and the placeholder shows the inherited value. Slider/value rows, full-width selects/text inputs and inline reset icons reduce vertical space.
+- Layout schema requests use `_locale=user`; existing German PHP descriptions/options now match the SPA language. Default enum and boolean labels are localized.
+- Checks: 497 admin tests plus four focused setting-field tests; admin line coverage 96.31 %. Typecheck/lint/format/build/i18n and Docker tests for responsive saves and German field geometry/translations passed. PHP: 475 tests, PHPStan/style gates passed (existing warnings); unchanged PHP coverage report passes at 97.78 %.

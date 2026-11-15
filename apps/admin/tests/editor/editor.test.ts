@@ -518,7 +518,7 @@ describe('layout and settings', () => {
     expect(panel.textContent).toContain('Default: 3');
     expect(panel.textContent).toContain('All sizes');
     expect(panel.textContent).toContain('Gap (px)');
-    expect(panel.querySelectorAll('input[type="range"]').length).toBeGreaterThanOrEqual(2);
+    expect(panel.querySelectorAll('input[type="range"]').length).toBeGreaterThanOrEqual(1);
 
     const columns = panel.querySelector<HTMLInputElement>(
       'input[type="number"]',
@@ -535,12 +535,11 @@ describe('layout and settings', () => {
     await settle();
     expect(panel.textContent).not.toContain('Must be at most 12.');
     // a different value for medium screens
-    const override = Array.from(panel.querySelectorAll<HTMLElement>('[role="switch"]'))[1];
-    await click(override);
+    expect(panel.querySelectorAll('[role="switch"]')).toHaveLength(0);
     expect(panel.querySelectorAll('input[type="number"]').length).toBeGreaterThan(2);
     const medium = panel.querySelectorAll<HTMLInputElement>(
       'input[type="number"]',
-    )[1] as HTMLInputElement;
+    )[2] as HTMLInputElement;
     setInput(medium, '2');
     await settle();
     await click(button('Save'));

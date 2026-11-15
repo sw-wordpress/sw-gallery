@@ -9,6 +9,7 @@ Every task ships with tests, i18n (en/de), docs and passes the Definition of Don
 
 - [x] Compact sw-sliderman-style workspace: viewport layout, icon rail, header, image tools, independent settings scroll; narrow-screen stacking.
 - [x] Window-wide file drop overlay and compact toolbar upload button; retain upload progress, permission checks and native media handling.
+- [x] Compact layout settings: device inputs with empty overrides, slider/value rows, full-width selects and user-locale schema translations.
 - [ ] Stefan: practical acceptance of the updated editor (desktop, long settings, mobile, save/undo/preview).
 
 ## Open decisions (answer before the blocked task starts)

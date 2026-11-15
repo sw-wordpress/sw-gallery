@@ -517,8 +517,8 @@ test.describe('as administrator', () => {
     await expect(state(page)).toContainText('Fix the invalid settings to save.');
     await numbers.nth(0).fill('5');
     await expect(panel.getByText('Must be at most 12.')).toHaveCount(0);
-    await panel.getByRole('switch', { name: /Override: Columns, Medium/ }).click();
-    await numbers.nth(1).fill('2');
+    await expect(panel.getByRole('switch')).toHaveCount(0);
+    await panel.getByRole('spinbutton', { name: 'Columns, Medium', exact: true }).fill('2');
     await panel.getByLabel('Order on the website').click();
     await page.getByRole('option', { name: 'Title A–Z' }).click();
     await shot(page, 'gallery-editor-settings-panel');
@@ -836,6 +836,53 @@ test.describe('editor uses the full content width', () => {
 
 test.describe('German', () => {
   test.use({ storageState: authFile('german') });
+
+  test('compact settings use German schema labels and fit the sidebar', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1100 });
+    const gallery = await newGallery('German compact settings', 1);
+    expect(
+      await admin.update(gallery.id, (await admin.detail(gallery.id)).revision, {
+        layout: 'jigsaw',
+        settings: { columns: { base: 4, sm: 2, md: 3 } },
+      }),
+    ).toBe(200);
+    await openEditor(page, gallery);
+    await root(page).getByText('Layout & Einstellungen', { exact: true }).click();
+    const panel = root(page).locator('.swg-lsp');
+    await expect(
+      panel.getByText('Unter 480 px Breite wird ein einfaches zweispaltiges Raster angezeigt.'),
+    ).toBeVisible();
+    await expect(
+      panel.getByText('Bei 0 berühren sich die Teile wie bei einem fertigen Puzzle.'),
+    ).toBeVisible();
+    await expect(
+      panel.getByRole('spinbutton', { name: 'Größe der Zapfen (%)', exact: true }),
+    ).toBeVisible();
+    await expect(
+      panel.getByText('Wie weit die Zapfen aus einem Teil herausragen, in Prozent der Teilbreite.'),
+    ).toBeVisible();
+    await expect(panel.locator('.swg-sfield__devices input')).toHaveCount(5);
+    await expect(panel.getByRole('switch')).toHaveCount(0);
+    const shape = panel.getByLabel('Form der Teile', { exact: true });
+    await expect(shape).toHaveValue('Quadratisch (1:1)');
+    const field = panel.locator('.swg-sfield').filter({ hasText: 'Form der Teile' });
+    const selectBounds = await field.locator('.q-select').boundingBox();
+    const fieldBounds = await field.boundingBox();
+    expect(selectBounds!.width).toBeGreaterThan(fieldBounds!.width - 2);
+    const numeric = panel.locator('.swg-sfield').filter({ hasText: 'Größe der Zapfen (%)' });
+    const sliderBounds = await numeric.locator('input[type="range"]').boundingBox();
+    const numberBounds = await numeric.locator('input[type="number"]').boundingBox();
+    expect(
+      Math.abs(
+        sliderBounds!.y + sliderBounds!.height / 2 - (numberBounds!.y + numberBounds!.height / 2),
+      ),
+    ).toBeLessThan(3);
+    await shot(page, 'gallery-editor-compact-settings-german');
+    await panel.getByRole('spinbutton', { name: 'Spalten, Mittel', exact: true }).fill('');
+    await root(page).getByRole('button', { name: 'Speichern', exact: true }).click();
+    await expect(state(page)).toContainText('Alle Änderungen gespeichert');
+    expect((await admin.detail(gallery.id)).settings).toEqual({ columns: { base: 4, sm: 2 } });
+  });
 
   test('the editor is translated', async ({ page, browser, baseURL }) => {
     const german = await fixturesFor(browser, baseURL, 'german');
