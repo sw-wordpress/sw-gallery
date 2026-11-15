@@ -110,4 +110,6 @@
 - Pin E2E and release browser jobs to Ubuntu 24.04, supported by the locked Playwright.
 - Share the production Composer audit guard between static CI and scheduled audits: an explicitly empty production list passes; invalid/missing locks and failed real audits still fail. Regression tests cover those paths.
 - Calculate mosaic stack midpoints on the integer precision grid, avoiding PHP 8.4 floating-point midpoint drift without changing the render snapshot. A focused regression passes under PHP 8.3 and in a disposable PHP 8.4 container.
-- Local checks: 484 PHP tests, PHPStan/style gates (existing warnings), complete dependency audit, and shell syntax passed. Coverage and the remote CI/review outcome are recorded in PR #2.
+- Make the ZIP verification fixture compatible with PHP 8.2 (no aliases of internal classes); retain rejection of broken autoloaders.
+- Use PCOV for the full CI line-coverage run (whole checkout, unchanged >80 % gate); the previous Xdebug run was still in the planner stress tests when cancelled after 18 minutes.
+- Local checks: 484 PHP tests, PHPStan/style gates (existing warnings), complete dependency audit, and shell syntax passed. Local PHP line coverage is 97.66 % (all production sources included; the two costly CirclePacker stress tests ran without instrumentation). The full PCOV run and remote review outcome are recorded in PR #2.

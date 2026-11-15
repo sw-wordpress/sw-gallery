@@ -121,7 +121,10 @@ jobs:
           php-version: '8.3'
           extensions: mysqli, mbstring, gd
           tools: composer:v2
-          coverage: xdebug
+          # PCOV measures the required line coverage without Xdebug's planner stress-test overhead.
+          coverage: pcov
+          # tests/wp runs from a subdirectory; collect the complete plugin in both suites.
+          ini-values: pcov.directory=${{ github.workspace }}
       - run: composer install --prefer-dist --no-interaction --no-progress
       - run: composer install --working-dir=tests/wp --prefer-dist --no-interaction --no-progress
       - name: Unit + WordPress suite coverage, merge, strict gate
