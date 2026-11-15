@@ -1,1 +1,155 @@
-/* sw-gallery: `bubbles` layout styles (imported by layouts.css; filled by the layout's own work). */
+/*
+ * Bubbles (L-08): circle packing. The PHP view writes the bounding box of every circle and container variant as custom
+ * properties (percent of the container: --swg-{n|m|w}-{x|y|w|h}) and the container ratios (--swg-{n|m|w}-ar, width/
+ * height); the boxes are square in pixels, so border-radius: 50% makes them circles. Variants follow the CONTAINER width
+ * (container query), like the mosaic:
+ *   < 480px  two column grid of circles (also the whole layout without container queries)
+ *   >= 480px n (4:5)   >= 720px m (1:1)   >= 1024px w (16:10 or the `ratio` setting)
+ * The list is widened by the gap and pulled back with a negative margin, every circle box is padded by half the gap, so
+ * circles are exactly --swg-gap apart and the outer edge is flush. The horizontal offset is a logical margin on a box
+ * with auto insets (the build lowers inset-inline-start to :lang() rules that ignore dir): RTL mirrors the packing.
+ * --swg-fx/--swg-fy (focal point) become object-position. Captions stay in the lightbox.
+ * With the class swg-float (setting `float`) every bubble drifts up and down (--swg-fd delay, --swg-fa amplitude,
+ * --swg-fp period, seeded per item), only for visitors without a reduced-motion preference.
+ */
+.swg-gallery.swg-layout-bubbles {
+  container: swg-bubbles / inline-size;
+  isolation: isolate;
+}
+
+.swg-gallery.swg-layout-bubbles > .swg-items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--swg-gap, 4px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swg-gallery.swg-layout-bubbles .swg-item {
+  aspect-ratio: 1;
+}
+
+.swg-gallery.swg-layout-bubbles .swg-link {
+  position: relative;
+  flex: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  transform: scale(1);
+}
+
+.swg-gallery.swg-layout-bubbles .swg-link img,
+.swg-gallery.swg-layout-bubbles .swg-link:hover img,
+.swg-gallery.swg-layout-bubbles .swg-link:focus-visible img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  aspect-ratio: auto;
+  object-fit: cover;
+  object-position: var(--swg-fx, 50%) var(--swg-fy, 50%);
+  transform: none;
+}
+
+.swg-gallery.swg-layout-bubbles .swg-caption {
+  display: none;
+}
+
+/* The image covers the link's own outline: the ring is drawn on top of it, inside the circle. */
+.swg-gallery.swg-layout-bubbles .swg-link:focus-visible {
+  outline: none;
+}
+
+.swg-gallery.swg-layout-bubbles .swg-link:focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  outline: var(--swg-focus-ring, 3px solid Highlight);
+  outline-offset: -4px;
+  pointer-events: none;
+}
+
+/* A bubble pops forward on hover and keyboard focus. */
+.swg-gallery.swg-layout-bubbles .swg-item:hover,
+.swg-gallery.swg-layout-bubbles .swg-item:has(> .swg-link:focus-visible) {
+  z-index: 2;
+}
+
+.swg-gallery.swg-layout-bubbles .swg-link:hover,
+.swg-gallery.swg-layout-bubbles .swg-link:focus-visible {
+  transform: scale(1.06);
+}
+
+@container swg-bubbles (min-width: 480px) {
+  .swg-gallery.swg-layout-bubbles > .swg-items {
+    --swg-ar: var(--swg-n-ar, 0.8);
+
+    display: block;
+    position: relative;
+    inline-size: calc(100% + var(--swg-gap, 4px));
+    margin: calc(var(--swg-gap, 4px) / -2);
+    aspect-ratio: var(--swg-ar);
+  }
+
+  .swg-gallery.swg-layout-bubbles .swg-item {
+    --swg-x: var(--swg-n-x, 0);
+    --swg-y: var(--swg-n-y, 0);
+    --swg-w: var(--swg-n-w, 100);
+    --swg-h: var(--swg-n-h, 100);
+
+    position: absolute;
+    margin-inline-start: calc(var(--swg-x) * 1%);
+    inset-block-start: calc(var(--swg-y) * 1%);
+    inline-size: calc(var(--swg-w) * 1%);
+    block-size: calc(var(--swg-h) * 1%);
+    aspect-ratio: auto;
+    padding: calc(var(--swg-gap, 4px) / 2);
+  }
+}
+
+@container swg-bubbles (min-width: 720px) {
+  .swg-gallery.swg-layout-bubbles > .swg-items {
+    --swg-ar: var(--swg-m-ar, 1);
+  }
+
+  .swg-gallery.swg-layout-bubbles .swg-item {
+    --swg-x: var(--swg-m-x, 0);
+    --swg-y: var(--swg-m-y, 0);
+    --swg-w: var(--swg-m-w, 100);
+    --swg-h: var(--swg-m-h, 100);
+  }
+}
+
+@container swg-bubbles (min-width: 1024px) {
+  .swg-gallery.swg-layout-bubbles > .swg-items {
+    --swg-ar: var(--swg-w-ar, 1.6);
+  }
+
+  .swg-gallery.swg-layout-bubbles .swg-item {
+    --swg-x: var(--swg-w-x, 0);
+    --swg-y: var(--swg-w-y, 0);
+    --swg-w: var(--swg-w-w, 100);
+    --swg-h: var(--swg-w-h, 100);
+  }
+}
+
+@keyframes swg-bubble-float {
+  from {
+    transform: translateY(calc(var(--swg-fa, 4px) * -1));
+  }
+
+  to {
+    transform: translateY(var(--swg-fa, 4px));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .swg-gallery.swg-layout-bubbles .swg-link {
+    transition: transform 0.25s ease;
+  }
+
+  .swg-gallery.swg-layout-bubbles.swg-float .swg-item {
+    animation: swg-bubble-float var(--swg-fp, 7s) ease-in-out var(--swg-fd, 0s) infinite alternate;
+  }
+}

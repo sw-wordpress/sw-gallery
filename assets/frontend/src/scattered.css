@@ -1,1 +1,143 @@
-/* sw-gallery: `scattered` layout styles (imported by layouts.css; filled by the layout's own work). */
+/*
+ * Scattered prints (L-10): a calm grid whose cells are scaled up by --swg-overlap (percent), rotated by --swg-rot,
+ * nudged by --swg-dx/--swg-dy (percent of the cell) and stacked by --swg-z. The PHP view writes those numbers per item
+ * (core ScatterPlanner: seeded, every print stays >= 60 % visible); the container carries --swg-columns*, --swg-overlap,
+ * --swg-border, --swg-cell-ar and --swg-bleed-x/-y (how far prints leave their cells; the list is padded by that much,
+ * so nothing causes horizontal scroll). Theming: --swg-print-color (white). Pure CSS, DOM order = stored order.
+ *   --swg-k   strength of tilt and offsets (1; 0.5 in containers < 480px; 0.6 on touch screens)
+ *   --swg-ok  strength of the overlap (1; 0.5 on touch screens)
+ * Hover and keyboard focus straighten the print, lift it and raise it above all others. The z-index lives in the
+ * gallery's own stacking context (isolation), so prints never climb over theme headers.
+ */
+.swg-gallery.swg-layout-scattered {
+  --swg-k: 1;
+  --swg-ok: 1;
+
+  container: swg-scattered / inline-size;
+  isolation: isolate;
+}
+
+.swg-gallery.swg-layout-scattered > .swg-items {
+  --swg-cols: var(--swg-col-0);
+  --swg-bx: var(--swg-bleed-x, 0.2);
+  --swg-by: var(--swg-bleed-y, 0.2);
+
+  display: grid;
+  grid-template-columns: repeat(var(--swg-cols), minmax(0, 1fr));
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding-inline: calc(var(--swg-bx) / (var(--swg-cols) + 2 * var(--swg-bx)) * 100%);
+  padding-block: calc(var(--swg-by) / (var(--swg-cols) + 2 * var(--swg-bx)) * 100%);
+}
+
+@media (min-width: 576px) {
+  .swg-gallery.swg-layout-scattered > .swg-items {
+    --swg-cols: var(--swg-col-1);
+  }
+}
+
+@media (min-width: 768px) {
+  .swg-gallery.swg-layout-scattered > .swg-items {
+    --swg-cols: var(--swg-col-2);
+  }
+}
+
+@media (min-width: 1024px) {
+  .swg-gallery.swg-layout-scattered > .swg-items {
+    --swg-cols: var(--swg-col-3);
+  }
+}
+
+@media (min-width: 1280px) {
+  .swg-gallery.swg-layout-scattered > .swg-items {
+    --swg-cols: var(--swg-col-4);
+  }
+}
+
+/* Touch screens have no hover to straighten a print: less overlap, less tilt. */
+@media (hover: none) {
+  .swg-gallery.swg-layout-scattered {
+    --swg-k: 0.6;
+    --swg-ok: 0.5;
+  }
+}
+
+/* Narrow containers keep the look with two columns and half the tilt (never a plain grid). */
+@container swg-scattered (max-width: 479px) {
+  .swg-gallery.swg-layout-scattered > .swg-items {
+    --swg-cols: 2;
+    --swg-k: 0.5;
+  }
+}
+
+.swg-gallery.swg-layout-scattered .swg-item {
+  --swg-s: calc(1 + var(--swg-overlap, 12) * var(--swg-ok) / 100);
+
+  display: block;
+  position: relative;
+  z-index: var(--swg-z, 1);
+  aspect-ratio: var(--swg-cell-ar, 1.5);
+}
+
+.swg-gallery.swg-layout-scattered .swg-link {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  padding: calc(var(--swg-border, 10px) / var(--swg-s));
+  background: var(--swg-print-color, #fff);
+  border-radius: 1px;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.28),
+    0 6px 14px rgb(0 0 0 / 0.18);
+  transform: translate(
+      calc(var(--swg-dx, 0%) * var(--swg-k)),
+      calc(var(--swg-dy, 0%) * var(--swg-k))
+    )
+    rotate(calc(var(--swg-rot, 0deg) * var(--swg-k))) scale(var(--swg-s));
+}
+
+.swg-gallery.swg-layout-scattered .swg-link img,
+.swg-gallery.swg-layout-scattered .swg-link:hover img,
+.swg-gallery.swg-layout-scattered .swg-link:focus-visible img {
+  inline-size: 100%;
+  block-size: 100%;
+  aspect-ratio: auto;
+  object-fit: cover;
+  transform: none;
+}
+
+.swg-gallery.swg-layout-scattered .swg-caption {
+  display: none;
+}
+
+/* Hover and keyboard focus: the print lies flat, grows a little and comes to the top. */
+.swg-gallery.swg-layout-scattered .swg-item:hover,
+.swg-gallery.swg-layout-scattered .swg-item:has(> .swg-link:focus-visible) {
+  z-index: 100000;
+}
+
+.swg-gallery.swg-layout-scattered .swg-link:hover,
+.swg-gallery.swg-layout-scattered .swg-link:focus-visible {
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.3),
+    0 14px 30px rgb(0 0 0 / 0.28);
+  transform: translate(
+      calc(var(--swg-dx, 0%) * var(--swg-k)),
+      calc(var(--swg-dy, 0%) * var(--swg-k))
+    )
+    rotate(0deg) scale(calc(var(--swg-s) + 0.05));
+}
+
+.swg-gallery.swg-layout-scattered .swg-link:focus-visible {
+  outline: var(--swg-focus-ring, 3px solid Highlight);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .swg-gallery.swg-layout-scattered .swg-link {
+    transition:
+      transform 0.28s ease,
+      box-shadow 0.28s ease;
+  }
+}
