@@ -104,9 +104,11 @@
     overflow-clip-margin: 16px;
   }
 
+  /* The slot box of the next piece lies over the tab of this one: only the clipped link takes pointer events. */
   .swg-gallery.swg-layout-jigsaw .swg-item {
     position: relative;
     aspect-ratio: var(--swg-jaspect, 1);
+    pointer-events: none;
   }
 
   .swg-gallery.swg-layout-jigsaw .swg-item:hover,
@@ -129,6 +131,7 @@
     border-radius: 0;
     clip-path: var(--swg-jp);
     overflow: visible;
+    pointer-events: auto;
   }
 
   .swg-gallery.swg-layout-jigsaw .swg-link:focus-visible {

@@ -640,14 +640,19 @@ test('jigsaw RTL mirrors the pieces and keeps the DOM order and upright images',
       Math.abs(mirrored.left - rtl.list.left - (ltr.list.right - piece.slot.right)),
     ).toBeLessThan(1.5);
   }
-  const net = await page
-    .locator('.swg-gallery .swg-link img')
-    .first()
-    .evaluate((img) => {
-      const matrix = (el: Element): number => new DOMMatrix(getComputedStyle(el).transform).a;
-      return matrix(img) * matrix(img.parentElement as Element);
-    });
-  expect(net, 'the picture is mirrored twice: upright').toBe(1);
+  await expect
+    .poll(
+      () =>
+        page
+          .locator('.swg-gallery .swg-link img')
+          .first()
+          .evaluate((img) => {
+            const matrix = (el: Element): number => new DOMMatrix(getComputedStyle(el).transform).a;
+            return matrix(img) * matrix(img.parentElement as Element);
+          }),
+      { message: 'the picture is mirrored twice: upright' },
+    )
+    .toBe(1);
   expect((await measure(page)).overflow).toBe(false);
   await shot(page, 'jigsaw-rtl-1280');
   await context.close();
@@ -730,10 +735,7 @@ test('jigsaw: Tab order, the focus ring follows the piece, hover lifts it, the l
     .first()
     .screenshot({ path: resolve(SCREENSHOT_DIR, 'jigsaw-hover.png') });
 
-  await page
-    .locator('.swg-gallery a.swg-link')
-    .nth(2)
-    .click({ position: { x: 20, y: 40 } });
+  await page.locator('.swg-gallery a.swg-link').nth(2).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText(new RegExp(`3\\s*(of|von)\\s*${order.length}`));
