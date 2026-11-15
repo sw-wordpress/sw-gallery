@@ -91,10 +91,10 @@
     0 1px 2px rgb(0 0 0 / 0.28),
     0 6px 14px rgb(0 0 0 / 0.18);
   transform: translate(
-      calc(var(--swg-dx, 0%) * var(--swg-k)),
+      calc(var(--swg-dx, 0%) * var(--swg-k) * var(--swg-m, 1)),
       calc(var(--swg-dy, 0%) * var(--swg-k))
     )
-    rotate(calc(var(--swg-rot, 0deg) * var(--swg-k))) scale(var(--swg-s));
+    rotate(calc(var(--swg-rot, 0deg) * var(--swg-k) * var(--swg-m, 1))) scale(var(--swg-s));
 }
 
 .swg-gallery.swg-layout-scattered .swg-link img,
@@ -123,7 +123,7 @@
     0 2px 4px rgb(0 0 0 / 0.3),
     0 14px 30px rgb(0 0 0 / 0.28);
   transform: translate(
-      calc(var(--swg-dx, 0%) * var(--swg-k)),
+      calc(var(--swg-dx, 0%) * var(--swg-k) * var(--swg-m, 1)),
       calc(var(--swg-dy, 0%) * var(--swg-k))
     )
     rotate(0deg) scale(calc(var(--swg-s) + 0.05));
@@ -140,4 +140,13 @@
       transform 0.28s ease,
       box-shadow 0.28s ease;
   }
+}
+
+/*
+ * RTL: the grid itself mirrors, so offsets and tilt must mirror too. The planner guarantees the visible share of every
+ * print for the left-to-right composition; only its exact mirror image keeps that guarantee.
+ */
+[dir='rtl'] .swg-gallery.swg-layout-scattered,
+.swg-gallery.swg-layout-scattered[dir='rtl'] {
+  --swg-m: -1;
 }

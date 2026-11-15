@@ -25,7 +25,8 @@ describe.each([
       for (const selector of head.split(',')) {
         const s = selector.trim();
         if (s === 'from' || s === 'to') continue;
-        expect(s).toMatch(new RegExp(`^\\.swg-gallery\\.${layoutClass}`));
+        // An `[dir='rtl']` ancestor is allowed (WordPress sets it on <html>; `:dir()` is not usable): the rule stays scoped to the layout.
+        expect(s).toMatch(new RegExp(`^(\\[dir='rtl'\\] )?\\.swg-gallery\\.${layoutClass}`));
       }
     }
   });
