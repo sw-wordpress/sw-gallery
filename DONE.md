@@ -114,3 +114,12 @@
 - Make the ZIP verification fixture compatible with PHP 8.2 (no aliases of internal classes); retain rejection of broken autoloaders.
 - Use PCOV for the full CI line-coverage run (whole checkout, unchanged >80 % gate); the previous Xdebug run was still in the planner stress tests when cancelled after 18 minutes.
 - Local checks: 484 PHP tests, PHPStan/style gates (existing warnings), complete dependency audit, and shell syntax passed. Local PHP line coverage is 97.66 % (all production sources included; the two costly CirclePacker stress tests ran without instrumentation). The full PCOV run and remote review outcome are recorded in PR #2.
+
+## 2026-11-16 — PR #2 isolated repair
+- Upload chooser: unique Vue ID and associated label using existing English/German button text; regression covers both locales and simultaneous instances.
+- CI screenshot/trace and local browser RED confirmed that compact Grid settings fit at 875 px. Shared browser assertions now also check real overflow at 600 px, independent wheel scrolling and mobile stacking; no layout padding or sizing changes.
+- Sonar scanner waits for the server quality gate. Verification and outstanding current-head gates: `build/checks/PR2-REPAIR.md`; no commits or publication from this checkout.
+
+## 2026-11-16 — Local merge conflict resolution
+- Resolve the editor workspace test in favor of the shared desktop/mobile assertions; these retain the short-viewport overflow regression and the mocked REST harness.
+- Validation: real WordPress/Docker and mocked browser workspace tests passed; 500 admin tests, 96.34 % lines, typecheck/lint/format/build and i18n passed. PHP is unchanged; existing coverage report passes at 97.66 %.

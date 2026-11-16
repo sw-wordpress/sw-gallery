@@ -16,6 +16,8 @@ Every task ships with tests, i18n (en/de), docs and passes the Definition of Don
 
 - [x] Guard the production Composer audit for an explicitly empty package list; retain failures for real audits and invalid locks.
 - [x] Pin browser CI runners to Ubuntu 24.04; round mosaic stack midpoints on the integer precision grid for PHP 8.4.
+- [x] Label the upload chooser per instance; test compact settings with fitting and overflowing desktop viewports and a shared local browser harness.
+- [ ] Parent: verify the published repair head with PHP/WordPress coverage, full E2E, SonarCloud Code Analysis and a fresh Codex review.
 
 ## Open decisions (answer before the blocked task starts)
 
