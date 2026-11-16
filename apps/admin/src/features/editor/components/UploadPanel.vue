@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ACCEPTED_TYPES } from '../useUploads';
 import type { UploadEntry, Uploads } from '../useUploads';
@@ -8,6 +8,7 @@ import type { UploadEntry, Uploads } from '../useUploads';
 const props = defineProps<{ uploads: Uploads; disabled: boolean }>();
 const { t } = useI18n();
 const input = ref<HTMLInputElement | null>(null);
+const inputId = `swg-upload-${useId()}`;
 const accept = ACCEPTED_TYPES.join(',');
 
 const entries = computed(() => props.uploads.entries.value);
@@ -58,7 +59,9 @@ const KIND: Record<string, string> = {
 
 <template>
   <div class="swg-up">
+    <label class="swg-sr-only" :for="inputId">{{ t('editor.upload.button') }}</label>
     <input
+      :id="inputId"
       ref="input"
       class="swg-sr-only"
       type="file"

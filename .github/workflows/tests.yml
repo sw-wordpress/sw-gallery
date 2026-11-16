@@ -180,4 +180,6 @@ jobs:
         # SonarSource/sonarqube-scan-action pinned by commit (tag v5.x).
         uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304
         with:
-          args: -Dsonar.organization=${{ vars.SONAR_ORGANIZATION || 'sw-wordpress' }}
+          args: >-
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION || 'sw-wordpress' }}
+            -Dsonar.qualitygate.wait=true
