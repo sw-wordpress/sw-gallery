@@ -57,6 +57,7 @@ final class VerifyZipScriptTest extends TestCase
             ),
             'developer path' => array(array('assets/build/x.js' => 'var p="/home/stefan/project";'), 'absolute developer paths'),
             'php syntax error' => array(array('packages/core/src/Broken.php' => '<?php function ('), 'PHP syntax error'),
+            'broken autoloader' => array(array('vendor/autoload.php' => '<?php'), 'generated autoloader does not load'),
             'missing LICENSE' => array(array('LICENSE' => null), 'required file missing: LICENSE'),
             'missing third-party notices' => array(array('THIRD-PARTY-NOTICES.md' => null), 'required file missing: THIRD-PARTY-NOTICES.md'),
             'GitHub README is not shipped' => array(array('README.md' => '# x'), 'top-level entry not allowed: README.md'),
@@ -125,8 +126,9 @@ final class VerifyZipScriptTest extends TestCase
             'LICENSE' => "GNU GENERAL PUBLIC LICENSE\n",
             'THIRD-PARTY-NOTICES.md' => "# Third-party notices\n",
             'CHANGELOG.md' => "# Changelog\n\n## [1.0.0] - 2026-01-01\n",
-            'vendor/autoload.php' => '<?php class_alias( \\stdClass::class, "SWGallery\\\\WordPress\\\\Plugin" );'
-                . ' class_alias( \\stdClass::class, "SWGallery\\\\Core\\\\Domain\\\\Gallery\\\\Gallery" );',
+            // Aliasing internal classes is only supported since PHP 8.3; the package baseline is 8.2.
+            'vendor/autoload.php' => '<?php namespace SWGallery\\WordPress; class Plugin {}'
+                . ' namespace SWGallery\\Core\\Domain\\Gallery; class Gallery {}',
             'assets/blocks/block.json' => '{}',
             'assets/blocks/build/index.js' => 'x',
             'assets/media-library/media-library.js' => 'x',

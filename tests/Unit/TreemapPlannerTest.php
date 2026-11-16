@@ -119,6 +119,22 @@ final class TreemapPlannerTest extends TestCase
         }
     }
 
+    public function testStackedMidpointsRoundOnTheIntegerPrecisionGrid(): void
+    {
+        // The narrow mosaic has an exact midpoint of 72.7275. Adding its decimal top first
+        // gives 72.72749999999999, which PHP 8.4 correctly rounds down instead of up.
+        $items = [
+            new PlanItem(4 / 3, 3), new PlanItem(0.75), new PlanItem(2.0, 2),
+            new PlanItem(4 / 3), new PlanItem(1.0), new PlanItem(1.5),
+        ];
+        $plan = (new TreemapPlanner())->plan($items, PlanSeed::from(12, 3), 0.8);
+        self::assertSame(45.455, $plan->shapes[4]->y);
+        self::assertSame(27.273, $plan->shapes[4]->h);
+        self::assertSame(72.728, $plan->shapes[5]->y);
+        self::assertSame(27.272, $plan->shapes[5]->h);
+        self::assertEqualsWithDelta(100.0, $plan->shapes[5]->y + $plan->shapes[5]->h, 1e-9);
+    }
+
     public function testAreaFollowsTheEmphasisWeights(): void
     {
         $planner = new TreemapPlanner();

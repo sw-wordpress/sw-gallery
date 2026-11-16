@@ -211,7 +211,14 @@ final class TreemapPlanner
                 if ($size === 1) {
                     $edges[$index] = [$left, $top, $right, $bottom];
                 } else {
-                    $middle = round($top + ($bottom - $top) * $weights[$index] / $cellWeight, Shape::PRECISION);
+                    // Interpolate on the integer precision grid: adding a decimal top before rounding
+                    // can put an exact half below the midpoint on PHP 8.4 (e.g. 72.7275).
+                    $scale = 10 ** Shape::PRECISION;
+                    $topUnits = (int) round($top * $scale);
+                    $heightUnits = (int) round(($bottom - $top) * $scale);
+                    $weightUnits = (int) round($weights[$index] * 10);
+                    $cellUnits = (int) round($cellWeight * 10);
+                    $middle = round(($topUnits * $cellUnits + $heightUnits * $weightUnits) / $cellUnits) / $scale;
                     $edges[$index] = [$left, $top, $right, $middle];
                     $edges[$index + 1] = [$left, $middle, $right, $bottom];
                 }

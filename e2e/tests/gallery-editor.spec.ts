@@ -8,6 +8,7 @@ import type { Role } from '../support/env';
 import { GalleryFixtures, tinyPng, uniquePrefix } from '../support/galleries';
 import type { GalleryRecord, MediaRecord } from '../support/galleries';
 import { monitorPage } from '../support/monitor';
+import { expectDesktopWorkspace, expectMobileWorkspace } from '../support/editor-workspace';
 
 /**
  * Gallery editor (M2-24..M2-32) against the real REST API and the real `wp.media` modal. Fixtures (galleries and
@@ -290,8 +291,10 @@ test.describe('as administrator', () => {
   }) => {
     const gallery = await newGallery('Upload', 0);
     await openEditor(page, gallery);
-    const fileInput = root(page).locator('input[type="file"]');
-    await fileInput.setInputFiles([
+    const chooserPromise = page.waitForEvent('filechooser');
+    await root(page).getByRole('button', { name: 'Upload images', exact: true }).click();
+    const chooser = await chooserPromise;
+    await chooser.setFiles([
       { name: 'ok-one.png', mimeType: 'image/png', buffer: tinyPng([10, 10, 10]) },
       // passes the client hint (type) and the signature check of the server, but is cut off: not decodable
       { name: 'broken.png', mimeType: 'image/png', buffer: tinyPng([1, 2, 3]).subarray(0, 45) },
@@ -314,20 +317,33 @@ test.describe('as administrator', () => {
     await expect(tiles(page)).toHaveCount(1);
     expect(await admin.items(gallery.id)).toHaveLength(1);
 
-    // drag and drop of files onto the images area
+    // File drops also work outside the app, on the WordPress admin chrome.
     const dropped = tinyPng([90, 20, 140]).toString('base64');
     await page.evaluate(async (data) => {
       const bytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
       const transfer = new DataTransfer();
       transfer.items.add(new File([bytes], 'dropped.png', { type: 'image/png' }));
-      const area = document.querySelector('.swg-ed__images');
+      const area = document.querySelector('#wpadminbar');
       area?.dispatchEvent(
         new DragEvent('dragenter', { dataTransfer: transfer, bubbles: true, cancelable: true }),
       );
-      area?.dispatchEvent(
-        new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true }),
-      );
     }, dropped);
+    const overlay = page.locator('.swg-ed-drop');
+    await expect(overlay).toBeVisible();
+    const bounds = await overlay.boundingBox();
+    expect(bounds?.width).toBeGreaterThan((page.viewportSize()?.width ?? 0) - 20);
+    expect(bounds?.height).toBeGreaterThan((page.viewportSize()?.height ?? 0) - 20);
+    await page.evaluate((data) => {
+      const transfer = new DataTransfer();
+      const bytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
+      transfer.items.add(new File([bytes], 'dropped.png', { type: 'image/png' }));
+      document
+        .querySelector('#wpadminbar')
+        ?.dispatchEvent(
+          new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true }),
+        );
+    }, dropped);
+    await expect(overlay).toHaveCount(0);
     await expect(tiles(page)).toHaveCount(2);
     expect(await admin.items(gallery.id)).toHaveLength(2);
     await root(page).getByRole('button', { name: 'Remove broken.png from the list' }).click();
@@ -502,8 +518,8 @@ test.describe('as administrator', () => {
     await expect(state(page)).toContainText('Fix the invalid settings to save.');
     await numbers.nth(0).fill('5');
     await expect(panel.getByText('Must be at most 12.')).toHaveCount(0);
-    await panel.getByRole('switch', { name: /Override: Columns, Medium/ }).click();
-    await numbers.nth(1).fill('2');
+    await expect(panel.getByRole('switch')).toHaveCount(0);
+    await panel.getByRole('spinbutton', { name: 'Columns, Medium', exact: true }).fill('2');
     await panel.getByLabel('Order on the website').click();
     await page.getByRole('option', { name: 'Title A–Z' }).click();
     await shot(page, 'gallery-editor-settings-panel');
@@ -709,6 +725,22 @@ test.describe('accessibility and screenshots', () => {
   });
 });
 
+test.describe('editor workspace', () => {
+  test.use({ storageState: authFile('administrator') });
+
+  test('fills the viewport with compact tools and independently scrolling settings', async ({
+    page,
+  }) => {
+    const gallery = await newGallery('Workspace', 6);
+    await page.setViewportSize({ width: 1500, height: 875 });
+    await openEditor(page, gallery);
+    await expectDesktopWorkspace(page);
+    await shot(page, 'gallery-editor-workspace');
+    await expectMobileWorkspace(page);
+    await shot(page, 'gallery-editor-workspace-mobile');
+  });
+});
+
 test.describe('editor uses the full content width', () => {
   test.use({ storageState: authFile('administrator') });
 
@@ -770,6 +802,53 @@ test.describe('editor uses the full content width', () => {
 
 test.describe('German', () => {
   test.use({ storageState: authFile('german') });
+
+  test('compact settings use German schema labels and fit the sidebar', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1100 });
+    const gallery = await newGallery('German compact settings', 1);
+    expect(
+      await admin.update(gallery.id, (await admin.detail(gallery.id)).revision, {
+        layout: 'jigsaw',
+        settings: { columns: { base: 4, sm: 2, md: 3 } },
+      }),
+    ).toBe(200);
+    await openEditor(page, gallery);
+    await root(page).getByText('Layout & Einstellungen', { exact: true }).click();
+    const panel = root(page).locator('.swg-lsp');
+    await expect(
+      panel.getByText('Unter 480 px Breite wird ein einfaches zweispaltiges Raster angezeigt.'),
+    ).toBeVisible();
+    await expect(
+      panel.getByText('Bei 0 berühren sich die Teile wie bei einem fertigen Puzzle.'),
+    ).toBeVisible();
+    await expect(
+      panel.getByRole('spinbutton', { name: 'Größe der Zapfen (%)', exact: true }),
+    ).toBeVisible();
+    await expect(
+      panel.getByText('Wie weit die Zapfen aus einem Teil herausragen, in Prozent der Teilbreite.'),
+    ).toBeVisible();
+    await expect(panel.locator('.swg-sfield__devices input')).toHaveCount(5);
+    await expect(panel.getByRole('switch')).toHaveCount(0);
+    const shape = panel.getByLabel('Form der Teile', { exact: true });
+    await expect(shape).toHaveValue('Quadratisch (1:1)');
+    const field = panel.locator('.swg-sfield').filter({ hasText: 'Form der Teile' });
+    const selectBounds = await field.locator('.q-select').boundingBox();
+    const fieldBounds = await field.boundingBox();
+    expect(selectBounds!.width).toBeGreaterThan(fieldBounds!.width - 2);
+    const numeric = panel.locator('.swg-sfield').filter({ hasText: 'Größe der Zapfen (%)' });
+    const sliderBounds = await numeric.locator('input[type="range"]').boundingBox();
+    const numberBounds = await numeric.locator('input[type="number"]').boundingBox();
+    expect(
+      Math.abs(
+        sliderBounds!.y + sliderBounds!.height / 2 - (numberBounds!.y + numberBounds!.height / 2),
+      ),
+    ).toBeLessThan(3);
+    await shot(page, 'gallery-editor-compact-settings-german');
+    await panel.getByRole('spinbutton', { name: 'Spalten, Mittel', exact: true }).fill('');
+    await root(page).getByRole('button', { name: 'Speichern', exact: true }).click();
+    await expect(state(page)).toContainText('Alle Änderungen gespeichert');
+    expect((await admin.detail(gallery.id)).settings).toEqual({ columns: { base: 4, sm: 2 } });
+  });
 
   test('the editor is translated', async ({ page, browser, baseURL }) => {
     const german = await fixturesFor(browser, baseURL, 'german');

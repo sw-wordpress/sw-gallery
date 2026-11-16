@@ -5,6 +5,20 @@ Order is binding: M1 → M5 (S§14.4). No P1/P2 work before P0 (M1–M5) is comp
 Task IDs are stable identifiers; the list order inside a milestone is the execution order.
 Every task ships with tests, i18n (en/de), docs and passes the Definition of Done (S§12). Decisions referenced as D n are recorded in `docs/decisions.md`.
 
+## Editor workspace follow-up (2026-11-15)
+
+- [x] Compact sw-sliderman-style workspace: viewport layout, icon rail, header, image tools, independent settings scroll; narrow-screen stacking.
+- [x] Window-wide file drop overlay and compact toolbar upload button; retain upload progress, permission checks and native media handling.
+- [x] Compact layout settings: device inputs with empty overrides, slider/value rows, full-width selects and user-locale schema translations.
+- [ ] Stefan: practical acceptance of the updated editor (desktop, long settings, mobile, save/undo/preview).
+
+## PR #2 CI follow-up
+
+- [x] Guard the production Composer audit for an explicitly empty package list; retain failures for real audits and invalid locks.
+- [x] Pin browser CI runners to Ubuntu 24.04; round mosaic stack midpoints on the integer precision grid for PHP 8.4.
+- [x] Label the upload chooser per instance; test compact settings with fitting and overflowing desktop viewports and a shared local browser harness.
+- [ ] Parent: verify the published repair head with PHP/WordPress coverage, full E2E, SonarCloud Code Analysis and a fresh Codex review.
+
 ## Open decisions (answer before the blocked task starts)
 
 None at the moment. Decided on 2026-11-10: D1–D13, F-01 (rejected), F-02, F-03, F-09, F-10 — see `docs/decisions.md`.

@@ -17,7 +17,8 @@ concurrency:
 jobs:
   playwright:
     name: Playwright (WordPress ${{ matrix.wp }})
-    runs-on: ubuntu-latest
+    # The locked Playwright version supports Ubuntu 24.04, not the moving latest image.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       fail-fast: false

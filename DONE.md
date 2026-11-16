@@ -89,3 +89,32 @@
 - `magazine` (L-12: 18 row templates, cost-minimising DP over the whole page incl. the closing row, nested lists), `shattered` (L-01: weighted Voronoi/power diagram shards with grout and `variation`), `honeycomb` (L-07 hexagon/diamond), `jigsaw` (L-04: seeded interlocking tabs through one SVG of clip paths), `scattered` (L-10: tilted overlapping prints, every print >= 60 % visible by construction) and `bubbles` (L-08: circle packing, optional float).
 - Found while merging: in RTL the scattered offsets and tilt must mirror with the grid (otherwise the visibility guarantee breaks for some seeds): fixed with `--swg-m`.
 - State: 475 unit tests, 1554 WordPress tests (single + multisite), PHP coverage 97.8 %; assets 207 tests / 100 %; E2E 320 passed on the full run (+ the RTL fix verified three times without retries).
+
+## 2026-11-15 — Compact gallery editor workspace
+- Editor fills the available viewport with compact navigation/header/tools, a full-height image area and an independently scrolling settings panel; settings stack below the images on narrow screens.
+- Navigation expansion in the editor preserves the preference on other pages. Existing gallery operations, translated labels and keyboard controls are retained.
+- Regression coverage: navigation preference isolation and browser checks for viewport geometry, settings scroll and mobile overflow.
+- Validation: 491 admin tests (96.30% lines), build/typecheck/lint, 28 browser scenarios (two network-related retries), i18n parity; PHP style/analysis and 475 unit/integration tests passed; WordPress suite: 1,554 tests, 10 skipped, merged PHP line coverage 97.78%.
+
+## 2026-11-15 — Editor upload controls
+- Replaced the permanent upload strip with a compact toolbar button and a window-wide overlay while dragging external files; progress remains visible after queuing.
+- Regression coverage: window drops, nested drag targets, cancellation/navigation cleanup, native media modal, permission denial and file chooser.
+- Checks: 494 admin tests, 96.38 % lines; typecheck/lint/format/build/i18n and Docker upload browser test passed. PHP: 475 tests, PHPStan and style gates passed (existing warnings); existing coverage report passes at 97.78 %. A fresh full PHP coverage run ended with signal 143 before producing a report; PHP sources are unchanged.
+
+## 2026-11-15 — Compact editor settings sidebar
+- Responsive numbers: five device inputs, no override switches; empty removes the override and the placeholder shows the inherited value. Slider/value rows, full-width selects/text inputs and inline reset icons reduce vertical space.
+- Layout schema requests use `_locale=user`; existing German PHP descriptions/options now match the SPA language. Default enum and boolean labels are localized.
+- Checks: 497 admin tests plus four focused setting-field tests; admin line coverage 96.31 %. Typecheck/lint/format/build/i18n and Docker tests for responsive saves and German field geometry/translations passed. PHP: 475 tests, PHPStan/style gates passed (existing warnings); unchanged PHP coverage report passes at 97.78 %.
+
+## 2026-11-15 — PR #2 CI repairs
+- Pin E2E and release browser jobs to Ubuntu 24.04, supported by the locked Playwright.
+- Share the production Composer audit guard between static CI and scheduled audits: an explicitly empty production list passes; invalid/missing locks and failed real audits still fail. Regression tests cover those paths.
+- Calculate mosaic stack midpoints on the integer precision grid, avoiding PHP 8.4 floating-point midpoint drift without changing the render snapshot. A focused regression passes under PHP 8.3 and in a disposable PHP 8.4 container.
+- Make the ZIP verification fixture compatible with PHP 8.2 (no aliases of internal classes); retain rejection of broken autoloaders.
+- Use PCOV for the full CI line-coverage run (whole checkout, unchanged >80 % gate); the previous Xdebug run was still in the planner stress tests when cancelled after 18 minutes.
+- Local checks: 484 PHP tests, PHPStan/style gates (existing warnings), complete dependency audit, and shell syntax passed. Local PHP line coverage is 97.66 % (all production sources included; the two costly CirclePacker stress tests ran without instrumentation). The full PCOV run and remote review outcome are recorded in PR #2.
+
+## 2026-11-16 — PR #2 isolated repair
+- Upload chooser: unique Vue ID and associated label using existing English/German button text; regression covers both locales and simultaneous instances.
+- CI screenshot/trace and local browser RED confirmed that compact Grid settings fit at 875 px. Shared browser assertions now also check real overflow at 600 px, independent wheel scrolling and mobile stacking; no layout padding or sizing changes.
+- Sonar scanner waits for the server quality gate. Verification and outstanding current-head gates: `build/checks/PR2-REPAIR.md`; no commits or publication from this checkout.

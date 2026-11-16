@@ -518,7 +518,7 @@ describe('layout and settings', () => {
     expect(panel.textContent).toContain('Default: 3');
     expect(panel.textContent).toContain('All sizes');
     expect(panel.textContent).toContain('Gap (px)');
-    expect(panel.querySelectorAll('input[type="range"]').length).toBeGreaterThanOrEqual(2);
+    expect(panel.querySelectorAll('input[type="range"]').length).toBeGreaterThanOrEqual(1);
 
     const columns = panel.querySelector<HTMLInputElement>(
       'input[type="number"]',
@@ -535,12 +535,11 @@ describe('layout and settings', () => {
     await settle();
     expect(panel.textContent).not.toContain('Must be at most 12.');
     // a different value for medium screens
-    const override = Array.from(panel.querySelectorAll<HTMLElement>('[role="switch"]'))[1];
-    await click(override);
+    expect(panel.querySelectorAll('[role="switch"]')).toHaveLength(0);
     expect(panel.querySelectorAll('input[type="number"]').length).toBeGreaterThan(2);
     const medium = panel.querySelectorAll<HTMLInputElement>(
       'input[type="number"]',
-    )[1] as HTMLInputElement;
+    )[2] as HTMLInputElement;
     setInput(medium, '2');
     await settle();
     await click(button('Save'));
@@ -790,8 +789,8 @@ describe('adding images', () => {
     await open(new FakeServer(2, { canPublish: false }), { capabilities: ['edit_posts'] });
     expect($('.swg-ed__add')?.hasAttribute('disabled')).toBe(true);
     expect($('.swg-ed__bar')?.textContent).toContain('not allowed to use the Media Library');
-    expect($('.swg-up__zone.is-disabled')).not.toBeNull();
-    expect($('.swg-up button')?.hasAttribute('disabled')).toBe(true);
+    expect(button('Upload images')?.disabled).toBe(true);
+    expect($('input[type="file"]')?.hasAttribute('disabled')).toBe(true);
   });
 
   it('uploads dropped files with progress and adds them when done', async () => {
@@ -806,7 +805,7 @@ describe('adding images', () => {
     );
     const server = new FakeServer();
     await open(server, { media: { upload } });
-    const section = $('.swg-ed__images') as HTMLElement;
+    const section = document.body;
     const file = new File([new Uint8Array(10)], 'drop.png', { type: 'image/png' });
     const fire = (type: string): Event => {
       const event = new Event(type, { bubbles: true, cancelable: true });
@@ -816,11 +815,11 @@ describe('adding images', () => {
     };
     fire('dragenter');
     await settle();
-    expect($('.swg-up__zone.is-over')).not.toBeNull();
+    expect($('.swg-ed-drop')).not.toBeNull();
     expect(fire('dragover').defaultPrevented).toBe(true);
     fire('dragleave');
     await settle();
-    expect($('.swg-up__zone.is-over')).toBeNull();
+    expect($('.swg-ed-drop')).toBeNull();
     fire('dragenter');
     fire('drop');
     await settle();
@@ -835,6 +834,89 @@ describe('adding images', () => {
     expect(upload).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps the overlay across nested targets and clears it on cancellation and navigation', async () => {
+    const { router } = await open();
+    const fire = (target: EventTarget, type: string, types = ['Files']): Event => {
+      const event = new Event(type, { bubbles: true, cancelable: true });
+      Object.assign(event, { dataTransfer: { types, files: [] } });
+      target.dispatchEvent(event);
+      return event;
+    };
+    fire(document.body, 'dragenter', ['text/plain']);
+    await settle();
+    expect($('.swg-ed-drop')).toBeNull();
+    fire(document.body, 'dragenter');
+    fire($('.swg-ed__title') as HTMLElement, 'dragenter');
+    fire($('.swg-ed__title') as HTMLElement, 'dragleave');
+    await settle();
+    expect($('.swg-ed-drop')).not.toBeNull();
+    fire(document.body, 'dragleave');
+    await settle();
+    expect($('.swg-ed-drop')).toBeNull();
+    for (const cancel of ['dragend', 'blur', 'Escape']) {
+      fire(window, 'dragenter');
+      await settle();
+      expect($('.swg-ed-drop')).not.toBeNull();
+      if (cancel === 'Escape') await press(document.body, 'Escape');
+      else window.dispatchEvent(new Event(cancel));
+      await settle();
+      expect($('.swg-ed-drop')).toBeNull();
+    }
+    fire(window, 'dragenter');
+    await settle();
+    await router.push('/galleries');
+    await settle();
+    expect($('.swg-ed-drop')).toBeNull();
+    expect(fire(window, 'dragenter').defaultPrevented).toBe(false);
+    expect(fire(window, 'drop').defaultPrevented).toBe(false);
+  });
+
+  it('leaves the native media modal in control of its own drops', async () => {
+    const upload = vi.fn();
+    await open(new FakeServer(), { media: { upload } });
+    const modal = document.createElement('div');
+    modal.className = 'media-modal';
+    document.body.appendChild(modal);
+    try {
+      const fire = (target: EventTarget, type: string): Event => {
+        const event = new Event(type, { bubbles: true, cancelable: true });
+        Object.assign(event, { dataTransfer: { types: ['Files'], files: [] } });
+        target.dispatchEvent(event);
+        return event;
+      };
+      fire(document.body, 'dragenter');
+      for (const type of ['dragenter', 'dragover', 'dragleave', 'drop']) {
+        expect(fire(modal, type).defaultPrevented).toBe(false);
+      }
+      await settle();
+      expect($('.swg-ed-drop')).toBeNull();
+      expect(upload).not.toHaveBeenCalled();
+    } finally {
+      modal.remove();
+    }
+  });
+
+  it('blocks window drops and file selection without upload permission', async () => {
+    const upload = vi.fn();
+    await open(new FakeServer(), { capabilities: ['edit_posts'], media: { upload } });
+    const file = new File(['image'], 'blocked.png', { type: 'image/png' });
+    for (const type of ['dragenter', 'dragover', 'drop']) {
+      const event = new Event(type, { bubbles: true, cancelable: true });
+      const dataTransfer = { types: ['Files'], files: [file], dropEffect: '' };
+      Object.assign(event, { dataTransfer });
+      document.body.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(true);
+      if (type === 'dragover') expect(dataTransfer.dropEffect).toBe('none');
+    }
+    const input = $('input[type="file"]') as HTMLInputElement;
+    Object.defineProperty(input, 'files', { value: [file], configurable: true });
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+    expect(upload).not.toHaveBeenCalled();
+    expect($('.swg-ed-drop')).toBeNull();
+    expect(toast('not allowed to use the Media Library')).toBeDefined();
+  });
+
   it('uploads through the file button and shows per-file failures with retry and cancel', async () => {
     let attempt = 0;
     const upload = vi.fn(async () => {
@@ -845,6 +927,10 @@ describe('adding images', () => {
     const server = new FakeServer();
     await open(server, { media: { upload } });
     const input = $('input[type="file"]') as HTMLInputElement;
+    const choose = vi.spyOn(input, 'click');
+    await click(button('Upload images'));
+    expect(choose).toHaveBeenCalledOnce();
+    expect($('.swg-up__zone')).toBeNull();
     const files = [new File([new Uint8Array(4)], 'a.png', { type: 'image/png' })];
     Object.defineProperty(input, 'files', { value: files, configurable: true });
     input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -876,6 +962,7 @@ describe('adding images', () => {
     await open(new FakeServer(0));
     expect($('.swg-ed__empty')?.textContent).toContain('This gallery has no images yet');
     expect($('[role="listbox"]')).toBeNull();
+    expect(button('Upload images')).toBeDefined();
     mockModal([6001]);
     await click($$('.swg-ed__empty button')[0]);
     expect(options()).toHaveLength(1);

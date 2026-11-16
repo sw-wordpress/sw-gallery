@@ -28,8 +28,12 @@ audit() {
   shift 4
   local json_flag="--json"
   [ "$tool" = composer ] && json_flag="--format=json"
-  (cd "$ROOT/$dir" && "$tool" audit "$@" "$json_flag") >"$OUT/$name.json" 2>"$OUT/$name.err"
-  (cd "$ROOT/$dir" && "$tool" audit "$@") >"$OUT/$name.txt" 2>&1
+  local audit_command=("$tool" audit "$@")
+  if [ "$name" = composer-production ]; then
+    audit_command=(php "$ROOT/bin/audit-composer-production.php")
+  fi
+  (cd "$ROOT/$dir" && "${audit_command[@]}" "$json_flag") >"$OUT/$name.json" 2>"$OUT/$name.err"
+  (cd "$ROOT/$dir" && "${audit_command[@]}") >"$OUT/$name.txt" 2>&1
   status=$?
   if [ "$status" -eq 0 ]; then
     echo "| $name | $mode | no findings |" >>"$RESULTS"

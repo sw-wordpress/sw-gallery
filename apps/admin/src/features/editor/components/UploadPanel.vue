@@ -1,22 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ACCEPTED_TYPES } from '../useUploads';
 import type { UploadEntry, Uploads } from '../useUploads';
 
-/**
- * Upload zone (M2-28): dashed drop target with a file button, per-file progress (real XHR bytes),
- * cancel, retry and a dismiss action. The drop handlers live on the editor section; this panel
- * only shows `dragging` state and the list.
- */
-const props = defineProps<{
-  uploads: Uploads;
-  dragging: boolean;
-  disabled: boolean;
-  reason: string | null;
-}>();
+/** File chooser and progress list; the editor owns the global drop target and toolbar trigger. */
+const props = defineProps<{ uploads: Uploads; disabled: boolean }>();
 const { t } = useI18n();
 const input = ref<HTMLInputElement | null>(null);
+const inputId = `swg-upload-${useId()}`;
 const accept = ACCEPTED_TYPES.join(',');
 
 const entries = computed(() => props.uploads.entries.value);
@@ -25,13 +17,15 @@ const finished = computed(() =>
 );
 
 function pick(): void {
-  input.value?.click();
+  if (!props.disabled) input.value?.click();
 }
 function onPicked(event: Event): void {
   const el = event.target as HTMLInputElement;
-  props.uploads.add(Array.from(el.files ?? []));
+  if (!props.disabled) props.uploads.add(Array.from(el.files ?? []));
   el.value = '';
 }
+
+defineExpose({ pick });
 
 function percent(e: UploadEntry): number | null {
   return e.total !== null && e.total > 0 ? Math.min(1, e.loaded / e.total) : null;
@@ -65,33 +59,19 @@ const KIND: Record<string, string> = {
 
 <template>
   <div class="swg-up">
-    <div class="swg-up__zone" :class="{ 'is-over': dragging, 'is-disabled': disabled }">
-      <q-icon name="r_cloud_upload" size="28px" aria-hidden="true" />
-      <div class="swg-up__text">
-        <strong>{{ dragging ? t('editor.upload.dropNow') : t('editor.upload.zone') }}</strong>
-        <span v-if="reason" class="swg-muted">{{ reason }}</span>
-        <span v-else class="swg-muted">{{ t('editor.upload.hint') }}</span>
-      </div>
-      <q-btn
-        outline
-        no-caps
-        color="primary"
-        icon="r_add_photo_alternate"
-        :label="t('editor.upload.button')"
-        :disable="disabled"
-        @click="pick"
-      />
-      <input
-        ref="input"
-        class="swg-sr-only"
-        type="file"
-        multiple
-        tabindex="-1"
-        aria-hidden="true"
-        :accept="accept"
-        @change="onPicked"
-      />
-    </div>
+    <label class="swg-sr-only" :for="inputId">{{ t('editor.upload.button') }}</label>
+    <input
+      :id="inputId"
+      ref="input"
+      class="swg-sr-only"
+      type="file"
+      multiple
+      tabindex="-1"
+      aria-hidden="true"
+      :accept="accept"
+      :disabled="disabled"
+      @change="onPicked"
+    />
 
     <ul v-if="entries.length > 0" class="swg-up__list" :aria-label="t('editor.upload.list')">
       <li
@@ -169,30 +149,6 @@ const KIND: Record<string, string> = {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-.swg-up__zone {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 10px 14px;
-  border: 2px dashed var(--swg-border);
-  border-radius: var(--swg-radius);
-  background: var(--swg-surface-2);
-  color: var(--swg-text);
-}
-.swg-up__zone.is-over {
-  border-color: var(--swg-primary);
-  background: var(--swg-primary-soft);
-}
-.swg-up__zone.is-disabled {
-  opacity: 0.8;
-}
-.swg-up__text {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 200px;
-  font-size: 14px;
 }
 .swg-up__list {
   display: flex;

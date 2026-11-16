@@ -57,6 +57,7 @@ const session = createEditorSession(props.galleryId, api);
 const selection = useItemSelection(session.order);
 const picker = useMediaPicker();
 const grid = ref<InstanceType<typeof ItemsGrid> | null>(null);
+const uploadPanel = ref<InstanceType<typeof UploadPanel> | null>(null);
 
 // ---- load
 const layouts = ref<LayoutsResponse | null>(null);
@@ -227,6 +228,7 @@ function isTextTarget(target: EventTarget | null): boolean {
   );
 }
 function onWindowKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') resetFileDragging();
   const mod = event.ctrlKey || event.metaKey;
   if (!mod) return;
   const key = event.key.toLowerCase();
@@ -361,40 +363,68 @@ async function addFromLibrary(): Promise<void> {
   }
 }
 
-// ---- files dropped on the images area
+// ---- files dropped anywhere in the editor window
 const fileDragging = ref(false);
 let dragDepth = 0;
+function nativeMediaTarget(event: DragEvent): boolean {
+  // WordPress' media modal keeps its own upload handling.
+  return event.target instanceof Element && event.target.closest('.media-modal') !== null;
+}
+function resetFileDragging(): void {
+  dragDepth = 0;
+  fileDragging.value = false;
+}
 function hasFiles(event: DragEvent): boolean {
   return Array.from(event.dataTransfer?.types ?? []).includes('Files');
 }
 function onFileEnter(event: DragEvent): void {
   if (!hasFiles(event)) return;
+  if (nativeMediaTarget(event)) {
+    resetFileDragging();
+    return;
+  }
   event.preventDefault();
   dragDepth += 1;
   fileDragging.value = true;
 }
 function onFileOver(event: DragEvent): void {
-  if (!hasFiles(event)) return;
+  if (!hasFiles(event) || nativeMediaTarget(event)) return;
   event.preventDefault();
   if (event.dataTransfer !== null)
     event.dataTransfer.dropEffect = uploadAllowed.value ? 'copy' : 'none';
 }
 function onFileLeave(event: DragEvent): void {
-  if (!hasFiles(event)) return;
+  if (!hasFiles(event) || nativeMediaTarget(event)) return;
   dragDepth = Math.max(0, dragDepth - 1);
-  if (dragDepth === 0) fileDragging.value = false;
+  if (dragDepth === 0) resetFileDragging();
 }
 function onFileDrop(event: DragEvent): void {
-  if (!hasFiles(event)) return;
+  if (!hasFiles(event) || nativeMediaTarget(event)) return;
   event.preventDefault();
-  dragDepth = 0;
-  fileDragging.value = false;
+  resetFileDragging();
   if (!uploadAllowed.value) {
     feedback.notify(pickerReason.value ?? t('editor.picker.noRight'), 'warning');
     return;
   }
   uploads.add(Array.from(event.dataTransfer?.files ?? []));
 }
+
+onMounted(() => {
+  window.addEventListener('dragenter', onFileEnter);
+  window.addEventListener('dragover', onFileOver);
+  window.addEventListener('dragleave', onFileLeave);
+  window.addEventListener('drop', onFileDrop);
+  window.addEventListener('dragend', resetFileDragging);
+  window.addEventListener('blur', resetFileDragging);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('dragenter', onFileEnter);
+  window.removeEventListener('dragover', onFileOver);
+  window.removeEventListener('dragleave', onFileLeave);
+  window.removeEventListener('drop', onFileDrop);
+  window.removeEventListener('dragend', resetFileDragging);
+  window.removeEventListener('blur', resetFileDragging);
+});
 
 // ---- live preview: a full-viewport dialog behind the "Preview" button
 const previewOpen = ref(false);
@@ -474,16 +504,25 @@ const reportAlert = computed(() => {
 
 <template>
   <div class="swg-ed">
-    <nav class="swg-ed__crumbs" :aria-label="t('editor.breadcrumb')">
-      <router-link to="/galleries">
-        <q-icon name="r_arrow_back" size="18px" class="swg-flip-rtl" aria-hidden="true" />
-        {{ t('nav.galleries') }}
-      </router-link>
-      <span aria-hidden="true">/</span>
-      <span aria-current="page" class="swg-truncate">{{ displayTitle }}</span>
+    <Teleport to="body">
+      <div
+        v-if="fileDragging"
+        class="swg-root swg-ed-drop"
+        :class="{ 'swg-dark': app.isDark }"
+        aria-hidden="true"
+      >
+        <div class="swg-ed-drop__label">
+          <q-icon name="r_cloud_upload" size="48px" />
+          <strong>{{ uploadAllowed ? t('editor.upload.dropNow') : pickerReason }}</strong>
+          <span v-if="uploadAllowed">{{ t('editor.upload.hint') }}</span>
+        </div>
+      </div>
+    </Teleport>
+    <nav v-if="!gallery" class="swg-ed__fallback" :aria-label="t('editor.breadcrumb')">
+      <router-link to="/galleries">{{ t('nav.galleries') }}</router-link>
     </nav>
-
     <DataState
+      class="swg-ed__body"
       :loading="session.phase.value === 'loading'"
       :error="session.gone.value ? null : errorText"
       :empty="empty"
@@ -514,6 +553,13 @@ const reportAlert = computed(() => {
 
       <template v-if="gallery && working">
         <div class="swg-ed__head">
+          <nav class="swg-ed__crumbs" :aria-label="t('editor.breadcrumb')">
+            <router-link to="/galleries">
+              <q-icon name="r_arrow_back" size="18px" class="swg-flip-rtl" aria-hidden="true" />
+              <span class="swg-sr-only">{{ t('nav.galleries') }}</span>
+            </router-link>
+          </nav>
+
           <div class="swg-ed__titles">
             <h2 class="swg-ed__title">{{ displayTitle }}</h2>
             <GalleryStatusChip
@@ -523,6 +569,23 @@ const reportAlert = computed(() => {
               }"
             />
           </div>
+          <p class="swg-ed__state" :class="{ 'is-dirty': session.dirty.value }">
+            <q-spinner
+              v-if="session.saving.value || uploads.busy.value"
+              size="16px"
+              aria-hidden="true"
+            />
+            <q-icon
+              v-else
+              :name="session.dirty.value ? 'r_edit_note' : 'r_check_circle'"
+              size="18px"
+              aria-hidden="true"
+            />
+            <span>{{ stateText }}</span>
+            <span v-if="saveBlocker && session.dirty.value" class="swg-ed__blocker"
+              >· {{ saveBlocker }}</span
+            >
+          </p>
           <div class="swg-ed__actions" role="group" :aria-label="t('editor.actions.label')">
             <q-btn
               flat
@@ -548,12 +611,15 @@ const reportAlert = computed(() => {
             </q-btn>
             <q-btn
               flat
-              no-caps
+              round
+              dense
               icon="r_delete_sweep"
-              :label="t('editor.actions.discard')"
+              :aria-label="t('editor.actions.discard')"
               :disable="!session.dirty.value || session.saving.value || readonly"
               @click="discardOpen = true"
-            />
+            >
+              <q-tooltip>{{ t('editor.actions.discard') }}</q-tooltip>
+            </q-btn>
             <span class="swg-ed__previewwrap" :title="previewReason || undefined">
               <q-btn
                 ref="previewButton"
@@ -595,23 +661,6 @@ const reportAlert = computed(() => {
           </div>
         </div>
 
-        <p class="swg-ed__state" :class="{ 'is-dirty': session.dirty.value }">
-          <q-spinner
-            v-if="session.saving.value || uploads.busy.value"
-            size="16px"
-            aria-hidden="true"
-          />
-          <q-icon
-            v-else
-            :name="session.dirty.value ? 'r_edit_note' : 'r_check_circle'"
-            size="18px"
-            aria-hidden="true"
-          />
-          <span>{{ stateText }}</span>
-          <span v-if="saveBlocker && session.dirty.value" class="swg-ed__blocker"
-            >· {{ saveBlocker }}</span
-          >
-        </p>
         <q-linear-progress
           v-if="session.progress.value"
           :value="session.progress.value.done / session.progress.value.total"
@@ -665,15 +714,8 @@ const reportAlert = computed(() => {
 
         <div class="swg-ed__cols">
           <div class="swg-ed__main">
-            <section
-              class="swg-ed__images"
-              :aria-label="t('editor.images.region')"
-              @dragenter="onFileEnter"
-              @dragover="onFileOver"
-              @dragleave="onFileLeave"
-              @drop="onFileDrop"
-            >
-              <div class="swg-ed__bar">
+            <section class="swg-ed__images" :aria-label="t('editor.images.region')">
+              <div class="swg-ed__bar swg-ed__tools">
                 <q-btn
                   color="primary"
                   unelevated
@@ -693,14 +735,23 @@ const reportAlert = computed(() => {
                   </template>
                 </span>
                 <TileSizeControl v-if="itemCount > 0" />
+                <q-btn
+                  v-if="itemCount === 0"
+                  flat
+                  dense
+                  no-caps
+                  size="sm"
+                  color="primary"
+                  icon="r_upload"
+                  :label="t('editor.upload.button')"
+                  class="swg-ed__upload-button"
+                  :aria-label="t('editor.upload.button')"
+                  :disable="!uploadAllowed"
+                  @click="uploadPanel?.pick()"
+                >
+                  <q-tooltip>{{ t('editor.upload.button') }}</q-tooltip>
+                </q-btn>
               </div>
-
-              <UploadPanel
-                :uploads="uploads"
-                :dragging="fileDragging"
-                :disabled="!uploadAllowed"
-                :reason="pickerReason"
-              />
 
               <div
                 v-if="itemCount > 0"
@@ -803,6 +854,21 @@ const reportAlert = computed(() => {
                   class="swg-ed__remove"
                   @click="requestRemove()"
                 />
+                <q-btn
+                  flat
+                  dense
+                  no-caps
+                  size="sm"
+                  color="primary"
+                  icon="r_upload"
+                  :label="t('editor.upload.button')"
+                  class="swg-ed__upload-button"
+                  :aria-label="t('editor.upload.button')"
+                  :disable="!uploadAllowed"
+                  @click="uploadPanel?.pick()"
+                >
+                  <q-tooltip>{{ t('editor.upload.button') }}</q-tooltip>
+                </q-btn>
               </div>
               <p v-if="session.truncated.value" class="swg-ed__reason">
                 {{ t('editor.reorder.disabled') }}
@@ -810,6 +876,14 @@ const reportAlert = computed(() => {
               <p v-else-if="working.details.sortMode !== 'manual'" class="swg-ed__reason">
                 {{ t('editor.sort.activeNote') }}
               </p>
+
+              <UploadPanel
+                v-show="uploads.entries.value.length > 0"
+                ref="uploadPanel"
+                class="swg-ed__upload"
+                :uploads="uploads"
+                :disabled="!uploadAllowed"
+              />
 
               <ItemsGrid
                 v-if="itemCount > 0"
@@ -843,11 +917,13 @@ const reportAlert = computed(() => {
           </div>
 
           <div class="swg-ed__side" role="region" :aria-label="t('editor.panel.label')">
-            <SegmentedControl
-              v-model="panel"
-              :options="panelOptions"
-              :legend="t('editor.panel.legend')"
-            />
+            <div class="swg-ed__panel-tabs">
+              <SegmentedControl
+                v-model="panel"
+                :options="panelOptions"
+                :legend="t('editor.panel.legend')"
+              />
+            </div>
             <div v-show="panel === 'details'" class="swg-ed__panel">
               <GalleryDetailsPanel
                 :session="session"
@@ -939,45 +1015,63 @@ const reportAlert = computed(() => {
 </template>
 
 <style scoped>
-.swg-ed__crumbs {
+.swg-ed,
+.swg-ed__body {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  min-block-size: 0;
+  flex: 1;
+}
+.swg-ed__fallback {
+  padding: 12px;
+}
+.swg-ed__head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-block-end: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  min-inline-size: 0;
+  flex-wrap: wrap;
+  flex: none;
+  gap: 6px 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--swg-border);
+  background: var(--swg-surface);
 }
 .swg-ed__crumbs a {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-}
-.swg-ed__head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px 16px;
+  justify-content: center;
+  min-inline-size: 32px;
+  min-block-size: 32px;
+  color: var(--swg-text);
 }
 .swg-ed__titles {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  flex: 1 1 180px;
+  gap: 8px;
   min-inline-size: 0;
 }
 .swg-ed__title {
-  font-size: 26px;
-  line-height: 1.2;
-  font-weight: 750;
-  letter-spacing: -0.02em;
-  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.swg-ed__titles :deep(.swg-gstatus) {
+  flex: none;
 }
 .swg-ed__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+.swg-ed__actions :deep(.q-btn) {
+  min-height: 32px;
+  font-size: 12px;
 }
 .swg-ed__previewwrap {
   display: inline-flex;
@@ -985,29 +1079,26 @@ const reportAlert = computed(() => {
 .swg-ed__state {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-block: 12px;
-  color: var(--swg-muted);
-  font-size: 14px;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  color: var(--swg-success-text);
+  font-size: 12px;
 }
 .swg-ed__state.is-dirty {
   color: var(--swg-warning-text);
-  font-weight: 600;
 }
 .swg-ed__blocker {
   color: var(--swg-danger-text);
 }
-.swg-ed__progress {
-  margin-block-end: 12px;
-}
 .swg-ed__alert {
   display: flex;
+  flex: none;
   align-items: flex-start;
   gap: 10px;
-  margin-block-end: 12px;
   padding: 10px 14px;
-  border-radius: var(--swg-radius-sm);
-  font-size: 14px;
+  border-bottom: 1px solid var(--swg-border);
+  font-size: 13px;
 }
 .swg-ed__alert ul {
   margin: 4px 0 0;
@@ -1028,34 +1119,38 @@ const reportAlert = computed(() => {
 }
 .swg-ed__cols {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 20px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  flex: 1;
+  min-block-size: 0;
 }
-.swg-ed__main {
+.swg-ed__main,
+.swg-ed__images {
   display: flex;
   flex-direction: column;
-  gap: 12px;
   min-inline-size: 0;
+  min-block-size: 0;
 }
 .swg-ed__images {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-inline-size: 0;
+  flex: 1;
 }
 .swg-ed__bar {
   display: flex;
+  flex: none;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 12px;
+  gap: 4px 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--swg-border);
+  background: var(--swg-surface);
+  font-size: 12px;
+}
+.swg-ed__bar :deep(.q-btn) {
+  min-height: 30px;
+  font-size: 12px;
 }
 .swg-ed__selbar {
-  padding: 4px 8px;
-  border: 1px solid var(--swg-border);
-  border-radius: var(--swg-radius-sm);
-  background: var(--swg-surface);
+  background: var(--swg-surface-2);
 }
 .swg-ed__sep {
   inline-size: 1px;
@@ -1063,42 +1158,129 @@ const reportAlert = computed(() => {
   background: var(--swg-border);
 }
 .swg-ed__sel {
-  font-size: 14px;
   font-weight: 600;
-  min-inline-size: 90px;
 }
 .swg-ed__count {
   margin-inline-start: auto;
   color: var(--swg-muted);
-  font-size: 14px;
 }
 .swg-ed__reason {
+  padding: 4px 12px;
   color: var(--swg-muted);
-  font-size: 13px;
+  font-size: 12px;
+}
+.swg-ed__upload {
+  flex: none;
+  padding: 8px 12px;
+}
+.swg-ed__upload-button {
+  margin-inline-start: auto;
+}
+.swg-ed-drop {
+  position: fixed;
+  inset: 8px;
+  z-index: 100400;
+  display: grid;
+  place-items: center;
+  border: 3px dashed var(--swg-primary);
+  border-radius: 8px;
+  background: var(--swg-overlay);
+  pointer-events: none;
+}
+.swg-ed-drop__label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-inline-size: calc(100% - 32px);
+  padding: 24px;
+  border-radius: 8px;
+  background: var(--swg-surface);
+  color: var(--swg-text);
+  text-align: center;
+}
+.swg-ed__images :deep(.swg-igrid-wrap) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-block-size: 0;
+}
+.swg-ed__images :deep(.swg-igrid) {
+  flex: 1;
+  max-block-size: none;
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+  background: var(--swg-bg);
 }
 .swg-ed__empty,
 .swg-ed__gone {
+  padding: 16px;
   background: var(--swg-surface);
-  border: 1px solid var(--swg-border);
-  border-radius: var(--swg-radius);
 }
 .swg-ed__side {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--swg-border);
-  border-radius: var(--swg-radius);
+  min-block-size: 0;
+  min-inline-size: 0;
+  border-inline-start: 1px solid var(--swg-border);
   background: var(--swg-surface);
 }
-@media (max-width: 1100px) {
+.swg-ed__panel-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 8px;
+  border-bottom: 1px solid var(--swg-border);
+  background: var(--swg-surface);
+}
+.swg-ed__panel-tabs :deep(.swg-seg) {
+  display: grid;
+  padding: 0;
+  gap: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.swg-ed__panel-tabs :deep(.swg-seg__opt) {
+  padding: 0 6px;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  font-size: 12px;
+}
+.swg-ed__panel-tabs :deep(.swg-seg__opt.is-on) {
+  border-bottom-color: var(--swg-primary);
+  color: var(--swg-primary-text);
+  box-shadow: none;
+}
+.swg-ed__panel {
+  padding: 12px;
+}
+@media (min-width: 901px) {
+  .swg-ed__side {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .swg-ed__images :deep(.swg-igrid) {
+    min-block-size: 0;
+    overscroll-behavior: contain;
+  }
+  .swg-ed__upload {
+    max-block-size: 30vh;
+    overflow-y: auto;
+  }
+}
+@media (max-width: 900px) {
   .swg-ed__cols {
     grid-template-columns: minmax(0, 1fr);
   }
-}
-@media (max-width: 520px) {
-  .swg-ed__title {
-    font-size: 22px;
+  .swg-ed__side {
+    border-inline-start: 0;
+    border-top: 1px solid var(--swg-border);
+  }
+  .swg-ed__images :deep(.swg-igrid) {
+    max-block-size: 65vh;
+  }
+  .swg-ed__state {
+    order: 1;
+    flex-basis: 100%;
   }
 }
 </style>

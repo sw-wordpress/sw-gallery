@@ -12,8 +12,8 @@ import {
 import type { Breakpoint, FieldDef, ValueIssue } from '../schema';
 
 /**
- * One setting generated from the layout schema. Responsive fields (`x-responsive`) get one row per
- * breakpoint (base always, the others via an "override" switch). The control emits the whole new
+ * One setting generated from the layout schema. Responsive numbers use compact device inputs;
+ * an empty input removes its override. The control emits the whole new
  * value of the key (`undefined` = back to the layout default); unknown breakpoint entries of the
  * stored value are written back untouched.
  */
@@ -106,7 +106,14 @@ const fullLabel = (bp: Breakpoint | null): string =>
 const defaultText = computed(() =>
   props.def.defaultValue === undefined
     ? null
-    : t('editor.settings.default', { value: String(props.def.defaultValue) }),
+    : t('editor.settings.default', {
+        value:
+          props.def.kind === 'enum'
+            ? optionLabel(props.def, props.def.defaultValue)
+            : typeof props.def.defaultValue === 'boolean'
+              ? t(props.def.defaultValue ? 'status.yes' : 'status.no')
+              : String(props.def.defaultValue),
+      }),
 );
 /** Native number input attributes (QInput forwards them to the `<input>`; its prop types do not list them). */
 const numberAttrs = computed(() => ({
@@ -116,6 +123,23 @@ const numberAttrs = computed(() => ({
   placeholder: props.def.defaultValue === undefined ? undefined : String(props.def.defaultValue),
 }));
 const isNumber = computed(() => props.def.kind === 'integer' || props.def.kind === 'number');
+const compactResponsive = computed(() => props.def.responsive && isNumber.value);
+const deviceIcons: Record<Breakpoint, string> = {
+  base: 'r_devices',
+  sm: 'r_smartphone',
+  md: 'r_tablet_mac',
+  lg: 'r_laptop',
+  xl: 'r_desktop_windows',
+};
+/** Empty breakpoints inherit the preceding configured value, just as the renderer does. */
+function inheritedNumber(bp: Breakpoint): string {
+  let value = props.def.defaultValue;
+  for (const current of BREAKPOINTS) {
+    if (current === bp) break;
+    if (valueAt(current) !== undefined) value = valueAt(current);
+  }
+  return typeof value === 'number' ? String(value) : '';
+}
 const hasRange = computed(() => props.def.min !== undefined && props.def.max !== undefined);
 const customised = computed(() => props.value !== undefined);
 const rangeValue = (bp: Breakpoint | null): number => {
@@ -131,6 +155,20 @@ const rangeValue = (bp: Breakpoint | null): number => {
     <legend class="swg-sfield__label">
       {{ label }}
       <span v-if="defaultText" class="swg-sfield__default">{{ defaultText }}</span>
+      <q-btn
+        v-if="customised && !readonly"
+        flat
+        dense
+        round
+        size="sm"
+        class="swg-sfield__reset"
+        color="primary"
+        icon="r_restart_alt"
+        :aria-label="`${t('editor.settings.reset')}: ${label}`"
+        @click="emit('update', undefined)"
+      >
+        <q-tooltip>{{ t('editor.settings.reset') }}</q-tooltip>
+      </q-btn>
     </legend>
     <p v-if="def.description" class="swg-sfield__desc">{{ def.description }}</p>
 
@@ -138,12 +176,43 @@ const rangeValue = (bp: Breakpoint | null): number => {
       {{ t('editor.settings.unsupported') }}
     </div>
 
+    <template v-else-if="compactResponsive">
+      <div class="swg-sfield__devices">
+        <div v-for="bp in BREAKPOINTS" :key="bp" class="swg-sfield__device">
+          <span class="swg-sfield__device-icon" :title="bpLabel(bp)">
+            <q-icon :name="deviceIcons[bp]" size="20px" aria-hidden="true" />
+            <span class="swg-sr-only">{{ bpLabel(bp) }}</span>
+            <q-tooltip>{{ bpLabel(bp) }}</q-tooltip>
+          </span>
+          <q-input
+            type="number"
+            outlined
+            dense
+            hide-bottom-space
+            v-bind="{ ...numberAttrs, placeholder: inheritedNumber(bp) }"
+            :model-value="numberModel(bp)"
+            :aria-label="fullLabel(bp)"
+            :disable="readonly"
+            :error="errorAt(bp) !== null"
+            :error-message="errorAt(bp) ?? ''"
+            @update:model-value="(v) => onNumber(bp, v)"
+          />
+        </div>
+      </div>
+      <p class="swg-sfield__desc">{{ t('editor.settings.emptyDefault') }}</p>
+    </template>
     <template v-else>
-      <div v-for="bp in rows" :key="bp ?? 'single'" class="swg-sfield__row">
+      <div
+        v-for="bp in rows"
+        :key="bp ?? 'single'"
+        class="swg-sfield__row"
+        :class="{ 'has-breakpoint': bp !== null }"
+      >
         <span v-if="bp !== null" class="swg-sfield__bp">{{ bpLabel(bp) }}</span>
-        <div class="swg-sfield__ctl">
+        <div class="swg-sfield__ctl" :class="{ 'is-number': isNumber }">
           <q-toggle
             v-if="bp !== null && bp !== 'base'"
+            :disable="readonly"
             :model-value="valueAt(bp) !== undefined"
             :label="t('editor.settings.override')"
             :aria-label="`${t('editor.settings.override')}: ${fullLabel(bp)}`"
@@ -160,7 +229,7 @@ const rangeValue = (bp: Breakpoint | null): number => {
                 class="swg-sfield__range"
                 :min="def.min"
                 :max="def.max"
-                step="1"
+                :step="def.kind === 'integer' ? 1 : 'any'"
                 :value="rangeValue(bp)"
                 :aria-label="fullLabel(bp)"
                 @input="onRange(bp, $event)"
@@ -170,6 +239,7 @@ const rangeValue = (bp: Breakpoint | null): number => {
                 outlined
                 dense
                 class="swg-sfield__num"
+                :disable="readonly"
                 :model-value="numberModel(bp)"
                 :aria-label="fullLabel(bp)"
                 hide-bottom-space
@@ -181,6 +251,7 @@ const rangeValue = (bp: Breakpoint | null): number => {
             </template>
             <q-toggle
               v-else-if="def.kind === 'boolean'"
+              :disable="readonly"
               :model-value="
                 valueAt(bp) === true || (valueAt(bp) === undefined && def.defaultValue === true)
               "
@@ -194,6 +265,8 @@ const rangeValue = (bp: Breakpoint | null): number => {
               emit-value
               map-options
               class="swg-sfield__select"
+              hide-bottom-space
+              :disable="readonly"
               :model-value="valueAt(bp) ?? def.defaultValue ?? null"
               :options="def.options.map((o) => ({ value: o, label: optionLabel(def, o) }))"
               :label="fullLabel(bp)"
@@ -206,6 +279,8 @@ const rangeValue = (bp: Breakpoint | null): number => {
               outlined
               dense
               class="swg-sfield__text"
+              hide-bottom-space
+              :disable="readonly"
               :model-value="typeof valueAt(bp) === 'string' ? (valueAt(bp) as string) : ''"
               :label="fullLabel(bp)"
               :maxlength="def.maxLength"
@@ -216,18 +291,6 @@ const rangeValue = (bp: Breakpoint | null): number => {
           </template>
         </div>
       </div>
-      <q-btn
-        v-if="customised && !readonly"
-        flat
-        dense
-        no-caps
-        size="sm"
-        color="primary"
-        icon="r_restart_alt"
-        :label="t('editor.settings.reset')"
-        :aria-label="`${t('editor.settings.reset')}: ${label}`"
-        @click="emit('update', undefined)"
-      />
     </template>
   </fieldset>
 </template>
@@ -238,12 +301,14 @@ const rangeValue = (bp: Breakpoint | null): number => {
   flex-direction: column;
   gap: 8px;
   margin: 0;
-  padding: 12px 0;
+  padding: 8px 0;
+  min-inline-size: 0;
   border: 0;
   border-bottom: 1px solid var(--swg-border);
 }
 .swg-sfield__label {
   padding: 0;
+  inline-size: 100%;
   font-weight: 650;
   font-size: 14px;
 }
@@ -266,9 +331,12 @@ const rangeValue = (bp: Breakpoint | null): number => {
 }
 .swg-sfield__row {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 8px 12px;
+}
+.swg-sfield__row.has-breakpoint {
+  grid-template-columns: 76px minmax(0, 1fr);
 }
 .swg-sfield__ctl {
   display: flex;
@@ -283,11 +351,48 @@ const rangeValue = (bp: Breakpoint | null): number => {
   color: var(--swg-muted);
 }
 .swg-sfield__range {
-  flex: 1 1 140px;
-  min-inline-size: 120px;
+  inline-size: 100%;
+  min-inline-size: 0;
   accent-color: var(--swg-primary);
 }
+.swg-sfield__ctl.is-number {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px;
+  gap: 10px;
+}
 .swg-sfield__num {
-  max-inline-size: 140px;
+  grid-column: 2;
+}
+.swg-sfield__select,
+.swg-sfield__text {
+  inline-size: 100%;
+}
+.swg-sfield__reset {
+  float: inline-end;
+}
+.swg-sfield__devices {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+.swg-sfield__device {
+  min-inline-size: 0;
+}
+.swg-sfield__device-icon {
+  display: flex;
+  justify-content: center;
+  margin-block-end: 6px;
+  color: var(--swg-muted);
+}
+.swg-sfield__device :deep(.q-field__native) {
+  padding-inline: 4px;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.swg-sfield__device :deep(input::-webkit-inner-spin-button),
+.swg-sfield__device :deep(input::-webkit-outer-spin-button) {
+  -webkit-appearance: none;
+  margin: 0;
 }
 </style>
