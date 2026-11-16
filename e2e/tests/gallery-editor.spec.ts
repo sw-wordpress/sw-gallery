@@ -746,6 +746,8 @@ test.describe('editor workspace', () => {
     await expect(
       root(page).getByRole('radio', { name: 'Layout & settings', exact: true }),
     ).toBeChecked();
+    // Compact settings can fit at full height; exercise overflow with a short desktop viewport.
+    await page.setViewportSize({ width: 1500, height: 450 });
     await expect.poll(() => side.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
     const headTop = (await head.boundingBox())!.y;
     await side.evaluate((el) => {
