@@ -19,6 +19,19 @@ Every task ships with tests, i18n (en/de), docs and passes the Definition of Don
 - [x] Label the upload chooser per instance; test compact settings with fitting and overflowing desktop viewports and a shared local browser harness.
 - [ ] Parent: verify the published repair head with PHP/WordPress coverage, full E2E, SonarCloud Code Analysis and a fresh Codex review.
 
+## Verified manual GitHub updates (2026-11-16)
+
+- [x] Pin repository/ID, isolate trust/storage/hooks, native Plugins UI only; no automatic installation.
+- [x] Signed manifest and bounded HTTPS/package verification; persistent check/rollback/lease policy.
+- [x] Protected draft-sign-publish workflow and `make release VERSION=1.2.3`; suites only on PRs.
+- [x] Final checks, signed real build, isolated operator commands and operational handover; see DONE and operations guide.
+- [ ] Operator: configure protected environment/tag rules, dedicated keys and trusted initial delivery; publish first signed release.
+
+## Shared author footer (2026-11-17)
+
+- [x] Exact English/de_DE credit only on the overview; hidden throughout the full-height editor and other routes; italic README credit before badges. No old Powered/Provided text existed in this checkout.
+- [x] Admin/translation/security and en/de browser checks; refreshed PHP coverage includes the template.
+
 ## Open decisions (answer before the blocked task starts)
 
 None at the moment. Decided on 2026-11-10: D1–D13, F-01 (rejected), F-02, F-03, F-09, F-10 — see `docs/decisions.md`.

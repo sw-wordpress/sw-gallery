@@ -55,7 +55,7 @@ while IFS= read -r top; do
     *) err "top-level entry not allowed: $top" ;;
   esac
 done < <(grep -E "^$SLUG/." "$TMP/entries.txt" | cut -d/ -f2 | sort -u)
-ASSETS_OK="^$SLUG/assets/(admin/.+|build/.+|media-library/media-library\\.js|blocks/block\\.json|blocks/build/.+)$"
+ASSETS_OK="^$SLUG/assets/(admin/.+|build/.+|media-library/media-library\\.js|js/sw-gallery-updates\\.js|blocks/block\\.json|blocks/build/.+)$"
 if bad="$(grep -E "^$SLUG/assets/" "$TMP/entries.txt" | grep -Ev "$ASSETS_OK" | grep -Ev '/$')" && [ -n "$bad" ]; then
   err "not allowed below assets/: $(echo "$bad" | head -3 | tr '\n' ' ')"
 fi
@@ -129,6 +129,10 @@ require vendor/autoload.php
 require assets/blocks/block.json
 require assets/blocks/build/index.js
 require assets/media-library/media-library.js
+require assets/js/sw-gallery-updates.js
+for update_file in Provider Service Store Manifest Transport Package UpdateRegistrar Config/source Config/descriptors Config/trusted-keys; do
+  require "packages/wordpress/src/Update/$update_file.php"
+done
 for manifest in assets/admin/.vite/manifest.json assets/build/.vite/manifest.json; do
   require "$manifest"
   [ -f "$PKG/$manifest" ] || continue

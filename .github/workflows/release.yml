@@ -1,177 +1,79 @@
-name: Release
+name: Signed release
 
-# Builds, verifies and publishes the plugin ZIP when a semver tag is pushed (docs/release.md).
-#   v1.2.3 / 1.2.3        stable release
-#   v1.2.3-rc.1           published as a GitHub pre-release
-# Chain: tag == plugin header version -> the same check suites as CI (tests.yml, js.yml, e2e.yml) -> build -> verify -> install test -> release.
-# No secrets are needed (the release uses the job's GITHUB_TOKEN). Third-party actions are pinned to full version tags like in the other workflows.
+# Tests run only on pull requests. This protected job builds and verifies artifacts, then publishes a complete signed draft.
 on:
   push:
-    tags:
-      - 'v?[0-9]+.[0-9]+.[0-9]+'
-      - 'v?[0-9]+.[0-9]+.[0-9]+-*'
-
+    tags: ['v[0-9]+.[0-9]+.[0-9]+', '[0-9]+.[0-9]+.[0-9]+']
 permissions:
   contents: read
-
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
-
 jobs:
-  version:
-    name: Tag matches the plugin version
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.check.outputs.version }}
-      prerelease: ${{ steps.check.outputs.prerelease }}
-    steps:
-      - uses: actions/checkout@v4.2.2
-      - uses: actions/setup-node@v4.4.0
-        with:
-          node-version-file: apps/admin/.nvmrc
-      - name: Check tag, plugin header, SWGALLERY_VERSION, packages and CHANGELOG
-        id: check
-        env:
-          TAG: ${{ github.ref_name }}
-        run: |
-          if ! [[ "$TAG" =~ ^v?([0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z]+(\.[0-9A-Za-z]+)*)?)$ ]]; then
-            echo "::error::Tag '$TAG' is not a semantic version (optional leading v)"
-            exit 1
-          fi
-          tag_version="${BASH_REMATCH[1]}"
-          bin/version.sh check
-          header_version="$(bin/version.sh get)"
-          if [ "$tag_version" != "$header_version" ]; then
-            echo "::error::Tag version $tag_version differs from the plugin header version $header_version"
-            exit 1
-          fi
-          echo "version=$header_version" >> "$GITHUB_OUTPUT"
-          if [[ "$header_version" == *-* ]]; then echo "prerelease=true" >> "$GITHUB_OUTPUT"; else echo "prerelease=false" >> "$GITHUB_OUTPUT"; fi
-
-  # The complete CI suites (reusable workflows). The SonarQube job inside tests.yml skips itself: secrets are not passed on.
-  php:
-    name: PHP checks
-    needs: version
-    uses: ./.github/workflows/tests.yml
-  javascript:
-    name: JavaScript checks
-    needs: version
-    uses: ./.github/workflows/js.yml
-  e2e:
-    name: End-to-end
-    needs: version
-    uses: ./.github/workflows/e2e.yml
-
-  build:
-    name: Build and verify the ZIP
-    needs: [version, php, javascript, e2e]
-    runs-on: ubuntu-latest
+  release:
+    runs-on: ubuntu-24.04
+    environment: plugin-releases
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4.2.2
       - uses: shivammathur/setup-php@2.33.0
         with:
           php-version: '8.2'
-          extensions: mbstring
+          extensions: zip, sodium, mbstring
           tools: composer:v2
           coverage: none
       - uses: actions/setup-node@v4.4.0
         with:
           node-version-file: apps/admin/.nvmrc
-      - name: Install GNU gettext (msgfmt, translation check)
-        run: sudo apt-get update && sudo apt-get install -y gettext
-      - name: Build the ZIP (clean npm installs, production Composer install, reproducible)
-        run: bin/build-zip.sh
-      - name: Verify the ZIP
-        run: bin/verify-zip.sh "dist/sw-gallery-${{ needs.version.outputs.version }}.zip"
-      - name: SHA-256 checksum
-        working-directory: dist
-        run: sha256sum "sw-gallery-${{ needs.version.outputs.version }}.zip" | tee "sw-gallery-${{ needs.version.outputs.version }}.zip.sha256"
-      # SIGNING HOOK (owner decision pending, docs/release.md "Open decisions"): sign the ZIP / checksum file here and add the
-      # signature to the artifact list below. No key exists yet; nothing is signed and no secret is referenced.
-      - uses: actions/upload-artifact@v4.6.2
-        with:
-          name: sw-gallery-${{ needs.version.outputs.version }}
-          path: |
-            dist/sw-gallery-${{ needs.version.outputs.version }}.zip
-            dist/sw-gallery-${{ needs.version.outputs.version }}.zip.sha256
-          if-no-files-found: error
-          retention-days: 30
-
-  install-test:
-    name: Install the ZIP in a throw-away WordPress
-    needs: [version, build]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4.2.2
-      - uses: actions/setup-node@v4.4.0
-        with:
-          node-version-file: e2e/.nvmrc
-      - uses: shivammathur/setup-php@2.33.0
-        with:
-          php-version: '8.2'
-          coverage: none
-      - uses: actions/download-artifact@v4.3.0
-        with:
-          name: sw-gallery-${{ needs.version.outputs.version }}
-          path: dist
-      - name: Verify the checksum of the downloaded artifact
-        working-directory: dist
-        run: sha256sum --check "sw-gallery-${{ needs.version.outputs.version }}.zip.sha256"
-      - name: Install Chromium system dependencies
-        run: (cd e2e && npm ci --no-audit --no-fund && npx playwright install-deps chromium)
-      - name: Install and smoke-test the ZIP
+      - name: Validate identity and tag
         env:
-          CI: "true"
-        run: bin/test-zip-install.sh "dist/sw-gallery-${{ needs.version.outputs.version }}.zip"
-      - name: Upload Playwright report and traces
-        if: failure()
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: playwright-zip-install
-          path: |
-            e2e/playwright-report
-            e2e/test-results
-          retention-days: 7
-          if-no-files-found: ignore
-
-  publish:
-    name: Create the GitHub release
-    needs: [version, build, install-test]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4.2.2
-      - uses: actions/download-artifact@v4.3.0
-        with:
-          name: sw-gallery-${{ needs.version.outputs.version }}
-          path: dist
-      - name: Verify the checksum again
-        working-directory: dist
-        run: sha256sum --check "sw-gallery-${{ needs.version.outputs.version }}.zip.sha256"
-      - name: Release notes from CHANGELOG.md
-        env:
-          VERSION: ${{ needs.version.outputs.version }}
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          awk -v v="$VERSION" '
-            $0 ~ "^## \\[" v "\\]" { found = 1; next }
-            found && /^## \[/ { exit }
-            found { print }
-          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
-          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
-            echo "::error::CHANGELOG.md has no entries for $VERSION"
-            exit 1
-          fi
-      - name: Create the release (pre-release for suffixed versions)
+          [[ "$GITHUB_REPOSITORY" = sw-wordpress/sw-gallery ]]
+          [[ "$GITHUB_REPOSITORY_ID" = 1453105629 ]]
+          [[ "$RELEASE_TAG" =~ ^v?([0-9]+\.[0-9]+\.[0-9]+)$ ]]
+          version="${BASH_REMATCH[1]}"
+          bin/version.sh check
+          test "$version" = "$(bin/version.sh get)"
+          composer validate --strict
+      - name: Embed public key (abort without signing configuration)
+        env:
+          SW_PLUGIN_RELEASE_SIGNING_KEY: ${{ secrets.SW_PLUGIN_RELEASE_SIGNING_KEY }}
+          SW_PLUGIN_RELEASE_KEY_ID: ${{ vars.SW_PLUGIN_RELEASE_KEY_ID }}
+        run: php bin/release-manifest.php public-key packages/wordpress/src/Update/Config/trusted-keys.php
+      - name: Build and validate installable ZIP
+        run: |
+          sudo apt-get update && sudo apt-get install -y gettext
+          bin/build-zip.sh "$RUNNER_TEMP/dist"
+          bin/verify-zip.sh "$RUNNER_TEMP/dist/sw-gallery-$(bin/version.sh get).zip"
+      - name: Upload package to draft release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
-          VERSION: ${{ needs.version.outputs.version }}
-          PRERELEASE: ${{ needs.version.outputs.prerelease }}
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          flags=()
-          if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
-          gh release create "$TAG" --verify-tag --title "sw-gallery $VERSION" --notes-file "$RUNNER_TEMP/notes.md" "${flags[@]}" \
-            "dist/sw-gallery-$VERSION.zip" "dist/sw-gallery-$VERSION.zip.sha256"
+          # Any existing release (even a draft) is left untouched; no clobber or overwrite.
+          gh api repos/sw-wordpress/sw-gallery/releases > "$RUNNER_TEMP/releases.json"
+          php -r '$r=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR); foreach($r as $v) {if($v["tag_name"]===$argv[2]) {exit(1);}}' "$RUNNER_TEMP/releases.json" "$RELEASE_TAG"
+          gh release create "$RELEASE_TAG" --draft --verify-tag --title "sw-gallery ${RELEASE_TAG#v}" --notes 'Signed manual WordPress update. See CHANGELOG.md.'
+          gh release upload "$RELEASE_TAG" "$RUNNER_TEMP"/dist/*.zip
+          release_api="$(gh release view "$RELEASE_TAG" --json apiUrl --jq .apiUrl)"
+          gh api "$release_api" > "$RUNNER_TEMP/release.json"
+      - name: Sign and verify the actual uploaded assets
+        env:
+          SW_PLUGIN_RELEASE_SIGNING_KEY: ${{ secrets.SW_PLUGIN_RELEASE_SIGNING_KEY }}
+          SW_PLUGIN_RELEASE_KEY_ID: ${{ vars.SW_PLUGIN_RELEASE_KEY_ID }}
+        run: |
+          php bin/release-manifest.php sign "$RUNNER_TEMP/release.json" "$RUNNER_TEMP/dist" "$GITHUB_SHA"
+          php bin/verify-signed-release.php "$RUNNER_TEMP/release.json" "$RUNNER_TEMP/dist" packages/wordpress/src/Update/Config/trusted-keys.php
+      - name: Upload signature and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release upload "$RELEASE_TAG" "$RUNNER_TEMP/dist/sw-plugin-release.json" "$RUNNER_TEMP/dist/sw-plugin-release.json.sig"
+          # Download back from the draft to verify the complete uploaded set before publication.
+          mkdir "$RUNNER_TEMP/uploaded"
+          gh release download "$RELEASE_TAG" --dir "$RUNNER_TEMP/uploaded"
+          php bin/verify-signed-release.php "$RUNNER_TEMP/release.json" "$RUNNER_TEMP/uploaded" packages/wordpress/src/Update/Config/trusted-keys.php
+          gh release edit "$RELEASE_TAG" --draft=false

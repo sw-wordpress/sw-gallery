@@ -38,6 +38,8 @@ final class DangerousCodeScanTest extends TestCase
      * @var array<string, string>
      */
     private const ALLOWED = [
+        'packages/wordpress/src/Update/Transport.php::wp_safe_remote_get' => 'Only the signed-update transport: locally pinned repository paths and concrete HTTPS hosts, every redirect revalidated, time/byte caps, WordPress SSRF checks; called only after backend/nonce policy or manual install guard.',
+        'packages/wordpress/src/Update/Service.php::chmod' => 'Restricts only the exclusive WordPress-created temporary ZIP to 0600 before streaming; no user-controlled destination, error and shutdown cleanup.',
         'packages/wordpress/src/Admin/AssetManifest.php::file_get_contents' => 'Reads the plugin-owned admin build manifest; the path is the build directory plus a fixed name (no user input, no URL).',
         'packages/wordpress/src/Frontend/FrontendManifest.php::file_get_contents' => 'Reads the plugin-owned frontend manifest after realpath containment inside the build directory; never a URL or user input.',
         'packages/wordpress/src/Import/MediaLibraryProvider.php::fopen' => 'Opens the upload file of a readable attachment for the import stream; the path comes from localPath() (realpath inside the uploads directory, no stream wrapper, no traversal).',

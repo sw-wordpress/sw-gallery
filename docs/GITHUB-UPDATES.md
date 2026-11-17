@@ -1,0 +1,11 @@
+# Architektur der verifizierten Updates
+
+Referenz: [ChurchTools Suite, 49dc66f](https://github.com/sw-wordpress/churchtools-suite/tree/49dc66f), `includes/update/*`, Release-Signierer und Tests; native Pluginzeile zusätzlich nach sw-backupit adaptiert. Keine Laufzeitabhängigkeit von anderen Plugins.
+
+`packages/wordpress/src/Update`: `Config/{source,descriptors,trusted-keys}.php` verankern Identität und öffentliche Schlüssel; `Manifest` prüft exakte signierte Bytes/Schema/Release-/Assetbindungen, `Transport` begrenzt HTTPS/Redirects/Antwortgrößen, `Package` prüft Hash/ZIP vor Core-Extraktion, `Store` hält persistente Zeitlimits/Rollback-Schutz/Lease, `Service` orchestriert, `Provider` bindet native Core-Hooks und Pluginzeile an. Core-Domain und SPA bleiben unabhängig.
+
+Eigenständiger Namespace `SWGallery\WordPress\Update`, Präfix `swg_`, Konstante `SWGALLERY_RELEASE_PUBLIC_KEYS`. Kein global geteilter Schlüsselring. Filter für lokale Descriptor-/Key-Konfiguration sind vertrauenswürdiger PHP-Code; Fehler brechen die Operation ab, HTTP-/Verifikationsfehler werden als sichere WP_Error gemeldet. Keine Hooks dürfen ungeprüfte Pakete autorisieren. Schlüssel und Descriptoren werden nie aus API-Feldern übernommen.
+
+Download nur bei authentifiziertem manuellem Core-Auftrag. Vor Übergabe Signatur erneut verifizieren, höchstens sieben Tage seit erfolgreicher Prüfung, neuere Version, passende PHP/WP-Voraussetzungen. Paketgrenzen: 50 MiB Download, 250 MiB entpackt, 10.000 Einträge, Kompressionsverhältnis bis 200 oberhalb 1 MiB. HTTPS/443, vier Redirects, Metadaten 256 KiB/5 Sekunden, Signatur 1 KiB, Paket 60 Sekunden pro Request; erlaubt sind `api.github.com`, `github.com` mit eigenem Repositorypfad sowie `release-assets.githubusercontent.com`/`objects.githubusercontent.com`. ZIPs erlauben genau den eigenen Wurzelordner, reguläre Dateien/Verzeichnisse, keine Pfadtraversals/Duplikate/Symlinks/Verschlüsselung; Header müssen zum Manifest passen. Tempdateien sind exklusiv, Modus 0600, Cleanup bei Fehler sowie Shutdown/Core-Verbrauch.
+
+Build-/Signierwerkzeuge liegen ausschließlich in `bin/` und werden nicht ausgeliefert. [Betrieb, Schlüssel und Store-Wechsel](GITHUB-UPDATES-BETRIEB.md).

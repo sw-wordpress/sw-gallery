@@ -7,6 +7,8 @@ versions follow [Semantic Versioning](https://semver.org/). The version number l
 ## [Unreleased]
 
 ### Added
+- Verified Ed25519 GitHub updates with manual installation only through the native WordPress plugin list; persistent throttling, rollback protection and ZIP validation.
+- Protected draft/sign/publish release pipeline, `make release VERSION=1.2.3`, and isolated signing/operator regression checks.
 - Admin pages Media Overview (usage counts, upload, "add to gallery"), Settings, System Status and Overview; live preview dialog in the editor
   (sandboxed, shows unsaved layout and settings); tile size control (S/M/L); deep link `#/galleries/<id>`; session-expiry banner that keeps unsaved
   editor state; RTL support and site-timezone date formatting.

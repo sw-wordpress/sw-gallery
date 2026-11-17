@@ -1,5 +1,7 @@
 # SW Gallery
 
+*Open source by Stefan Warnat – free to use, free to change, better together.*
+
 [![Tests](https://github.com/sw-wordpress/sw-gallery/actions/workflows/tests.yml/badge.svg)](https://github.com/sw-wordpress/sw-gallery/actions/workflows/tests.yml)
 [![JavaScript](https://github.com/sw-wordpress/sw-gallery/actions/workflows/js.yml/badge.svg)](https://github.com/sw-wordpress/sw-gallery/actions/workflows/js.yml)
 [![E2E](https://github.com/sw-wordpress/sw-gallery/actions/workflows/e2e.yml/badge.svg)](https://github.com/sw-wordpress/sw-gallery/actions/workflows/e2e.yml)
@@ -41,7 +43,7 @@ The release ZIP contains the built admin app; no Composer or Node.js is needed o
 
 Download `sw-gallery-<version>.zip` from the [GitHub releases](https://github.com/sw-wordpress/sw-gallery/releases) and upload it under
 **Plugins > Add New Plugin > Upload Plugin**, or run `wp plugin install sw-gallery-<version>.zip --activate`. Nothing is published to wordpress.org and
-there is no automatic update in 1.0. Building the ZIP yourself: [docs/release.md](docs/release.md).
+installation is always manual. Verified GitHub offers are available in the native Plugins screen once a trusted public key and signed releases are configured; the shipped keyring is empty. See [update operations](docs/GITHUB-UPDATES-BETRIEB.md) and [building releases](docs/release.md).
 
 ## Quick start
 

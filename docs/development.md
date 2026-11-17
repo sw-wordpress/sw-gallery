@@ -88,7 +88,7 @@ Other WordPress version locally: `SWG_WP_VERSION='6.4.*' bin/wp-version.sh` (als
 
 ## CI
 `.github/workflows/tests.yml`: style/PHPStan/unit/i18n/`composer audit`, WordPress suite (PHP x WordPress matrix, single site + multisite, database service),
-coverage gate, Sonar upload (matrix: see above). Further workflows: `js.yml`, `e2e.yml`, `security-audit.yml` (daily dependency audit), `release.yml` (tag -> ZIP -> GitHub release, `release.md`); `tests.yml`, `js.yml` and `e2e.yml` are also reusable (`workflow_call`) and gate the release. Action versions are pinned to full tags. The Sonar job runs only when the `SONAR_TOKEN` secret exists (not for forks); the
+coverage gate, Sonar upload (matrix: see above). Further workflows: `js.yml`, `e2e.yml`, `security-audit.yml` (daily dependency audit), `release.yml` (tag -> ZIP -> GitHub release, `release.md`); `tests.yml`, `js.yml` and `e2e.yml` run only on pull requests; the protected release job validates artifacts without running suites. Action versions are pinned to full tags. The Sonar job runs only when the `SONAR_TOKEN` secret exists (not for forks); the
 organisation comes from the variable `SONAR_ORGANIZATION` (default `sw-wordpress`).
 
 ## Dependency security
@@ -106,3 +106,5 @@ See `AGENTS.md`, `CODE-STYLE.md`, `SPECIFICATION.md`, `decisions.md`, `translati
 
 E2E notes: the RTL spec is emulated (no RTL language pack in the stack: `isRtl` and `dir="rtl"` are injected, the wp-admin chrome is not mirrored). Specs added in Wave 6: `session`, `session-deeplink`, `rtl`, `tile-size`, `frontend-perf`.
 
+
+Verified update tests: `composer test:wp -- --filter VerifiedUpdatesTest`, then `composer test:wp:ms -- --filter VerifiedUpdatesTest` (sequential, same private DB). Browser: `bin/test-e2e.sh -- tests/verified-updates.spec.ts`. Signing/setup: [operations guide](GITHUB-UPDATES-BETRIEB.md).

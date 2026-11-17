@@ -22,6 +22,7 @@ use SWGallery\WordPress\Hooks\ImportProvidersRegistrar;
 use SWGallery\WordPress\Infrastructure\EventBridgeRegistrar;
 use SWGallery\WordPress\Rest\RestRegistrar;
 use SWGallery\WordPress\Shortcode\ShortcodeRegistrar;
+use SWGallery\WordPress\Update\UpdateRegistrar;
 
 final class Registrars {
 
@@ -46,6 +47,7 @@ final class Registrars {
 			new RestRegistrar(),
 			new SchemaRegistrar(),
 			new ShortcodeRegistrar(),
+			new UpdateRegistrar(),
 		);
 	}
 }

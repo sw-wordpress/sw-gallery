@@ -182,26 +182,26 @@ msgstr "Die Galerien konnten nicht geladen werden."
 msgid "The layouts could not be loaded."
 msgstr "Die Layouts konnten nicht geladen werden."
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:57
-#: packages/wordpress/src/Admin/AdminRegistrar.php:171
+#: packages/wordpress/src/Admin/AdminRegistrar.php:68
+#: packages/wordpress/src/Admin/AdminRegistrar.php:182
 msgid "Gallery Management"
 msgstr "Galerieverwaltung"
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:58
+#: packages/wordpress/src/Admin/AdminRegistrar.php:69
 #: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:89
 #: packages/wordpress/src/PostTypes.php:29
 msgid "Galleries"
 msgstr "Galerien"
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:167
+#: packages/wordpress/src/Admin/AdminRegistrar.php:178
 msgid "You are not allowed to access this page."
 msgstr "Der Zugriff auf diese Seite ist nicht erlaubt."
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:173
+#: packages/wordpress/src/Admin/AdminRegistrar.php:184
 msgid "The gallery admin app is not built. Run \"npm run build\" in apps/admin or install the release package."
 msgstr "Die Galerieverwaltung ist nicht gebaut. Führe \"npm run build\" in apps/admin aus oder installiere das Release-Paket."
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:176
+#: packages/wordpress/src/Admin/AdminRegistrar.php:187
 msgid "The gallery administration requires JavaScript."
 msgstr "Die Galerieverwaltung benötigt JavaScript."
 
@@ -270,6 +270,10 @@ msgstr "Beim Löschen des Plugins bleiben seine Daten erhalten, außer die Einst
 #: packages/wordpress/src/Admin/PrivacyRegistrar.php:39
 msgid "Suggested text for your privacy policy. Review it and adapt it to your site."
 msgstr "Textvorschlag für Ihre Datenschutzerklärung. Bitte prüfen und an Ihre Website anpassen."
+
+#: packages/wordpress/src/Admin/templates/footer.php:11
+msgid "Open source by Stefan Warnat – free to use, free to change, better together."
+msgstr "Open Source von Stefan Warnat – frei nutzbar, frei veränderbar, gemeinsam besser."
 
 #: packages/wordpress/src/Block/BlockRegistrar.php:171
 msgid "No gallery selected. Choose one in the block settings."
@@ -1064,13 +1068,168 @@ msgstr "Der Wert muss vom Typ %s sein."
 msgid "The value needs at least %d characters."
 msgstr "Der Wert braucht mindestens %d Zeichen."
 
+#: packages/wordpress/src/Update/Manifest.php:46
+msgid "Release verification failed. The release was not accepted."
+msgstr "Die Release-Verifikation ist fehlgeschlagen. Das Release wurde nicht akzeptiert."
+
+#: packages/wordpress/src/Update/Package.php:30
+msgid "ZIP size or SHA-256 does not match, or ZIP verification is unavailable."
+msgstr "ZIP-Größe oder SHA-256 stimmt nicht, oder die ZIP-Prüfung ist nicht verfügbar."
+
+#: packages/wordpress/src/Update/Package.php:34
+msgid "Invalid ZIP archive."
+msgstr "Ungültiges ZIP-Archiv."
+
+#: packages/wordpress/src/Update/Package.php:40
+msgid "The update package failed the safety checks."
+msgstr "Das Update-Paket hat die Sicherheitsprüfungen nicht bestanden."
+
+#: packages/wordpress/src/Update/Provider.php:67
+#: packages/wordpress/src/Update/Provider.php:231
+msgid "Manual updates only"
+msgstr "Nur manuelle Aktualisierung"
+
+#: packages/wordpress/src/Update/Provider.php:87
+msgid "GitHub installation is only allowed manually in the WordPress backend."
+msgstr "Die GitHub-Installation ist nur manuell im WordPress-Backend erlaubt."
+
+#: packages/wordpress/src/Update/Provider.php:91
+msgid "Automatic GitHub installation is blocked."
+msgstr "Die automatische GitHub-Installation ist gesperrt."
+
+#: packages/wordpress/src/Update/Provider.php:103
+msgid "No valid manual WordPress update request."
+msgstr "Kein gültiger manueller WordPress-Updateauftrag."
+
+#: packages/wordpress/src/Update/Provider.php:213
+msgid "Signed GitHub release. Install only manually through WordPress."
+msgstr "Signiertes GitHub-Release. Installation nur manuell über WordPress."
+
+#: packages/wordpress/src/Update/Provider.php:231
+msgid "Check for updates now"
+msgstr "Jetzt auf Updates prüfen"
+
+#: packages/wordpress/src/Update/Provider.php:242
+msgid "GitHub updates are blocked: no public release key is configured."
+msgstr "GitHub-Updates sind gesperrt: Es ist kein öffentlicher Release-Schlüssel konfiguriert."
+
+#: packages/wordpress/src/Update/Provider.php:246
+msgid "No verified update check yet."
+msgstr "Noch keine verifizierte Update-Prüfung."
+
+#. translators: %s: time span, e.g. "2 hours"
+#: packages/wordpress/src/Update/Provider.php:249
+#, php-format
+msgid "Last verified check: %s ago."
+msgstr "Letzte verifizierte Prüfung: vor %s."
+
+#. translators: %s: error message
+#: packages/wordpress/src/Update/Provider.php:253
+#, php-format
+msgid "Last error: %s"
+msgstr "Letzter Fehler: %s"
+
+#: packages/wordpress/src/Update/Provider.php:289
+msgid "Checking signed releases …"
+msgstr "Signierte Releases werden geprüft …"
+
+#: packages/wordpress/src/Update/Provider.php:290
+msgid "Check finished."
+msgstr "Prüfung abgeschlossen."
+
+#: packages/wordpress/src/Update/Provider.php:291
+msgid "GitHub could not be reached. Please try again later."
+msgstr "GitHub konnte nicht erreicht werden. Bitte später erneut prüfen."
+
+#: packages/wordpress/src/Update/Service.php:51
+msgid "Update checks are only allowed in an authorised backend session."
+msgstr "Update-Prüfungen sind nur in einer berechtigten Backend-Sitzung erlaubt."
+
+#: packages/wordpress/src/Update/Service.php:54
+msgid "Public release key, Sodium or ZIP support is missing. GitHub updates are blocked."
+msgstr "Öffentlicher Release-Schlüssel, Sodium oder ZIP-Unterstützung fehlt. GitHub-Updates sind gesperrt."
+
+#: packages/wordpress/src/Update/Service.php:58
+msgid "An update check is already running."
+msgstr "Eine Update-Prüfung läuft bereits."
+
+#: packages/wordpress/src/Update/Service.php:64
+msgid "The last update check is still within the check interval."
+msgstr "Die letzte Update-Prüfung liegt noch innerhalb des Prüfintervalls."
+
+#: packages/wordpress/src/Update/Service.php:71
+msgid "The check took too long. The result was not adopted."
+msgstr "Die Prüfung dauerte zu lange. Das Ergebnis wurde nicht übernommen."
+
+#: packages/wordpress/src/Update/Service.php:79
+msgid "Signed release information verified. Install updates only through the WordPress plugin list."
+msgstr "Signierte Release-Informationen geprüft. Installation ausschließlich über die Plugin-Verwaltung von WordPress."
+
+#: packages/wordpress/src/Update/Service.php:81
+msgid "Invalid release response."
+msgstr "Ungültige Release-Antwort."
+
+#: packages/wordpress/src/Update/Service.php:103
+msgid "No valid stable release response."
+msgstr "Keine gültige stabile Release-Antwort."
+
+#: packages/wordpress/src/Update/Service.php:112
+msgid "Release manifest or signature is missing."
+msgstr "Release-Manifest oder Signatur fehlt."
+
+#: packages/wordpress/src/Update/Service.php:128
+msgid "An already verified newer version must not be rolled back."
+msgstr "Eine bereits geprüfte neuere Version darf nicht zurückgenommen werden."
+
+#: packages/wordpress/src/Update/Service.php:150
+msgid "Please check for updates again before installing."
+msgstr "Bitte vor der Installation die Updates erneut prüfen."
+
+#: packages/wordpress/src/Update/Service.php:157
+msgid "Outdated release offer."
+msgstr "Veraltetes Release-Angebot."
+
+#: packages/wordpress/src/Update/Service.php:178
+msgid "Package, version or system requirements do not match."
+msgstr "Paket, Version oder Systemvoraussetzungen stimmen nicht."
+
+#: packages/wordpress/src/Update/Service.php:186
+msgid "Temporary update file unavailable."
+msgstr "Temporäre Update-Datei nicht verfügbar."
+
+#: packages/wordpress/src/Update/Transport.php:27
+msgid "Update address not allowed."
+msgstr "Nicht erlaubte Update-Adresse."
+
+#: packages/wordpress/src/Update/Transport.php:47
+msgid "GitHub could not be reached."
+msgstr "GitHub konnte nicht erreicht werden."
+
+#: packages/wordpress/src/Update/Transport.php:53
+msgid "Invalid redirect."
+msgstr "Ungültige Weiterleitung."
+
+#. translators: %d: HTTP status code
+#: packages/wordpress/src/Update/Transport.php:60
+#, php-format
+msgid "GitHub responded with HTTP %d."
+msgstr "GitHub-Antwort: HTTP %d."
+
+#: packages/wordpress/src/Update/Transport.php:68
+msgid "The update response exceeds the size limit."
+msgstr "Die Update-Antwort überschreitet das Größenlimit."
+
+#: packages/wordpress/src/Update/Transport.php:72
+msgid "Too many update redirects."
+msgstr "Zu viele Update-Weiterleitungen."
+
 #. translators: 1: required PHP version, 2: current PHP version
-#: sw-gallery.php:36
+#: sw-gallery.php:37
 #, php-format
 msgid "sw-gallery requires PHP %1$s or newer. You are running PHP %2$s."
 msgstr "sw-gallery benötigt PHP %1$s oder neuer. Es läuft PHP %2$s."
 
-#: sw-gallery.php:55
+#: sw-gallery.php:56
 msgid "sw-gallery: the vendor directory is missing. Install the release package or run \"composer install\"."
 msgstr "sw-gallery: Das Verzeichnis vendor fehlt. Installiere das Release-Paket oder führe „composer install“ aus."
 

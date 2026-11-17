@@ -62,6 +62,8 @@ final class VerifyZipScriptTest extends TestCase
             'missing third-party notices' => array(array('THIRD-PARTY-NOTICES.md' => null), 'required file missing: THIRD-PARTY-NOTICES.md'),
             'GitHub README is not shipped' => array(array('README.md' => '# x'), 'top-level entry not allowed: README.md'),
             'missing .mo' => array(array('languages/sw-gallery-de_DE.mo' => null), 'sw-gallery-de_DE.mo'),
+            'missing updater script' => array(array('assets/js/sw-gallery-updates.js' => null), 'required file missing: assets/js/sw-gallery-updates.js'),
+            'missing updater trust ring' => array(array('packages/wordpress/src/Update/Config/trusted-keys.php' => null), 'required file missing: packages/wordpress/src/Update/Config/trusted-keys.php'),
             'missing block build' => array(array('assets/blocks/build/index.js' => null), 'assets/blocks/build/index.js'),
             'manifest references missing file' => array(
                 array('assets/build/.vite/manifest.json' => '{"a":{"file":"gone.js"}}'),
@@ -132,6 +134,7 @@ final class VerifyZipScriptTest extends TestCase
             'assets/blocks/block.json' => '{}',
             'assets/blocks/build/index.js' => 'x',
             'assets/media-library/media-library.js' => 'x',
+            'assets/js/sw-gallery-updates.js' => 'x',
             'assets/admin/.vite/manifest.json' => '{"a":{"file":"app.js"}}',
             'assets/admin/app.js' => 'x',
             'assets/build/.vite/manifest.json' => '{"a":{"file":"l.js","css":["l.css"]}}',
@@ -142,6 +145,9 @@ final class VerifyZipScriptTest extends TestCase
             'languages/sw-gallery-de_DE.mo' => 'x',
             'languages/sw-gallery-de_DE-' . $hash . '.json' => '{}',
         );
+        foreach (['Provider', 'Service', 'Store', 'Manifest', 'Transport', 'Package', 'UpdateRegistrar', 'Config/source', 'Config/descriptors', 'Config/trusted-keys'] as $file) {
+            $files['packages/wordpress/src/Update/' . $file . '.php'] = '<?php';
+        }
         foreach ($mutations as $path => $content) {
             if ($content === null) {
                 unset($files[$path]);

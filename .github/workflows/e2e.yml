@@ -1,11 +1,7 @@
 name: E2E
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-  # Called by release.yml (the same checks gate a release).
-  workflow_call:
+  pull_request: null
 
 permissions:
   contents: read

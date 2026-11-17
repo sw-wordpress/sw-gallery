@@ -74,6 +74,33 @@ class AdminPageTest extends SwgTestCase {
 		$this->assertNotFalse( has_action( 'admin_menu', array( $registrar, 'add_menu' ) ) );
 		$this->assertNotFalse( has_action( 'admin_enqueue_scripts', array( $registrar, 'enqueue' ) ) );
 		$this->assertNotFalse( has_filter( 'script_loader_tag', array( $registrar, 'mark_as_module' ) ) );
+		$this->assertNotFalse( has_filter( 'admin_footer_text', array( $registrar, 'footer_text' ) ) );
+	}
+
+	public function test_author_footer_is_limited_to_the_gallery_screen(): void {
+		$registrar = $this->registrar();
+		set_current_screen( 'dashboard' );
+		$this->assertSame( 'Original footer', $registrar->footer_text( 'Original footer' ) );
+		$suffix = $this->open_screen( $registrar );
+		$this->assertSame( 'Original footer', $registrar->footer_text( 'Original footer' ) );
+		set_current_screen( $suffix );
+		$this->assertSame( 'Open source by Stefan Warnat – free to use, free to change, better together.', wp_strip_all_tags( $registrar->footer_text( 'Original footer' ) ) );
+		$this->assertStringContainsString( 'id="swg-author-credit" hidden', $registrar->footer_text( '' ) );
+		set_current_screen( 'plugins' );
+		$this->assertSame( 'Original footer', $registrar->footer_text( 'Original footer' ) );
+	}
+
+	public function test_author_footer_is_translated_to_german(): void {
+		$registrar = $this->registrar();
+		set_current_screen( $this->open_screen( $registrar ) );
+		$switched = switch_to_locale( 'de_DE' );
+		load_textdomain( 'sw-gallery', SWGALLERY_DIR . 'languages/sw-gallery-de_DE.mo' );
+		try {
+			$this->assertSame( 'Open Source von Stefan Warnat – frei nutzbar, frei veränderbar, gemeinsam besser.', wp_strip_all_tags( $registrar->footer_text( '' ) ) );
+		} finally {
+			unload_textdomain( 'sw-gallery' );
+			if ( $switched ) { restore_previous_locale(); }
+		}
 	}
 
 	public function test_assets_load_only_on_the_plugin_screen_and_carry_the_plugin_version(): void {

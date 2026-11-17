@@ -33,6 +33,7 @@ final class Lifecycle {
 
 	/** Deactivation leaves all content and tables unchanged. */
 	public static function deactivate(): void {
+		\SWGallery\WordPress\Update\Provider::deactivate();
 	}
 
 	/**
@@ -40,6 +41,7 @@ final class Lifecycle {
 	 * Attachments are never deleted.
 	 */
 	public static function uninstall(): void {
+		Update\Provider::uninstall();
 		if ( is_multisite() ) {
 			self::for_each_site( array( self::class, 'uninstall_site' ) );
 			return;
@@ -50,6 +52,7 @@ final class Lifecycle {
 	/** Removes the data of the current site when its administrator opted in. */
 	public static function uninstall_site(): void {
 		global $wpdb;
+		delete_option( Update\Provider::MIGRATED );
 		if ( '1' !== (string) get_option( self::OPTION_DELETE_ON_UNINSTALL, '0' ) ) {
 			return;
 		}

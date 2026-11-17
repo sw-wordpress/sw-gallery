@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { errorMessage } from '@/api/errorMessage';
@@ -17,6 +17,10 @@ import { editorPath, formatModified } from '@/features/galleries/format';
 import { useGalleriesApi } from '@/features/galleries/injection';
 import { useStatusApi } from '@/features/status/useStatusReport';
 import { useOverview } from './useOverview';
+
+// The native WordPress footer is outside the app root; show its credit only while the overview is mounted.
+onMounted(() => document.getElementById('swg-author-credit')?.removeAttribute('hidden'));
+onBeforeUnmount(() => document.getElementById('swg-author-credit')?.setAttribute('hidden', ''));
 
 const { t } = useI18n();
 const router = useRouter();

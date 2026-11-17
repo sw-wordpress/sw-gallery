@@ -734,6 +734,7 @@ test.describe('editor workspace', () => {
     const gallery = await newGallery('Workspace', 6);
     await page.setViewportSize({ width: 1500, height: 875 });
     await openEditor(page, gallery);
+    await expect(page.locator('#swg-author-credit')).toBeHidden();
     await expectDesktopWorkspace(page);
     await shot(page, 'gallery-editor-workspace');
     await expectMobileWorkspace(page);

@@ -123,3 +123,17 @@
 ## 2026-11-16 — Local merge conflict resolution
 - Resolve the editor workspace test in favor of the shared desktop/mobile assertions; these retain the short-viewport overflow regression and the mocked REST harness.
 - Validation: real WordPress/Docker and mocked browser workspace tests passed; 500 admin tests, 96.34 % lines, typecheck/lint/format/build and i18n passed. PHP is unchanged; existing coverage report passes at 97.66 %.
+
+
+## 2026-11-17 — Verified manual GitHub updates
+- Self-contained `SWGallery\WordPress\Update` adapter, pinned repository ID 1453105629; isolated trust/options/locks/hooks, persistent throttling, rollback protection and bounded Ed25519/ZIP verification. Native WordPress Plugins UI only; automatic installation blocked, own stale offers removed on deactivation.
+- Protected draft/upload/sign/verify/publish pipeline; suites only on PRs. `make release VERSION=1.2.3`, complete en/de text and [operator guide](docs/GITHUB-UPDATES-BETRIEB.md) with three isolated Bash/Zsh key setup blocks, initial trust/rotation and Store transition.
+- Final automated checks: 494 PHP unit/integration tests; full WordPress suite 1,662 cases (10 skips), final focused suite 120 cases each single-site/multisite; PHP 97.08 % lines, all 248 production files. Admin 500 tests/96.34 %, assets 212/100 %, block 99.28 %. PHPStan 8, style, typecheck/lint, translations, actionlint and native en/de browser checks passed. Real SW-BackupIt parallel activation also passed in disposable Docker WordPress.
+- No production key generation, GitHub secret changes, signed publication or active production update supply. Operator configuration remains open in TODO.
+
+
+## 2026-11-17 — Shared author footer
+- Exact English source credit through `esc_html_e()` in a scoped PHP admin-footer template, visible only while the overview is mounted; editor height unchanged; exact de_DE catalog entry and regenerated MO. README credit is italic directly below H1. The old Powered/Provided strings were absent.
+- Verified own-screen isolation and both languages: 31 WordPress Admin tests, 16 translation/security tests, 501 admin tests/96.34 % lines, overview route-switch regression and native browser cases; PHPStan/style and i18n passed. Refreshed coverage includes all 249 production files: 97.09 % (7,529/7,755).
+- Final overview-only verification: author credit visible on overview in en/de, hidden after route change and in editor; full desktop/mobile workspace browser check passed. A Core update nag in the long-lived disposable environment was neutralized only for the height measurement; no editor sizing was changed.
+- Final ZIP: 295 files, 1,027,541 bytes; static/package/signing checks and three isolated installation smoke cases passed with no plugin PHP diagnostics. SHA-256: `a5dc1d6a9cf2af97540204b1965a0f693979ec925813650b8bd62d767bd0fa40`.

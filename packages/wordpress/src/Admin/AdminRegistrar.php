@@ -50,6 +50,17 @@ final class AdminRegistrar implements RegistrarInterface {
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 		add_filter( 'script_loader_tag', array( $this, 'mark_as_module' ), 10, 2 );
+		add_filter( 'admin_footer_text', array( $this, 'footer_text' ) );
+	}
+
+	/** Author credit only on this plugin's own admin page. */
+	public function footer_text( string $text ): string {
+		if ( '' === $this->hook_suffix || get_current_screen()?->id !== $this->hook_suffix ) {
+			return $text;
+		}
+		ob_start();
+		require __DIR__ . '/templates/footer.php';
+		return (string) ob_get_clean();
 	}
 
 	public function add_menu(): void {

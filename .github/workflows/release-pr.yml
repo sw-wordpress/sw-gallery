@@ -1,0 +1,23 @@
+name: Release artifact regression
+on:
+  pull_request: null
+permissions:
+  contents: read
+jobs:
+  signed-package:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: shivammathur/setup-php@2.33.0
+        with:
+          php-version: '8.2'
+          extensions: sodium, zip, mbstring
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version-file: apps/admin/.nvmrc
+      - run: sudo apt-get update && sudo apt-get install -y gettext
+      - run: bin/build-zip.sh
+      - run: bin/verify-zip.sh "dist/sw-gallery-$(bin/version.sh get).zip"
+      - run: php bin/test-signed-build.php "dist/sw-gallery-$(bin/version.sh get).zip"

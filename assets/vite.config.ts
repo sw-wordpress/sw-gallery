@@ -63,13 +63,14 @@ export default defineConfig({
       'lightbox/tests/**/*.test.ts',
       'frontend/tests/**/*.test.ts',
       'media-library/tests/**/*.test.ts',
+      'js/tests/**/*.test.ts',
     ],
     css: false,
     coverage: {
       provider: 'v8',
       // All productive sources, including files no test imports. The strict > 80 % gate is
       // enforced by scripts/check-coverage.mjs, because Vitest thresholds accept exactly 80 %.
-      include: ['lightbox/src/**/*.ts', 'frontend/src/**/*.ts', 'media-library/*.js'],
+      include: ['lightbox/src/**/*.ts', 'frontend/src/**/*.ts', 'media-library/*.js', 'js/*.js'],
       exclude: ['**/*.d.ts'],
       // lcov paths relative to the repository root, as SonarQube expects.
       reporter: ['text-summary', 'json-summary', ['lcov', { projectRoot: '..' }]],
