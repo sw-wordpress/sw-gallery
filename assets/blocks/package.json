@@ -1,6 +1,6 @@
 {
   "name": "sw-gallery-blocks",
-  "version": "0.1.0",
+  "version": "0.9.0",
   "private": true,
   "type": "module",
   "description": "sw-gallery Gutenberg block glue (minimal TypeScript; @wordpress/* come from the wp.* globals at runtime)",

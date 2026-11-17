@@ -6,6 +6,8 @@ versions follow [Semantic Versioning](https://semver.org/). The version number l
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-17
+
 ### Added
 - Verified Ed25519 GitHub updates with manual installation only through the native WordPress plugin list; persistent throttling, rollback protection and ZIP validation.
 - Protected draft/sign/publish release pipeline, `make release VERSION=1.2.3`, and isolated signing/operator regression checks.

@@ -4,7 +4,7 @@
  * Update URI:        https://github.com/sw-wordpress/sw-gallery
  * Plugin URI:        https://github.com/sw-wordpress/sw-gallery
  * Description:       Gallery management and presentation on top of the WordPress Media Library.
- * Version:           0.1.0
+ * Version:           0.9.0
  * Requires at least: 6.4
  * Requires PHP:      8.2
  * Author:            Stefan Warnat
@@ -19,7 +19,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SWGALLERY_VERSION', '0.1.0' );
+define( 'SWGALLERY_VERSION', '0.9.0' );
 define( 'SWGALLERY_FILE', __FILE__ );
 define( 'SWGALLERY_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SWGALLERY_URL', plugin_dir_url( __FILE__ ) );
