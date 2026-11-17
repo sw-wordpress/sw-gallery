@@ -74,3 +74,7 @@ add_action( 'swg_gallery_changed', static function ( int $gallery_id ): void {
 
 ## Registration actions
 `swg_register_layouts( LayoutRegistryInterface $registry, int $api_version )` and `swg_register_import_providers( ImportProviderRegistryInterface $registry )` fire **once per request** the first time the registry is used after `plugins_loaded` (the registry instance is the same before and after, a callback that reads it does not recurse). The registry passed to callbacks is guarded: `register()` never throws; a contract violation (invalid id, empty schema, throwing `getId()`), a duplicate id or an invalid provider id is rejected and logged (`swg_layout_rejected`, `swg_import_provider_rejected`: class names only). A throwing callback is logged as `swg_listener_failed` (`hook`, `exception`), what was registered before it stays, later callbacks of that hook are skipped. Contracts and examples: `docs/extending.md`.
+
+## Verified update local configuration
+
+`swg_verified_update_descriptors` and `swg_verified_release_public_keys` configure trusted local PHP identity/key data; never expose them as user-entered URLs or remote key discovery. Exceptions abort the check (fail closed), never authorize an unsigned fallback. Defaults bind only sw-gallery. See [update architecture](GITHUB-UPDATES.md).

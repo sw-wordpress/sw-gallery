@@ -183,26 +183,26 @@ msgstr ""
 msgid "The layouts could not be loaded."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:57
-#: packages/wordpress/src/Admin/AdminRegistrar.php:171
+#: packages/wordpress/src/Admin/AdminRegistrar.php:68
+#: packages/wordpress/src/Admin/AdminRegistrar.php:182
 msgid "Gallery Management"
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:58
+#: packages/wordpress/src/Admin/AdminRegistrar.php:69
 #: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:89
 #: packages/wordpress/src/PostTypes.php:29
 msgid "Galleries"
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:167
+#: packages/wordpress/src/Admin/AdminRegistrar.php:178
 msgid "You are not allowed to access this page."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:173
+#: packages/wordpress/src/Admin/AdminRegistrar.php:184
 msgid "The gallery admin app is not built. Run \"npm run build\" in apps/admin or install the release package."
 msgstr ""
 
-#: packages/wordpress/src/Admin/AdminRegistrar.php:176
+#: packages/wordpress/src/Admin/AdminRegistrar.php:187
 msgid "The gallery administration requires JavaScript."
 msgstr ""
 
@@ -270,6 +270,10 @@ msgstr ""
 
 #: packages/wordpress/src/Admin/PrivacyRegistrar.php:39
 msgid "Suggested text for your privacy policy. Review it and adapt it to your site."
+msgstr ""
+
+#: packages/wordpress/src/Admin/templates/footer.php:11
+msgid "Open source by Stefan Warnat – free to use, free to change, better together."
 msgstr ""
 
 #: packages/wordpress/src/Block/BlockRegistrar.php:171
@@ -1065,12 +1069,167 @@ msgstr ""
 msgid "The value needs at least %d characters."
 msgstr ""
 
+#: packages/wordpress/src/Update/Manifest.php:46
+msgid "Release verification failed. The release was not accepted."
+msgstr ""
+
+#: packages/wordpress/src/Update/Package.php:30
+msgid "ZIP size or SHA-256 does not match, or ZIP verification is unavailable."
+msgstr ""
+
+#: packages/wordpress/src/Update/Package.php:34
+msgid "Invalid ZIP archive."
+msgstr ""
+
+#: packages/wordpress/src/Update/Package.php:40
+msgid "The update package failed the safety checks."
+msgstr ""
+
+#: packages/wordpress/src/Update/Provider.php:67
+#: packages/wordpress/src/Update/Provider.php:231
+msgid "Manual updates only"
+msgstr ""
+
+#: packages/wordpress/src/Update/Provider.php:87
+msgid "GitHub installation is only allowed manually in the WordPress backend."
+msgstr ""
+
+#: packages/wordpress/src/Update/Provider.php:91
+msgid "Automatic GitHub installation is blocked."
+msgstr ""
+
+#: packages/wordpress/src/Update/Provider.php:103
+msgid "No valid manual WordPress update request."
+msgstr ""
+
+#: packages/wordpress/src/Update/Provider.php:213
+msgid "Signed GitHub release. Install only manually through WordPress."
+msgstr ""
+
+#: packages/wordpress/src/Update/Provider.php:231
+msgid "Check for updates now"
+msgstr ""
+
+#: packages/wordpress/src/Update/Provider.php:242
+msgid "GitHub updates are blocked: no public release key is configured."
+msgstr ""
+
+#: packages/wordpress/src/Update/Provider.php:246
+msgid "No verified update check yet."
+msgstr ""
+
+#. translators: %s: time span, e.g. "2 hours"
+#: packages/wordpress/src/Update/Provider.php:249
+#, php-format
+msgid "Last verified check: %s ago."
+msgstr ""
+
+#. translators: %s: error message
+#: packages/wordpress/src/Update/Provider.php:253
+#, php-format
+msgid "Last error: %s"
+msgstr ""
+
+#: packages/wordpress/src/Update/Provider.php:289
+msgid "Checking signed releases …"
+msgstr ""
+
+#: packages/wordpress/src/Update/Provider.php:290
+msgid "Check finished."
+msgstr ""
+
+#: packages/wordpress/src/Update/Provider.php:291
+msgid "GitHub could not be reached. Please try again later."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:51
+msgid "Update checks are only allowed in an authorised backend session."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:54
+msgid "Public release key, Sodium or ZIP support is missing. GitHub updates are blocked."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:58
+msgid "An update check is already running."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:64
+msgid "The last update check is still within the check interval."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:71
+msgid "The check took too long. The result was not adopted."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:79
+msgid "Signed release information verified. Install updates only through the WordPress plugin list."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:81
+msgid "Invalid release response."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:103
+msgid "No valid stable release response."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:112
+msgid "Release manifest or signature is missing."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:128
+msgid "An already verified newer version must not be rolled back."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:150
+msgid "Please check for updates again before installing."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:157
+msgid "Outdated release offer."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:178
+msgid "Package, version or system requirements do not match."
+msgstr ""
+
+#: packages/wordpress/src/Update/Service.php:186
+msgid "Temporary update file unavailable."
+msgstr ""
+
+#: packages/wordpress/src/Update/Transport.php:27
+msgid "Update address not allowed."
+msgstr ""
+
+#: packages/wordpress/src/Update/Transport.php:47
+msgid "GitHub could not be reached."
+msgstr ""
+
+#: packages/wordpress/src/Update/Transport.php:53
+msgid "Invalid redirect."
+msgstr ""
+
+#. translators: %d: HTTP status code
+#: packages/wordpress/src/Update/Transport.php:60
+#, php-format
+msgid "GitHub responded with HTTP %d."
+msgstr ""
+
+#: packages/wordpress/src/Update/Transport.php:68
+msgid "The update response exceeds the size limit."
+msgstr ""
+
+#: packages/wordpress/src/Update/Transport.php:72
+msgid "Too many update redirects."
+msgstr ""
+
 #. translators: 1: required PHP version, 2: current PHP version
-#: sw-gallery.php:36
+#: sw-gallery.php:37
 #, php-format
 msgid "sw-gallery requires PHP %1$s or newer. You are running PHP %2$s."
 msgstr ""
 
-#: sw-gallery.php:55
+#: sw-gallery.php:56
 msgid "sw-gallery: the vendor directory is missing. Install the release package or run \"composer install\"."
 msgstr ""

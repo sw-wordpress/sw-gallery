@@ -75,6 +75,24 @@ async function open(
 }
 
 describe('Overview', () => {
+  it('shows the native author credit only in the overview, including after navigation back', async () => {
+    const credit = document.createElement('span');
+    credit.id = 'swg-author-credit';
+    credit.hidden = true;
+    document.body.appendChild(credit);
+    const { router, wrapper } = await open(galleriesApi());
+    expect(credit.hidden).toBe(false);
+    await router.push('/galleries');
+    await settle();
+    expect(credit.hidden).toBe(true);
+    await router.push('/');
+    await settle();
+    expect(credit.hidden).toBe(false);
+    wrapper.unmount();
+    mounted = null;
+    expect(credit.hidden).toBe(true);
+  });
+
   it('shows gallery counts from the list totals and the recent galleries', async () => {
     const api = galleriesApi([
       makeGallery({ id: 7, title: 'Summer 2025', itemCount: 3 }),

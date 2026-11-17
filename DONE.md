@@ -110,6 +110,7 @@
 - Pin E2E and release browser jobs to Ubuntu 24.04, supported by the locked Playwright.
 - Share the production Composer audit guard between static CI and scheduled audits: an explicitly empty production list passes; invalid/missing locks and failed real audits still fail. Regression tests cover those paths.
 - Calculate mosaic stack midpoints on the integer precision grid, avoiding PHP 8.4 floating-point midpoint drift without changing the render snapshot. A focused regression passes under PHP 8.3 and in a disposable PHP 8.4 container.
+- Exercise independent sidebar scrolling at a short desktop height; compact grid settings now fit at the original 875 px height.
 - Make the ZIP verification fixture compatible with PHP 8.2 (no aliases of internal classes); retain rejection of broken autoloaders.
 - Use PCOV for the full CI line-coverage run (whole checkout, unchanged >80 % gate); the previous Xdebug run was still in the planner stress tests when cancelled after 18 minutes.
 - Local checks: 484 PHP tests, PHPStan/style gates (existing warnings), complete dependency audit, and shell syntax passed. Local PHP line coverage is 97.66 % (all production sources included; the two costly CirclePacker stress tests ran without instrumentation). The full PCOV run and remote review outcome are recorded in PR #2.
@@ -118,3 +119,25 @@
 - Upload chooser: unique Vue ID and associated label using existing English/German button text; regression covers both locales and simultaneous instances.
 - CI screenshot/trace and local browser RED confirmed that compact Grid settings fit at 875 px. Shared browser assertions now also check real overflow at 600 px, independent wheel scrolling and mobile stacking; no layout padding or sizing changes.
 - Sonar scanner waits for the server quality gate. Verification and outstanding current-head gates: `build/checks/PR2-REPAIR.md`; no commits or publication from this checkout.
+
+## 2026-11-16 — Local merge conflict resolution
+- Resolve the editor workspace test in favor of the shared desktop/mobile assertions; these retain the short-viewport overflow regression and the mocked REST harness.
+- Validation: real WordPress/Docker and mocked browser workspace tests passed; 500 admin tests, 96.34 % lines, typecheck/lint/format/build and i18n passed. PHP is unchanged; existing coverage report passes at 97.66 %.
+
+
+## 2026-11-17 — Verified manual GitHub updates
+- Self-contained `SWGallery\WordPress\Update` adapter, pinned repository ID 1453105629; isolated trust/options/locks/hooks, persistent throttling, rollback protection and bounded Ed25519/ZIP verification. Native WordPress Plugins UI only; automatic installation blocked, own stale offers removed on deactivation.
+- Protected draft/upload/sign/verify/publish pipeline; suites only on PRs. `make release VERSION=1.2.3`, complete en/de text and [operator guide](docs/GITHUB-UPDATES-BETRIEB.md) with three isolated Bash/Zsh key setup blocks, initial trust/rotation and Store transition.
+- Final automated checks: 494 PHP unit/integration tests; full WordPress suite 1,662 cases (10 skips), final focused suite 120 cases each single-site/multisite; PHP 97.08 % lines, all 248 production files. Admin 500 tests/96.34 %, assets 212/100 %, block 99.28 %. PHPStan 8, style, typecheck/lint, translations, actionlint and native en/de browser checks passed. Real SW-BackupIt parallel activation also passed in disposable Docker WordPress.
+- This implementation did not generate private keys, change GitHub secrets or publish a release; the existing public key is preserved. Operator configuration remains open in TODO.
+
+
+## 2026-11-17 — Shared author footer
+- Exact English source credit through `esc_html_e()` in a scoped PHP admin-footer template, visible only while the overview is mounted; editor height unchanged; exact de_DE catalog entry and regenerated MO. README credit is italic directly below H1. The old Powered/Provided strings were absent.
+- Verified own-screen isolation and both languages: 31 WordPress Admin tests, 16 translation/security tests, 501 admin tests/96.34 % lines, overview route-switch regression and native browser cases; PHPStan/style and i18n passed. Refreshed coverage includes all 249 production files: 97.09 % (7,529/7,755).
+- Final overview-only verification: author credit visible on overview in en/de, hidden after route change and in editor; full desktop/mobile workspace browser check passed. A Core update nag in the long-lived disposable environment was neutralized only for the height measurement; no editor sizing was changed.
+- Final ZIP: 295 files, 1,027,541 bytes; static/package/signing checks and three isolated installation smoke cases passed with no plugin PHP diagnostics. SHA-256: `a5dc1d6a9cf2af97540204b1965a0f693979ec925813650b8bd62d767bd0fa40`.
+
+## 2026-11-17 — PR #3 review follow-up
+- Preserve the existing public key and format its array for WPCS. Missing-key browser fixtures explicitly use an empty plugin-specific constant, independent of shipped keys.
+- Install Zsh in PHP CI jobs that run the documented shell tests; inspect inline script content without WordPress-version-specific numeric indexes.

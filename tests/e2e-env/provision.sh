@@ -53,6 +53,7 @@ mkuser author author "$SWG_E2E_PW_AUTHOR"
 mkuser contributor contributor "$SWG_E2E_PW_CONTRIBUTOR"
 mkuser subscriber subscriber "$SWG_E2E_PW_SUBSCRIBER"
 mkuser german editor "$SWG_E2E_PW_GERMAN" de_DE
+mkuser updates-german administrator "$SWG_E2E_PW_GERMAN" de_DE
 
 wp plugin list --format=csv --fields=name,status,version
 echo "Provisioning done."

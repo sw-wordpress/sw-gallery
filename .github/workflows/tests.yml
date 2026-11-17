@@ -4,12 +4,6 @@ name: Tests
 # (> 80 %) and the SonarQube Cloud upload. Third-party actions are pinned to full version tags.
 on:
   pull_request: null
-  push:
-    branches:
-      - main
-  workflow_dispatch: null
-  # Called by release.yml (the same checks gate a release).
-  workflow_call: null
 
 concurrency:
   group: tests-${{ github.event.pull_request.number || github.ref }}
@@ -33,11 +27,11 @@ jobs:
       - uses: shivammathur/setup-php@2.33.0
         with:
           php-version: '8.2'
-          extensions: mbstring
+          extensions: mbstring, zip, sodium
           tools: composer:v2
           coverage: none
       - name: Install GNU gettext (translation check)
-        run: sudo apt-get update && sudo apt-get install -y gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext zsh
       - run: composer validate --strict
       - run: composer install --prefer-dist --no-interaction --no-progress
       - name: Audit shipped Composer packages
@@ -86,7 +80,7 @@ jobs:
       - uses: shivammathur/setup-php@2.33.0
         with:
           php-version: ${{ matrix.php }}
-          extensions: mysqli, mbstring, gd
+          extensions: mysqli, mbstring, gd, zip, sodium
           tools: composer:v2
           coverage: none
       - run: composer install --prefer-dist --no-interaction --no-progress
@@ -119,7 +113,7 @@ jobs:
       - uses: shivammathur/setup-php@2.33.0
         with:
           php-version: '8.3'
-          extensions: mysqli, mbstring, gd
+          extensions: mysqli, mbstring, gd, zip, sodium
           tools: composer:v2
           # PCOV measures the required line coverage without Xdebug's planner stress-test overhead.
           coverage: pcov
@@ -127,6 +121,8 @@ jobs:
           ini-values: pcov.directory=${{ github.workspace }}
       - run: composer install --prefer-dist --no-interaction --no-progress
       - run: composer install --working-dir=tests/wp --prefer-dist --no-interaction --no-progress
+      - name: Install documented operator shells
+        run: sudo apt-get update && sudo apt-get install -y zsh
       - name: Unit + WordPress suite coverage, merge, strict gate
         run: |
           mkdir -p coverage

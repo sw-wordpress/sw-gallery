@@ -92,6 +92,7 @@ copy_tree assets/admin ! -name '*.map'
 copy_file assets/blocks/block.json
 copy_tree assets/blocks/build ! -name '*.map'
 copy_file assets/media-library/media-library.js
+copy_file assets/js/sw-gallery-updates.js
 
 # Compiled catalogs come from the .po files of this very tree (the committed .mo is only a development convenience).
 for po in "$PKG"/languages/*.po; do

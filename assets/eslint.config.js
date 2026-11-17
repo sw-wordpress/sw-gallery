@@ -37,7 +37,7 @@ export default tseslint.config(
   },
   {
     // Classic script of the native Media Library screens (no build step).
-    files: ['media-library/*.js'],
+    files: ['media-library/*.js', 'js/*.js'],
     languageOptions: { sourceType: 'script', globals: { ...globals.browser } },
     rules: {
       'no-restricted-properties': ['error', ...htmlSinks],
