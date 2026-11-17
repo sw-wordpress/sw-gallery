@@ -16,6 +16,8 @@ x-wp-env: &wp-env
     define( 'DISALLOW_FILE_EDIT', true );
     define( 'DISABLE_WP_CRON', true );
     define( 'AUTOMATIC_UPDATER_DISABLED', true );
+    // Missing-key browser cases must be independent of the shipped release keyring.
+    define( 'SWGALLERY_RELEASE_PUBLIC_KEYS', array() );
     // Web containers never call out (update checks, dashboard feeds would make page loads slow and non-deterministic);
     // only the provisioning container needs the network (language pack).
     if ( getenv( 'SWG_E2E_BLOCK_HTTP' ) ) {

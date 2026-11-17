@@ -1,6 +1,6 @@
 # Verifizierte GitHub-Updates betreiben
 
-**Noch nicht produktiv eingerichtet:** Der ausgelieferte Schlüsselring ist leer. Ohne lokalen Ed25519-Vertrauensanker, geschützte GitHub-Umgebung und vollständig signierten Release besteht keine aktive Updateversorgung. Keine Produktionsschlüssel wurden erzeugt, keine GitHub-Secrets verändert und kein Release veröffentlicht.
+**Noch nicht produktiv eingerichtet:** Der Schlüsselring enthält den öffentlichen Schlüssel `sw-gallery-2026-11`; geschützte GitHub-Umgebung und signierte Veröffentlichung sind damit noch nicht nachgewiesen. Ohne lokalen Ed25519-Vertrauensanker, geschützte GitHub-Umgebung und vollständig signierten Release besteht keine aktive Updateversorgung. Keine Produktionsschlüssel wurden erzeugt, keine GitHub-Secrets verändert und kein Release veröffentlicht.
 
 Quelle: `sw-wordpress/sw-gallery` (Repository-ID **1453105629**). Paket `sw-gallery-<X.Y.Z>.zip`, Hauptdatei `sw-gallery/sw-gallery.php`, Version `SWGALLERY_VERSION`. Stabile Tags heißen `[v]X.Y.Z`; Pre-Releases und vierstellige ChurchTools-Versionen sind ausgeschlossen.
 

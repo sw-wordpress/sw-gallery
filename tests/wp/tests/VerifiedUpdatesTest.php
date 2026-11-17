@@ -1069,7 +1069,7 @@ final class VerifiedUpdatesTest extends SwgTestCase {
 		set_current_screen( is_multisite() ? 'plugins-network' : 'plugins' );
 		Provider::enqueue();
 		$this->assertTrue( wp_script_is( Provider::HANDLE, 'enqueued' ) );
-		$inline = (string) wp_scripts()->get_data( Provider::HANDLE, 'before' )[1];
+		$inline = implode( "\n", (array) wp_scripts()->get_data( Provider::HANDLE, 'before' ) );
 		$this->assertStringContainsString( 'window.swgVerifiedUpdates=', $inline );
 		$this->assertStringNotContainsString( '</script>', $inline );
 		$this->assertStringContainsString( '\u003C', $inline );
@@ -1085,7 +1085,7 @@ final class VerifiedUpdatesTest extends SwgTestCase {
 		wp_deregister_script( Provider::HANDLE );
 		wp_dequeue_script( Provider::HANDLE );
 		Provider::enqueue();
-		$this->assertStringContainsString( '"due":false', (string) wp_scripts()->get_data( Provider::HANDLE, 'before' )[1] );
+		$this->assertStringContainsString( '"due":false', implode( "\n", (array) wp_scripts()->get_data( Provider::HANDLE, 'before' ) ) );
 	}
 
 	// ---- AJAX ---------------------------------------------------------------------------------------------------------

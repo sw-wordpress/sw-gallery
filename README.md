@@ -43,7 +43,7 @@ The release ZIP contains the built admin app; no Composer or Node.js is needed o
 
 Download `sw-gallery-<version>.zip` from the [GitHub releases](https://github.com/sw-wordpress/sw-gallery/releases) and upload it under
 **Plugins > Add New Plugin > Upload Plugin**, or run `wp plugin install sw-gallery-<version>.zip --activate`. Nothing is published to wordpress.org and
-installation is always manual. Verified GitHub offers are available in the native Plugins screen once a trusted public key and signed releases are configured; the shipped keyring is empty. See [update operations](docs/GITHUB-UPDATES-BETRIEB.md) and [building releases](docs/release.md).
+installation is always manual. Verified GitHub offers are available in the native Plugins screen once a trusted public key and signed releases are configured; the shipped public key still needs trusted initial distribution. See [update operations](docs/GITHUB-UPDATES-BETRIEB.md) and [building releases](docs/release.md).
 
 ## Quick start
 

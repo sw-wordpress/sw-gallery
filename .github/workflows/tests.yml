@@ -31,7 +31,7 @@ jobs:
           tools: composer:v2
           coverage: none
       - name: Install GNU gettext (translation check)
-        run: sudo apt-get update && sudo apt-get install -y gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext zsh
       - run: composer validate --strict
       - run: composer install --prefer-dist --no-interaction --no-progress
       - name: Audit shipped Composer packages
@@ -121,6 +121,8 @@ jobs:
           ini-values: pcov.directory=${{ github.workspace }}
       - run: composer install --prefer-dist --no-interaction --no-progress
       - run: composer install --working-dir=tests/wp --prefer-dist --no-interaction --no-progress
+      - name: Install documented operator shells
+        run: sudo apt-get update && sudo apt-get install -y zsh
       - name: Unit + WordPress suite coverage, merge, strict gate
         run: |
           mkdir -p coverage
