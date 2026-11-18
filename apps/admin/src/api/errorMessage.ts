@@ -12,6 +12,7 @@ const CODE_MESSAGES: Record<string, string> = {
   swg_invalid_state: 'errors.invalidState',
   swg_operation_vetoed: 'errors.vetoed',
   swg_gallery_not_found: 'errors.galleryNotFound',
+  swg_schema_newer: 'errors.schemaNewer',
 };
 
 /**

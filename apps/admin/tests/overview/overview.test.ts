@@ -132,7 +132,13 @@ describe('Overview', () => {
   it('flags a pending migration, recent errors and a missing build in the health line', async () => {
     const statusApi = fakeStatusApi(
       makeStatus({
-        schema: { stored: 2, current: 3, migrationPending: true, itemTablePresent: true },
+        schema: {
+          stored: 2,
+          current: 3,
+          migrationPending: true,
+          newerThanCode: false,
+          itemTablePresent: true,
+        },
         recentErrors: [
           { time: '2026-11-11T09:30:00Z', code: 'a', context: {} },
           { time: '2026-11-11T09:31:00Z', code: 'b', context: {} },
@@ -145,6 +151,24 @@ describe('Overview', () => {
     expect(health).toContain('Migration pending');
     expect(health).toContain('2 recent errors');
     expect(health).toContain('Needs attention');
+  });
+
+  it('flags a newer schema in the health line', async () => {
+    const statusApi = fakeStatusApi(
+      makeStatus({
+        schema: {
+          stored: 4,
+          current: 3,
+          migrationPending: false,
+          newerThanCode: true,
+          itemTablePresent: true,
+        },
+      }),
+    );
+    await open(galleriesApi(), { statusApi });
+    const health = $('.swg-overview__health')?.textContent ?? '';
+    expect(health).toContain('Database schema is newer than the plugin');
+    expect(health).not.toContain('Schema is up to date');
   });
 
   it('keeps the page usable when only the health summary fails, and retries', async () => {

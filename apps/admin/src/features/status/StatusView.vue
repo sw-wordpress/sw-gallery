@@ -140,6 +140,12 @@ async function copySummary(): Promise<void> {
           <ul class="swg-status__checks">
             <li>
               <StatusChip
+                v-if="report.schema.newerThanCode"
+                kind="danger"
+                :label="t('status.schema.newerThanCode')"
+              />
+              <StatusChip
+                v-else
                 :kind="report.schema.migrationPending ? 'warning' : 'success'"
                 :label="
                   report.schema.migrationPending

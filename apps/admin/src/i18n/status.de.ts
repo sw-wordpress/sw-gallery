@@ -21,6 +21,7 @@ const de: typeof en = {
     title: 'Datenbankschema',
     pending: 'Migration ausstehend',
     upToDate: 'Schema ist aktuell',
+    newerThanCode: 'Datenbankschema ist neuer als das Plugin',
     versions: 'Gespeicherte Version {stored}, aktuelle Version {current}',
     tablePresent: 'Item-Tabelle vorhanden',
     tableMissing: 'Item-Tabelle fehlt',

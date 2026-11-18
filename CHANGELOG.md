@@ -6,6 +6,9 @@ versions follow [Semantic Versioning](https://semver.org/). The version number l
 
 ## [Unreleased]
 
+### Fixed
+- Show a warning in Overview and System Status when the database schema is newer than the installed plugin, with an actionable save error.
+
 ## [0.9.0] - 2026-11-17
 
 ### Added
@@ -56,5 +59,5 @@ First development version. Not released; nothing is published yet.
 - Media Library integration (usage column, gallery field, deletion guard), WP-CLI commands (`wp swg`).
 - Translations: English source strings, German catalogs (PHP and block editor).
 
-[Unreleased]: https://github.com/sw-wordpress/sw-gallery/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/sw-wordpress/sw-gallery/commits/v0.1.0
+[Unreleased]: https://github.com/sw-wordpress/sw-gallery/compare/0.9.0...HEAD
+[0.9.0]: https://github.com/sw-wordpress/sw-gallery/releases/tag/0.9.0

@@ -3,7 +3,13 @@ import type { StatusApi, StatusReport } from '../../src/api/status';
 
 export function makeStatus(overrides: Partial<StatusReport> = {}): StatusReport {
   return {
-    schema: { stored: 3, current: 3, migrationPending: false, itemTablePresent: true },
+    schema: {
+      stored: 3,
+      current: 3,
+      migrationPending: false,
+      newerThanCode: false,
+      itemTablePresent: true,
+    },
     counts: {
       galleries: { draft: 2, pending: 0, publish: 5, private: 1, future: 0, trash: 3 },
       itemRows: { count: 120, capped: false },

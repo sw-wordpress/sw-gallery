@@ -20,6 +20,7 @@ export interface StatusReport {
     stored: number;
     current: number;
     migrationPending: boolean;
+    newerThanCode: boolean;
     itemTablePresent: boolean;
   };
   counts: {

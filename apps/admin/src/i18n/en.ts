@@ -73,6 +73,8 @@ export default {
     invalidState: 'This gallery is in a different state now, so the action is not possible.',
     vetoed: 'The action was blocked by another plugin or a site rule.',
     galleryNotFound: 'This gallery no longer exists or is not available to you.',
+    schemaNewer:
+      'Changes cannot be saved. Update SW Gallery to a version that supports this database schema.',
     fieldInvalid: 'is invalid.',
   },
   galleries: {

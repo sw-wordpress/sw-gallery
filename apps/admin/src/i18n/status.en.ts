@@ -18,6 +18,7 @@ export default {
     title: 'Database schema',
     pending: 'Migration pending',
     upToDate: 'Schema is up to date',
+    newerThanCode: 'Database schema is newer than the plugin',
     versions: 'Stored version {stored}, current version {current}',
     tablePresent: 'Item table present',
     tableMissing: 'Item table missing',

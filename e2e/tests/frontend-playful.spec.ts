@@ -477,6 +477,8 @@ test('scattered: RTL mirrors the grid, keeps the DOM order and does not overflow
     second as number,
   );
   expect(await overflows(page)).toBe(false);
+  // Mirrored offsets transition after dir changes. Measure the finished composition.
+  await settle(page);
   for (const print of await prints(page)) expect(print.share).toBeGreaterThanOrEqual(0.6);
   await shot(page, 'scattered-rtl');
   await context.close();
