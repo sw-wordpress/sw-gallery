@@ -134,6 +134,7 @@ describe('errorMessage for the gallery routes', () => {
     expect(errorMessage(err('swg_invalid_state', 409), t)).toBe('errors.invalidState');
     expect(errorMessage(err('swg_operation_vetoed', 403), t)).toBe('errors.vetoed');
     expect(errorMessage(err('swg_gallery_not_found', 404), t)).toBe('errors.galleryNotFound');
+    expect(errorMessage(err('swg_schema_newer', 503), t)).toBe('errors.schemaNewer');
   });
 
   it('falls back to the status for the remaining codes', () => {

@@ -58,11 +58,14 @@ const trashed = computed(() => overview.report.value?.counts.galleries.trash);
 const health = computed(() => {
   const report = overview.report.value;
   if (report === null) return null;
+  const schemaHealth = report.schema.newerThanCode
+    ? { label: t('status.schema.newerThanCode'), kind: 'danger' as const }
+    : report.schema.migrationPending
+      ? { label: t('overview.health.migrationPending'), kind: 'warning' as const }
+      : { label: t('overview.health.schemaOk'), kind: 'success' as const };
   return {
-    schema: report.schema.migrationPending
-      ? t('overview.health.migrationPending')
-      : t('overview.health.schemaOk'),
-    schemaKind: report.schema.migrationPending ? ('warning' as const) : ('success' as const),
+    schema: schemaHealth.label,
+    schemaKind: schemaHealth.kind,
     errors: report.recentErrors.length,
     attention: !report.schema.itemTablePresent || !report.adminBuild,
   };

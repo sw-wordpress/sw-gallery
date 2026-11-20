@@ -1,6 +1,6 @@
 # Verifizierte GitHub-Updates betreiben
 
-**Noch nicht produktiv eingerichtet:** Der Schlüsselring enthält den öffentlichen Schlüssel `sw-gallery-2026-11`; geschützte GitHub-Umgebung und signierte Veröffentlichung sind damit noch nicht nachgewiesen. Ohne lokalen Ed25519-Vertrauensanker, geschützte GitHub-Umgebung und vollständig signierten Release besteht keine aktive Updateversorgung. Keine Produktionsschlüssel wurden erzeugt, keine GitHub-Secrets verändert und kein Release veröffentlicht.
+**Stand 18.11.2026:** GitHub hat [0.9.0 signiert veröffentlicht](https://github.com/sw-wordpress/sw-gallery/releases/tag/0.9.0). Der öffentliche Schlüssel steckt im Repository und im veröffentlichten Paket. Vor 1.0 die Schutzregeln prüfen und den Vertrauensanker auf Bestandsinstallationen kontrollieren. Einzelheiten stehen im [Release-Check](../TODO.md#10-release-readiness-2026-11-18).
 
 Quelle: `sw-wordpress/sw-gallery` (Repository-ID **1453105629**). Paket `sw-gallery-<X.Y.Z>.zip`, Hauptdatei `sw-gallery/sw-gallery.php`, Version `SWGALLERY_VERSION`. Stabile Tags heißen `[v]X.Y.Z`; Pre-Releases und vierstellige ChurchTools-Versionen sind ausgeschlossen.
 
@@ -152,12 +152,8 @@ Siehe [Entwicklung](development.md) und `VerifiedUpdatesTest`: Wegwerfschlüssel
 - Browser: native englische/deutsche Pluginzeile, Sperre ohne Schlüssel, keine Update-UI in der SPA. Zusätzlich SW-BackupIt 0.8.1 aus dem vorhandenen lokalen ZIP parallel in der Wegwerf-Installation aktiviert; getrennte Aktionen/Schaltflächen geprüft. Die wiederholbare CI-Prüfung verwendet einen unabhängigen zweiten Provider mit eigenen Schlüsseln und Speichern.
 - Die drei Schlüsselblöcke bestehen unter Bash und Zsh mit Wegwerfschlüsseln und simuliertem GitHub-CLI. `make release` wurde ausschließlich gegen ein privates temporäres Git-Repository ausgeführt. Der Artefakttest signiert echte Build-ZIPs und prüft Signatur, Paket, eingebetteten öffentlichen Build-Schlüssel, Manipulationsablehnung und Abbruch ohne Secret.
 
-GitHub-Schutzregeln, Produktions-Vertrauensanker und erster signierter Release bleiben Betreiberaufgaben; die GitHub-CI-Matrix wurde lokal nicht ausgeführt.
+### Praktische Abnahme
 
-### Praktische Abnahme durch Stefan
-
-**Empfohlen:** Unter „Plugins → Installierte Plugins“ die eigene Zeile öffnen. Erwartet: Hinweis „Nur manuelle Aktualisierung“, Prüfschaltfläche und ohne Schlüssel eine klare Sperrmeldung. Schaltfläche betätigen: kein Download/Installationsangebot. Danach Galerie-App öffnen: dort keine Update-Bedienelemente.
-
-**Optional, nach Betreiberkonfiguration auf Staging:** Den öffentlichen Vertrauensanker kontrolliert verteilen, eine signierte höhere Version veröffentlichen und nacheinander Einzel-, AJAX- und Sammelupdate über WordPress prüfen. Erwartet: ausschließlich explizite manuelle Installation; Auto-Updates bleiben gesperrt. In Multisite darf nur die berechtigte Netzwerkverwaltung prüfen/installieren. Diese Abnahme ist unabhängig von den oben genannten automatisierten Tests.
+Siehe [Staging-Abnahme und Upgrade-Test](release.md#10-staging-acceptance). In Multisite die manuelle Prüfung und Installation in der berechtigten Netzwerkverwaltung ausführen.
 
 Finales lokales Paket: `dist/sw-gallery-0.1.0.zip`, 295 Dateien, 1.027.541 Bytes. SHA-256: `a5dc1d6a9cf2af97540204b1965a0f693979ec925813650b8bd62d767bd0fa40`. Statische Paketprüfung, Wegwerf-Signierung und drei isolierte Installations-Smoke-Tests bestanden; keine Plugin-PHP-Warnungen. Autorenzeile nur auf der Übersicht, Editorhöhe unverändert; separate Browserprüfung bestanden.

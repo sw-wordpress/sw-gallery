@@ -124,7 +124,7 @@ PATCH is partial; unknown request keys are ignored, a body without a known key i
 
 `GET /status` (`manage_options`), no secrets, paths, hostnames or SQL:
 
-- `schema`: `stored`, `current`, `migrationPending`, `itemTablePresent`.
+- `schema`: `stored`, `current`, `migrationPending`, `newerThanCode`, `itemTablePresent`.
 - `counts.galleries` per status (`draft, pending, publish, private, future, trash`); `counts.itemRows` `{count, capped}` (exact up to 50000 rows, then `capped: true`); `counts.orphanRelations` `{count, complete}`: a read-only scan with the repair command's query, only on non-capped tables and for at most one second. Otherwise `complete: false` (`count: null` when skipped); the repair itself stays WP-CLI only.
 - `recentErrors`: the logger ring buffer, newest first, at most 20, already sanitized (`time` ISO UTC, `code`, `context`).
 - `versions` (`plugin`, `wordpress`, `php`, `database: {type, version}`), `multisite`, `cache: {state: "none"}` (until the renderer cache exists), `adminBuild` (boolean: the build manifest is valid), `hints[]` (`{key: "export_limitation", message}`, decision D12).
@@ -137,5 +137,5 @@ Response 200 (`Cache-Control: no-store`): `{ html, layoutId, page, totalPages, t
 
 ## Admin bootstrap (`window.swgAdmin`)
 
-Printed inline by the plugin page (JSON with hex escaping, `JSON_HEX_TAG|AMP|APOS|QUOT`): `restRoot` and `nonce` (required, validated once by the admin app), `locale`, `version`, `adminUrl`, `capabilities[]`, `isRtl`, `timezone`, `ajaxUrl`, `loginUrl`, `assetsUrl` (optional URLs must be http(s), otherwise dropped). The only secret is the per-user REST nonce. The client replays a request once after `rest_cookie_invalid_nonce` with a fresh nonce from `admin-ajax.php?action=rest-nonce` (WordPress rejects before executing, so the replay is safe); 401 shows the session-expired banner without unmounting the views. `GET /status` reports `schema.newerThanCode` when the stored schema version is newer than the code.
+Printed inline by the plugin page (JSON with hex escaping, `JSON_HEX_TAG|AMP|APOS|QUOT`): `restRoot` and `nonce` (required, validated once by the admin app), `locale`, `version`, `adminUrl`, `capabilities[]`, `isRtl`, `timezone`, `ajaxUrl`, `loginUrl`, `assetsUrl` (optional URLs must be http(s), otherwise dropped). The only secret is the per-user REST nonce. The client replays a request once after `rest_cookie_invalid_nonce` with a fresh nonce from `admin-ajax.php?action=rest-nonce` (WordPress rejects before executing, so the replay is safe); 401 shows the session-expired banner without unmounting the views.
 

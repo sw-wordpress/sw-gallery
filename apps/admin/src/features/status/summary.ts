@@ -33,6 +33,9 @@ export function buildSummary(report: StatusReport, generatedAt: Date = new Date(
     `Schema: stored ${schema.stored}, current ${schema.current}, migration ${
       schema.migrationPending ? 'PENDING' : 'not pending'
     }, item table ${schema.itemTablePresent ? 'present' : 'MISSING'}`,
+    ...(schema.newerThanCode
+      ? ['Stored schema is newer than the plugin; writes are blocked.']
+      : []),
     `Galleries: ${galleries === '' ? 'none' : galleries}`,
     `Item rows: ${counts.itemRows.count}${counts.itemRows.capped ? ' (capped, at least)' : ''}`,
     `Orphan relations: ${orphanText}`,

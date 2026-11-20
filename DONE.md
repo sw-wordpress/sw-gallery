@@ -141,3 +141,10 @@
 ## 2026-11-17 — PR #3 review follow-up
 - Preserve the existing public key and format its array for WPCS. Missing-key browser fixtures explicitly use an empty plugin-specific constant, independent of shipped keys.
 - Install Zsh in PHP CI jobs that run the documented shell tests; inspect inline script content without WordPress-version-specific numeric indexes.
+
+## 2026-11-18 — 1.0 readiness audit
+
+- System Status and Overview flag a newer database schema. The admin app translates the write refusal and names the update needed. Regression tests cover both screens, diagnostics and the REST error mapping.
+- Overview E2E compares counts with the exact API responses used by the page. Scattered RTL E2E waits for the direction-change transition to finish before measuring visible area.
+- Verified the published 0.9.0 signature and ZIP against the checked-in keyring and updated release documentation. The recommended staging checks and outstanding release evidence are linked from TODO.
+- Local checks passed for the admin build, typecheck, lint, format and 503 tests (96.34 % lines), PHP tests (494), PHPStan, style gates (existing warnings) and translations. Frontend assets (212 tests, 100 % lines) and block glue (31 tests, 99.28 % lines) passed locally. The latest merged PR measured PHP at 97.05 %. The six selected browser scenarios passed twice without retries (12 runs). Full release-candidate E2E and current main-branch SonarCloud evidence remain open.

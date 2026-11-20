@@ -5,19 +5,26 @@ Order is binding: M1 → M5 (S§14.4). No P1/P2 work before P0 (M1–M5) is comp
 Task IDs are stable identifiers; the list order inside a milestone is the execution order.
 Every task ships with tests, i18n (en/de), docs and passes the Definition of Done (S§12). Decisions referenced as D n are recorded in `docs/decisions.md`.
 
+## 1.0 release readiness (2026-11-18)
+
+- [ ] Stefan: run the [recommended staging acceptance checks](docs/release.md#10-staging-acceptance). Record WordPress version, theme, browser/device and findings.
+- [ ] Run full E2E on the release candidate without retries (M5-07). Check for recurring Scattered lightbox and gallery deep-link failures. The overview count and Scattered RTL assertions were stabilized during the audit.
+- [ ] Refresh SonarCloud for the release candidate and triage the older main-branch findings (M5-13).
+- [ ] Verify release-tag protection and required reviewer settings against the [operator guide](docs/GITHUB-UPDATES-BETRIEB.md). The environment already allows numeric release tags, but the API showed no required-reviewer rule and no active tag-targeting ruleset.
+- [ ] Approve the 1.0 version bump and publication after acceptance (M5-15). Use an unprefixed tag with the current environment policy.
+
 ## Editor workspace follow-up (2026-11-15)
 
 - [x] Compact sw-sliderman-style workspace: viewport layout, icon rail, header, image tools, independent settings scroll; narrow-screen stacking.
 - [x] Window-wide file drop overlay and compact toolbar upload button; retain upload progress, permission checks and native media handling.
 - [x] Compact layout settings: device inputs with empty overrides, slider/value rows, full-width selects and user-locale schema translations.
-- [ ] Stefan: practical acceptance of the updated editor (desktop, long settings, mobile, save/undo/preview).
 
 ## PR #2 CI follow-up
 
 - [x] Guard the production Composer audit for an explicitly empty package list; retain failures for real audits and invalid locks.
 - [x] Pin browser CI runners to Ubuntu 24.04; round mosaic stack midpoints on the integer precision grid for PHP 8.4.
 - [x] Label the upload chooser per instance; test compact settings with fitting and overflowing desktop viewports and a shared local browser harness.
-- [ ] Parent: verify the published repair head with PHP/WordPress coverage, full E2E, SonarCloud Code Analysis and a fresh Codex review.
+- [x] PR #2 head `c9beeb7`: PHP/WordPress coverage, full E2E, SonarCloud Code Analysis and the requested Codex review completed. See [PR #2](https://github.com/sw-wordpress/sw-gallery/pull/2).
 
 ## Verified manual GitHub updates (2026-11-16)
 
@@ -25,7 +32,7 @@ Every task ships with tests, i18n (en/de), docs and passes the Definition of Don
 - [x] Signed manifest and bounded HTTPS/package verification; persistent check/rollback/lease policy.
 - [x] Protected draft-sign-publish workflow and `make release VERSION=1.2.3`; suites only on PRs.
 - [x] Final checks, signed real build, isolated operator commands and operational handover; see DONE and operations guide.
-- [ ] Operator: configure protected environment/tag rules, dedicated keys and trusted initial delivery; publish first signed release.
+- [x] First signed GitHub release published as [0.9.0](https://github.com/sw-wordpress/sw-gallery/releases/tag/0.9.0). Remaining production settings and staging upgrade checks are tracked above.
 
 ## Shared author footer (2026-11-17)
 
@@ -121,7 +128,7 @@ Status after the review on 2026-11-10. Gaps were turned into acceptance criteria
 | F-37 privacy, F-39 no download protection | M5-14. |
 | F-38 wordpress.org requirements | D9: GitHub only for 1.0; relevant only if wordpress.org is chosen later. |
 
-## M1 — Foundation (in progress)
+## M1 — Foundation
 
 Core domain and contracts
 - [x] M1-01 `Gallery` entity + value objects (`GalleryStatus`, `GallerySettings`, cover, owner, plain-text description per F-10); cover = any readable image, not necessarily a member; invariants unit-tested.
@@ -171,7 +178,7 @@ Tooling and tests
 - [x] FU-15 Gallery list polish: placeholder cover tile too tall (4:3 on mobile), double focus ring in the search field, 375 px rail nav slightly wider than the viewport.
 - [x] FU-16 Contributors lack `upload_files`, so under D11 all of their items count as `missing`: decide whether contributors may use already-readable library images (D11 revisit).
 - [x] FU-17 `swg_gallery_changed` fires only from core events: `RevisionBump` (attachment deleted, cover cleared, repair run) bumps revisions without an event, so full-page caches/CDNs are not purged in those cases (the object-cache fragment cache stays correct through the media epoch) — emit the action from `GalleryLifecycleRegistrar`/repair too.
-- [ ] FU-18 Pagination arg `swg_page_<galleryId>` is shared by two embeds of the same gallery on one page (documented); the shortcode/block must omit `page` unless the embed really sets it, otherwise the URL arg never takes effect.
+- [x] FU-18 Request pagination is covered by `EmbedArgumentsTest`, `RenderPaginationTest` and frontend E2E. Two embeds of the same gallery still share the documented `swg_page_<galleryId>` argument.
 - [x] FU-19 Admin app: a lazy chunk that fails to load (flaky network) fails silently; add a router `onError` message with retry.
 - [x] FU-20 Block editor preview is unstyled (no gallery stylesheet in the editor): load the layout stylesheet via `editorStyle`/`enqueue_block_assets`.
 - [x] FU-21 Release packaging (M5-09/M5-10): the ZIP must ship `assets/blocks/block.json` and `assets/blocks/build/`, `assets/build/`, `assets/admin/`, the compiled `.mo` and the block JSON catalog; the build script must run all three npm builds.
@@ -184,7 +191,7 @@ Tooling and tests
 - [x] FU-28 Editor live preview: the preview is a modal now (settings unreachable while open); a title-only save re-renders the preview; `diagnostics[].message` is shown untranslated; staged order/removals are not previewed (server has no staged-items input).
 - [ ] FU-29 Media Overview: uploader filter is a numeric user id (no users endpoint); justified layout breaks rows greedily (a very narrow image may stretch alone on a narrow container).
 - [x] FU-31 Editor items grid keeps its fixed tile size: at 2560 px six tiles leave much empty space on the right (consider larger tiles or a size slider).
-- [ ] FU-32 Admin app: show `schema.newerThanCode` (System Status) and the 503 `swg_schema_newer` error with a clear message; batched `appendMany()` in the core item-repository contract (bulk assign is ~2 queries per item); real RTL site check; Heartbeat nonce path against a real Heartbeat; high-contrast/forced-colors/400 % zoom review; `bin/i18n.sh` still has the placeholder `--msgid-bugs-address`.
+- [ ] FU-32 Batched `appendMany()` in the core item-repository contract (bulk assign is ~2 queries per item); real RTL site check; Heartbeat nonce path against a real Heartbeat; high-contrast/forced-colors/400 % zoom review.
 - [ ] FU-33 New layouts: `focus` needs `:has()` without JS (Firefox >= 121); no swipe on the focus stage; mosaic/carousel/focus have no German locale E2E; mosaic item settings (`emphasis`, `focal`) are only editable after the layout change is saved; stored shuffle value (L-00b) and polygon shapes (L-01) are not implemented.
 - [ ] FU-34 More layouts: honeycomb/jigsaw/shattered mirror for RTL only with a `dir="rtl"` attribute (not with CSS `direction` alone); jigsaw clip references (`clip-path: var(url(#...))`) are tested in Chromium only (Firefox/Safari open); shattered grout is exact only near its reference width and its shards invert the reading order for ~10 % of neighbours (DOM/Tab order stays stored order); magazine `sizes` hint uses the largest tile; magazine's extra `balanced` rhythm is the default (owner may drop it); scattered default tilt 5 / overlap 12 is calm and the overlap maximum 40 is mostly capped by the 60 % visibility guarantee (schema maximum could drop to ~20); bubbles leave voids at the bottom (density ~0.7); remaining proposals in `docs/layout-proposals.md` (L-05, L-06, L-09, L-11, L-13, L-16..L-18).
 - [ ] FU-30 Public API: `@since` tags only on the layout interface; add them to all public hooks/classes. Flaky E2E on first attempt under host load (admin-shell, theme-and-rail, justified 768) — keep watching.
@@ -204,7 +211,7 @@ REST API (`swg/v1`, S§8)
 - [x] M2-09 `GET /media` (permission-filtered per D11, images only, paged) and `POST /media` (native upload handling, `upload_files`, MIME/size errors mapped).
 - [x] M2-10 `GET/PATCH /settings` (`manage_options`): defaults for layout, page size, lightbox, image sizes, delete-data-on-uninstall with explicit confirmation.
 - [x] M2-11 `GET /status`: schema version, cache state, counts, repair findings summary, recent errors from the logger ring buffer, export limitation hint (D12), sanitized diagnostics (no paths/secrets).
-- [x] M2-13 (role matrices and the all-routes-refuse-anonymous invariant exist for every route group; open: nonce/cookie boundary test) REST test matrix: roles × routes, foreign-owned objects/attachments, nonce/auth boundaries, validation, paging limits, 409 races; test that no `swg/v1` route is reachable unauthenticated (D5); `docs/rest-api.md` (short).
+- [x] M2-13 (role matrices and the all-routes-refuse-anonymous invariant exist for every route group; cookie and invalid-nonce boundaries covered by `e2e/tests/security-rest.spec.ts`) REST test matrix: roles × routes, foreign-owned objects/attachments, nonce/auth boundaries, validation, paging limits, 409 races; test that no `swg/v1` route is reachable unauthenticated (D5); `docs/rest-api.md` (short).
 
 Admin app (`apps/admin`, C§7)
 - [x] M2-14 Scaffold modelled on sw-backupit's admin app, copied self-contained: Vue 3, Quasar, TS strict, Vite, ESLint, Prettier, `vue-tsc`, Vitest + Vue Test Utils, `.nvmrc`, lockfile, shared `browserslist` (decisions.md).
@@ -285,13 +292,13 @@ Admin app (`apps/admin`, C§7)
 - [x] M5-04 Security review against C§5 and S§10: authorization matrix, escaping sinks, `v-html` ban (lint rule), unserialize ban, no paths/secrets in REST/logs; regression test per finding.
 - [x] M5-05 Migration tests: upgrade, interrupted/retried migration, downgrade-safe failure, multisite prefixes.
 - [x] M5-06 Uninstall/deactivate tests: default preserves everything, opt-in removes plugin data only, attachments always preserved.
-- [ ] M5-07 Full E2E suite per S§11 incl. remove/restore and role restrictions; flake-free in CI.
-- [x] M5-08 (defined for CI, not yet run on GitHub) Supported matrix: define and test PHP × WordPress versions (min PHP 8.2 / WP 6.4 to current), MariaDB/MySQL; document in README.
+- [ ] M5-07 Full E2E covers remove/restore and role restrictions. [PR #3 CI](https://github.com/sw-wordpress/sw-gallery/actions/runs/44159722069) reported 344 passed and 4 flaky (Scattered lightbox, Scattered RTL, gallery list deep link, overview counts). Keep open until the release candidate passes without retries.
+- [x] M5-08 (passed on PR #3) Supported matrix: define and test PHP × WordPress versions (min PHP 8.2 / WP 6.4 to current), MariaDB/MySQL; document in README.
 - [x] M5-09 `bin/build-zip.sh`: production Composer deps (Mozart prefixing `SWGallery\Dependencies\` only if runtime dependencies exist), compiled admin/blocks/frontend, compiled `.mo`; reproducible output.
 - [x] M5-10 `bin/verify-zip.sh`: no tests, dev deps, `.env`, coverage, secrets, unintended source maps; ZIP installs and activates in the E2E environment.
-- [x] M5-11 (written and actionlint-clean, not yet run on GitHub) Release workflow: build ZIP on semver tags (optional `v`), checks must pass; self-contained in this repository.
+- [x] M5-11 Signed release workflow built, verified and published [0.9.0](https://github.com/sw-wordpress/sw-gallery/actions/runs/44180952633). PR workflows run the test suites separately.
 - [x] M5-12 Daily dependency audit workflow (Composer + npm), findings recorded.
-- [ ] M5-13 (no analysis exists yet: the project was never pushed; sonar-project.properties is corrected) SonarQube quality gate green; open issues/hotspots assessed.
+- [ ] M5-13 [SonarCloud](https://sonarcloud.io/dashboard?id=sw-wordpress_sw-gallery&pullRequest=3) passed for PR #3 with zero open PR issues or unreviewed hotspots. Main analysis still points to `0cf6946` and lists six findings. Refresh for the release candidate. The older findings cover two focusable scroll regions (intentional keyboard access), preview message origin (checked in `parseHeightMessage`), preview nonce randomness (review the fallback), the Media Overview file input (review its hidden input and visible button), and `NaN` style.
 - [x] M5-14 Docs: README (features, requirements, matrix; private galleries do not protect upload URLs; no right-click/download protection; no telemetry or external requests; export limitation per D12), suggested privacy-policy text via `wp_add_privacy_policy_content` (EXIF/GPS stays in served files), `docs/user-guide.md`, `docs/security.md`, `docs/architecture.md` — concise, no duplication.
 - [ ] M5-15 (single version source, CHANGELOG, Plugin URI done; open: bump to 1.0.0 and tag, owner decision) Release metadata: real Plugin URI, changelog, version bump procedure with single source for the version, `1.0.0` tag.
 - [x] M5-16 (compared against the plugins installed locally only; no wordpress.org name search yet) Originality check (S§1): names, UI texts and assets are independent of other gallery plugins.

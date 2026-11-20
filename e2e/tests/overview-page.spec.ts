@@ -47,17 +47,33 @@ test.describe('as administrator', () => {
     page,
   }) => {
     const monitor = monitorPage(page);
-    await openOverview(page);
-    const fx = await GalleryFixtures.forPage(page);
-    await openOverview(page);
-    const total = await fx.galleryTotal();
-    const published = await fx.galleryTotal({ status: 'publish' });
-    const drafts = await fx.galleryTotal({ status: 'draft,pending' });
-    const privates = await fx.galleryTotal({ status: 'private' });
-    await expect(tile(page, 'All galleries').locator('.swg-stat__value')).toHaveText(String(total));
-    await expect(tile(page, 'Published').locator('.swg-stat__value')).toHaveText(String(published));
-    await expect(tile(page, 'Drafts').locator('.swg-stat__value')).toHaveText(String(drafts));
-    await expect(tile(page, 'Private').locator('.swg-stat__value')).toHaveText(String(privates));
+    const countTiles = [
+      { label: 'All galleries', status: null },
+      { label: 'Published', status: 'publish' },
+      { label: 'Drafts', status: 'draft,pending' },
+      { label: 'Private', status: 'private' },
+    ];
+    // Compare each tile with the response it used. Other workers can change totals at any time.
+    const counts = countTiles.map(async ({ label, status }) => {
+      const response = await page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        const route = url.searchParams.get('rest_route') ?? url.pathname;
+        return (
+          response.request().method() === 'GET' &&
+          route.endsWith('/swg/v1/galleries') &&
+          url.searchParams.get('per_page') === '1' &&
+          url.searchParams.get('status') === status
+        );
+      });
+      expect(response.ok()).toBe(true);
+      const total = await response.headerValue('X-WP-Total');
+      expect(total).toMatch(/^\d+$/);
+      return { label, total: String(total) };
+    });
+    const [totals] = await Promise.all([Promise.all(counts), openOverview(page)]);
+    for (const { label, total } of totals) {
+      await expect(tile(page, label).locator('.swg-stat__value')).toHaveText(total);
+    }
     await expect(tile(page, 'In trash')).toBeVisible();
     expect(monitor.problems, 'console errors/warnings').toEqual([]);
     expect(monitor.failedRequests, 'failed requests').toEqual([]);

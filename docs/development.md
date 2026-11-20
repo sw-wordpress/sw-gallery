@@ -96,7 +96,7 @@ organisation comes from the variable `SONAR_ORGANIZATION` (default `sw-wordpress
 all dependencies. Node version pinned in `apps/admin/.nvmrc`.
 
 ## SonarQube Cloud
-CI uploads merged PHP Clover coverage (adapter, plugin file and `uninstall.php` included) and, once it exists, `apps/admin/coverage/lcov.info`; project mapping and source paths are in `sonar-project.properties`.
+CI uploads merged PHP Clover coverage and LCOV reports for the admin app, frontend assets and block editor. Source paths are in `sonar-project.properties`. Only the duplication check skips the English and German admin catalogs, whose matching keys are enforced by the i18n parity test.
 The scanner waits for the server quality gate (`sonar.qualitygate.wait=true`); verify the actual **SonarCloud Code Analysis** result for the latest commit before declaring the PR ready.
 CI uses PCOV for PHP line coverage with `pcov.directory` set to the whole checkout (including when running from `tests/wp`); local Xdebug runs remain supported. Coverage gate: line coverage **strictly above 80 %**, PHP and JS/TS separately (`tests/coverage/check.php`, `apps/admin/scripts/check-coverage.mjs`;
 Vitest thresholds alone would accept exactly 80 %). Unmeasured production code is not excluded.

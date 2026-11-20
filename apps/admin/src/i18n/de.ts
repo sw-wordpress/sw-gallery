@@ -77,6 +77,8 @@ const de: typeof en = {
       'Diese Galerie befindet sich jetzt in einem anderen Zustand, die Aktion ist nicht möglich.',
     vetoed: 'Die Aktion wurde durch ein anderes Plugin oder eine Seitenregel blockiert.',
     galleryNotFound: 'Diese Galerie existiert nicht mehr oder ist nicht verfügbar.',
+    schemaNewer:
+      'Änderungen können nicht gespeichert werden. Aktualisiere SW Gallery auf eine Version, die dieses Datenbankschema unterstützt.',
     fieldInvalid: 'ist ungültig.',
   },
   galleries: {

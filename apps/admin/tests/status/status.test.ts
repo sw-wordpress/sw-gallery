@@ -70,7 +70,13 @@ describe('System Status page', () => {
     await open(
       fakeStatusApi(
         makeStatus({
-          schema: { stored: 2, current: 3, migrationPending: true, itemTablePresent: false },
+          schema: {
+            stored: 2,
+            current: 3,
+            migrationPending: true,
+            newerThanCode: false,
+            itemTablePresent: false,
+          },
           adminBuild: false,
         }),
       ),
@@ -251,6 +257,24 @@ describe('System Status page', () => {
     expect($$('.swg-nav-link').map((a) => a.textContent?.trim())).not.toContain('System Status');
   });
 
+  it('flags a schema newer than the installed plugin in German and in diagnostics', async () => {
+    const report = makeStatus({
+      schema: {
+        stored: 4,
+        current: 3,
+        migrationPending: false,
+        newerThanCode: true,
+        itemTablePresent: true,
+      },
+    });
+    await open(fakeStatusApi(report), { locale: 'de_DE' });
+    expect(text()).toContain('Datenbankschema ist neuer als das Plugin');
+    expect(text()).not.toContain('Schema ist aktuell');
+    expect(buildSummary(report)).toContain(
+      'Stored schema is newer than the plugin; writes are blocked.',
+    );
+  });
+
   it('is available in German', async () => {
     await open(fakeStatusApi(), { locale: 'de_DE' });
     expect(text()).toContain('Schema ist aktuell');
@@ -263,7 +287,13 @@ describe('diagnostic summary', () => {
     const summary = buildSummary(
       makeStatus({
         multisite: true,
-        schema: { stored: 1, current: 2, migrationPending: true, itemTablePresent: false },
+        schema: {
+          stored: 1,
+          current: 2,
+          migrationPending: true,
+          newerThanCode: false,
+          itemTablePresent: false,
+        },
         counts: {
           galleries: {},
           itemRows: { count: 50000, capped: true },
