@@ -2,6 +2,7 @@
 import { computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { errorMessage } from '@/api/errorMessage';
+import { HOVER_ANIMATIONS } from '@/api/galleries';
 import { ITEMS_PER_PAGE_MAX, ITEMS_PER_PAGE_MIN } from '@/api/settings';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import DataState from '@/components/ui/DataState.vue';
@@ -22,6 +23,9 @@ void f.load();
 const guard = useUnsavedGuard(() => form.dirty.value);
 const guardState = reactive(guard);
 
+const hoverOptions = computed(() =>
+  HOVER_ANIMATIONS.map((value) => ({ value, label: t(`editor.hover.animation.${value}`) })),
+);
 const layoutId = uid('swg-set-layout');
 const layoutHintId = uid('swg-set-layout-hint');
 const deleteHintId = uid('swg-set-delete-hint');
@@ -202,6 +206,29 @@ async function save(): Promise<void> {
                   })
                 }}
               </p>
+            </div>
+
+            <div class="swg-settings__field">
+              <q-checkbox
+                v-model="f.draft.hoverTitle"
+                :label="t('editor.hover.title')"
+                color="primary"
+              />
+              <q-checkbox
+                v-model="f.draft.hoverCaption"
+                :label="t('editor.hover.caption')"
+                color="primary"
+              />
+              <q-select
+                v-model="f.draft.hoverAnimation"
+                outlined
+                dense
+                emit-value
+                map-options
+                :options="hoverOptions"
+                :label="t('editor.hover.animationLabel')"
+              />
+              <p class="swg-settings__hint">{{ t('settings.hover.hint') }}</p>
             </div>
           </div>
         </SwgCard>

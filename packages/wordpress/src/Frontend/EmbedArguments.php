@@ -14,7 +14,7 @@ use SWGallery\Core\Domain\Gallery\GallerySettings;
 
 /**
  * Turns untrusted attributes into renderer options. Allowed: `layout` (a registered layout id), `columns` (1..12),
- * `gap` (0..64), `page` (>= 1) and, for the PHP API only, `eager` (bool). Unknown keys are ignored, invalid values are
+ * `gap` (0..64), `per_page` (1..200), `page` (>= 1) and, for the PHP API only, `eager` (bool). Unknown keys are ignored, invalid values are
  * dropped silently and never echoed. The page of the request (`swg_page_<id>`) wins over the `page` attribute.
  */
 final class EmbedArguments {
@@ -53,6 +53,11 @@ final class EmbedArguments {
 		}
 		if ( array() !== $settings ) {
 			$options['settings'] = $settings;
+		}
+
+		$per_page = self::int_between( $raw['per_page'] ?? null, GallerySettings::MIN_PER_PAGE, GallerySettings::MAX_PER_PAGE );
+		if ( null !== $per_page ) {
+			$options['per_page'] = $per_page;
 		}
 
 		$page = $this->requested_page( $gallery_id, $query ) ?? self::int_between( $raw['page'] ?? null, 1, self::MAX_PAGE );

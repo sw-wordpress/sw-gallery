@@ -15,18 +15,27 @@ final class GallerySettings
     public const SCHEMA_VERSION = 1;
     public const DEFAULT_LAYOUT = 'grid';
     public const LAYOUT_ID_PATTERN = '/^[a-z][a-z0-9_-]{0,63}$/';
+    public const MIN_PER_PAGE = 1;
+    public const MAX_PER_PAGE = 200;
 
     /**
      * @param array<string, mixed> $values Layout-specific settings, unknown keys preserved.
+     * @param int|null $perPage Items per page of this gallery; null uses the site-wide default.
+     * @param HoverEffect|null $hover Hover texts of this gallery; null uses the site-wide default.
      */
     public function __construct(
         public readonly string $layout = self::DEFAULT_LAYOUT,
         public readonly SortMode $sortMode = SortMode::Manual,
         public readonly array $values = [],
         public readonly int $schemaVersion = self::SCHEMA_VERSION,
+        public readonly ?int $perPage = null,
+        public readonly ?HoverEffect $hover = null,
     ) {
         if (preg_match(self::LAYOUT_ID_PATTERN, $layout) !== 1) {
             throw new \InvalidArgumentException('Invalid layout id.');
+        }
+        if ($perPage !== null && ($perPage < self::MIN_PER_PAGE || $perPage > self::MAX_PER_PAGE)) {
+            throw new \InvalidArgumentException('Invalid items per page.');
         }
         if ($schemaVersion < 1) {
             throw new \InvalidArgumentException('The settings schema version must be positive.');
@@ -35,12 +44,12 @@ final class GallerySettings
 
     public function withLayout(string $layout): self
     {
-        return new self($layout, $this->sortMode, $this->values, $this->schemaVersion);
+        return new self($layout, $this->sortMode, $this->values, $this->schemaVersion, $this->perPage, $this->hover);
     }
 
     public function withSortMode(SortMode $sortMode): self
     {
-        return new self($this->layout, $sortMode, $this->values, $this->schemaVersion);
+        return new self($this->layout, $sortMode, $this->values, $this->schemaVersion, $this->perPage, $this->hover);
     }
 
     /**
@@ -48,6 +57,16 @@ final class GallerySettings
      */
     public function withValues(array $values): self
     {
-        return new self($this->layout, $this->sortMode, $values, $this->schemaVersion);
+        return new self($this->layout, $this->sortMode, $values, $this->schemaVersion, $this->perPage, $this->hover);
+    }
+
+    public function withPerPage(?int $perPage): self
+    {
+        return new self($this->layout, $this->sortMode, $this->values, $this->schemaVersion, $perPage, $this->hover);
+    }
+
+    public function withHover(?HoverEffect $hover): self
+    {
+        return new self($this->layout, $this->sortMode, $this->values, $this->schemaVersion, $this->perPage, $hover);
     }
 }

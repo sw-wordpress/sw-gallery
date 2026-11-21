@@ -84,6 +84,13 @@ class ApiFunctionTest extends SwgTestCase {
 		$this->assertStringNotContainsString( 'loading="eager"', $this->call( $id, array( 'eager' => '0' ) ) );
 	}
 
+	public function test_per_page_limits_the_page_size(): void {
+		$id = $this->gallery();
+
+		$this->assertStringContainsString( 'swg-pagination', $this->call( $id, array( 'per_page' => 1 ) ) );
+		$this->assertStringNotContainsString( 'swg-pagination', $this->call( $id, array( 'per_page' => 200 ) ) );
+	}
+
 	public function test_hostile_and_unknown_arguments_are_ignored(): void {
 		$id       = $this->gallery();
 		$baseline = $this->call( $id );
@@ -93,7 +100,7 @@ class ApiFunctionTest extends SwgTestCase {
 			'columns'  => array( 4 ),
 			'gap'      => '9px',
 			'page'     => -2,
-			'per_page' => 1,
+			'per_page' => '1; DROP',
 			'settings' => array( 'columns' => 99 ),
 			'onclick'  => 'alert(1)',
 		);

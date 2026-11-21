@@ -238,6 +238,7 @@ class RestItemEditTest extends SwgTestCase {
 
 	public function test_a_layout_without_an_item_schema_stores_settings_untouched(): void {
 		list( $gallery, $items ) = $this->gallery_with_items( 1 );
+		update_post_meta( $gallery, \SWGallery\WordPress\PostTypes::META_LAYOUT, 'masonry' );
 
 		$data = $this->patch( $gallery, $items[0], array( 'settings' => array( 'anything' => array( 'nested' => 1 ) ) ) )->get_data()['item'];
 

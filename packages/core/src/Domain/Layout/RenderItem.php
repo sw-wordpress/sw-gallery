@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SWGallery\Core\Domain\Layout;
 
+use SWGallery\Core\Domain\Gallery\HoverEffect;
+
 /**
  * One image of a page, already resolved: overrides applied (local over global) and variants chosen.
  * Texts are raw; layouts escape contextually when they build HTML.
@@ -29,6 +31,8 @@ final class RenderItem
          * @var array<string, mixed>
          */
         public readonly array $settings = [],
+        /** Effective hover texts of the gallery (identical for every item); null or inactive renders nothing. */
+        public readonly ?HoverEffect $hover = null,
     ) {
         if ($itemId <= 0 || $attachmentId <= 0 || $position < 0 || $total < 0) {
             throw new \InvalidArgumentException('Invalid render item.');

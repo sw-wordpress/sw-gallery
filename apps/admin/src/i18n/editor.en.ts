@@ -246,6 +246,30 @@ export default {
     activeNote:
       'The website currently shows another order; the order you set here is kept as the manual order.',
   },
+  focal: {
+    pickerLabel: 'Focal point of the image',
+    hint: 'Click or drag in the image to set the part that stays visible when a layout crops it. Arrow keys move the point (Shift: 10 %).',
+    crop: 'Square crop',
+    reset: 'Centre again',
+  },
+  hover: {
+    heading: 'Hover texts',
+    useSite: 'Use the site default',
+    title: 'Show the title on hover',
+    caption: 'Show the caption on hover',
+    animationLabel: 'Animation',
+    animation: {
+      'slide-up': 'Slide in from the bottom',
+      'slide-down': 'Slide in from the top',
+      cover: 'Full-surface overlay',
+      fade: 'Fade in',
+    },
+    note: 'The same effect for every layout. On touch screens the texts are always visible.',
+  },
+  perPage: {
+    label: 'Images per page',
+    note: 'Leave empty to use the site-wide setting (1–200). A shortcode can override it with per_page.',
+  },
   settings: {
     heading: 'Layout settings',
     loading: 'Loading layouts',
@@ -300,6 +324,8 @@ export default {
       coverAttachmentId: 'cover',
       layout: 'layout',
       sortMode: 'sort mode',
+      perPage: 'images per page',
+      hover: 'hover texts',
       settings: 'settings',
     },
     droppedOrder:
@@ -339,7 +365,7 @@ export default {
     },
     perPage: {
       label: 'Images per page',
-      site: 'Site default',
+      site: 'Gallery default',
       hint: 'The page size is only changed in this preview.',
     },
     refresh: 'Refresh preview',

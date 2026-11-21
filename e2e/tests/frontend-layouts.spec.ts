@@ -718,7 +718,7 @@ test('the editor generates the settings form of the new layouts from their schem
   await expect(panel.getByText('Row height (px)')).toBeVisible();
   await expect(panel.getByText('Last row', { exact: true })).toBeVisible();
   await expect(panel.getByText('Default: 220')).toBeVisible();
-  const numbers = panel.locator('input[type="number"]');
+  const numbers = panel.locator('.swg-sfield input[type="number"]');
   await numbers.first().fill('40');
   await expect(panel.getByText('Must be at least 80.')).toBeVisible();
   await numbers.first().fill('180');

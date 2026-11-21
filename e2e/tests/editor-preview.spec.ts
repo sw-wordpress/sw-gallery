@@ -149,7 +149,7 @@ async function showLayoutPanel(page: Page): Promise<void> {
 }
 
 const columnsInput = (page: Page): Locator =>
-  root(page).locator('.swg-lsp input[type="number"]').first();
+  root(page).locator('.swg-lsp .swg-sfield input[type="number"]').first();
 
 const gridColumns = (page: Page): Promise<number> =>
   frame(page)

@@ -253,6 +253,30 @@ const editor: Shape<typeof editorEn> = {
     activeNote:
       'Die Website zeigt derzeit eine andere Reihenfolge; die hier festgelegte Reihenfolge bleibt als manuelle Reihenfolge erhalten.',
   },
+  focal: {
+    pickerLabel: 'Fokuspunkt des Bildes',
+    hint: 'Ins Bild klicken oder ziehen, um den Bereich festzulegen, der sichtbar bleibt, wenn ein Layout das Bild beschneidet. Pfeiltasten verschieben den Punkt (Umschalt: 10 %).',
+    crop: 'Quadratischer Ausschnitt',
+    reset: 'Wieder zentrieren',
+  },
+  hover: {
+    heading: 'Hover-Texte',
+    useSite: 'Standard der Website verwenden',
+    title: 'Titel beim Überfahren zeigen',
+    caption: 'Bildunterschrift beim Überfahren zeigen',
+    animationLabel: 'Animation',
+    animation: {
+      'slide-up': 'Von unten einschieben',
+      'slide-down': 'Von oben einschieben',
+      cover: 'Ganzflächiges Overlay',
+      fade: 'Einblenden',
+    },
+    note: 'Derselbe Effekt für alle Layouts. Auf Touch-Geräten sind die Texte immer sichtbar.',
+  },
+  perPage: {
+    label: 'Bilder pro Seite',
+    note: 'Leer lassen, um die Einstellung der Website zu verwenden (1–200). Ein Shortcode kann sie mit per_page überschreiben.',
+  },
   settings: {
     heading: 'Layout-Einstellungen',
     loading: 'Layouts werden geladen',
@@ -310,6 +334,8 @@ const editor: Shape<typeof editorEn> = {
       coverAttachmentId: 'Titelbild',
       layout: 'Layout',
       sortMode: 'Sortierung',
+      perPage: 'Bilder pro Seite',
+      hover: 'Hover-Texte',
       settings: 'Einstellungen',
     },
     droppedOrder:
@@ -351,7 +377,7 @@ const editor: Shape<typeof editorEn> = {
     },
     perPage: {
       label: 'Bilder pro Seite',
-      site: 'Website-Standard',
+      site: 'Galerie-Standard',
       hint: 'Die Seitengröße gilt nur in dieser Vorschau.',
     },
     refresh: 'Vorschau aktualisieren',

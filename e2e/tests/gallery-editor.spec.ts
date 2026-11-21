@@ -511,14 +511,14 @@ test.describe('as administrator', () => {
     await showLayoutPanel(page);
     const panel = root(page).locator('.swg-lsp');
     await expect(panel.getByText('Default: 3')).toBeVisible();
-    const numbers = panel.locator('input[type="number"]');
+    const numbers = panel.locator('.swg-sfield input[type="number"]');
     await numbers.nth(0).fill('20');
     await expect(panel.getByText('Must be at most 12.')).toBeVisible();
     await expect(save(page)).toBeDisabled();
     await expect(state(page)).toContainText('Fix the invalid settings to save.');
     await numbers.nth(0).fill('5');
     await expect(panel.getByText('Must be at most 12.')).toHaveCount(0);
-    await expect(panel.getByRole('switch')).toHaveCount(0);
+    await expect(panel.locator('.swg-sfield').getByRole('switch')).toHaveCount(0);
     await panel.getByRole('spinbutton', { name: 'Columns, Medium', exact: true }).fill('2');
     await panel.getByLabel('Order on the website').click();
     await page.getByRole('option', { name: 'Title A–Z' }).click();
@@ -532,7 +532,9 @@ test.describe('as administrator', () => {
 
     await page.reload();
     await showLayoutPanel(page);
-    await expect(root(page).locator('.swg-lsp input[type="number"]').first()).toHaveValue('5');
+    await expect(
+      root(page).locator('.swg-lsp .swg-sfield input[type="number"]').first(),
+    ).toHaveValue('5');
     await expect(root(page).locator('.swg-lsp').getByLabel('Order on the website')).toHaveValue(
       'Title A–Z',
     );
@@ -732,7 +734,7 @@ test.describe('editor workspace', () => {
     page,
   }) => {
     const gallery = await newGallery('Workspace', 6);
-    await page.setViewportSize({ width: 1500, height: 875 });
+    await page.setViewportSize({ width: 1500, height: 1000 });
     await openEditor(page, gallery);
     await expect(page.locator('#swg-author-credit')).toBeHidden();
     await expectDesktopWorkspace(page);
@@ -759,7 +761,7 @@ test.describe('editor uses the full content width', () => {
     page,
   }) => {
     const gallery = await newGallery('Wide', 6);
-    await page.setViewportSize({ width: 1920, height: 1000 });
+    await page.setViewportSize({ width: 1920, height: 875 });
     await openEditor(page, gallery);
     await expect(tiles(page)).toHaveCount(6);
     const wide = await metrics(page);
@@ -778,7 +780,7 @@ test.describe('editor uses the full content width', () => {
   });
 
   test('other pages keep their width cap', async ({ page }) => {
-    await page.setViewportSize({ width: 2560, height: 1000 });
+    await page.setViewportSize({ width: 2560, height: 875 });
     await page.goto(`${PLUGIN_PAGE}#/galleries`);
     const content = root(page).locator('#swg-main > *').first();
     await expect(content).toBeVisible();
@@ -829,7 +831,7 @@ test.describe('German', () => {
       panel.getByText('Wie weit die Zapfen aus einem Teil herausragen, in Prozent der Teilbreite.'),
     ).toBeVisible();
     await expect(panel.locator('.swg-sfield__devices input')).toHaveCount(5);
-    await expect(panel.getByRole('switch')).toHaveCount(0);
+    await expect(panel.locator('.swg-sfield').getByRole('switch')).toHaveCount(0);
     const shape = panel.getByLabel('Form der Teile', { exact: true });
     await expect(shape).toHaveValue('Quadratisch (1:1)');
     const field = panel.locator('.swg-sfield').filter({ hasText: 'Form der Teile' });

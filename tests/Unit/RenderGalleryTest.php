@@ -21,6 +21,8 @@ use SWGallery\Core\Domain\Gallery\Gallery;
 use SWGallery\Core\Domain\Gallery\GalleryItem;
 use SWGallery\Core\Domain\Gallery\GallerySettings;
 use SWGallery\Core\Domain\Gallery\GalleryStatus;
+use SWGallery\Core\Domain\Gallery\HoverAnimation;
+use SWGallery\Core\Domain\Gallery\HoverEffect;
 use SWGallery\Core\Domain\Gallery\ItemOverrides;
 use SWGallery\Core\Domain\Gallery\SortMode;
 use SWGallery\Core\Domain\Layout\ImageRole;
@@ -112,8 +114,22 @@ final class RenderGalleryTest extends TestCase
         bool $unlocked = false,
         bool $eager = true,
         bool $priority = true,
+        ?HoverEffect $hover = null,
     ): RenderContext {
-        return new RenderContext(7, $entry, new Actor($userId), 'swg-7-1', $page, $perPage, $layout, $settings, $unlocked, $eager, $priority);
+        return new RenderContext(
+            7,
+            $entry,
+            new Actor($userId),
+            'swg-7-1',
+            $page,
+            $perPage,
+            $layout,
+            $settings,
+            $unlocked,
+            $eager,
+            $priority,
+            $hover,
+        );
     }
 
     /**
@@ -238,6 +254,29 @@ final class RenderGalleryTest extends TestCase
         self::assertSame('https://example.test/101-lightbox.jpg', $first->full?->url);
         self::assertSame('swg-7-1', $this->grid->last->instanceId);
         self::assertSame(1, $this->media->calls(), 'All attachments are looked up in one batch.');
+    }
+
+    public function testAnActiveHoverEffectReachesTheItemsOfInteractiveEntryPointsOnly(): void
+    {
+        $hover = new HoverEffect(true, false, HoverAnimation::SlideUp);
+
+        $this->pipeline($this->gallery())->render($this->context(hover: $hover));
+        self::assertSame($hover, $this->grid->last?->items[0]->hover);
+
+        $this->pipeline($this->gallery())->render($this->context(userId: self::ADMIN, entry: EntryPoint::Preview, hover: $hover));
+        self::assertSame($hover, $this->grid->last?->items[0]->hover);
+    }
+
+    public function testAnInactiveOrMissingHoverEffectAndFeedsCarryNoHover(): void
+    {
+        $this->pipeline($this->gallery())->render($this->context(hover: new HoverEffect()));
+        self::assertNull($this->grid->last?->items[0]->hover);
+
+        $this->pipeline($this->gallery())->render($this->context());
+        self::assertNull($this->grid->last?->items[0]->hover);
+
+        $this->pipeline($this->gallery())->render($this->context(entry: EntryPoint::Feed, hover: new HoverEffect(true)));
+        self::assertNull($this->grid->last?->items[0]->hover);
     }
 
     public function testALayoutCanReportAdditionalAssets(): void

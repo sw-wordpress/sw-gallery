@@ -13,6 +13,8 @@ export function makeGallery(overrides: Partial<Gallery> = {}): Gallery {
     coverUrl: null,
     layout: 'grid',
     sortMode: 'manual',
+    perPage: null,
+    hover: null,
     settings: {},
     passwordProtected: false,
     modified: '2026-11-11T09:30:00Z',

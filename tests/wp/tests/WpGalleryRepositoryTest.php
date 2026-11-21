@@ -10,6 +10,8 @@ use SWGallery\Core\Domain\Gallery\GalleryQuery;
 use SWGallery\Core\Domain\Gallery\GallerySettings;
 use SWGallery\Core\Domain\Gallery\GalleryStatus;
 use SWGallery\Core\Domain\Gallery\NewGallery;
+use SWGallery\Core\Domain\Gallery\HoverAnimation;
+use SWGallery\Core\Domain\Gallery\HoverEffect;
 use SWGallery\Core\Domain\Gallery\SortMode;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Tests\Support\WpFixtures;
@@ -57,6 +59,8 @@ class WpGalleryRepositoryTest extends SwgTestCase {
 			PostTypes::META_LAYOUT         => 'string',
 			PostTypes::META_SETTINGS       => 'string',
 			PostTypes::META_SORT_MODE      => 'string',
+			PostTypes::META_PER_PAGE       => 'integer',
+			PostTypes::META_HOVER          => 'string',
 			PostTypes::META_SCHEMA_VERSION => 'integer',
 		);
 		foreach ( $keys as $key => $type ) {
@@ -204,6 +208,55 @@ class WpGalleryRepositoryTest extends SwgTestCase {
 			),
 			$again->settings->values
 		);
+	}
+
+	public function test_per_page_roundtrips_and_null_removes_the_meta(): void {
+		$gallery = $this->repository->create( new NewGallery( 'P', 1 ) );
+		$this->assertNull( $this->repository->find( $gallery->id )?->settings->perPage );
+
+		$this->repository->update( $gallery->withSettings( $gallery->settings->withPerPage( 12 ) ) );
+		$loaded = $this->repository->find( $gallery->id );
+		$this->assertSame( 12, $loaded?->settings->perPage );
+		$this->assertSame( 12, (int) get_post_meta( $gallery->id, PostTypes::META_PER_PAGE, true ) );
+
+		$this->repository->update( $loaded->withSettings( $loaded->settings->withPerPage( null ) ) );
+		$this->assertNull( $this->repository->find( $gallery->id )?->settings->perPage );
+		$this->assertFalse( metadata_exists( 'post', $gallery->id, PostTypes::META_PER_PAGE ) );
+	}
+
+	public function test_hover_roundtrips_and_null_removes_the_meta(): void {
+		$gallery = $this->repository->create( new NewGallery( 'H', 1 ) );
+		$this->assertNull( $this->repository->find( $gallery->id )?->settings->hover );
+
+		$hover = new HoverEffect( true, false, HoverAnimation::SlideDown );
+		$this->repository->update( $gallery->withSettings( $gallery->settings->withHover( $hover ) ) );
+		$loaded = $this->repository->find( $gallery->id );
+		$this->assertTrue( $hover->equals( $loaded?->settings->hover ) );
+		$this->assertSame( '{"title":true,"caption":false,"animation":"slide-down"}', get_post_meta( $gallery->id, PostTypes::META_HOVER, true ) );
+
+		$this->repository->update( $loaded->withSettings( $loaded->settings->withHover( null ) ) );
+		$this->assertNull( $this->repository->find( $gallery->id )?->settings->hover );
+		$this->assertFalse( metadata_exists( 'post', $gallery->id, PostTypes::META_HOVER ) );
+	}
+
+	public function test_invalid_stored_hover_means_site_default(): void {
+		$gallery = $this->repository->create( new NewGallery( 'H', 1 ) );
+		foreach ( array( 'not json', '"str"', '{"title":"yes"}', '{"animation":"spin"}', '[]x' ) as $value ) {
+			update_post_meta( $gallery->id, PostTypes::META_HOVER, $value );
+			$this->assertNull( $this->repository->find( $gallery->id )?->settings->hover, $value );
+		}
+		$this->assertSame( '', PostTypes::sanitize_hover( array( 1 ) ) );
+		$this->assertSame( '{"title":false,"caption":true,"animation":"fade"}', PostTypes::sanitize_hover( '{"caption":true,"x":1}' ) );
+	}
+
+	public function test_invalid_stored_per_page_means_site_default(): void {
+		$gallery = $this->repository->create( new NewGallery( 'P', 1 ) );
+		foreach ( array( '0', '-3', '999', 'abc' ) as $value ) {
+			update_post_meta( $gallery->id, PostTypes::META_PER_PAGE, $value );
+			$this->assertNull( $this->repository->find( $gallery->id )?->settings->perPage, $value );
+		}
+		$this->assertSame( 0, PostTypes::sanitize_per_page( array( 5 ) ) );
+		$this->assertSame( 200, PostTypes::sanitize_per_page( '200' ) );
 	}
 
 	public function test_corrupt_settings_fall_back_to_defaults(): void {

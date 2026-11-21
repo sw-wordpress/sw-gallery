@@ -14,6 +14,7 @@ use SWGallery\Core\Domain\Gallery\Gallery;
 use SWGallery\Core\Domain\Gallery\GalleryResult;
 use SWGallery\Core\Domain\Gallery\GalleryStatus;
 use SWGallery\Core\Domain\Gallery\GallerySettings;
+use SWGallery\Core\Domain\Gallery\HoverEffect;
 use SWGallery\Core\Domain\Gallery\NewGallery;
 use SWGallery\Core\Domain\Gallery\Revision;
 use SWGallery\Core\Domain\Settings\SettingsSchemaValidator;
@@ -252,9 +253,18 @@ final class GalleryService
         }
     }
 
+    private static function sameHover(?HoverEffect $a, ?HoverEffect $b): bool
+    {
+        return $a === null ? $b === null : $a->equals($b);
+    }
+
     private function settingsDiffer(GallerySettings $a, GallerySettings $b): bool
     {
-        return $a->layout !== $b->layout || $a->sortMode !== $b->sortMode || $a->values !== $b->values;
+        return $a->layout !== $b->layout
+            || $a->sortMode !== $b->sortMode
+            || $a->perPage !== $b->perPage
+            || !self::sameHover($a->hover, $b->hover)
+            || $a->values !== $b->values;
     }
 
     /**

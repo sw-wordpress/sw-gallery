@@ -24,6 +24,8 @@ function setup(options: { honourAbort?: boolean } = {}) {
   const state = ref<PreviewState | null>({
     layout: 'grid',
     sortMode: 'manual',
+    perPage: null,
+    hover: null,
     settings: { columns: 3 },
   });
   const reload = ref(1);
@@ -53,7 +55,13 @@ function setup(options: { honourAbort?: boolean } = {}) {
   );
   if (preview === undefined) throw new Error('no scope');
   const setColumns = (columns: number): void => {
-    state.value = { layout: 'grid', sortMode: 'manual', settings: { columns } };
+    state.value = {
+      layout: 'grid',
+      sortMode: 'manual',
+      perPage: null,
+      hover: null,
+      settings: { columns },
+    };
   };
   return { active, state, reload, calls, preview, scope, setColumns, onValidation };
 }
@@ -79,6 +87,8 @@ describe('usePreview scheduling', () => {
     expect(h.calls[0]?.request).toEqual({
       layout: 'grid',
       sortMode: 'manual',
+      galleryPerPage: null,
+      galleryHover: null,
       settings: { columns: 3 },
       page: 1,
     });

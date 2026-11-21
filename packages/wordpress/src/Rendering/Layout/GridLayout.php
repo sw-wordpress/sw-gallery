@@ -16,6 +16,7 @@ use SWGallery\Core\Contract\ImageHintsProviderInterface;
 use SWGallery\Core\Domain\Gallery\GallerySettings;
 use SWGallery\Core\Domain\Layout\ImageHints;
 use SWGallery\Core\Domain\Layout\LayoutRenderRequest;
+use SWGallery\WordPress\Rendering\View\FocalPoint;
 use SWGallery\WordPress\Rendering\View\ImageMarkup;
 use SWGallery\WordPress\Rendering\View\LightboxLabels;
 
@@ -78,6 +79,7 @@ final class GridLayout implements GalleryLayoutInterface, ImageHintsProviderInte
 					'default' => 'auto',
 				),
 			),
+			'x-item-settings' => FocalPoint::item_schema(),
 		);
 	}
 
@@ -87,7 +89,7 @@ final class GridLayout implements GalleryLayoutInterface, ImageHintsProviderInte
 		}
 		$items = '';
 		foreach ( $request->items as $item ) {
-			$items .= ImageMarkup::lightbox_item( $item );
+			$items .= ImageMarkup::lightbox_item( $item, FocalPoint::style( $item ) );
 		}
 		return sprintf(
 			'<div class="swg-gallery swg-layout-grid" data-swg-gallery data-swg-instance="%1$s" data-swg-labels="%2$s" style="%3$s"><ul class="swg-items" role="list">%4$s</ul></div>',

@@ -19,7 +19,7 @@ export async function expectDesktopWorkspace(page: Page): Promise<void> {
   const side = root(page).locator('.swg-ed__side');
   const grid = root(page).getByRole('listbox');
   await expect(root(page).locator('.swg-shell')).toHaveClass(/swg-shell--collapsed/);
-  await expectViewportBounds(page, 875);
+  await expectViewportBounds(page, 1000);
   expect((await head.boundingBox())!.height).toBeLessThanOrEqual(60);
   expect((await side.boundingBox())!.width).toBe(320);
   expect((await grid.boundingBox())!.height).toBeGreaterThan(500);
@@ -29,7 +29,7 @@ export async function expectDesktopWorkspace(page: Page): Promise<void> {
   ).toBeChecked();
   await expect(side.getByRole('combobox', { name: 'Aspect', exact: true })).toBeVisible();
 
-  // Compact Grid settings fit at 875 px (the original CI screenshot shows spare space).
+  // Compact Grid settings fit at 1000 px (hover and page-size fields included).
   await expect.poll(() => side.evaluate((el) => el.scrollHeight - el.clientHeight)).toBe(0);
 
   // A short desktop window gives the same real settings a deterministic reason to overflow.
@@ -57,8 +57,8 @@ export async function expectDesktopWorkspace(page: Page): Promise<void> {
     ),
   ).toBe(0);
 
-  await page.setViewportSize({ width: 1500, height: 875 });
-  await expectViewportBounds(page, 875);
+  await page.setViewportSize({ width: 1500, height: 1000 });
+  await expectViewportBounds(page, 1000);
   await expect.poll(() => side.evaluate((el) => el.scrollTop)).toBe(0);
 }
 

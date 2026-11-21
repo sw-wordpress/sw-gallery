@@ -46,6 +46,8 @@ class RestGalleryCollectionTest extends SwgTestCase {
 				'title'       => '  Trip <b>2026</b> ',
 				'description' => "Line one\nLine two <script>x</script>",
 				'sortMode'    => 'title_asc',
+				'perPage'     => 12,
+				'hover'       => array( 'title' => true, 'animation' => 'slide-up' ),
 				'settings'    => array( 'columns' => 3 ),
 			),
 			$this->author
@@ -62,6 +64,8 @@ class RestGalleryCollectionTest extends SwgTestCase {
 		$this->assertSame( 0, $data['itemCount'] );
 		$this->assertSame( 'grid', $data['layout'] );
 		$this->assertSame( 'title_asc', $data['sortMode'] );
+		$this->assertSame( 12, $data['perPage'] );
+		$this->assertSame( array( 'title' => true, 'caption' => false, 'animation' => 'slide-up' ), $data['hover'] );
 		$this->assertSame( 3, $data['settings']->columns );
 		$this->assertNull( $data['coverAttachmentId'] );
 		$this->assertNull( $data['coverUrl'] );
@@ -72,7 +76,7 @@ class RestGalleryCollectionTest extends SwgTestCase {
 		$this->assertTrue( $data['canPublish'] );
 		$this->assertSame( rest_url( 'swg/v1/galleries/' . $data['id'] ), $response->get_headers()['Location'] );
 		$this->assertEqualsCanonicalizing(
-			array( 'id', 'title', 'description', 'status', 'ownerId', 'coverAttachmentId', 'coverUrl', 'layout', 'sortMode', 'settings', 'passwordProtected', 'modified', 'revision', 'itemCount', 'canEdit', 'canDelete', 'canPublish' ),
+			array( 'id', 'title', 'description', 'status', 'ownerId', 'coverAttachmentId', 'coverUrl', 'layout', 'sortMode', 'perPage', 'hover', 'settings', 'passwordProtected', 'modified', 'revision', 'itemCount', 'canEdit', 'canDelete', 'canPublish' ),
 			array_keys( $data )
 		);
 	}
@@ -95,6 +99,12 @@ class RestGalleryCollectionTest extends SwgTestCase {
 			'bad status'         => array( array( 'title' => 'x', 'status' => 'trash' ), 'rest_invalid_param' ),
 			'future status'      => array( array( 'title' => 'x', 'status' => 'future' ), 'rest_invalid_param' ),
 			'bad sort mode'      => array( array( 'title' => 'x', 'sortMode' => 'random' ), 'rest_invalid_param' ),
+			'hover animation'    => array( array( 'title' => 'x', 'hover' => array( 'animation' => 'spin' ) ), 'rest_invalid_param' ),
+			'hover title type'   => array( array( 'title' => 'x', 'hover' => array( 'title' => 'yes' ) ), 'rest_invalid_param' ),
+			'hover unknown key'  => array( array( 'title' => 'x', 'hover' => array( 'blink' => true ) ), 'rest_invalid_param' ),
+			'hover not object'   => array( array( 'title' => 'x', 'hover' => 'fade' ), 'rest_invalid_param' ),
+			'per page zero'      => array( array( 'title' => 'x', 'perPage' => 0 ), 'rest_invalid_param' ),
+			'per page too large' => array( array( 'title' => 'x', 'perPage' => 201 ), 'rest_invalid_param' ),
 			'bad layout id'      => array( array( 'title' => 'x', 'layout' => 'Bad Layout!' ), 'rest_invalid_param' ),
 			'settings not object' => array( array( 'title' => 'x', 'settings' => 'columns' ), 'rest_invalid_param' ),
 		);

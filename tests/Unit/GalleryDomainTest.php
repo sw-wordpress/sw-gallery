@@ -92,6 +92,33 @@ final class GalleryDomainTest extends TestCase
         self::assertSame(GallerySettings::SCHEMA_VERSION, $next->schemaVersion);
     }
 
+    public function testPerPageDefaultsToNullIsKeptByWithersAndRangeChecked(): void
+    {
+        $s = new GallerySettings();
+        self::assertNull($s->perPage);
+
+        $set = $s->withPerPage(12);
+        self::assertSame(12, $set->perPage);
+        self::assertSame(12, $set->withLayout('masonry')->withSortMode(SortMode::TitleAsc)->withValues(['a' => 1])->perPage);
+        self::assertNull($set->withPerPage(null)->perPage);
+        self::assertSame(GallerySettings::MAX_PER_PAGE, $s->withPerPage(GallerySettings::MAX_PER_PAGE)->perPage);
+    }
+
+    /** @return iterable<string, array{int}> */
+    public static function invalidPerPage(): iterable
+    {
+        yield 'zero' => [0];
+        yield 'negative' => [-1];
+        yield 'too large' => [GallerySettings::MAX_PER_PAGE + 1];
+    }
+
+    #[DataProvider('invalidPerPage')]
+    public function testPerPageOutOfRangeIsRejected(int $perPage): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        new GallerySettings(perPage: $perPage);
+    }
+
     /** @return iterable<string, array{string, int}> */
     public static function invalidSettings(): iterable
     {

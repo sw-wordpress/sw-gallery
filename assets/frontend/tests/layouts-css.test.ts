@@ -137,8 +137,21 @@ describe('layouts.css', () => {
     );
   });
 
-  it('defines no layout motion beyond the hover transform', () => {
-    expect(rules.match(/transition/g)?.length).toBe(1);
+  it('defines no layout motion beyond the hover transform and the hover texts', () => {
+    // thumbnail transform, hover-text overlay (both under no-preference) and `transition: none` for touch devices
+    expect(rules.match(/transition/g)?.length).toBe(3);
     expect(rules).not.toMatch(/animation/);
+  });
+
+  it('crops every thumbnail around the per-image focal point (centre by default)', () => {
+    expect(rules).toMatch(/object-position: var\(--swg-fx, 50%\) var\(--swg-fy, 50%\)/);
+  });
+
+  it('slides and fades the hover texts only without reduced-motion preference and shows them on touch devices', () => {
+    const motion =
+      rules.match(/@media \(prefers-reduced-motion: no-preference\) \{[\s\S]*?\n\}\n/g) ?? [];
+    expect(motion.join('')).toContain('translateY(100%)');
+    expect(motion.join('')).toContain('translateY(-100%)');
+    expect(rules).toMatch(/@media \(hover: none\) \{[\s\S]*?\.swg-hover \{[\s\S]*?opacity: 1/);
   });
 });

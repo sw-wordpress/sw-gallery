@@ -20,6 +20,8 @@
  *   --swg-caption-size                        caption font size (0.875em)
  *   --swg-focus-ring                          focus outline shorthand (3px solid Highlight)
  *   --swg-hover-transform                     hover/focus transform of the thumbnail (scale(1.03))
+ *   --swg-hover-bg, --swg-hover-color         background / text colour of the hover texts (rgb(0 0 0 / 65%), #fff)
+ *   --swg-hover-size                          font size of the hover texts (0.875rem)
  *   --swg-pagination-gap                      gap between pagination items (0.25rem)
  * Properties named --swg-col-<n> and --swg-rh-<n> are internal and may change.
  */
@@ -184,6 +186,8 @@
   block-size: auto;
   max-inline-size: 100%;
   object-fit: cover;
+  /* Focal point of the image (per-image setting): the part that stays visible when a layout crops the thumbnail. */
+  object-position: var(--swg-fx, 50%) var(--swg-fy, 50%);
   margin: 0;
   border-radius: 0;
 }
@@ -220,6 +224,98 @@
   .swg-gallery .swg-link:hover img,
   .swg-gallery .swg-link:focus-visible img {
     transform: var(--swg-hover-transform, scale(1.03));
+  }
+}
+
+/*
+ * Hover texts (title and/or caption) inside the link, uniform for every layout. The overlay is `aria-hidden`; the
+ * caption below the image stays for assistive technology and is only hidden visually while the overlay shows it.
+ * Layouts that position or clip `.swg-link` themselves keep priority (their selectors are more specific).
+ */
+.swg-gallery .swg-link {
+  position: relative;
+}
+
+.swg-gallery .swg-hover {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  box-sizing: border-box;
+  padding: 0.75em;
+  background: var(--swg-hover-bg, rgb(0 0 0 / 65%));
+  color: var(--swg-hover-color, #fff);
+  font-size: var(--swg-hover-size, 0.875rem);
+  line-height: 1.3;
+  text-align: start;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.swg-gallery .swg-hover--slide-down {
+  inset-block: 0 auto;
+}
+
+.swg-gallery .swg-hover--cover {
+  inset-block: 0;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Shaped tiles (circles, hexagons, puzzle pieces) would clip a bar at the edge: they get a centred full-tile panel. */
+.swg-gallery:is(.swg-layout-bubbles, .swg-layout-honeycomb, .swg-layout-jigsaw) .swg-hover {
+  inset-block: 0;
+  justify-content: center;
+  padding: 18%;
+  text-align: center;
+}
+
+.swg-gallery .swg-hover__title {
+  font-weight: 600;
+}
+
+.swg-gallery .swg-link:hover .swg-hover,
+.swg-gallery .swg-link:focus-visible .swg-hover {
+  opacity: 1;
+  transform: none;
+}
+
+.swg-gallery .swg-link:has(.swg-hover__caption) + .swg-caption {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .swg-gallery .swg-hover {
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease;
+  }
+
+  .swg-gallery .swg-hover--slide-up {
+    transform: translateY(100%);
+  }
+
+  .swg-gallery .swg-hover--slide-down {
+    transform: translateY(-100%);
+  }
+}
+
+/* Touch devices have no hover: the texts are always visible there. */
+@media (hover: none) {
+  .swg-gallery .swg-hover {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 

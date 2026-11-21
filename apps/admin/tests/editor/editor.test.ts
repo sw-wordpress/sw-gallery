@@ -521,7 +521,7 @@ describe('layout and settings', () => {
     expect(panel.querySelectorAll('input[type="range"]').length).toBeGreaterThanOrEqual(1);
 
     const columns = panel.querySelector<HTMLInputElement>(
-      'input[type="number"]',
+      'input[type="number"][min]',
     ) as HTMLInputElement;
     expect(columns.getAttribute('min')).toBe('1');
     expect(columns.getAttribute('max')).toBe('12');
@@ -535,10 +535,11 @@ describe('layout and settings', () => {
     await settle();
     expect(panel.textContent).not.toContain('Must be at most 12.');
     // a different value for medium screens
-    expect(panel.querySelectorAll('[role="switch"]')).toHaveLength(0);
-    expect(panel.querySelectorAll('input[type="number"]').length).toBeGreaterThan(2);
+    // (the only switch of the panel is the hover "use the site default" toggle, not a responsive one)
+    expect(panel.querySelectorAll('[role="switch"]')).toHaveLength(1);
+    expect(panel.querySelectorAll('input[type="number"][min]').length).toBeGreaterThan(2);
     const medium = panel.querySelectorAll<HTMLInputElement>(
-      'input[type="number"]',
+      'input[type="number"][min]',
     )[2] as HTMLInputElement;
     setInput(medium, '2');
     await settle();
@@ -573,7 +574,7 @@ describe('layout and settings', () => {
     const server = new FakeServer(2);
     await open(server);
     await panelToggle();
-    const columns = $('.swg-lsp input[type="number"]') as HTMLInputElement;
+    const columns = $('.swg-lsp input[type="number"][min]') as HTMLInputElement;
     setInput(columns, '4');
     await settle();
     server.failures.set(

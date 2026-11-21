@@ -30,6 +30,9 @@ const KEYS: readonly SettingsField[] = [
   'defaultLayout',
   'itemsPerPage',
   'lightbox',
+  'hoverTitle',
+  'hoverCaption',
+  'hoverAnimation',
   'deleteDataOnUninstall',
 ];
 
@@ -60,6 +63,9 @@ export function useSettingsForm(api: SettingsFeatureApi) {
     defaultLayout: 'grid',
     itemsPerPage: 24,
     lightbox: true,
+    hoverTitle: false,
+    hoverCaption: false,
+    hoverAnimation: 'fade',
     deleteDataOnUninstall: false,
   });
   /** Text of the number field: kept as typed so "abc" or "" can be reported. */
@@ -143,6 +149,9 @@ export function useSettingsForm(api: SettingsFeatureApi) {
     if (draft.defaultLayout !== base.defaultLayout) patch.defaultLayout = draft.defaultLayout;
     if (draft.itemsPerPage !== base.itemsPerPage) patch.itemsPerPage = draft.itemsPerPage;
     if (draft.lightbox !== base.lightbox) patch.lightbox = draft.lightbox;
+    if (draft.hoverTitle !== base.hoverTitle) patch.hoverTitle = draft.hoverTitle;
+    if (draft.hoverCaption !== base.hoverCaption) patch.hoverCaption = draft.hoverCaption;
+    if (draft.hoverAnimation !== base.hoverAnimation) patch.hoverAnimation = draft.hoverAnimation;
     if (draft.deleteDataOnUninstall !== base.deleteDataOnUninstall) {
       patch.deleteDataOnUninstall = draft.deleteDataOnUninstall;
       if (draft.deleteDataOnUninstall && deleteConfirmed.value) patch.confirmDeleteData = true;

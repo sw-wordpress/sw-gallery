@@ -77,7 +77,35 @@ final class ImageMarkup {
 		if ( '' !== $label ) {
 			$link .= sprintf( ' aria-label="%s"', esc_attr( $label ) );
 		}
-		return sprintf( '<a class="swg-link"%s>%s</a>', $link, self::image( $item->thumbnail, $item->alt, $item->loading ) );
+		return sprintf( '<a class="swg-link"%s>%s%s</a>', $link, self::image( $item->thumbnail, $item->alt, $item->loading ), self::hover( $item ) );
+	}
+
+	/**
+	 * Hover texts inside the link (uniform for every layout, styled by `layouts.css`). The title and the caption are
+	 * plain text here (no nested links inside the link) and the overlay is hidden from assistive technology: the
+	 * visible caption below the image stays in the DOM for screen readers (see the stylesheet); a caption that contains
+	 * a link is not copied into the overlay and stays visible. Empty string when the effect is off or the item has none
+	 * of the enabled texts.
+	 */
+	public static function hover( RenderItem $item ): string {
+		$effect = $item->hover;
+		if ( null === $effect || ! $effect->isActive() ) {
+			return '';
+		}
+		$title   = $effect->showTitle ? trim( wp_strip_all_tags( $item->title ) ) : '';
+		// A caption with a link stays as it is below the image (visible and clickable): hiding it behind a plain-text
+		// copy would make the link unreachable.
+		$linked  = str_contains( CaptionPolicy::html( $item->caption ), '<a ' );
+		$caption = $effect->showCaption && ! $linked ? trim( wp_strip_all_tags( $item->caption ) ) : '';
+		if ( '' === $title && '' === $caption ) {
+			return '';
+		}
+		return sprintf(
+			'<span class="swg-hover swg-hover--%1$s" aria-hidden="true">%2$s%3$s</span>',
+			esc_attr( $effect->animation->value ),
+			'' === $title ? '' : '<span class="swg-hover__title">' . esc_html( $title ) . '</span>',
+			'' === $caption ? '' : '<span class="swg-hover__caption">' . esc_html( $caption ) . '</span>'
+		);
 	}
 
 	/** The caption paragraph (allowlisted markup) or an empty string. */

@@ -61,12 +61,24 @@ Publishing (status Published or Private) needs the publish right: contributors c
 field for a gallery password in 1.0 (it only shows the "Password protected" state). Hiding applies to the gallery **markup**, not to the image
 files: see Privacy below.
 
+## Focal point
+
+Layouts that crop images (grid with a fixed aspect, honeycomb, jigsaw, scattered, mosaic, bubbles, shattered, magazine) show the centre of a picture by default. Open
+the image details and click (or drag) in the picture to set the part that must stay visible; the square crop below shows the effect, the sliders allow exact
+values. The focal point belongs to the image and applies in every layout.
+
+## Hover texts
+
+In the editor (layout panel, "Hover texts") a gallery shows the image **title** and/or **caption** when a visitor hovers or focuses an image, with one of four
+animations: slide in from the bottom, slide in from the top, full-surface overlay, fade in. The same effect works for every layout. "Use the site default" takes
+the values of the Settings page. On touch screens the texts are always visible.
+
 ## Embedding
 
 - **Block:** insert **SW Gallery**, choose the gallery; optional layout, columns, gap and eager loading in the block sidebar; alignment and
   spacing come from the block toolbar.
 - **Shortcode:** `[sw_gallery id="123"]`. Optional attributes: `layout` (a registered layout id such as `masonry`), `columns` (1-12), `gap` (0-64),
-  `page` (>= 1, the initial page). Unknown attributes are ignored and invalid values dropped silently. Without a valid `id` visitors see nothing,
+  `per_page` (1-200, overrides the gallery's "Images per page"), `page` (>= 1, the initial page). Unknown attributes are ignored and invalid values dropped silently. Without a valid `id` visitors see nothing,
   users who can edit posts see a short note. In feeds a plain image list is output.
 - **PHP:** `echo swg_render_gallery( 123, array( 'layout' => 'grid', 'columns' => 4, 'eager' => true ) );` (same keys, plus `eager`; returns an
   empty string when nothing may be shown).

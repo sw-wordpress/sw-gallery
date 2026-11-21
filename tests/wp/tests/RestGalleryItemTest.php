@@ -145,6 +145,32 @@ class RestGalleryItemTest extends SwgTestCase {
 		$this->assertSame( 3, $data['revision'] );
 	}
 
+	public function test_patch_sets_and_clears_the_gallery_page_size(): void {
+		$id = $this->makeGallery( $this->author, GalleryStatus::Draft, 'Size' );
+		$this->assertNull( $this->data( $this->call( 'GET', '/galleries/' . $id, array(), $this->author ) )['perPage'] );
+
+		$data = $this->data( $this->call( 'PATCH', '/galleries/' . $id, array( 'perPage' => 30, 'expectedRevision' => 1 ), $this->author ) );
+		$this->assertSame( 30, $data['perPage'] );
+		$this->assertSame( 2, $data['revision'] );
+
+		$data = $this->data( $this->call( 'PATCH', '/galleries/' . $id, array( 'perPage' => null, 'expectedRevision' => 2 ), $this->author ) );
+		$this->assertNull( $data['perPage'] );
+		$this->assertSame( 3, $data['revision'] );
+	}
+
+	public function test_patch_sets_and_clears_the_gallery_hover(): void {
+		$id = $this->makeGallery( $this->author, GalleryStatus::Draft, 'Hover' );
+		$this->assertNull( $this->data( $this->call( 'GET', '/galleries/' . $id, array(), $this->author ) )['hover'] );
+
+		$data = $this->data( $this->call( 'PATCH', '/galleries/' . $id, array( 'hover' => array( 'caption' => true, 'animation' => 'cover' ), 'expectedRevision' => 1 ), $this->author ) );
+		$this->assertSame( array( 'title' => false, 'caption' => true, 'animation' => 'cover' ), $data['hover'] );
+		$this->assertSame( 2, $data['revision'] );
+
+		$data = $this->data( $this->call( 'PATCH', '/galleries/' . $id, array( 'hover' => null, 'expectedRevision' => 2 ), $this->author ) );
+		$this->assertNull( $data['hover'] );
+		$this->assertSame( 3, $data['revision'] );
+	}
+
 	public function test_an_editor_may_edit_foreign_galleries(): void {
 		$id = $this->makeGallery( $this->author, GalleryStatus::Publish, 'Foreign' );
 
@@ -199,6 +225,9 @@ class RestGalleryItemTest extends SwgTestCase {
 			'empty title'  => array( array( 'title' => '' ) ),
 			'trash status' => array( array( 'status' => 'trash' ) ),
 			'bad sort'     => array( array( 'sortMode' => 'random' ) ),
+			'per page 0'   => array( array( 'perPage' => 0 ) ),
+			'hover bad'    => array( array( 'hover' => array( 'animation' => 'spin' ) ) ),
+			'per page 201' => array( array( 'perPage' => 201 ) ),
 			'owner zero'   => array( array( 'ownerId' => 0 ) ),
 			'owner string' => array( array( 'ownerId' => 'me' ) ),
 			'cover zero'   => array( array( 'coverAttachmentId' => 0 ) ),
