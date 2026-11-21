@@ -14,6 +14,8 @@ const gallery: Gallery = {
   coverUrl: null,
   layout: 'grid',
   sortMode: 'manual',
+  perPage: null,
+  hover: null,
   settings: {},
   passwordProtected: false,
   modified: '2026-11-16T00:00:00Z',
@@ -81,7 +83,7 @@ test('workspace with the actual admin app and mocked REST', async ({ page }) => 
       headers: { 'X-SWG-Revision': '1', 'X-WP-Total': '6', 'X-WP-TotalPages': '1' },
     });
   });
-  await page.setViewportSize({ width: 1500, height: 875 });
+  await page.setViewportSize({ width: 1500, height: 1000 });
   await page.goto('/?caps=edit_posts,edit_others_posts,upload_files#/galleries/7');
   await expect(page.locator('.swg-ed__title')).toHaveText('Workspace');
   await expectDesktopWorkspace(page);
