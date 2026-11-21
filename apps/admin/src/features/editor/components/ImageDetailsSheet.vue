@@ -5,6 +5,7 @@ import SideSheet from '@/components/ui/SideSheet.vue';
 import type { ItemTexts } from '@/api/items';
 import type { JsonSchema } from '@/api/layouts';
 import { itemFieldsOf, valueAtPath, withPath } from '../schema';
+import FocalPicker from './FocalPicker.vue';
 import SettingField from './SettingField.vue';
 import type { EditorSession } from '../useGalleryEditor';
 
@@ -83,6 +84,23 @@ function setItemSetting(path: string[], value: unknown): void {
   if (props.itemId === null) return;
   props.session.setItemSettings(props.itemId, withPath(itemSettings.value, path, value));
 }
+/** The active layout crops images and reads the focal point: show the click-to-set picker. */
+const focalSupported = computed(
+  () => props.itemLayoutStale !== true && itemFields.value.some((f) => f.path[0] === 'focal'),
+);
+function focalCoordinate(axis: 'x' | 'y'): number {
+  const value = valueAtPath(itemSettings.value, ['focal', axis]);
+  return typeof value === 'number' && Number.isFinite(value) ? value : 50;
+}
+function setFocal(x: number, y: number): void {
+  if (props.itemId === null) return;
+  const withX = withPath(itemSettings.value, ['focal', 'x'], x);
+  props.session.setItemSettings(props.itemId, withPath(withX, ['focal', 'y'], y));
+}
+function resetFocal(): void {
+  if (props.itemId === null) return;
+  props.session.setItemSettings(props.itemId, withPath(itemSettings.value, ['focal'], undefined));
+}
 function resetItemSettings(): void {
   if (props.itemId !== null) props.session.setItemSettings(props.itemId, {});
 }
@@ -108,6 +126,15 @@ const isCover = computed(
         <q-icon name="r_broken_image" size="22px" aria-hidden="true" />
         <span>{{ t('editor.details.missing') }}</span>
       </div>
+      <FocalPicker
+        v-else-if="focalSupported && view.item.media?.thumbnailUrl"
+        :src="view.item.media.thumbnailUrl"
+        :x="focalCoordinate('x')"
+        :y="focalCoordinate('y')"
+        :disabled="readonly"
+        @update="setFocal"
+        @reset="resetFocal"
+      />
       <img
         v-else-if="view.item.media?.thumbnailUrl"
         class="swg-ids__img"

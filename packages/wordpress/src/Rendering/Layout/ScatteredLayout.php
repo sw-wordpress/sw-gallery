@@ -20,6 +20,7 @@ use SWGallery\Core\Domain\Layout\Plan\PlanSeed;
 use SWGallery\Core\Domain\Layout\Scatter\ScatterPlan;
 use SWGallery\Core\Domain\Layout\Scatter\ScatterPlanner;
 use SWGallery\WordPress\Rendering\View\CssNumber;
+use SWGallery\WordPress\Rendering\View\FocalPoint;
 use SWGallery\WordPress\Rendering\View\ImageMarkup;
 use SWGallery\WordPress\Rendering\View\LightboxLabels;
 use SWGallery\WordPress\Rendering\View\ResponsiveSetting;
@@ -128,6 +129,7 @@ final class ScatteredLayout implements GalleryLayoutInterface, ImageHintsProvide
 					'default'     => 0,
 				),
 			),
+			'x-item-settings' => FocalPoint::item_schema(),
 		);
 	}
 
@@ -149,7 +151,7 @@ final class ScatteredLayout implements GalleryLayoutInterface, ImageHintsProvide
 
 		$items = '';
 		foreach ( $request->items as $index => $item ) {
-			$items .= ImageMarkup::lightbox_item( $item, self::item_style( $plan, $index ) );
+			$items .= ImageMarkup::lightbox_item( $item, FocalPoint::style( $item ) . self::item_style( $plan, $index ) );
 		}
 		$css = ResponsiveSetting::declarations( $values['columns'] ?? null, '--swg-columns', '', self::DEFAULT_COLUMNS, self::MIN_COLUMNS, self::MAX_COLUMNS )
 			. sprintf( '--swg-overlap:%s;', CssNumber::format( $plan->overlap, 2 ) )

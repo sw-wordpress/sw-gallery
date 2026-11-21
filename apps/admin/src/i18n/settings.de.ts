@@ -37,6 +37,9 @@ const de: typeof en = {
     label: 'Bilder pro Seite',
     hint: 'Von {min} bis {max}. Standard: {value}.',
   },
+  hover: {
+    hint: 'Hover-Texte der Bilder. Einzelne Galerien können das im Editor überschreiben.',
+  },
   lightbox: {
     label: 'Bilder in einer Lightbox öffnen',
     hint: 'Besucher können Bilder auf der Website vergrößern.',

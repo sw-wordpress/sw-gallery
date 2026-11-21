@@ -123,6 +123,22 @@ describe('Settings page', () => {
     });
   });
 
+  it('sends the hover defaults when the checkboxes change and shows the animation select', async () => {
+    const api = fakeSettingsApi();
+    await open(api);
+    const boxes = $$('.swg-settings .q-checkbox');
+    const title = boxes.find((b) => b.textContent?.includes('Show the title on hover'));
+    const caption = boxes.find((b) => b.textContent?.includes('Show the caption on hover'));
+    if (title === undefined || caption === undefined) throw new Error('no hover checkboxes');
+    expect($('.swg-settings')?.textContent).toContain('Animation');
+    title.click();
+    caption.click();
+    await settle();
+    saveButton().click();
+    await settle();
+    expect(api.settings.update).toHaveBeenCalledWith({ hoverTitle: true, hoverCaption: true });
+  });
+
   it('discards edits and resets single fields to the default', async () => {
     const api = fakeSettingsApi(makeSettings({ itemsPerPage: 60, defaultLayout: 'masonry' }));
     await open(api);

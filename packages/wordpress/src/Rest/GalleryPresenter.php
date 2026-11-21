@@ -42,6 +42,8 @@ final class GalleryPresenter {
 			'coverUrl'          => $this->cover_url( $actor, $gallery->coverAttachmentId ),
 			'layout'            => $gallery->settings->layout,
 			'sortMode'          => $gallery->settings->sortMode->value,
+			'perPage'           => $gallery->settings->perPage,
+			'hover'             => $gallery->settings->hover?->toArray(),
 			'settings'          => (object) $gallery->settings->values,
 			'passwordProtected' => $gallery->passwordProtected,
 			'modified'          => $gallery->modifiedAt->setTimezone( new \DateTimeZone( 'UTC' ) )->format( 'Y-m-d\TH:i:s\Z' ),

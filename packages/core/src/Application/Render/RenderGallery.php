@@ -108,6 +108,8 @@ final class RenderGallery
             $settings = $gallery->settings->withLayout($layoutId);
             $hints = $layout instanceof ImageHintsProviderInterface ? $layout->imageHints($settings) : ImageHints::fallback();
         }
+        // Hover texts belong to the interactive markup only (feeds stay plain).
+        $hover = $context->entryPoint->isInteractive() && $context->hover?->isActive() === true ? $context->hover : null;
         $renderItems = [];
         $unavailable = 0;
         $offset = ($page['page'] - 1) * $context->perPage;
@@ -134,6 +136,7 @@ final class RenderGallery
                 $offset + $index + 1,
                 $page['items']->total,
                 $item->settings,
+                $hover,
             );
         }
 

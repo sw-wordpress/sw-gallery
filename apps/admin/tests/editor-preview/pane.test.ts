@@ -72,7 +72,8 @@ const showLayoutPanel = async (): Promise<void> => {
   radio.dispatchEvent(new Event('change', { bubbles: true }));
   await settle();
 };
-const columnsInput = (): HTMLInputElement => $('.swg-lsp input[type="number"]') as HTMLInputElement;
+const columnsInput = (): HTMLInputElement =>
+  $('.swg-lsp input[type="number"][min]') as HTMLInputElement;
 const waitFor = (check: () => void): Promise<void> =>
   vi.waitFor(check, { timeout: 4000, interval: 25 });
 const srcdoc = (): string => frame()?.getAttribute('srcdoc') ?? '';
@@ -88,7 +89,14 @@ describe('preview pane: opening and requests', () => {
     await showPreview();
     await waitFor(() => expect(frame()).not.toBeNull());
     expect(server.previewRequests).toEqual([
-      { layout: 'grid', sortMode: 'manual', settings: {}, page: 1 },
+      {
+        layout: 'grid',
+        sortMode: 'manual',
+        galleryPerPage: null,
+        galleryHover: null,
+        settings: {},
+        page: 1,
+      },
     ]);
     expect(live()).toContain('Preview updated. Page 1 of 1.');
     // The images grid keeps the whole main column: no tabs, no side-by-side pane.

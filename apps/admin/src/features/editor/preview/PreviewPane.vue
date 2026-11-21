@@ -63,8 +63,8 @@ const preview = usePreview({
   state: () => {
     const working = props.session.working.value;
     if (!ready.value || working === null) return null;
-    const { layout, sortMode, settings } = working.details;
-    return { layout, sortMode, settings };
+    const { layout, sortMode, perPage, hover, settings } = working.details;
+    return { layout, sortMode, perPage, hover, settings };
   },
   reloadKey: () => props.session.revision.value,
   onValidation: (error) => {
@@ -178,8 +178,10 @@ const assetsMissing = computed(
 const staged = computed(() => props.session.stagedSummary());
 const settingsStaged = computed(
   () =>
-    staged.value?.details.some((k) => k === 'layout' || k === 'sortMode' || k === 'settings') ===
-    true,
+    staged.value?.details.some(
+      (k) =>
+        k === 'layout' || k === 'sortMode' || k === 'perPage' || k === 'hover' || k === 'settings',
+    ) === true,
 );
 const itemsStaged = computed(
   () =>

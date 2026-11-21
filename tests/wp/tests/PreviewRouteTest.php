@@ -197,6 +197,28 @@ class PreviewRouteTest extends SwgTestCase {
 		$this->assertLessThan( strpos( $sorted, 'Beta' ), strpos( $sorted, 'Alpha' ) );
 	}
 
+	public function test_the_unsaved_gallery_page_size_applies_without_being_stored(): void {
+		$id = $this->gallery();
+
+		$data = $this->data( $this->preview( $id, array( 'galleryPerPage' => 1 ), $this->author ) );
+		$this->assertSame( 3, $data['totalPages'] );
+		$this->assertNull( Services::galleries()->find( $id )->settings->perPage );
+
+		$data = $this->data( $this->preview( $id, array( 'galleryPerPage' => null ), $this->author ) );
+		$this->assertSame( 1, $data['totalPages'] );
+	}
+
+	public function test_the_unsaved_gallery_hover_applies_without_being_stored(): void {
+		$id = $this->gallery();
+
+		$html = $this->data( $this->preview( $id, array( 'galleryHover' => array( 'title' => true, 'animation' => 'cover' ) ), $this->author ) )['html'];
+		$this->assertStringContainsString( 'swg-hover swg-hover--cover', $html );
+		$this->assertNull( Services::galleries()->find( $id )->settings->hover );
+
+		$html = $this->data( $this->preview( $id, array( 'galleryHover' => null ), $this->author ) )['html'];
+		$this->assertStringNotContainsString( 'swg-hover', $html );
+	}
+
 	public function test_paging(): void {
 		$id   = $this->gallery();
 		$data = $this->data( $this->preview( $id, array( 'page' => 2, 'perPage' => 1 ), $this->author ) );
@@ -235,6 +257,9 @@ class PreviewRouteTest extends SwgTestCase {
 		yield 'page text' => array( array( 'page' => 'x' ) );
 		yield 'perPage too big' => array( array( 'perPage' => 500 ) );
 		yield 'perPage zero' => array( array( 'perPage' => 0 ) );
+		yield 'galleryHover animation' => array( array( 'galleryHover' => array( 'animation' => 'spin' ) ) );
+		yield 'galleryPerPage zero' => array( array( 'galleryPerPage' => 0 ) );
+		yield 'galleryPerPage too big' => array( array( 'galleryPerPage' => 201 ) );
 		yield 'sortMode unknown' => array( array( 'sortMode' => 'random' ) );
 		yield 'layout invalid id' => array( array( 'layout' => 'Bad Id!' ) );
 		yield 'settings scalar' => array( array( 'settings' => 'x' ) );

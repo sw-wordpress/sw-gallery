@@ -19,6 +19,7 @@ use SWGallery\Core\Domain\Layout\Jigsaw\JigsawEdges;
 use SWGallery\Core\Domain\Layout\Jigsaw\JigsawOutline;
 use SWGallery\Core\Domain\Layout\LayoutRenderRequest;
 use SWGallery\Core\Domain\Layout\Plan\PlanSeed;
+use SWGallery\WordPress\Rendering\View\FocalPoint;
 use SWGallery\WordPress\Rendering\View\ImageMarkup;
 use SWGallery\WordPress\Rendering\View\LightboxLabels;
 use SWGallery\WordPress\Rendering\View\ResponsiveSetting;
@@ -114,6 +115,7 @@ final class JigsawLayout implements GalleryLayoutInterface, ImageHintsProviderIn
 					'default'     => 0,
 				),
 			),
+			'x-item-settings' => FocalPoint::item_schema(),
 		);
 	}
 
@@ -146,7 +148,7 @@ final class JigsawLayout implements GalleryLayoutInterface, ImageHintsProviderIn
 					$previous      = $code;
 				}
 			}
-			$items .= ImageMarkup::lightbox_item( $item, rtrim( $style, ';' ) );
+			$items .= ImageMarkup::lightbox_item( $item, rtrim( FocalPoint::style( $item ) . $style, ';' ) );
 		}
 
 		$css = ResponsiveSetting::declarations( $values['columns'] ?? null, '--swg-columns', '', self::DEFAULT_COLUMNS, self::MIN_COLUMNS, self::MAX_COLUMNS )

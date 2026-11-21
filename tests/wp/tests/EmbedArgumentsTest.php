@@ -28,6 +28,14 @@ class EmbedArgumentsTest extends SwgTestCase {
 		);
 	}
 
+	public function test_per_page_is_limited_to_1_to_200(): void {
+		$this->assertSame( array( 'per_page' => 12 ), $this->arguments()->options( 7, array( 'per_page' => '12' ), false, array() ) );
+		$this->assertSame( array( 'per_page' => 200 ), $this->arguments()->options( 7, array( 'per_page' => 200 ), false, array() ) );
+		foreach ( array( 0, 201, '-1', 'abc', '1.5', array( 5 ) ) as $invalid ) {
+			$this->assertSame( array(), $this->arguments()->options( 7, array( 'per_page' => $invalid ), false, array() ) );
+		}
+	}
+
 	public function test_the_request_page_wins_over_the_attribute(): void {
 		$this->assertSame( array( 'page' => 4 ), $this->arguments()->options( 7, array( 'page' => 2 ), false, array( 'swg_page_7' => '4' ) ) );
 		$this->assertSame( array( 'page' => 2 ), $this->arguments()->options( 7, array( 'page' => 2 ), false, array( 'swg_page_8' => '4' ) ) );

@@ -1,5 +1,6 @@
 import { ApiError } from './client';
 import type { ApiClient } from './client';
+import type { HoverConfig } from './galleries';
 
 /** Shapes of `docs/rest-api.md` ("Preview", route `POST swg/v1/galleries/{id}/preview`). */
 
@@ -7,6 +8,10 @@ import type { ApiClient } from './client';
 export interface PreviewRequest {
   layout?: string;
   sortMode?: string;
+  /** Unsaved gallery page size (null = site default); `perPage` below is the preview-only override. */
+  galleryPerPage?: number | null;
+  /** Unsaved gallery hover texts (null = site default). */
+  galleryHover?: HoverConfig | null;
   /** Replaces the stored map: send the complete merged map. */
   settings?: Record<string, unknown>;
   page?: number;

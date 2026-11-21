@@ -16,6 +16,7 @@ use SWGallery\Core\Contract\ImageHintsProviderInterface;
 use SWGallery\Core\Domain\Gallery\GallerySettings;
 use SWGallery\Core\Domain\Layout\ImageHints;
 use SWGallery\Core\Domain\Layout\LayoutRenderRequest;
+use SWGallery\WordPress\Rendering\View\FocalPoint;
 use SWGallery\WordPress\Rendering\View\ImageMarkup;
 use SWGallery\WordPress\Rendering\View\LightboxLabels;
 use SWGallery\WordPress\Rendering\View\ResponsiveSetting;
@@ -82,6 +83,7 @@ final class HoneycombLayout implements GalleryLayoutInterface, ImageHintsProvide
 					'default'       => 'hexagon',
 				),
 			),
+			'x-item-settings' => FocalPoint::item_schema(),
 		);
 	}
 
@@ -93,7 +95,7 @@ final class HoneycombLayout implements GalleryLayoutInterface, ImageHintsProvide
 		$columns = self::columns( $values['columns'] ?? null );
 		$items   = '';
 		foreach ( $request->items as $index => $item ) {
-			$items .= ImageMarkup::lightbox_item( $item, self::offset_style( $index, $columns ) );
+			$items .= ImageMarkup::lightbox_item( $item, FocalPoint::style( $item ) . self::offset_style( $index, $columns ) );
 		}
 		$css = ResponsiveSetting::declarations( $values['columns'] ?? null, '--swg-columns', '', self::DEFAULT_COLUMNS, self::MIN_COLUMNS, self::MAX_COLUMNS )
 			. sprintf( '--swg-gap:%dpx', ResponsiveSetting::integer( $values['gap'] ?? null, self::DEFAULT_GAP, 0, self::MAX_GAP ) );

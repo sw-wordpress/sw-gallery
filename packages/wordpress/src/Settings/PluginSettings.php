@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace SWGallery\WordPress\Settings;
 
 use SWGallery\Core\Contract\LayoutRegistryInterface;
+use SWGallery\Core\Domain\Gallery\HoverAnimation;
 use SWGallery\Core\Domain\Settings\SettingsSchemaValidator;
 use SWGallery\Core\Exception\UnknownLayoutException;
 use SWGallery\Core\Exception\ValidationFailedException;
@@ -33,11 +34,14 @@ final class PluginSettings {
 		'defaultLayout'         => 'grid',
 		'itemsPerPage'          => 24,
 		'lightbox'              => true,
+		'hoverTitle'            => false,
+		'hoverCaption'          => false,
+		'hoverAnimation'        => 'fade',
 		'deleteDataOnUninstall' => false,
 	);
 
 	/** Keys stored inside the JSON object. */
-	private const STORED_KEYS = array( 'defaultLayout', 'itemsPerPage', 'lightbox' );
+	private const STORED_KEYS = array( 'defaultLayout', 'itemsPerPage', 'lightbox', 'hoverTitle', 'hoverCaption', 'hoverAnimation' );
 
 	private SettingsSchemaValidator $validator;
 
@@ -48,18 +52,24 @@ final class PluginSettings {
 	/**
 	 * Effective settings: stored values, defaults for everything missing or invalid, and a registered layout.
 	 *
-	 * @return array{defaultLayout: string, itemsPerPage: int, lightbox: bool, deleteDataOnUninstall: bool}
+	 * @return array{defaultLayout: string, itemsPerPage: int, lightbox: bool, hoverTitle: bool, hoverCaption: bool, hoverAnimation: string, deleteDataOnUninstall: bool}
 	 */
 	public function get(): array {
 		$stored = $this->stored();
 		$layout = $stored['defaultLayout'] ?? null;
 		$items  = $stored['itemsPerPage'] ?? null;
 		$box    = $stored['lightbox'] ?? null;
+		$title  = $stored['hoverTitle'] ?? null;
+		$text   = $stored['hoverCaption'] ?? null;
+		$motion = $stored['hoverAnimation'] ?? null;
 
 		return array(
 			'defaultLayout'         => is_string( $layout ) && $this->layouts->has( $layout ) ? $layout : self::DEFAULTS['defaultLayout'],
 			'itemsPerPage'          => is_int( $items ) && $items >= self::MIN_ITEMS_PER_PAGE && $items <= self::MAX_ITEMS_PER_PAGE ? $items : self::DEFAULTS['itemsPerPage'],
 			'lightbox'              => is_bool( $box ) ? $box : self::DEFAULTS['lightbox'],
+			'hoverTitle'            => is_bool( $title ) ? $title : self::DEFAULTS['hoverTitle'],
+			'hoverCaption'          => is_bool( $text ) ? $text : self::DEFAULTS['hoverCaption'],
+			'hoverAnimation'        => is_string( $motion ) && null !== HoverAnimation::tryFrom( $motion ) ? $motion : self::DEFAULTS['hoverAnimation'],
 			'deleteDataOnUninstall' => '1' === (string) get_option( Lifecycle::OPTION_DELETE_ON_UNINSTALL, '0' ),
 		);
 	}
@@ -69,7 +79,7 @@ final class PluginSettings {
 	 *
 	 * @param array<string, mixed> $changes        Requested values.
 	 * @param bool                 $confirm_delete Explicit confirmation to turn `deleteDataOnUninstall` on.
-	 * @return array{defaultLayout: string, itemsPerPage: int, lightbox: bool, deleteDataOnUninstall: bool}
+	 * @return array{defaultLayout: string, itemsPerPage: int, lightbox: bool, hoverTitle: bool, hoverCaption: bool, hoverAnimation: string, deleteDataOnUninstall: bool}
 	 * @throws ValidationFailedException     When a value has the wrong type or is out of bounds.
 	 * @throws UnknownLayoutException        When `defaultLayout` is not a registered layout.
 	 * @throws ConfirmationRequiredException When the uninstall deletion is switched on without confirmation.
@@ -145,6 +155,12 @@ final class PluginSettings {
 					'maximum' => self::MAX_ITEMS_PER_PAGE,
 				),
 				'lightbox'              => array( 'type' => 'boolean' ),
+				'hoverTitle'            => array( 'type' => 'boolean' ),
+				'hoverCaption'          => array( 'type' => 'boolean' ),
+				'hoverAnimation'        => array(
+					'type' => 'string',
+					'enum' => array_map( static fn( HoverAnimation $animation ): string => $animation->value, HoverAnimation::cases() ),
+				),
 				'deleteDataOnUninstall' => array( 'type' => 'boolean' ),
 			),
 		);

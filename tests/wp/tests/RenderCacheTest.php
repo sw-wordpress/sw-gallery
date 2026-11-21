@@ -12,6 +12,7 @@ use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Access\RenderAccess;
 use SWGallery\Tests\Support\RenderFixtures;
 use SWGallery\WordPress\Infrastructure\Services;
+use SWGallery\WordPress\PostTypes;
 use SWGallery\WordPress\Rendering\RenderCache;
 use SWGallery\WordPress\Settings\PluginSettings;
 
@@ -166,6 +167,17 @@ class RenderCacheTest extends SwgTestCase {
 		$before = $this->key( $gallery );
 		Services::media_epoch()->bump();
 		$this->assertNotSame( $before, $this->key( $gallery ), 'media epoch' );
+	}
+
+	public function test_page_size_precedence_is_embed_then_gallery_then_site(): void {
+		$gallery = $this->gallery( 'publish', '', 5 );
+		update_option( PluginSettings::OPTION, (string) wp_json_encode( array( 'itemsPerPage' => 4, 'schemaVersion' => 1 ) ) );
+		$this->assertSame( 4, $this->render( $gallery )->renderedItems, 'site setting' );
+
+		update_post_meta( $gallery, PostTypes::META_PER_PAGE, 2 );
+		$this->assertSame( 2, $this->render( $gallery )->renderedItems, 'gallery setting' );
+
+		$this->assertSame( 3, $this->render( $gallery, 0, EntryPoint::Shortcode, array( 'per_page' => 3 ) )->renderedItems, 'embed option' );
 	}
 
 	public function test_a_changed_revision_makes_the_next_render_fresh(): void {

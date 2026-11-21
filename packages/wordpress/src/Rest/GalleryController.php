@@ -19,6 +19,8 @@ use SWGallery\Core\Domain\Gallery\Gallery;
 use SWGallery\Core\Domain\Gallery\GalleryQuery;
 use SWGallery\Core\Domain\Gallery\GalleryResult;
 use SWGallery\Core\Domain\Gallery\GallerySettings;
+use SWGallery\Core\Domain\Gallery\HoverAnimation;
+use SWGallery\Core\Domain\Gallery\HoverEffect;
 use SWGallery\Core\Domain\Gallery\GalleryStatus;
 use SWGallery\Core\Domain\Gallery\NewGallery;
 use SWGallery\Core\Domain\Gallery\SortMode;
@@ -42,7 +44,7 @@ final class GalleryController extends AbstractController {
 
 	private const WRITABLE_STATUSES = array( 'draft', 'pending', 'publish', 'private' );
 	private const LIST_STATUSES     = array( 'draft', 'pending', 'publish', 'private', 'trash' );
-	private const PATCH_FIELDS      = array( 'title', 'description', 'status', 'ownerId', 'coverAttachmentId', 'layout', 'sortMode', 'settings' );
+	private const PATCH_FIELDS      = array( 'title', 'description', 'status', 'ownerId', 'coverAttachmentId', 'layout', 'sortMode', 'perPage', 'hover', 'settings' );
 	private const ID_PATTERN        = '(?P<id>[1-9]\d{0,9})';
 
 	public function __construct(
@@ -285,7 +287,10 @@ final class GalleryController extends AbstractController {
 				$settings = new GallerySettings(
 					$this->string_param( $request, 'layout' ) ?? $this->settings->get()['defaultLayout'],
 					SortMode::from( $this->string_param( $request, 'sortMode' ) ?? SortMode::Manual->value ),
-					$this->settings_param( $request )
+					$this->settings_param( $request ),
+					GallerySettings::SCHEMA_VERSION,
+					$this->per_page_param( $request ),
+					$this->hover_param( $request )
 				);
 				$result   = $this->service->create(
 					$actor,
@@ -493,6 +498,27 @@ final class GalleryController extends AbstractController {
 					'enum'        => array_map( static fn( SortMode $mode ): string => $mode->value, SortMode::cases() ),
 					'context'     => array( 'view', 'edit' ),
 				),
+				'perPage'           => array(
+					'description' => 'Items per page of this gallery; null uses the site-wide setting.',
+					'type'        => array( 'integer', 'null' ),
+					'minimum'     => GallerySettings::MIN_PER_PAGE,
+					'maximum'     => GallerySettings::MAX_PER_PAGE,
+					'context'     => array( 'view', 'edit' ),
+				),
+				'hover'             => array(
+					'description'          => 'Hover texts of the images (title, caption, animation); null uses the site-wide setting.',
+					'type'                 => array( 'object', 'null' ),
+					'additionalProperties' => false,
+					'properties'           => array(
+						'title'     => array( 'type' => 'boolean' ),
+						'caption'   => array( 'type' => 'boolean' ),
+						'animation' => array(
+							'type' => 'string',
+							'enum' => array_map( static fn( HoverAnimation $animation ): string => $animation->value, HoverAnimation::cases() ),
+						),
+					),
+					'context'              => array( 'view', 'edit' ),
+				),
 				'settings'          => array(
 					'description'          => 'Layout settings (validated against the layout schema); replaces the stored map.',
 					'type'                 => 'object',
@@ -616,6 +642,12 @@ final class GalleryController extends AbstractController {
 		if ( $request->has_param( 'sortMode' ) ) {
 			$settings = $settings->withSortMode( SortMode::from( (string) $this->string_param( $request, 'sortMode' ) ) );
 		}
+		if ( $request->has_param( 'perPage' ) ) {
+			$settings = $settings->withPerPage( $this->per_page_param( $request ) );
+		}
+		if ( $request->has_param( 'hover' ) ) {
+			$settings = $settings->withHover( $this->hover_param( $request ) );
+		}
 		if ( $request->has_param( 'settings' ) ) {
 			$settings = $settings->withValues( $this->settings_param( $request ) );
 		}
@@ -650,6 +682,27 @@ final class GalleryController extends AbstractController {
 	private function status_param( \WP_REST_Request $request ): ?GalleryStatus {
 		$value = $this->string_param( $request, 'status' );
 		return null === $value ? null : GalleryStatus::tryFrom( $value );
+	}
+
+	/**
+	 * Hover texts; null (or absent) means the site-wide default. Types and values are enforced by the route schema.
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
+	 */
+	private function hover_param( \WP_REST_Request $request ): ?HoverEffect {
+		return HoverEffect::fromArray( $request->get_param( 'hover' ) );
+	}
+
+	/**
+	 * Items per page; null (or absent) means the site-wide default. The range is enforced by the route schema.
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
+	 */
+	private function per_page_param( \WP_REST_Request $request ): ?int {
+		$value = $request->get_param( 'perPage' );
+		return is_numeric( $value ) ? (int) $value : null;
 	}
 
 	/**

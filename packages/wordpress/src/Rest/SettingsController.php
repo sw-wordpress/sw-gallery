@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace SWGallery\WordPress\Rest;
 
+use SWGallery\Core\Domain\Gallery\HoverAnimation;
 use SWGallery\WordPress\Settings\ConfirmationRequiredException;
 use SWGallery\WordPress\Settings\PluginSettings;
 
@@ -138,6 +139,19 @@ final class SettingsController extends AbstractController {
 				'lightbox'              => array(
 					'description' => 'Open images in the lightbox.',
 					'type'        => 'boolean',
+				),
+				'hoverTitle'            => array(
+					'description' => 'Show the image title on hover (default for galleries without their own setting).',
+					'type'        => 'boolean',
+				),
+				'hoverCaption'          => array(
+					'description' => 'Show the image caption on hover (default for galleries without their own setting).',
+					'type'        => 'boolean',
+				),
+				'hoverAnimation'        => array(
+					'description' => 'Hover animation: slide-up, slide-down, cover or fade.',
+					'type'        => 'string',
+					'enum'        => array_map( static fn( HoverAnimation $animation ): string => $animation->value, HoverAnimation::cases() ),
 				),
 				'deleteDataOnUninstall' => array(
 					'description' => 'Delete galleries and relations (never attachments) when the plugin is deleted; turning it on needs confirmDeleteData.',

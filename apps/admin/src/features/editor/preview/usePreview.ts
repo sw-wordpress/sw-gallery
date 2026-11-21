@@ -1,6 +1,7 @@
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import { isApiError } from '@/api/client';
 import type { PreviewApi, PreviewResponse } from '@/api/preview';
+import type { HoverConfig } from '@/api/galleries';
 
 /** Quiet period after the last staged change before a request is sent. */
 export const PREVIEW_DEBOUNCE_MS = 400;
@@ -26,6 +27,8 @@ export interface PreviewError {
 export interface PreviewState {
   layout: string;
   sortMode: string;
+  perPage: number | null;
+  hover: HoverConfig | null;
   settings: Record<string, unknown>;
 }
 
@@ -116,6 +119,8 @@ export function usePreview(options: PreviewOptions) {
         {
           layout: state.layout,
           sortMode: state.sortMode,
+          galleryPerPage: state.perPage,
+          galleryHover: state.hover,
           settings: state.settings,
           page: page.value,
           ...(perPage.value === null ? {} : { perPage: perPage.value }),

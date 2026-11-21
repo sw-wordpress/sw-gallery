@@ -35,6 +35,9 @@ export default {
     label: 'Images per page',
     hint: 'From {min} to {max}. Default: {value}.',
   },
+  hover: {
+    hint: 'Hover texts of the images. Galleries can override this in the editor.',
+  },
   lightbox: {
     label: 'Open images in a lightbox',
     hint: 'Visitors can enlarge images on the website.',

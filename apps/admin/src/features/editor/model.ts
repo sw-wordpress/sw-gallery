@@ -1,4 +1,4 @@
-import type { Gallery, GalleryStatus } from '@/api/galleries';
+import type { Gallery, GalleryStatus, HoverConfig } from '@/api/galleries';
 import type { GalleryItem, GlobalTexts, ItemTexts } from '@/api/items';
 import { MAX_BULK } from '@/api/items';
 
@@ -22,6 +22,8 @@ export const DETAIL_KEYS = [
   'coverAttachmentId',
   'layout',
   'sortMode',
+  'perPage',
+  'hover',
   'settings',
 ] as const;
 export type DetailKey = (typeof DETAIL_KEYS)[number];
@@ -33,6 +35,10 @@ export interface Details {
   coverAttachmentId: number | null;
   layout: string;
   sortMode: string;
+  /** Items per page of this gallery; null uses the site-wide default. */
+  perPage: number | null;
+  /** Hover texts of this gallery; null uses the site-wide setting. */
+  hover: HoverConfig | null;
   settings: Record<string, unknown>;
 }
 
@@ -63,6 +69,8 @@ export function detailsOf(gallery: Gallery): Details {
     coverAttachmentId: gallery.coverAttachmentId,
     layout: gallery.layout,
     sortMode: gallery.sortMode,
+    perPage: gallery.perPage,
+    hover: gallery.hover,
     settings: gallery.settings,
   };
 }

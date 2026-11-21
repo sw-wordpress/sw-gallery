@@ -51,7 +51,7 @@ msgid "Create a new gallery"
 msgstr "Neue Galerie erstellen"
 
 #: assets/blocks/src/Edit.tsx:52 assets/blocks/src/GallerySelector.tsx:75
-#: packages/wordpress/src/PostTypes.php:30
+#: packages/wordpress/src/PostTypes.php:33
 msgid "Gallery"
 msgstr "Galerie"
 
@@ -137,7 +137,7 @@ msgid "Overrides the layout of the gallery for this block only."
 msgstr "Überschreibt das Layout der Galerie nur für diesen Block."
 
 #: assets/blocks/src/PresentationControls.tsx:73
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:77
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:78
 msgid "Columns"
 msgstr "Spalten"
 
@@ -189,7 +189,7 @@ msgstr "Galerieverwaltung"
 
 #: packages/wordpress/src/Admin/AdminRegistrar.php:69
 #: packages/wordpress/src/Admin/MediaLibraryRegistrar.php:89
-#: packages/wordpress/src/PostTypes.php:29
+#: packages/wordpress/src/PostTypes.php:32
 msgid "Galleries"
 msgstr "Galerien"
 
@@ -431,17 +431,17 @@ msgid "Automatic (16:10)"
 msgstr "Automatisch (16:10)"
 
 #: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:90
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:94
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:95
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:99
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:93
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:94
 #: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:103
 msgid "Square (1:1)"
 msgstr "Quadratisch (1:1)"
 
 #: packages/wordpress/src/Rendering/Layout/BubblesLayout.php:91
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:95
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:96
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:100
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:92
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:93
 #: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:104
 msgid "Classic (4:3)"
 msgstr "Klassisch (4:3)"
@@ -490,6 +490,7 @@ msgstr "Extragroß"
 #: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:111
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:123
 #: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:127
+#: packages/wordpress/src/Rendering/View/FocalPoint.php:30
 msgid "Focal point"
 msgstr "Bildschwerpunkt"
 
@@ -501,6 +502,7 @@ msgstr "Welcher Teil des Bildes sichtbar bleibt, wenn die Blase es beschneidet, 
 #: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:116
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:128
 #: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:132
+#: packages/wordpress/src/Rendering/View/FocalPoint.php:35
 msgid "Focal point, horizontal (%)"
 msgstr "Bildschwerpunkt, horizontal (%)"
 
@@ -508,6 +510,7 @@ msgstr "Bildschwerpunkt, horizontal (%)"
 #: packages/wordpress/src/Rendering/Layout/MagazineLayout.php:123
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:135
 #: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:139
+#: packages/wordpress/src/Rendering/View/FocalPoint.php:42
 msgid "Focal point, vertical (%)"
 msgstr "Bildschwerpunkt, vertikal (%)"
 
@@ -591,69 +594,69 @@ msgstr "Größe der Vorschaubilder (px)"
 msgid "Selected image"
 msgstr "Ausgewähltes Bild"
 
-#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:59
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:60
 msgid "Cells per row"
 msgstr "Zellen pro Reihe"
 
-#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:60
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:74
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:61
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:75
 msgid "Below 480 px wide a plain two column grid is shown."
 msgstr "Unter 480 px Breite wird ein einfaches zweispaltiges Raster angezeigt."
 
-#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:68
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:69
 msgid "Gap between cells (px)"
 msgstr "Abstand zwischen den Zellen (px)"
 
-#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:75
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:76
 msgid "Cell shape"
 msgstr "Zellenform"
 
-#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:79
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:80
 msgid "Hexagon"
 msgstr "Sechseck"
 
-#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:80
+#: packages/wordpress/src/Rendering/Layout/HoneycombLayout.php:81
 msgid "Diamond"
 msgstr "Raute"
 
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:73
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:74
 msgid "Pieces per row"
 msgstr "Teile pro Reihe"
 
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:82
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:83
 msgid "Gap between pieces (px)"
 msgstr "Abstand zwischen den Teilen (px)"
 
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:83
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:84
 msgid "0 lets the pieces touch like a finished puzzle."
 msgstr "Bei 0 berühren sich die Teile wie bei einem fertigen Puzzle."
 
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:90
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:91
 msgid "Piece shape"
 msgstr "Form der Teile"
 
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:96
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:97
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:101
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:91
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:92
 #: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:105
 msgid "Photo (3:2)"
 msgstr "Foto (3:2)"
 
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:101
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:102
 msgid "Tab size (%)"
 msgstr "Größe der Zapfen (%)"
 
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:102
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:103
 msgid "How far the tabs reach out of a piece, in percent of the piece width."
 msgstr "Wie weit die Zapfen aus einem Teil herausragen, in Prozent der Teilbreite."
 
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:109
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:123
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:110
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:124
 #: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:89
 msgid "Variation"
 msgstr "Variation"
 
-#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:110
+#: packages/wordpress/src/Rendering/Layout/JigsawLayout.php:111
 msgid "Another number gives another arrangement of tabs and blanks."
 msgstr "Eine andere Zahl ergibt eine andere Anordnung von Zapfen und Aussparungen."
 
@@ -736,50 +739,51 @@ msgstr "Wie viel Fläche dieses Bild bekommt: große Bilder etwa die doppelte, e
 
 #: packages/wordpress/src/Rendering/Layout/MosaicLayout.php:124
 #: packages/wordpress/src/Rendering/Layout/ShatteredLayout.php:128
+#: packages/wordpress/src/Rendering/View/FocalPoint.php:31
 msgid "Which part of the picture stays visible when the tile crops it, in percent from the left and the top (50 / 50 is the centre)."
 msgstr "Welcher Teil des Bildes sichtbar bleibt, wenn die Kachel es beschneidet, in Prozent von links und von oben (50 / 50 ist die Mitte)."
 
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:78
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:79
 msgid "Prints per row. Containers narrower than 480 px always show two columns with half the tilt."
 msgstr "Abzüge pro Reihe. Container unter 480 px zeigen immer zwei Spalten mit halber Neigung."
 
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:86
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:87
 msgid "Print shape"
 msgstr "Form der Abzüge"
 
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:87
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:88
 msgid "Width to height ratio of every print; pictures are cropped to fit."
 msgstr "Seitenverhältnis jedes Abzugs; Bilder werden passend beschnitten."
 
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:94
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:95
 msgid "Portrait (2:3)"
 msgstr "Hochformat (2:3)"
 
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:99
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:100
 msgid "Overlap (%)"
 msgstr "Überlappung (%)"
 
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:100
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:101
 msgid "How far neighbouring prints reach over each other. Larger values are reduced automatically so every print stays at least 60 % visible; touch screens use half."
 msgstr "Wie weit sich benachbarte Abzüge überlagern. Größere Werte werden automatisch reduziert, damit jeder Abzug zu mindestens 60 % sichtbar bleibt; Touch-Geräte nutzen die Hälfte."
 
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:107
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:108
 msgid "Tilt (degrees)"
 msgstr "Neigung (Grad)"
 
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:108
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:109
 msgid "Largest rotation of a print in either direction. 0 keeps the prints straight."
 msgstr "Größte Drehung eines Abzugs in beide Richtungen. 0 lässt die Abzüge gerade."
 
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:115
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:116
 msgid "Print border (px)"
 msgstr "Rand der Abzüge (px)"
 
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:116
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:117
 msgid "Width of the white border around every picture."
 msgstr "Breite des weißen Rands um jedes Bild."
 
-#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:124
+#: packages/wordpress/src/Rendering/Layout/ScatteredLayout.php:125
 msgid "Another number gives another arrangement of the same pictures."
 msgstr "Eine andere Zahl ergibt eine andere Anordnung derselben Bilder."
 
@@ -876,23 +880,23 @@ msgstr "Die Anfrage enthält ungültige Werte."
 msgid "An unexpected error occurred."
 msgstr "Es ist ein unerwarteter Fehler aufgetreten."
 
-#: packages/wordpress/src/Rest/GalleryController.php:321
+#: packages/wordpress/src/Rest/GalleryController.php:326
 #: packages/wordpress/src/Rest/ItemController.php:301
-#: packages/wordpress/src/Rest/SettingsController.php:92
+#: packages/wordpress/src/Rest/SettingsController.php:93
 msgid "The request does not change anything."
 msgstr "Die Anfrage ändert nichts."
 
 #. translators: %s: title of the duplicated gallery
-#: packages/wordpress/src/Rest/GalleryController.php:389
+#: packages/wordpress/src/Rest/GalleryController.php:394
 #, php-format
 msgid "%s (copy)"
 msgstr "%s (Kopie)"
 
-#: packages/wordpress/src/Rest/GalleryController.php:607
+#: packages/wordpress/src/Rest/GalleryController.php:633
 msgid "The cover must be an image you may use."
 msgstr "Das Titelbild muss ein Bild sein, das Sie verwenden dürfen."
 
-#: packages/wordpress/src/Rest/GalleryController.php:632
+#: packages/wordpress/src/Rest/GalleryController.php:664
 msgid "You are not allowed to publish galleries."
 msgstr "Sie dürfen keine Galerien veröffentlichen."
 
@@ -946,11 +950,11 @@ msgstr "Die Datei ist größer als die maximal erlaubte Upload-Größe."
 msgid "This file type is not supported. Use a JPEG, PNG, GIF, WebP or AVIF image."
 msgstr "Dieser Dateityp wird nicht unterstützt. Verwende ein JPEG-, PNG-, GIF-, WebP- oder AVIF-Bild."
 
-#: packages/wordpress/src/Rest/SettingsController.php:100
+#: packages/wordpress/src/Rest/SettingsController.php:101
 msgid "Confirm explicitly that galleries and their image relations may be deleted when the plugin is deleted."
 msgstr "Bestätige ausdrücklich, dass Galerien und ihre Bildzuordnungen beim Löschen des Plugins gelöscht werden dürfen."
 
-#: packages/wordpress/src/Rest/SettingsController.php:115
+#: packages/wordpress/src/Rest/SettingsController.php:116
 msgid "When the plugin is deleted, all galleries and their image relations are removed. Images in the Media Library are never deleted."
 msgstr "Beim Löschen des Plugins werden alle Galerien und ihre Bildzuordnungen entfernt. Bilder in der Mediathek werden nie gelöscht."
 

@@ -214,6 +214,18 @@ describe('staged edits, undo and redo', () => {
 });
 
 describe('save pipeline', () => {
+  it('saves the gallery page size and clears it back to the site default', async () => {
+    const { server, session } = await ready();
+    session.setDetail('perPage', 12);
+    expect(session.changeCount.value).toBe(1);
+    expect(await session.save()).toMatchObject({ ok: true, completed: ['details'] });
+    expect(server.gallery.perPage).toBe(12);
+
+    session.setDetail('perPage', null);
+    expect(await session.save()).toMatchObject({ ok: true, completed: ['details'] });
+    expect(server.gallery.perPage).toBeNull();
+  });
+
   it('applies removals, texts, order and details in order and chains the revisions', async () => {
     const { server, session } = await ready();
     session.removeItems([2]);

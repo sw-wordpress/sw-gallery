@@ -83,6 +83,7 @@ final class RenderCache {
 			'entry'     => $context->entryPoint->value,
 			'page'      => $page,
 			'perPage'   => $context->perPage,
+			'hover'     => $context->hover?->toArray(),
 			'layout'    => $context->layoutOverride,
 			'overrides' => self::normalize( $context->settingsOverrides ),
 			'eager'     => $context->eagerLoading,

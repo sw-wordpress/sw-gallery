@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { HOVER_ANIMATIONS } from '@/api/galleries';
+import type { HoverAnimation, HoverConfig } from '@/api/galleries';
 import type { LayoutInfo, LayoutsResponse } from '@/api/layouts';
 import { fieldsOf } from '../schema';
 import type { Breakpoint } from '../schema';
@@ -22,6 +24,30 @@ const emit = defineEmits<{ (e: 'retry'): void }>();
 const { t, te } = useI18n();
 
 const SORT_MODES = ['manual', 'date_asc', 'date_desc', 'title_asc', 'title_desc'] as const;
+
+const PER_PAGE_MIN = 1;
+const PER_PAGE_MAX = 200;
+
+/** Empty or out-of-range input means "site default" (null); decimals are cut off. */
+function onPerPage(value: string | number | null): void {
+  const n = typeof value === 'number' ? value : Number.parseInt(value ?? '', 10);
+  const valid = Number.isInteger(n) && n >= PER_PAGE_MIN && n <= PER_PAGE_MAX;
+  props.session.setDetail('perPage', valid ? n : null);
+}
+
+const hoverOptions = computed(() =>
+  HOVER_ANIMATIONS.map((value) => ({ value, label: t(`editor.hover.animation.${value}`) })),
+);
+const DEFAULT_HOVER: HoverConfig = { title: true, caption: false, animation: 'fade' };
+
+/** `null` = inherit the site-wide setting; the first custom state shows the title with a fade. */
+function setHoverCustom(custom: boolean): void {
+  props.session.setDetail('hover', custom ? { ...DEFAULT_HOVER } : null);
+}
+function patchHover(change: Partial<HoverConfig>): void {
+  const current = details.value?.hover;
+  if (current) props.session.setDetail('hover', { ...current, ...change });
+}
 
 const details = computed(() => props.session.working.value?.details ?? null);
 const layout = computed<LayoutInfo | null>(
@@ -113,6 +139,53 @@ const issueCount = computed(() => props.session.settingIssues.value.length);
       @update:model-value="(v: string) => session.setDetail('sortMode', v)"
     />
     <p class="swg-lsp__hint">{{ t('editor.sort.note') }}</p>
+
+    <q-input
+      outlined
+      dense
+      clearable
+      type="number"
+      :model-value="details.perPage ?? ''"
+      :label="t('editor.perPage.label')"
+      :disable="readonly"
+      @update:model-value="onPerPage"
+    />
+    <p class="swg-lsp__hint">{{ t('editor.perPage.note') }}</p>
+
+    <h3 class="swg-lsp__heading">{{ t('editor.hover.heading') }}</h3>
+    <q-toggle
+      :model-value="details.hover === null"
+      :label="t('editor.hover.useSite')"
+      color="primary"
+      :disable="readonly"
+      @update:model-value="(v: boolean) => setHoverCustom(!v)"
+    />
+    <template v-if="details.hover !== null">
+      <q-checkbox
+        :model-value="details.hover.title"
+        :label="t('editor.hover.title')"
+        :disable="readonly"
+        @update:model-value="(v: boolean) => patchHover({ title: v })"
+      />
+      <q-checkbox
+        :model-value="details.hover.caption"
+        :label="t('editor.hover.caption')"
+        :disable="readonly"
+        @update:model-value="(v: boolean) => patchHover({ caption: v })"
+      />
+      <q-select
+        outlined
+        dense
+        emit-value
+        map-options
+        :model-value="details.hover.animation"
+        :options="hoverOptions"
+        :label="t('editor.hover.animationLabel')"
+        :disable="readonly"
+        @update:model-value="(v: HoverAnimation) => patchHover({ animation: v })"
+      />
+    </template>
+    <p class="swg-lsp__hint">{{ t('editor.hover.note') }}</p>
 
     <h3 class="swg-lsp__heading">{{ t('editor.settings.heading') }}</h3>
     <p v-if="layout && fields.length === 0" class="swg-lsp__hint">

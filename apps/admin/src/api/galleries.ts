@@ -6,6 +6,16 @@ export type GalleryStatus = 'draft' | 'pending' | 'publish' | 'private' | 'trash
 /** Statuses a client may write (trash is reached through DELETE only). */
 export type WritableGalleryStatus = 'draft' | 'pending' | 'publish' | 'private';
 
+export const HOVER_ANIMATIONS = ['slide-up', 'slide-down', 'cover', 'fade'] as const;
+export type HoverAnimation = (typeof HOVER_ANIMATIONS)[number];
+
+/** Hover texts of the images: which texts appear and how they fade in. */
+export interface HoverConfig {
+  title: boolean;
+  caption: boolean;
+  animation: HoverAnimation;
+}
+
 export interface Gallery {
   id: number;
   title: string;
@@ -17,6 +27,10 @@ export interface Gallery {
   coverUrl: string | null;
   layout: string;
   sortMode: string;
+  /** 1..200; null = site-wide default. */
+  perPage: number | null;
+  /** Hover texts; null = site-wide setting. */
+  hover: HoverConfig | null;
   settings: Record<string, unknown>;
   passwordProtected: boolean;
   /** ISO 8601 UTC, e.g. `2026-11-11T09:30:00Z`. */
@@ -60,6 +74,8 @@ export interface UpdateGalleryInput {
   coverAttachmentId?: number | null;
   layout?: string;
   sortMode?: string;
+  perPage?: number | null;
+  hover?: HoverConfig | null;
   /** Replaces the WHOLE settings values map: always send the complete merged map. */
   settings?: Record<string, unknown>;
 }

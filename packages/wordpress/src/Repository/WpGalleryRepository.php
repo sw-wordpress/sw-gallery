@@ -18,6 +18,7 @@ use SWGallery\Core\Domain\Gallery\GalleryQuery;
 use SWGallery\Core\Domain\Gallery\GallerySettings;
 use SWGallery\Core\Domain\Gallery\GalleryStatus;
 use SWGallery\Core\Domain\Gallery\NewGallery;
+use SWGallery\Core\Domain\Gallery\HoverEffect;
 use SWGallery\Core\Domain\Gallery\SortMode;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\WordPress\PostTypes;
@@ -293,6 +294,17 @@ final class WpGalleryRepository implements GalleryRepositoryInterface {
 		}
 		update_post_meta( $id, PostTypes::META_LAYOUT, wp_slash( $settings->layout ) );
 		update_post_meta( $id, PostTypes::META_SORT_MODE, wp_slash( $settings->sortMode->value ) );
+		if ( null === $settings->perPage ) {
+			delete_post_meta( $id, PostTypes::META_PER_PAGE );
+		} else {
+			update_post_meta( $id, PostTypes::META_PER_PAGE, $settings->perPage );
+		}
+		$hover = null === $settings->hover ? false : wp_json_encode( $settings->hover->toArray() );
+		if ( false === $hover ) {
+			delete_post_meta( $id, PostTypes::META_HOVER );
+		} else {
+			update_post_meta( $id, PostTypes::META_HOVER, wp_slash( $hover ) );
+		}
 		update_post_meta( $id, PostTypes::META_SETTINGS, wp_slash( $json ) );
 		update_post_meta( $id, PostTypes::META_SCHEMA_VERSION, $settings->schemaVersion );
 	}
@@ -332,11 +344,14 @@ final class WpGalleryRepository implements GalleryRepositoryInterface {
 		foreach ( is_array( $decoded ) ? $decoded : array() as $key => $value ) {
 			$values[ (string) $key ] = $value;
 		}
+		$per_page = PostTypes::sanitize_per_page( get_post_meta( $id, PostTypes::META_PER_PAGE, true ) );
 		return new GallerySettings(
 			$layout,
 			SortMode::tryFrom( (string) get_post_meta( $id, PostTypes::META_SORT_MODE, true ) ) ?? SortMode::Manual,
 			$values,
-			max( 1, (int) get_post_meta( $id, PostTypes::META_SCHEMA_VERSION, true ) )
+			max( 1, (int) get_post_meta( $id, PostTypes::META_SCHEMA_VERSION, true ) ),
+			$per_page > 0 ? $per_page : null,
+			HoverEffect::fromArray( json_decode( (string) get_post_meta( $id, PostTypes::META_HOVER, true ), true ) )
 		);
 	}
 

@@ -187,7 +187,7 @@ final class FocusLayout implements GalleryLayoutInterface, ImageHintsProviderInt
 
 	/** The same item with lazy loading (only the first stage image may be eager). */
 	private static function lazy( RenderItem $item ): RenderItem {
-		return new RenderItem( $item->itemId, $item->attachmentId, $item->title, $item->caption, $item->alt, $item->thumbnail, $item->full, LoadingStrategy::Lazy, $item->position, $item->total );
+		return new RenderItem( $item->itemId, $item->attachmentId, $item->title, $item->caption, $item->alt, $item->thumbnail, $item->full, LoadingStrategy::Lazy, $item->position, $item->total, array(), $item->hover );
 	}
 
 	/** `<li><a class="swg-thumb" href="#id">` with a small image; eager only for the first row (never high priority). */

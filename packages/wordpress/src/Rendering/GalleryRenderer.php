@@ -20,6 +20,8 @@ use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Access\RenderAccess;
 use SWGallery\Core\Domain\Gallery\Gallery;
 use SWGallery\Core\Domain\Gallery\GallerySettings;
+use SWGallery\Core\Domain\Gallery\HoverAnimation;
+use SWGallery\Core\Domain\Gallery\HoverEffect;
 use SWGallery\WordPress\Rendering\View\PaginationMarkup;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 use SWGallery\WordPress\Settings\PluginSettings;
@@ -31,7 +33,7 @@ use SWGallery\WordPress\Settings\PluginSettings;
  *
  * Options (all optional, all untrusted and sanitised here): `page`, `per_page`, `layout`, `settings` (array),
  * `eager` (bool, default true). Without `page` the page comes from the request argument `swg_page_<galleryId>`
- * (shortcode, block and PHP API only; previews and feeds always start at page 1). Without `per_page` the plugin
+ * (shortcode, block and PHP API only; previews and feeds always start at page 1). Without `per_page` the gallery's own page size, else the plugin
  * setting `itemsPerPage` applies.
  *
  * Output paths: published, password-free output for users who cannot edit the gallery is served from the fragment
@@ -159,13 +161,26 @@ final class GalleryRenderer {
 			new Actor( max( 0, $user ) ),
 			sprintf( 'swg-%d-%d', $gallery_id, $number ),
 			max( 1, min( PaginationMarkup::MAX_PAGE, $this->int_option( $options, 'page', $this->request_page( $gallery_id, $entry ) ) ) ),
-			max( PluginSettings::MIN_ITEMS_PER_PAGE, min( PluginSettings::MAX_ITEMS_PER_PAGE, $this->int_option( $options, 'per_page', $this->settings->get()['itemsPerPage'] ) ) ),
+			max( PluginSettings::MIN_ITEMS_PER_PAGE, min( PluginSettings::MAX_ITEMS_PER_PAGE, $this->int_option( $options, 'per_page', $gallery?->settings->perPage ?? $this->settings->get()['itemsPerPage'] ) ) ),
 			$layout,
 			$settings,
 			$unlocked,
 			! isset( $options['eager'] ) || (bool) $options['eager'],
-			$first_embed
+			$first_embed,
+			$this->effective_hover( $gallery )
 		);
+	}
+
+	/**
+	 * The gallery's own hover texts, else the site-wide default; null when nothing is shown (a canonical "off", so the
+	 * cache key is the same however it was switched off).
+	 *
+	 * @param Gallery|null $gallery The gallery as loaded for this request.
+	 */
+	private function effective_hover( ?Gallery $gallery ): ?HoverEffect {
+		$site   = $this->settings->get();
+		$effect = $gallery?->settings->hover ?? new HoverEffect( $site['hoverTitle'], $site['hoverCaption'], HoverAnimation::tryFrom( $site['hoverAnimation'] ) ?? HoverAnimation::Fade );
+		return $effect->isActive() ? $effect : null;
 	}
 
 	/** The page requested through the URL; previews and feeds never read the request. */

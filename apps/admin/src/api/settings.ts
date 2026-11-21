@@ -1,10 +1,15 @@
 import type { ApiClient } from './client';
+import type { HoverAnimation } from './galleries';
 
 /** `GET`/`PATCH /settings` (docs/rest-api.md "Settings"). */
 export interface SettingsValues {
   defaultLayout: string;
   itemsPerPage: number;
   lightbox: boolean;
+  /** Hover defaults for galleries without their own hover setting. */
+  hoverTitle: boolean;
+  hoverCaption: boolean;
+  hoverAnimation: HoverAnimation;
   deleteDataOnUninstall: boolean;
 }
 

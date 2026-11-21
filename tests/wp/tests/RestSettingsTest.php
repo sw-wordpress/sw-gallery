@@ -58,6 +58,9 @@ class RestSettingsTest extends SwgTestCase {
 		$this->assertSame( 'grid', $data['defaultLayout'] );
 		$this->assertSame( 24, $data['itemsPerPage'] );
 		$this->assertTrue( $data['lightbox'] );
+		$this->assertFalse( $data['hoverTitle'] );
+		$this->assertFalse( $data['hoverCaption'] );
+		$this->assertSame( 'fade', $data['hoverAnimation'] );
 		$this->assertFalse( $data['deleteDataOnUninstall'] );
 		$this->assertSame( PluginSettings::SCHEMA_VERSION, $data['schemaVersion'] );
 		$this->assertSame( PluginSettings::DEFAULTS, $data['defaults'] );
@@ -74,6 +77,19 @@ class RestSettingsTest extends SwgTestCase {
 		$this->assertSame( 12, $data['itemsPerPage'] );
 		$this->assertFalse( $data['lightbox'], 'an untouched key keeps its stored value' );
 		$this->assertEquals( $data, $this->data( $this->call( 'GET', '/settings', array(), $this->admin ) ) );
+	}
+
+	public function test_the_hover_defaults_round_trip_and_bad_stored_values_fall_back(): void {
+		$data = $this->data( $this->call( 'PATCH', '/settings', array( 'hoverTitle' => true, 'hoverCaption' => true, 'hoverAnimation' => 'slide-up' ), $this->admin ) );
+		$this->assertTrue( $data['hoverTitle'] );
+		$this->assertTrue( $data['hoverCaption'] );
+		$this->assertSame( 'slide-up', $data['hoverAnimation'] );
+
+		update_option( PluginSettings::OPTION, (string) wp_json_encode( array( 'hoverTitle' => 'x', 'hoverCaption' => 1, 'hoverAnimation' => 'spin' ) ), false );
+		$data = $this->data( $this->call( 'GET', '/settings', array(), $this->admin ) );
+		$this->assertFalse( $data['hoverTitle'] );
+		$this->assertFalse( $data['hoverCaption'] );
+		$this->assertSame( 'fade', $data['hoverAnimation'] );
 	}
 
 	public function test_the_object_is_stored_as_one_versioned_non_autoloaded_json_option(): void {
@@ -121,6 +137,8 @@ class RestSettingsTest extends SwgTestCase {
 			'items too low'       => array( array( 'itemsPerPage' => 0 ), 400, 'rest_invalid_param' ),
 			'items too high'      => array( array( 'itemsPerPage' => 201 ), 400, 'rest_invalid_param' ),
 			'items wrong type'    => array( array( 'itemsPerPage' => 'many' ), 400, 'rest_invalid_param' ),
+			'hover animation'     => array( array( 'hoverAnimation' => 'spin' ), 400, 'rest_invalid_param' ),
+			'hover title type'    => array( array( 'hoverTitle' => 'maybe' ), 400, 'rest_invalid_param' ),
 			'lightbox wrong type' => array( array( 'lightbox' => 'maybe' ), 400, 'rest_invalid_param' ),
 			'layout empty'        => array( array( 'defaultLayout' => '' ), 400, 'rest_invalid_param' ),
 			'layout too long'     => array( array( 'defaultLayout' => str_repeat( 'a', 65 ) ), 400, 'rest_invalid_param' ),

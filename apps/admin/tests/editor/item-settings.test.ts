@@ -172,6 +172,34 @@ describe('item settings form', () => {
     expect(buttonByLabel('Reset to defaults')).toBeUndefined();
   });
 
+  it('sets the focal point by clicking into the image and resets it', async () => {
+    const { server, sheet } = await open('mosaic');
+    const stage = sheet.querySelector<HTMLElement>('.swg-fp__stage');
+    if (stage === null) throw new Error('no focal picker');
+    stage.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, width: 200, height: 100, right: 200, bottom: 100 }) as DOMRect;
+    stage.dispatchEvent(new MouseEvent('pointerdown', { clientX: 50, clientY: 80, bubbles: true }));
+    await settle();
+    expect(sheet.textContent).toContain('Reset to defaults');
+    buttonByLabel('Centre again')?.click();
+    await settle();
+    expect(buttonByLabel('Centre again')).toBeUndefined();
+    stage.dispatchEvent(
+      new MouseEvent('pointerdown', { clientX: 150, clientY: 20, bubbles: true }),
+    );
+    await settle();
+    buttonByLabel('Done')?.click();
+    await settle();
+    buttonByLabel('Save')?.click();
+    await settle();
+    expect(server.items[0]?.settings).toEqual({ focal: { x: 75, y: 20 } });
+  });
+
+  it('shows no picker for a layout without a focal point', async () => {
+    const { sheet } = await open('grid');
+    expect(sheet.querySelector('.swg-fp__stage')).toBeNull();
+  });
+
   it('shows no form for a layout without item settings', async () => {
     const { sheet } = await open('grid');
     expect(sheet.textContent).not.toContain('Layout settings for this image');

@@ -18,6 +18,9 @@ use SWGallery\Core\Contract\GalleryRepositoryInterface;
 use SWGallery\Core\Contract\LayoutRegistryInterface;
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Gallery\Gallery;
+use SWGallery\Core\Domain\Gallery\GallerySettings;
+use SWGallery\Core\Domain\Gallery\HoverAnimation;
+use SWGallery\Core\Domain\Gallery\HoverEffect;
 use SWGallery\Core\Domain\Gallery\SortMode;
 use SWGallery\Core\Domain\Settings\SettingsSchemaValidator;
 use SWGallery\Core\Exception\AccessDeniedException;
@@ -178,6 +181,13 @@ final class PreviewController extends AbstractController {
 		if ( $request->has_param( 'sortMode' ) ) {
 			$settings = $settings->withSortMode( SortMode::from( (string) $request->get_param( 'sortMode' ) ) );
 		}
+		if ( $request->has_param( 'galleryPerPage' ) ) {
+			$per_page = $request->get_param( 'galleryPerPage' );
+			$settings = $settings->withPerPage( is_numeric( $per_page ) ? (int) $per_page : null );
+		}
+		if ( $request->has_param( 'galleryHover' ) ) {
+			$settings = $settings->withHover( HoverEffect::fromArray( $request->get_param( 'galleryHover' ) ) );
+		}
 		if ( $request->has_param( 'settings' ) ) {
 			$values = array();
 			foreach ( (array) $request->get_param( 'settings' ) as $key => $value ) {
@@ -201,35 +211,54 @@ final class PreviewController extends AbstractController {
 	 */
 	private function route_args(): array {
 		return array(
-			'id'       => array(
+			'id'             => array(
 				'description'       => 'Gallery id.',
 				'type'              => 'integer',
 				'minimum'           => 1,
 				'sanitize_callback' => 'absint',
 			),
-			'layout'   => array(
+			'layout'         => array(
 				'description' => 'Unsaved layout id.',
 				'type'        => 'string',
 				'pattern'     => '^[a-z][a-z0-9_-]{0,63}$',
 			),
-			'sortMode' => array(
+			'sortMode'       => array(
 				'description' => 'Unsaved item order mode.',
 				'type'        => 'string',
 				'enum'        => array_map( static fn( SortMode $mode ): string => $mode->value, SortMode::cases() ),
 			),
-			'settings' => array(
+			'galleryPerPage' => array(
+				'description' => 'Unsaved items per page of the gallery; null uses the site-wide setting.',
+				'type'        => array( 'integer', 'null' ),
+				'minimum'     => GallerySettings::MIN_PER_PAGE,
+				'maximum'     => GallerySettings::MAX_PER_PAGE,
+			),
+			'galleryHover'   => array(
+				'description'          => 'Unsaved hover texts of the gallery; null uses the site-wide setting.',
+				'type'                 => array( 'object', 'null' ),
+				'additionalProperties' => false,
+				'properties'           => array(
+					'title'     => array( 'type' => 'boolean' ),
+					'caption'   => array( 'type' => 'boolean' ),
+					'animation' => array(
+						'type' => 'string',
+						'enum' => array_map( static fn( HoverAnimation $animation ): string => $animation->value, HoverAnimation::cases() ),
+					),
+				),
+			),
+			'settings'       => array(
 				'description'          => 'Unsaved layout settings (validated against the layout schema, replaces the stored map).',
 				'type'                 => 'object',
 				'additionalProperties' => true,
 			),
-			'page'     => array(
+			'page'           => array(
 				'description'       => 'Page to render, starting at 1.',
 				'type'              => 'integer',
 				'minimum'           => 1,
 				'maximum'           => self::MAX_PAGE,
 				'sanitize_callback' => 'absint',
 			),
-			'perPage'  => array(
+			'perPage'        => array(
 				'description'       => 'Items per page, 1 to 200.',
 				'type'              => 'integer',
 				'minimum'           => 1,

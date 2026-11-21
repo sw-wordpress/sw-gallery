@@ -6,6 +6,7 @@ namespace SWGallery\Core\Application\Render;
 
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Gallery\GallerySettings;
+use SWGallery\Core\Domain\Gallery\HoverEffect;
 
 /**
  * Everything one render call needs to know about its caller. Overrides are untrusted embed attributes: the pipeline
@@ -21,6 +22,8 @@ final class RenderContext
      * @param bool                 $eagerLoading      Per-embed switch: false lazy-loads every image.
      * @param bool                 $highPriority      Whether the first image may carry fetchpriority="high"
      *                                                (the adapter clears it for every embed after the first on a page).
+     * @param HoverEffect|null     $hover             Effective hover texts (gallery setting or site default); only
+     *                                                interactive entry points render them.
      */
     public function __construct(
         public readonly int $galleryId,
@@ -34,6 +37,7 @@ final class RenderContext
         public readonly bool $passwordUnlocked = false,
         public readonly bool $eagerLoading = true,
         public readonly bool $highPriority = true,
+        public readonly ?HoverEffect $hover = null,
     ) {
         if ($galleryId <= 0 || $page < 1 || $perPage < 1 || $perPage > self::MAX_PER_PAGE) {
             throw new \InvalidArgumentException('Invalid render context.');

@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace SWGallery\WordPress;
 
 use SWGallery\Core\Domain\Gallery\GallerySettings;
+use SWGallery\Core\Domain\Gallery\HoverEffect;
 use SWGallery\Core\Domain\Gallery\SortMode;
 
 final class PostTypes {
@@ -19,6 +20,8 @@ final class PostTypes {
 	public const META_LAYOUT         = '_swg_layout';
 	public const META_SETTINGS       = '_swg_settings';
 	public const META_SORT_MODE      = '_swg_sort_mode';
+	public const META_PER_PAGE       = '_swg_per_page';
+	public const META_HOVER          = '_swg_hover';
 	public const META_SCHEMA_VERSION = '_swg_schema_version';
 
 	public static function register(): void {
@@ -102,6 +105,28 @@ final class PostTypes {
 		);
 		register_post_meta(
 			self::GALLERY,
+			self::META_PER_PAGE,
+			$common + array(
+				'type'              => 'integer',
+				'default'           => 0,
+				'description'       => 'Items per page of the gallery; 0 uses the site-wide setting.',
+				'sanitize_callback' => array( self::class, 'sanitize_per_page' ),
+				'auth_callback'     => $can_edit,
+			)
+		);
+		register_post_meta(
+			self::GALLERY,
+			self::META_HOVER,
+			$common + array(
+				'type'              => 'string',
+				'default'           => '',
+				'description'       => 'Hover texts of the gallery as a JSON object; empty uses the site-wide setting.',
+				'sanitize_callback' => array( self::class, 'sanitize_hover' ),
+				'auth_callback'     => $can_edit,
+			)
+		);
+		register_post_meta(
+			self::GALLERY,
 			self::META_SCHEMA_VERSION,
 			$common + array(
 				'type'              => 'integer',
@@ -140,6 +165,25 @@ final class PostTypes {
 	public static function sanitize_sort_mode( $value ): string {
 		$mode = is_string( $value ) ? SortMode::tryFrom( $value ) : null;
 		return ( $mode ?? SortMode::Manual )->value;
+	}
+
+	/**
+	 * @param mixed $value Raw items per page; anything outside the allowed range means "site default" (0).
+	 */
+	public static function sanitize_per_page( $value ): int {
+		$number = is_scalar( $value ) ? (int) $value : 0;
+		return $number >= GallerySettings::MIN_PER_PAGE && $number <= GallerySettings::MAX_PER_PAGE ? $number : 0;
+	}
+
+	/**
+	 * Normalised hover JSON, or an empty string ("use the site-wide setting") for anything invalid.
+	 *
+	 * @param mixed $value Raw meta value.
+	 */
+	public static function sanitize_hover( $value ): string {
+		$effect = is_string( $value ) ? HoverEffect::fromArray( json_decode( $value, true ) ) : null;
+		$json   = null === $effect ? false : wp_json_encode( $effect->toArray() );
+		return false === $json ? '' : $json;
 	}
 
 	/**

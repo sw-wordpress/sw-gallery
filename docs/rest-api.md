@@ -16,7 +16,7 @@ Every route needs a logged-in user (cookie + `X-WP-Nonce`); 1.0 has no unauthent
 | `POST /galleries/{id}/duplicate` | may view, `create_posts` | 201 + `Location` |
 | `POST /galleries/{id}/restore` | may delete; `expectedRevision` | 200 |
 
-Create body: `title` (required, 1-200), `description` (<= 10000, plain text with line breaks, F-10), `status` (`draft` default, `pending`, `publish`, `private`), `layout`, `sortMode`, `settings` (object, validated against the layout schema). The owner is always the caller. PATCH accepts the same fields plus `ownerId` and `coverAttachmentId` (nullable); changing `ownerId` needs `edit_others_posts` (403) and a new owner who exists, holds `edit_posts` and (multisite) belongs to the site (422 `swg_invalid_owner`), an unchanged value is no change; `settings` replaces the stored map; an empty PATCH is 400 `swg_no_changes`. Duplicate takes an optional `title` (default `"<title> (copy)"`) and yields a draft owned by the caller at revision 1; trashed galleries cannot be duplicated (409).
+Create body: `title` (required, 1-200), `description` (<= 10000, plain text with line breaks, F-10), `status` (`draft` default, `pending`, `publish`, `private`), `layout`, `sortMode`, `perPage` (1..200 or `null` = site default), `hover` (`{title, caption, animation}` with `animation` one of `slide-up|slide-down|cover|fade`, missing keys = off/`fade`, `null` = site default), `settings` (object, validated against the layout schema). The owner is always the caller. PATCH accepts the same fields plus `ownerId` and `coverAttachmentId` (nullable); changing `ownerId` needs `edit_others_posts` (403) and a new owner who exists, holds `edit_posts` and (multisite) belongs to the site (422 `swg_invalid_owner`), an unchanged value is no change; `settings` replaces the stored map; an empty PATCH is 400 `swg_no_changes`. Duplicate takes an optional `title` (default `"<title> (copy)"`) and yields a draft owned by the caller at revision 1; trashed galleries cannot be duplicated (409).
 
 DELETE trashes (`{id, trashed, status: "trash", revision}`); `?force=true` deletes permanently (`{id, deleted: true}`). Attachments are never touched, trashing keeps the item relations (restore is lossless). `expectedRevision` may be a query or body parameter. Restore always yields a draft.
 
@@ -28,7 +28,7 @@ Visibility: only users with `edit_others_posts` and `read_private_posts` see gal
 
 ## Gallery object
 
-`id`, `title`, `description`, `status`, `ownerId`, `coverAttachmentId`, `coverUrl` (WordPress medium size, `null` unless the actor may use the attachment), `layout`, `sortMode`, `settings` (values map), `passwordProtected`, `modified` (ISO 8601 UTC), `revision`, `itemCount`, and the UX hints `canEdit`, `canDelete`, `canPublish` (the server enforces). The schema is served by `OPTIONS`.
+`id`, `title`, `description`, `status`, `ownerId`, `coverAttachmentId`, `coverUrl` (WordPress medium size, `null` unless the actor may use the attachment), `layout`, `sortMode`, `perPage` (`null` = site default), `hover` (`null` = site default), `settings` (values map), `passwordProtected`, `modified` (ISO 8601 UTC), `revision`, `itemCount`, and the UX hints `canEdit`, `canDelete`, `canPublish` (the server enforces). The schema is served by `OPTIONS`.
 
 ## Concurrency
 
@@ -131,7 +131,7 @@ PATCH is partial; unknown request keys are ignored, a body without a known key i
 
 ## Preview
 
-`POST /galleries/{id}/preview` (`edit_posts`; the actor must be able to edit the gallery: 404 when it is not viewable, 403 when viewable but not editable, 401 anonymous). Body, all optional and **never persisted**: `layout` (registered id, else 422 `swg_unknown_layout`), `sortMode`, `settings` (object; replaces the stored map, validated against the layout schema, else 422 `swg_validation_failed`), `page` (>= 1), `perPage` (1..200). Malformed values are 400. Drafts, pending, private and password-protected galleries render for their editors; the trash renders nothing (`html: ""`).
+`POST /galleries/{id}/preview` (`edit_posts`; the actor must be able to edit the gallery: 404 when it is not viewable, 403 when viewable but not editable, 401 anonymous). Body, all optional and **never persisted**: `layout` (registered id, else 422 `swg_unknown_layout`), `sortMode`, `galleryPerPage` (unsaved gallery page size, nullable), `galleryHover` (unsaved hover texts, nullable), `settings` (object; replaces the stored map, validated against the layout schema, else 422 `swg_validation_failed`), `page` (>= 1), `perPage` (1..200). Malformed values are 400. Drafts, pending, private and password-protected galleries render for their editors; the trash renders nothing (`html: ""`).
 
 Response 200 (`Cache-Control: no-store`): `{ html, layoutId, page, totalPages, totalItems, diagnostics: [{code, message}], assets: { css: [url], js: [url] } }`. `html` is the renderer's markup without the editor diagnostics (they are in `diagnostics`). `assets` are the validated build files with `?ver=<plugin version>` (empty arrays when the build is missing; the lightbox files only when the `lightbox` setting is on) for the editor's sandboxed iframe.
 

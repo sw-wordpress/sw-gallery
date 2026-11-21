@@ -209,7 +209,7 @@ class RenderScatteredLayoutTest extends SwgTestCase {
 			),
 			$validator->validate( $schema, array() )->values
 		);
-		$this->assertArrayNotHasKey( 'x-item-settings', $schema );
+		$this->assertSame( array( 'focal' ), array_keys( $schema['x-item-settings']['properties'] ), 'only the focal point' );
 		$this->assertSame( 'scattered', $layout->getId() );
 		$this->assertSame( 'Scattered', $layout->getLabel() );
 	}
