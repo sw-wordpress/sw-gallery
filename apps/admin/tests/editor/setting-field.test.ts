@@ -30,7 +30,9 @@ describe('compact layout settings', () => {
     const wrapper = field({ base: 5, sm: 2, md: 3, future: 7 });
     expect(wrapper.findAll('.swg-sfield__device')).toHaveLength(5);
     expect(wrapper.findAll('[role="switch"]')).toHaveLength(0);
-    expect(wrapper.text()).toContain('Leer = Standard');
+    // the note about empty values sits behind the "?" button
+    expect(wrapper.text()).not.toContain('Leer = Standard');
+    expect(wrapper.find('button[aria-label^="Erklärung:"]').exists()).toBe(true);
     const inputs = wrapper.findAll('input[type="number"]');
     expect(inputs.map((input) => input.attributes('aria-label'))).toEqual([
       'Spalten, Alle Größen',

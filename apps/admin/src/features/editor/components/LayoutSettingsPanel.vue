@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { HOVER_ANIMATIONS } from '@/api/galleries';
 import type { HoverAnimation, HoverConfig } from '@/api/galleries';
 import type { LayoutInfo, LayoutsResponse } from '@/api/layouts';
+import HelpHint from '@/components/ui/HelpHint.vue';
 import { fieldsOf } from '../schema';
 import type { Breakpoint } from '../schema';
 import type { EditorSession } from '../useGalleryEditor';
@@ -113,7 +114,14 @@ const issueCount = computed(() => props.session.settingIssues.value.length);
       :label="t('editor.settings.layout')"
       :disable="readonly || layouts === null"
       @update:model-value="(v: string) => session.setDetail('layout', v)"
-    />
+    >
+      <template v-if="!unknownLayout" #after>
+        <HelpHint
+          :label="t('editor.settings.layout')"
+          :text="t('editor.settings.fallbackNote', { fallback: layouts?.fallbackId ?? 'grid' })"
+        />
+      </template>
+    </q-select>
     <p v-if="unknownLayout" class="swg-lsp__note" role="status">
       <q-icon name="r_info" size="18px" aria-hidden="true" />
       {{
@@ -122,9 +130,6 @@ const issueCount = computed(() => props.session.settingIssues.value.length);
           fallback: layouts?.fallbackId ?? '',
         })
       }}
-    </p>
-    <p v-else class="swg-lsp__hint">
-      {{ t('editor.settings.fallbackNote', { fallback: layouts?.fallbackId ?? 'grid' }) }}
     </p>
 
     <q-select
@@ -137,8 +142,11 @@ const issueCount = computed(() => props.session.settingIssues.value.length);
       :label="t('editor.sort.label')"
       :disable="readonly"
       @update:model-value="(v: string) => session.setDetail('sortMode', v)"
-    />
-    <p class="swg-lsp__hint">{{ t('editor.sort.note') }}</p>
+    >
+      <template #after>
+        <HelpHint :label="t('editor.sort.label')" :text="t('editor.sort.note')" />
+      </template>
+    </q-select>
 
     <q-input
       outlined
@@ -149,10 +157,16 @@ const issueCount = computed(() => props.session.settingIssues.value.length);
       :label="t('editor.perPage.label')"
       :disable="readonly"
       @update:model-value="onPerPage"
-    />
-    <p class="swg-lsp__hint">{{ t('editor.perPage.note') }}</p>
+    >
+      <template #after>
+        <HelpHint :label="t('editor.perPage.label')" :text="t('editor.perPage.note')" />
+      </template>
+    </q-input>
 
-    <h3 class="swg-lsp__heading">{{ t('editor.hover.heading') }}</h3>
+    <div class="swg-lsp__headrow">
+      <h3 class="swg-lsp__heading">{{ t('editor.hover.heading') }}</h3>
+      <HelpHint :label="t('editor.hover.heading')" :text="t('editor.hover.note')" />
+    </div>
     <q-toggle
       :model-value="details.hover === null"
       :label="t('editor.hover.useSite')"
@@ -185,7 +199,6 @@ const issueCount = computed(() => props.session.settingIssues.value.length);
         @update:model-value="(v: HoverAnimation) => patchHover({ animation: v })"
       />
     </template>
-    <p class="swg-lsp__hint">{{ t('editor.hover.note') }}</p>
 
     <h3 class="swg-lsp__heading">{{ t('editor.settings.heading') }}</h3>
     <p v-if="layout && fields.length === 0" class="swg-lsp__hint">
@@ -213,8 +226,14 @@ const issueCount = computed(() => props.session.settingIssues.value.length);
   flex-direction: column;
   gap: 12px;
 }
-.swg-lsp__heading {
+.swg-lsp__headrow {
+  display: flex;
+  gap: 4px;
+  align-items: center;
   margin-block-start: 8px;
+}
+.swg-lsp__heading {
+  margin: 0;
   font-size: 15px;
   font-weight: 700;
 }

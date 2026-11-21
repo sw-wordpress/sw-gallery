@@ -35,6 +35,7 @@ const de: typeof en = {
   },
   common: {
     retry: 'Erneut versuchen',
+    help: 'Erklärung: {label}',
     items: 'keine Einträge | ein Eintrag | {count} Einträge',
   },
   session: {
