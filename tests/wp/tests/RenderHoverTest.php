@@ -110,12 +110,18 @@ class RenderHoverTest extends SwgTestCase {
 	public function test_texts_are_plain_and_escaped_and_empty_texts_are_skipped(): void {
 		$all = new HoverEffect( true, true, HoverAnimation::SlideUp );
 
-		$html = ImageMarkup::hover( $this->item( '"><script>alert(1)</script>Ti & tle', '<a href="x">Link</a> <img src=x onerror=alert(2)>Caption', $all ) );
+		$html = ImageMarkup::hover( $this->item( '"><script>alert(1)</script>Ti & tle', '<em>Bold</em> <img src=x onerror=alert(2)>Caption', $all ) );
 		$this->assertStringNotContainsString( '<script', $html );
 		$this->assertStringNotContainsString( '<a ', $html );
 		$this->assertStringNotContainsString( '<img', $html );
+		$this->assertStringNotContainsString( '<em>', $html );
 		$this->assertStringContainsString( 'Ti &amp; tle', $html );
-		$this->assertStringContainsString( '<span class="swg-hover__caption">Link', $html );
+		$this->assertStringContainsString( '<span class="swg-hover__caption">Bold', $html );
+
+		$linked = ImageMarkup::hover( $this->item( 'T', 'See <a href="https://example.test/">the site</a>', $all ) );
+		$this->assertStringContainsString( 'swg-hover__title', $linked );
+		$this->assertStringNotContainsString( 'swg-hover__caption', $linked, 'a linked caption stays visible and clickable below the image' );
+		$this->assertSame( '', ImageMarkup::hover( $this->item( 'T', 'See <a href="x">y</a>', new HoverEffect( false, true ) ) ) );
 
 		$title_only = ImageMarkup::hover( $this->item( 'T', 'C', new HoverEffect( true, false ) ) );
 		$this->assertStringContainsString( 'swg-hover__title', $title_only );
