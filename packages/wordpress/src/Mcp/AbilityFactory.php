@@ -124,7 +124,7 @@ final class AbilityFactory {
 		return new Actor( max( 0, get_current_user_id() ) );
 	}
 
-	private static function max_output(): int {
+	public static function max_output(): int {
 		$value = defined( self::MAX_OUTPUT_CONSTANT ) ? constant( self::MAX_OUTPUT_CONSTANT ) : self::DEFAULT_MAX_OUTPUT;
 		return is_int( $value ) && $value > 0 ? $value : self::DEFAULT_MAX_OUTPUT;
 	}

@@ -13,6 +13,11 @@ use SWGallery\WordPress\Bootstrap\RegistrarInterface;
 use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Infrastructure\Services;
 use SWGallery\WordPress\Mcp\Ability\GetGalleryAbility;
+use SWGallery\WordPress\Mcp\Ability\ListGalleriesAbility;
+use SWGallery\WordPress\Mcp\Ability\ListItemsAbility;
+use SWGallery\WordPress\Mcp\Ability\ListLayoutsAbility;
+use SWGallery\WordPress\Mcp\Ability\ListMediaAbility;
+use SWGallery\WordPress\Mcp\Ability\RenderGalleryAbility;
 use SWGallery\WordPress\Mcp\Ability\UpdateGalleryAbility;
 use SWGallery\WordPress\Rest\ErrorMapper;
 
@@ -58,6 +63,11 @@ final class McpRegistrar implements RegistrarInterface {
 		$editor = static fn(): GalleryEditor => Services::gallery_editor();
 		return array(
 			new GetGalleryAbility( $editor ),
+			new ListGalleriesAbility( static fn() => Services::gallery_lister() ),
+			new ListItemsAbility( static fn() => Services::item_reader() ),
+			new ListLayoutsAbility( static fn() => Services::layouts() ),
+			new ListMediaAbility( static fn() => Services::media_lister() ),
+			new RenderGalleryAbility( $editor, Services::preview_renderer( ... ) ),
 			new UpdateGalleryAbility( $editor ),
 		);
 	}

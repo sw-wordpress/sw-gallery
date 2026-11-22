@@ -60,7 +60,7 @@ msgstr ""
 msgid "Presentation"
 msgstr ""
 
-#: assets/blocks/src/Edit.tsx:71 packages/wordpress/src/Mcp/McpRegistrar.php:39
+#: assets/blocks/src/Edit.tsx:71 packages/wordpress/src/Mcp/McpRegistrar.php:45
 msgid "SW Gallery"
 msgstr ""
 
@@ -384,16 +384,36 @@ msgstr ""
 msgid "The cover must be an image you may use."
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/GetGalleryAbility.php:33
+#: packages/wordpress/src/Mcp/Ability/GetGalleryAbility.php:38
 msgid "Get gallery"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:35
+#: packages/wordpress/src/Mcp/Ability/ListGalleriesAbility.php:42
+msgid "List galleries"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/ListItemsAbility.php:44
+msgid "List gallery items"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/ListLayoutsAbility.php:42
+msgid "List layouts"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/ListMediaAbility.php:44
+msgid "List media"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/RenderGalleryAbility.php:46
+msgid "Render gallery"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:40
 msgid "Update gallery"
 msgstr ""
 
 #. translators: %s: argument name.
-#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:80
+#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:85
 #: packages/wordpress/src/Rest/AbstractController.php:125
 #, php-format
 msgid "%s is too large or nested too deeply."
@@ -405,6 +425,10 @@ msgstr ""
 
 #: packages/wordpress/src/Mcp/AbilityFactory.php:110
 msgid "The result is too large to return."
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Paging.php:104
+msgid "A single record is too large to return."
 msgstr ""
 
 #: packages/wordpress/src/Rendering/DiagnosticMarkup.php:36
@@ -913,7 +937,7 @@ msgid "An unexpected error occurred."
 msgstr ""
 
 #. translators: %s: title of the duplicated gallery
-#: packages/wordpress/src/Rest/GalleryController.php:387
+#: packages/wordpress/src/Rest/GalleryController.php:375
 #, php-format
 msgid "%s (copy)"
 msgstr ""
@@ -930,13 +954,13 @@ msgstr ""
 msgid "Grid"
 msgstr ""
 
-#: packages/wordpress/src/Rest/MediaController.php:150
+#: packages/wordpress/src/Rest/MediaController.php:131
 #: packages/wordpress/src/Rest/MediaUploader.php:111
 #: packages/wordpress/src/Rest/MediaUploader.php:131
 msgid "No file was uploaded."
 msgstr ""
 
-#: packages/wordpress/src/Rest/MediaController.php:160
+#: packages/wordpress/src/Rest/MediaController.php:141
 #: packages/wordpress/src/Rest/MediaUploader.php:61
 #: packages/wordpress/src/Rest/MediaUploader.php:81
 #: packages/wordpress/src/Rest/MediaUploader.php:138

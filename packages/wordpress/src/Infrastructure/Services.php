@@ -27,6 +27,12 @@ use SWGallery\WordPress\Frontend\FrontendAssets;
 use SWGallery\WordPress\Frontend\FrontendManifest;
 use SWGallery\WordPress\Frontend\PreviewGalleries;
 use SWGallery\WordPress\Gallery\GalleryEditor;
+use SWGallery\WordPress\Gallery\GalleryLister;
+use SWGallery\WordPress\Gallery\ItemReader;
+use SWGallery\WordPress\Media\MediaLister;
+use SWGallery\WordPress\Rest\ItemPresenter;
+use SWGallery\WordPress\Rest\MediaPresenter;
+use SWGallery\WordPress\Rest\MediaSearch;
 use SWGallery\WordPress\Hooks\ExtensionPoints;
 use SWGallery\WordPress\Media\ThumbnailResolver;
 use SWGallery\WordPress\Media\WpMediaRepository;
@@ -62,6 +68,9 @@ final class Services {
 	private static ?PluginSettings $settings                 = null;
 	private static ?GalleryService $gallery_service          = null;
 	private static ?GalleryEditor $gallery_editor            = null;
+	private static ?GalleryLister $gallery_lister            = null;
+	private static ?ItemReader $item_reader                  = null;
+	private static ?MediaLister $media_lister                = null;
 	private static ?GalleryItemService $item_service         = null;
 	private static ?GalleryItemEditService $item_edit        = null;
 	private static ?ThumbnailResolver $thumbnails            = null;
@@ -163,6 +172,18 @@ final class Services {
 			self::access(),
 			new GalleryPresenter( self::access() )
 		);
+	}
+
+	public static function gallery_lister(): GalleryLister {
+		return self::$gallery_lister ??= new GalleryLister( self::galleries(), self::relations(), self::revisions(), new GalleryPresenter( self::access() ) );
+	}
+
+	public static function item_reader(): ItemReader {
+		return self::$item_reader ??= new ItemReader( self::gallery_editor(), self::items(), new ItemPresenter( self::media(), self::access() ), self::revisions() );
+	}
+
+	public static function media_lister(): MediaLister {
+		return self::$media_lister ??= new MediaLister( new MediaSearch(), new MediaPresenter(), self::relations(), self::access() );
 	}
 
 	public static function item_service(): GalleryItemService {
@@ -291,6 +312,9 @@ final class Services {
 		self::$settings            = null;
 		self::$gallery_service     = null;
 		self::$gallery_editor      = null;
+		self::$gallery_lister      = null;
+		self::$item_reader         = null;
+		self::$media_lister        = null;
 		self::$item_service        = null;
 		self::$item_edit           = null;
 		self::$thumbnails          = null;

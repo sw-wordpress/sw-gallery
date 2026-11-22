@@ -28,6 +28,7 @@ use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\InvalidStateException;
 use SWGallery\WordPress\Gallery\GalleryEditor;
+use SWGallery\WordPress\Gallery\GalleryLister;
 use SWGallery\WordPress\Repository\WpdbGalleryRelations;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 use SWGallery\WordPress\Settings\PluginSettings;
@@ -44,19 +45,19 @@ final class GalleryController extends AbstractController {
 	public const CODE_NO_CHANGES     = GalleryEditor::CODE_NO_CHANGES;
 
 	private const WRITABLE_STATUSES = array( 'draft', 'pending', 'publish', 'private' );
-	private const LIST_STATUSES     = array( 'draft', 'pending', 'publish', 'private', 'trash' );
+	private const LIST_STATUSES     = GalleryLister::LIST_STATUSES;
 	private const ID_PATTERN        = '(?P<id>[1-9]\d{0,9})';
 
 	public function __construct(
 		ErrorMapper $errors,
 		private readonly GalleryService $service,
-		private readonly GalleryRepositoryInterface $galleries,
 		private readonly RevisionStoreInterface $revisions,
 		private readonly WpdbGalleryRelations $relations,
 		private readonly WpGalleryAccessPolicy $access,
 		private readonly GalleryPresenter $presenter,
 		private readonly PluginSettings $settings,
-		private readonly GalleryEditor $editor
+		private readonly GalleryEditor $editor,
+		private readonly GalleryLister $lister
 	) {
 		parent::__construct( $errors );
 		$this->rest_base = 'galleries';
@@ -228,32 +229,19 @@ final class GalleryController extends AbstractController {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
 				$actor    = $this->actor();
-				$statuses = $this->requested_statuses( $request );
-				$trash    = in_array( GalleryStatus::Trash, $statuses, true );
-				if ( $trash && ! current_user_can( 'delete_posts' ) ) {
-					throw new AccessDeniedException();
-				}
-				$sees_all = current_user_can( 'edit_others_posts' ) && current_user_can( 'read_private_posts' )
-					&& ( ! $trash || current_user_can( 'delete_others_posts' ) );
-				$owner    = $request->has_param( 'owner' ) ? absint( $request->get_param( 'owner' ) ) : null;
-				$owner    = $sees_all ? $owner : $actor->userId;
-				$search   = $request->get_param( 'search' );
-				$page     = max( 1, (int) $request->get_param( 'page' ) );
 				$per_page = max( 1, (int) $request->get_param( 'per_page' ) );
-
-				$term   = is_string( $search ) && '' !== $search ? $search : null;
-				$result = $this->galleries->search( new GalleryQuery( $term, $statuses, $owner, ( $page - 1 ) * $per_page, $per_page ) );
-				$total  = $result->total;
-				if ( array() === $result->items && $page > 1 ) {
-					// WP_Query reports no total for an offset past the end; ask again so the client can step back.
-					$total = $this->galleries->search( new GalleryQuery( $term, $statuses, $owner, 0, 1 ) )->total;
-				}
-				$ids    = array_map( static fn( Gallery $gallery ): int => $gallery->id, $result->items );
-				$counts = $this->relations->count_by_gallery( $ids );
-				$data   = array();
-				foreach ( $result->items as $gallery ) {
-					$data[] = $this->presenter->present( $actor, $gallery, $this->revisions->current( $gallery->id )->value, $counts[ $gallery->id ] ?? 0 );
-				}
+				$search   = $request->get_param( 'search' );
+				$owner    = $request->has_param( 'owner' ) ? absint( $request->get_param( 'owner' ) ) : null;
+				$found    = $this->lister->list(
+					$actor,
+					is_string( $search ) ? $search : null,
+					GalleryLister::parse_statuses( $request->get_param( 'status' ) ),
+					$owner,
+					(int) $request->get_param( 'page' ),
+					$per_page
+				);
+				$data     = $found['items'];
+				$total    = $found['total'];
 				return $this->with_pagination_headers( new \WP_REST_Response( $data, 200 ), $total, $per_page );
 			}
 		);
@@ -565,22 +553,6 @@ final class GalleryController extends AbstractController {
 				),
 			) + $this->pagination_args()
 		);
-	}
-
-	/**
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 * @return list<GalleryStatus>
-	 */
-	private function requested_statuses( \WP_REST_Request $request ): array {
-		$statuses = array();
-		foreach ( (array) $request->get_param( 'status' ) as $value ) {
-			$status = GalleryStatus::tryFrom( (string) $value );
-			if ( null !== $status && ! in_array( $status, $statuses, true ) ) {
-				$statuses[] = $status;
-			}
-		}
-		return $statuses;
 	}
 
 	/**

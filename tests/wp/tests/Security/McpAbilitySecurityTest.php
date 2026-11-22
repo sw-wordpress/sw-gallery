@@ -24,6 +24,11 @@ class McpAbilitySecurityTest extends SwgTestCase {
 	/** A allowed, F forbidden, N not found, X anonymous (refused by the ability, 401). Order of ACTORS. */
 	private const MATRIX = array(
 		'get-gallery'    => array( 'tier' => 'read', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'list-galleries' => array( 'tier' => 'read', 'expect' => array( 'X', 'F', 'A', 'A', 'A', 'A', 'A' ) ),
+		'list-items'     => array( 'tier' => 'read', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'list-layouts'   => array( 'tier' => 'read', 'expect' => array( 'X', 'F', 'A', 'A', 'A', 'A', 'A' ) ),
+		'list-media'     => array( 'tier' => 'read', 'expect' => array( 'X', 'F', 'F', 'A', 'A', 'A', 'A' ) ),
+		'render-gallery' => array( 'tier' => 'read', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
 		'update-gallery' => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
 	);
 
@@ -61,6 +66,9 @@ class McpAbilitySecurityTest extends SwgTestCase {
 
 	/** @return array<string, mixed> */
 	private function validInput( string $name ): array {
+		if ( in_array( $name, array( 'list-galleries', 'list-layouts', 'list-media' ), true ) ) {
+			return array();
+		}
 		$base = array( 'id' => $this->gallery );
 		return 'update-gallery' === $name ? $base + array( 'expectedRevision' => 1, 'title' => 'Renamed' ) : $base;
 	}
@@ -172,7 +180,9 @@ class McpAbilitySecurityTest extends SwgTestCase {
 			$result = $this->runAbility( $name, $input, $this->users[ $actor ] );
 			$this->assertNoLeak( $result, "$name as $actor" );
 			$this->assertIsArray( $result, "$name as $actor" );
-			$this->assertSame( $this->gallery, $result['id'] );
+			if ( in_array( $name, array( 'get-gallery', 'update-gallery' ), true ) ) {
+				$this->assertSame( $this->gallery, $result['id'] );
+			}
 			return;
 		}
 		// The plugin's own decision (codes and statuses as REST).
@@ -195,7 +205,7 @@ class McpAbilitySecurityTest extends SwgTestCase {
 	}
 
 	public function test_missing_and_hidden_galleries_answer_identically(): void {
-		foreach ( array( 'get-gallery', 'update-gallery' ) as $name ) {
+		foreach ( array( 'get-gallery', 'update-gallery', 'list-items', 'render-gallery' ) as $name ) {
 			$missing = $this->checkAbility( $name, array( 'id' => 999999 ) + $this->validInput( $name ), $this->users['other_author'] );
 			$hidden  = $this->checkAbility( $name, $this->validInput( $name ), $this->users['other_author'] );
 			$this->assertInstanceOf( WP_Error::class, $missing );
@@ -209,7 +219,10 @@ class McpAbilitySecurityTest extends SwgTestCase {
 		delete_option( TierPolicy::OPTION );
 		$this->assertSame( 'read', TierPolicy::effective() );
 		$this->reregisterAbilities( 'read' );
-		$this->assertSame( array( 'sw-gallery/get-gallery' ), array_keys( $this->ourAbilities() ) );
+		$this->assertSame(
+			array( 'sw-gallery/get-gallery', 'sw-gallery/list-galleries', 'sw-gallery/list-items', 'sw-gallery/list-layouts', 'sw-gallery/list-media', 'sw-gallery/render-gallery' ),
+			array_keys( $this->ourAbilities() )
+		);
 		$this->reregisterAbilities( 'off' );
 		$this->assertSame( array(), $this->ourAbilities() );
 		$this->assertFalse( \SWGallery\WordPress\Mcp\McpAvailability::isAvailable() );
@@ -242,6 +255,49 @@ class McpAbilitySecurityTest extends SwgTestCase {
 		$this->assertSame( $before, $this->stateSnapshot() );
 		$this->assertArrayNotHasKey( 'coverUrl', $result );
 		$this->assertSame( array_keys( \SWGallery\WordPress\Mcp\GallerySchema::output()['properties'] ), array_keys( $result ) );
+	}
+
+	public function test_every_readonly_ability_leaves_the_state_untouched(): void {
+		foreach ( array( 'list-galleries', 'list-items', 'list-layouts', 'list-media', 'render-gallery', 'get-gallery' ) as $name ) {
+			$before = $this->stateSnapshot();
+			$result = $this->runAbility( $name, $this->validInput( $name ), $this->users['administrator'] );
+			$this->assertIsArray( $result, $name );
+			$this->assertSame( $before, $this->stateSnapshot(), $name . ' changed state' );
+			$this->assertNoLeak( $result, $name );
+		}
+	}
+
+	/** @return array<string, array{string, array<string, mixed>}> */
+	public static function hostileListInputs(): array {
+		$cases = array();
+		foreach ( array( 'list-galleries', 'list-layouts', 'list-media', 'list-items' ) as $name ) {
+			$cases[ "$name unknown key" ]   = array( $name, array( 'evil' => 1 ) );
+			$cases[ "$name page zero" ]     = array( $name, array( 'page' => 0 ) );
+			$cases[ "$name page huge" ]     = array( $name, array( 'page' => 100001 ) );
+			$cases[ "$name per_page zero" ] = array( $name, array( 'per_page' => 0 ) );
+			$cases[ "$name per_page 101" ]  = array( $name, array( 'per_page' => 101 ) );
+			$cases[ "$name offset 100" ]    = array( $name, array( 'offset' => 100 ) );
+			$cases[ "$name page float" ]    = array( $name, array( 'page' => 1.5 ) );
+			$cases[ "$name page array" ]    = array( $name, array( 'page' => array( 1 ) ) );
+		}
+		$cases['list-galleries bad status']   = array( 'list-galleries', array( 'status' => array( 'future' ) ) );
+		$cases['list-galleries six statuses'] = array( 'list-galleries', array( 'status' => array( 'draft', 'draft', 'draft', 'draft', 'draft', 'draft' ) ) );
+		$cases['list-galleries long search']  = array( 'list-galleries', array( 'search' => str_repeat( 'a', 201 ) ) );
+		$cases['list-galleries owner zero']   = array( 'list-galleries', array( 'owner' => 0 ) );
+		$cases['list-media bad orderby']      = array( 'list-media', array( 'orderby' => 'id; DROP TABLE' ) );
+		$cases['list-media bad order']        = array( 'list-media', array( 'order' => 'sideways' ) );
+		$cases['list-media uploader zero']    = array( 'list-media', array( 'uploadedBy' => 0 ) );
+		return $cases;
+	}
+
+	/**
+	 * @dataProvider hostileListInputs
+	 * @param array<string, mixed> $extra
+	 */
+	public function test_hostile_list_input_is_rejected( string $name, array $extra ): void {
+		$result = $this->runAbility( $name, $extra + $this->validInput( $name ), $this->users['administrator'] );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertNoLeak( $result, $name );
 	}
 
 	public function test_update_changes_only_the_gallery_and_enforces_the_revision(): void {

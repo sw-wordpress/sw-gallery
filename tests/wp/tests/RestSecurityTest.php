@@ -17,6 +17,7 @@ use SWGallery\Tests\Support\ThrowingGalleries;
 use SWGallery\WordPress\Infrastructure\Services;
 use SWGallery\WordPress\Rest\ErrorMapper;
 use SWGallery\WordPress\Gallery\GalleryEditor;
+use SWGallery\WordPress\Gallery\GalleryLister;
 use SWGallery\WordPress\Rest\GalleryController;
 use SWGallery\WordPress\Rest\GalleryPresenter;
 
@@ -232,13 +233,13 @@ class RestSecurityTest extends SwgTestCase {
 		$controller = new GalleryController(
 			new ErrorMapper( $logger ),
 			$service,
-			new ThrowingGalleries(),
 			Services::revisions(),
 			Services::relations(),
 			Services::access(),
 			new GalleryPresenter( Services::access() ),
 			Services::settings(),
-			new GalleryEditor( $service, new ThrowingGalleries(), Services::revisions(), Services::relations(), Services::access(), new GalleryPresenter( Services::access() ) )
+			new GalleryEditor( $service, new ThrowingGalleries(), Services::revisions(), Services::relations(), Services::access(), new GalleryPresenter( Services::access() ) ),
+			new GalleryLister( new ThrowingGalleries(), Services::relations(), Services::revisions(), new GalleryPresenter( Services::access() ) )
 		);
 		$admin      = $this->makeUser( 'administrator' );
 		wp_set_current_user( $admin );

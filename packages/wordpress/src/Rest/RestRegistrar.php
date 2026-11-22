@@ -38,13 +38,13 @@ final class RestRegistrar implements RegistrarInterface {
 			new GalleryController(
 				$errors,
 				Services::gallery_service(),
-				Services::galleries(),
 				Services::revisions(),
 				Services::relations(),
 				Services::access(),
 				new GalleryPresenter( Services::access() ),
 				Services::settings(),
-				Services::gallery_editor()
+				Services::gallery_editor(),
+				Services::gallery_lister()
 			),
 			new ItemController(
 				$errors,
@@ -62,8 +62,7 @@ final class RestRegistrar implements RegistrarInterface {
 				new MediaSearch(),
 				new MediaUploader(),
 				new MediaPresenter(),
-				Services::relations(),
-				Services::access()
+				Services::media_lister()
 			),
 			new PreviewController( $errors, Services::galleries(), Services::access(), Services::layouts(), Services::preview_renderer( ... ), Services::frontend_assets() ),
 			new SettingsController( $errors, Services::settings() ),
