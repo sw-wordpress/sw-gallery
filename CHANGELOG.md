@@ -11,6 +11,9 @@ versions follow [Semantic Versioning](https://semver.org/). The version number l
 - Hover texts (image title and/or caption) with four animations (slide from bottom/top, full-surface overlay, fade), uniform for every layout; configurable per gallery with a site-wide default.
 - Per-gallery page size ("Images per page", editor layout panel); the shortcode attribute `per_page` overrides it, the site setting is the fallback.
 
+### Changed
+- Layout settings in the editor: explanatory texts moved behind small "?" buttons next to the labels (click, tap or Enter opens them), so the sidebar is shorter.
+
 ### Fixed
 - Show a warning in Overview and System Status when the database schema is newer than the installed plugin, with an actionable save error.
 

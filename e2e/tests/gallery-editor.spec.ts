@@ -520,7 +520,7 @@ test.describe('as administrator', () => {
     await expect(panel.getByText('Must be at most 12.')).toHaveCount(0);
     await expect(panel.locator('.swg-sfield').getByRole('switch')).toHaveCount(0);
     await panel.getByRole('spinbutton', { name: 'Columns, Medium', exact: true }).fill('2');
-    await panel.getByLabel('Order on the website').click();
+    await panel.getByLabel('Order on the website', { exact: true }).click();
     await page.getByRole('option', { name: 'Title A–Z' }).click();
     await shot(page, 'gallery-editor-settings-panel');
     await save(page).click();
@@ -535,9 +535,9 @@ test.describe('as administrator', () => {
     await expect(
       root(page).locator('.swg-lsp .swg-sfield input[type="number"]').first(),
     ).toHaveValue('5');
-    await expect(root(page).locator('.swg-lsp').getByLabel('Order on the website')).toHaveValue(
-      'Title A–Z',
-    );
+    await expect(
+      root(page).locator('.swg-lsp').getByLabel('Order on the website', { exact: true }),
+    ).toHaveValue('Title A–Z');
   });
 
   test('edits gallery details, cover and publishes; undo and discard work', async ({ page }) => {
@@ -818,18 +818,29 @@ test.describe('German', () => {
     await openEditor(page, gallery);
     await root(page).getByText('Layout & Einstellungen', { exact: true }).click();
     const panel = root(page).locator('.swg-lsp');
-    await expect(
-      panel.getByText('Unter 480 px Breite wird ein einfaches zweispaltiges Raster angezeigt.'),
-    ).toBeVisible();
-    await expect(
-      panel.getByText('Bei 0 berühren sich die Teile wie bei einem fertigen Puzzle.'),
-    ).toBeVisible();
+    // the explanations sit behind "?" buttons (German names), not in the sidebar
+    const columnsText = 'Unter 480 px Breite wird ein einfaches zweispaltiges Raster angezeigt.';
+    const gapText = 'Bei 0 berühren sich die Teile wie bei einem fertigen Puzzle.';
+    const tabText = 'Wie weit die Zapfen aus einem Teil herausragen, in Prozent der Teilbreite.';
+    for (const text of [columnsText, gapText, tabText]) {
+      await expect(panel.getByText(text)).toHaveCount(0);
+    }
     await expect(
       panel.getByRole('spinbutton', { name: 'Größe der Zapfen (%)', exact: true }),
     ).toBeVisible();
-    await expect(
-      panel.getByText('Wie weit die Zapfen aus einem Teil herausragen, in Prozent der Teilbreite.'),
-    ).toBeVisible();
+    await panel
+      .locator('.swg-sfield')
+      .filter({ hasText: 'Größe der Zapfen (%)' })
+      .getByRole('button', { name: /^Erklärung:/ })
+      .click();
+    await expect(page.getByRole('note').filter({ hasText: tabText })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await panel
+      .locator('.swg-sfield:has(.swg-sfield__devices)')
+      .getByRole('button', { name: /^Erklärung:/ })
+      .click();
+    await expect(page.getByRole('note').filter({ hasText: columnsText })).toBeVisible();
+    await page.keyboard.press('Escape');
     await expect(panel.locator('.swg-sfield__devices input')).toHaveCount(5);
     await expect(panel.locator('.swg-sfield').getByRole('switch')).toHaveCount(0);
     const shape = panel.getByLabel('Form der Teile', { exact: true });

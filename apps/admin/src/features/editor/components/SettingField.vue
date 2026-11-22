@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import HelpHint from '@/components/ui/HelpHint.vue';
 import {
   BREAKPOINTS,
   optionLabel,
@@ -140,6 +141,12 @@ function inheritedNumber(bp: Breakpoint): string {
   }
   return typeof value === 'number' ? String(value) : '';
 }
+/** Description of the setting (and the note about empty device values), shown behind the "?" next to the label. */
+const helpText = computed(() =>
+  [props.def.description, compactResponsive.value ? t('editor.settings.emptyDefault') : '']
+    .filter((part): part is string => typeof part === 'string' && part !== '')
+    .join(' '),
+);
 const hasRange = computed(() => props.def.min !== undefined && props.def.max !== undefined);
 const customised = computed(() => props.value !== undefined);
 const rangeValue = (bp: Breakpoint | null): number => {
@@ -155,6 +162,7 @@ const rangeValue = (bp: Breakpoint | null): number => {
     <legend class="swg-sfield__label">
       {{ label }}
       <span v-if="defaultText" class="swg-sfield__default">{{ defaultText }}</span>
+      <HelpHint v-if="helpText !== ''" :label="label" :text="helpText" />
       <q-btn
         v-if="customised && !readonly"
         flat
@@ -170,7 +178,6 @@ const rangeValue = (bp: Breakpoint | null): number => {
         <q-tooltip>{{ t('editor.settings.reset') }}</q-tooltip>
       </q-btn>
     </legend>
-    <p v-if="def.description" class="swg-sfield__desc">{{ def.description }}</p>
 
     <div v-if="def.kind === 'unsupported'" class="swg-sfield__kept">
       {{ t('editor.settings.unsupported') }}
@@ -199,7 +206,6 @@ const rangeValue = (bp: Breakpoint | null): number => {
           />
         </div>
       </div>
-      <p class="swg-sfield__desc">{{ t('editor.settings.emptyDefault') }}</p>
     </template>
     <template v-else>
       <div

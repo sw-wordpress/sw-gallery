@@ -34,6 +34,7 @@ export default {
   },
   common: {
     retry: 'Retry',
+    help: 'Explanation: {label}',
     items: 'no items | one item | {count} items',
   },
   session: {

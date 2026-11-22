@@ -547,12 +547,25 @@ describe('layout and settings', () => {
     expect(server.gallery.settings).toEqual({ future: 'kept', columns: { base: 5, md: 2 } });
   });
 
+  it('opens the explanation of a setting from its "?" button', async () => {
+    await open();
+    await panelToggle();
+    const panel = $('.swg-lsp') as HTMLElement;
+    panel.querySelector<HTMLElement>('button[aria-label="Explanation: Layout"]')?.click();
+    await settle();
+    expect(document.body.querySelector('[role="note"]')?.textContent).toContain(
+      'use the "grid" layout',
+    );
+  });
+
   it('switches layout and sort mode and shows the fallback notes', async () => {
     const { server } = await open();
     await panelToggle();
     const panel = $('.swg-lsp') as HTMLElement;
-    expect(panel.textContent).toContain('use the "grid" layout');
-    expect(panel.textContent).toContain('manual order stays stored');
+    // the explanations stay behind the "?" buttons until opened
+    expect(panel.textContent).not.toContain('use the "grid" layout');
+    expect(panel.textContent).not.toContain('manual order stays stored');
+    expect(panel.querySelectorAll('button[aria-label^="Explanation:"]').length).toBeGreaterThan(3);
     expect(panel.querySelectorAll('.q-select')).toHaveLength(2);
     // drive the staged model the way the selects do
     const wrapperVm = mounted;
