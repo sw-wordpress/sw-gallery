@@ -520,7 +520,7 @@ test.describe('as administrator', () => {
     await expect(panel.getByText('Must be at most 12.')).toHaveCount(0);
     await expect(panel.locator('.swg-sfield').getByRole('switch')).toHaveCount(0);
     await panel.getByRole('spinbutton', { name: 'Columns, Medium', exact: true }).fill('2');
-    await panel.getByLabel('Order on the website').click();
+    await panel.getByLabel('Order on the website', { exact: true }).click();
     await page.getByRole('option', { name: 'Title A–Z' }).click();
     await shot(page, 'gallery-editor-settings-panel');
     await save(page).click();
@@ -535,9 +535,9 @@ test.describe('as administrator', () => {
     await expect(
       root(page).locator('.swg-lsp .swg-sfield input[type="number"]').first(),
     ).toHaveValue('5');
-    await expect(root(page).locator('.swg-lsp').getByLabel('Order on the website')).toHaveValue(
-      'Title A–Z',
-    );
+    await expect(
+      root(page).locator('.swg-lsp').getByLabel('Order on the website', { exact: true }),
+    ).toHaveValue('Title A–Z');
   });
 
   test('edits gallery details, cover and publishes; undo and discard work', async ({ page }) => {
