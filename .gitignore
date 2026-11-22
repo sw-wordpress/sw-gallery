@@ -28,3 +28,7 @@
 /assets/blocks/build/
 /assets/blocks/node_modules/
 /assets/blocks/coverage/
+/pages/.vitepress/cache/
+/pages/.vitepress/dist/
+/pages/node_modules/
+/pages/.vitepress/node_modules/

@@ -54,7 +54,9 @@ installation is always manual. Verified GitHub offers are available in the nativ
    - Shortcode: `[sw_gallery id="123"]`, optionally `layout="masonry" columns="4" gap="12"`.
    - PHP: `echo swg_render_gallery( 123, array( 'columns' => 4 ) );`
 
-Task oriented guide for editors: [docs/user-guide.md](docs/user-guide.md).
+User documentation: [SW Gallery guide](https://sw-wordpress.github.io/sw-gallery/) ([sources](pages/index.md), [changelog](pages/Changelog.md)). Publication requires the Pages setup described in the [documentation maintainer guide](pages/README.md), which also covers isolated builds and updates.
+
+Existing task-oriented reference: [docs/user-guide.md](docs/user-guide.md).
 
 ## Extending
 
