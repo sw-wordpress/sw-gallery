@@ -60,7 +60,7 @@ msgstr ""
 msgid "Presentation"
 msgstr ""
 
-#: assets/blocks/src/Edit.tsx:71 packages/wordpress/src/Mcp/McpRegistrar.php:45
+#: assets/blocks/src/Edit.tsx:71 packages/wordpress/src/Mcp/McpRegistrar.php:53
 msgid "SW Gallery"
 msgstr ""
 
@@ -370,18 +370,49 @@ msgstr ""
 msgid "Gallery diagnostic (visible to editors only): the gallery frontend assets are missing or invalid. Run \"npm run build\" in assets or install the release package."
 msgstr ""
 
-#: packages/wordpress/src/Gallery/GalleryEditor.php:100
-#: packages/wordpress/src/Rest/ItemController.php:301
+#: packages/wordpress/src/Gallery/GalleryEditor.php:105
+#: packages/wordpress/src/Gallery/ItemEditor.php:105
 #: packages/wordpress/src/Rest/SettingsController.php:93
 msgid "The request does not change anything."
 msgstr ""
 
-#: packages/wordpress/src/Gallery/GalleryEditor.php:128
+#. translators: %s: title of the duplicated gallery
+#: packages/wordpress/src/Gallery/GalleryEditor.php:188
+#, php-format
+msgid "%s (copy)"
+msgstr ""
+
+#: packages/wordpress/src/Gallery/GalleryEditor.php:236
 msgid "You are not allowed to publish galleries."
 msgstr ""
 
-#: packages/wordpress/src/Gallery/GalleryEditor.php:159
+#: packages/wordpress/src/Gallery/GalleryEditor.php:267
 msgid "The cover must be an image you may use."
+msgstr ""
+
+#: packages/wordpress/src/Gallery/ItemEditor.php:102
+msgid "The settings must be an object."
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/AssignItemsAbility.php:43
+msgid "Add images to gallery"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:42
+msgid "Create gallery"
+msgstr ""
+
+#. translators: %s: argument name.
+#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:82
+#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:85
+#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:107
+#: packages/wordpress/src/Rest/AbstractController.php:125
+#, php-format
+msgid "%s is too large or nested too deeply."
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/DuplicateGalleryAbility.php:39
+msgid "Duplicate gallery"
 msgstr ""
 
 #: packages/wordpress/src/Mcp/Ability/GetGalleryAbility.php:38
@@ -392,7 +423,7 @@ msgstr ""
 msgid "List galleries"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/ListItemsAbility.php:44
+#: packages/wordpress/src/Mcp/Ability/ListItemsAbility.php:42
 msgid "List gallery items"
 msgstr ""
 
@@ -408,15 +439,24 @@ msgstr ""
 msgid "Render gallery"
 msgstr ""
 
+#: packages/wordpress/src/Mcp/Ability/ReorderItemsAbility.php:45
+msgid "Reorder gallery items"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/RestoreGalleryAbility.php:40
+msgid "Restore gallery"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/TrashGalleryAbility.php:40
+msgid "Trash gallery"
+msgstr ""
+
 #: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:40
 msgid "Update gallery"
 msgstr ""
 
-#. translators: %s: argument name.
-#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:85
-#: packages/wordpress/src/Rest/AbstractController.php:125
-#, php-format
-msgid "%s is too large or nested too deeply."
+#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:46
+msgid "Update gallery item"
 msgstr ""
 
 #: packages/wordpress/src/Mcp/AbilityFactory.php:76
@@ -936,17 +976,7 @@ msgstr ""
 msgid "An unexpected error occurred."
 msgstr ""
 
-#. translators: %s: title of the duplicated gallery
-#: packages/wordpress/src/Rest/GalleryController.php:375
-#, php-format
-msgid "%s (copy)"
-msgstr ""
-
-#: packages/wordpress/src/Rest/ItemController.php:472
-msgid "The settings must be an object."
-msgstr ""
-
-#: packages/wordpress/src/Rest/ItemController.php:494
+#: packages/wordpress/src/Rest/ItemController.php:411
 msgid "A required parameter is missing."
 msgstr ""
 

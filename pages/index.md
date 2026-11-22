@@ -7,6 +7,7 @@ SW Gallery lets WordPress editors create galleries from Media Library images, ar
 - [Layouts and presentation](layouts.md): choose a registered layout and adjust responsive settings, image crops and hover texts.
 - [Embed a gallery](embedding.md): use the SW Gallery block or shortcode, page through images and open the lightbox.
 - [Settings, access and privacy](settings-and-access.md): site defaults, permissions, visibility and data retention.
+- [AI assistants (MCP)](ai-assistants.md): let an assistant read and edit galleries through the MCP Adapter; access levels and a tool overview.
 - [Troubleshooting](troubleshooting.md): blank galleries, failed uploads, conflicts, expired sessions and system diagnostics.
 - [Changelog](Changelog.md): unreleased changes and recorded version history.
 

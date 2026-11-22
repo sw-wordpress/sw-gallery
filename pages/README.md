@@ -14,6 +14,7 @@ Evidence: plugin header (WordPress 6.4+, PHP 8.2+, version 0.9.0), docs/user-gui
 | layouts.md | Choosing among the actual registered layouts, responsive settings, focal point and hover texts. |
 | embedding.md | Block/shortcode steps, supported overrides, paging and lightbox controls. |
 | settings-and-access.md | Real defaults, role/visibility boundaries, privacy and uninstall implications. |
+| ai-assistants.md | MCP access levels, why a tool may be missing, the meta-tool discovery flow, tool overview with real parameters. Update it whenever an ability or level changes (docs/mcp-abilities.md is the technical source). |
 | troubleshooting.md | Recovery from documented errors and safe support diagnostics. |
 | Changelog.md | User-facing version history, mapped from existing entries without new historical claims. |
 

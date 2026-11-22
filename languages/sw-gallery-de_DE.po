@@ -59,7 +59,7 @@ msgstr "Galerie"
 msgid "Presentation"
 msgstr "Darstellung"
 
-#: assets/blocks/src/Edit.tsx:71 packages/wordpress/src/Mcp/McpRegistrar.php:45
+#: assets/blocks/src/Edit.tsx:71 packages/wordpress/src/Mcp/McpRegistrar.php:53
 msgid "SW Gallery"
 msgstr "SW Gallery"
 
@@ -369,19 +369,50 @@ msgstr "Galerie bearbeiten: %s"
 msgid "Gallery diagnostic (visible to editors only): the gallery frontend assets are missing or invalid. Run \"npm run build\" in assets or install the release package."
 msgstr "Galerie-Diagnose (nur für Redakteure sichtbar): Die Frontend-Dateien der Galerie fehlen oder sind ungültig. Führe \"npm run build\" in assets aus oder installiere das Release-Paket."
 
-#: packages/wordpress/src/Gallery/GalleryEditor.php:100
-#: packages/wordpress/src/Rest/ItemController.php:301
+#: packages/wordpress/src/Gallery/GalleryEditor.php:105
+#: packages/wordpress/src/Gallery/ItemEditor.php:105
 #: packages/wordpress/src/Rest/SettingsController.php:93
 msgid "The request does not change anything."
 msgstr "Die Anfrage ändert nichts."
 
-#: packages/wordpress/src/Gallery/GalleryEditor.php:128
+#. translators: %s: title of the duplicated gallery
+#: packages/wordpress/src/Gallery/GalleryEditor.php:188
+#, php-format
+msgid "%s (copy)"
+msgstr "%s (Kopie)"
+
+#: packages/wordpress/src/Gallery/GalleryEditor.php:236
 msgid "You are not allowed to publish galleries."
 msgstr "Sie dürfen keine Galerien veröffentlichen."
 
-#: packages/wordpress/src/Gallery/GalleryEditor.php:159
+#: packages/wordpress/src/Gallery/GalleryEditor.php:267
 msgid "The cover must be an image you may use."
 msgstr "Das Titelbild muss ein Bild sein, das Sie verwenden dürfen."
+
+#: packages/wordpress/src/Gallery/ItemEditor.php:102
+msgid "The settings must be an object."
+msgstr "Die Einstellungen müssen ein Objekt sein."
+
+#: packages/wordpress/src/Mcp/Ability/AssignItemsAbility.php:43
+msgid "Add images to gallery"
+msgstr "Bilder zur Galerie hinzufügen"
+
+#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:42
+msgid "Create gallery"
+msgstr "Galerie erstellen"
+
+#. translators: %s: argument name.
+#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:82
+#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:85
+#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:107
+#: packages/wordpress/src/Rest/AbstractController.php:125
+#, php-format
+msgid "%s is too large or nested too deeply."
+msgstr "%s ist zu groß oder zu tief verschachtelt."
+
+#: packages/wordpress/src/Mcp/Ability/DuplicateGalleryAbility.php:39
+msgid "Duplicate gallery"
+msgstr "Galerie duplizieren"
 
 #: packages/wordpress/src/Mcp/Ability/GetGalleryAbility.php:38
 msgid "Get gallery"
@@ -391,7 +422,7 @@ msgstr "Galerie abrufen"
 msgid "List galleries"
 msgstr "Galerien auflisten"
 
-#: packages/wordpress/src/Mcp/Ability/ListItemsAbility.php:44
+#: packages/wordpress/src/Mcp/Ability/ListItemsAbility.php:42
 msgid "List gallery items"
 msgstr "Galerie-Bilder auflisten"
 
@@ -407,16 +438,25 @@ msgstr "Medien auflisten"
 msgid "Render gallery"
 msgstr "Galerie rendern"
 
+#: packages/wordpress/src/Mcp/Ability/ReorderItemsAbility.php:45
+msgid "Reorder gallery items"
+msgstr "Galerie-Bilder neu ordnen"
+
+#: packages/wordpress/src/Mcp/Ability/RestoreGalleryAbility.php:40
+msgid "Restore gallery"
+msgstr "Galerie wiederherstellen"
+
+#: packages/wordpress/src/Mcp/Ability/TrashGalleryAbility.php:40
+msgid "Trash gallery"
+msgstr "Galerie in den Papierkorb legen"
+
 #: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:40
 msgid "Update gallery"
 msgstr "Galerie aktualisieren"
 
-#. translators: %s: argument name.
-#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:85
-#: packages/wordpress/src/Rest/AbstractController.php:125
-#, php-format
-msgid "%s is too large or nested too deeply."
-msgstr "%s ist zu groß oder zu tief verschachtelt."
+#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:46
+msgid "Update gallery item"
+msgstr "Galerie-Bild aktualisieren"
 
 #: packages/wordpress/src/Mcp/AbilityFactory.php:76
 msgid "This action is disabled by the MCP access level of the site."
@@ -935,17 +975,7 @@ msgstr "Die Anfrage enthält ungültige Werte."
 msgid "An unexpected error occurred."
 msgstr "Es ist ein unerwarteter Fehler aufgetreten."
 
-#. translators: %s: title of the duplicated gallery
-#: packages/wordpress/src/Rest/GalleryController.php:375
-#, php-format
-msgid "%s (copy)"
-msgstr "%s (Kopie)"
-
-#: packages/wordpress/src/Rest/ItemController.php:472
-msgid "The settings must be an object."
-msgstr "Die Einstellungen müssen ein Objekt sein."
-
-#: packages/wordpress/src/Rest/ItemController.php:494
+#: packages/wordpress/src/Rest/ItemController.php:411
 msgid "A required parameter is missing."
 msgstr "Ein erforderlicher Parameter fehlt."
 

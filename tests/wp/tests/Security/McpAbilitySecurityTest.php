@@ -9,14 +9,14 @@
 require_once dirname( __DIR__, 2 ) . '/support/McpSecurityTestTrait.php';
 
 use SWGallery\Core\Domain\Gallery\GalleryStatus;
-use SWGallery\Tests\Support\RestFixtures;
+use SWGallery\Tests\Support\RestItemFixtures;
 use SWGallery\WordPress\Mcp\AbilityFactory;
 use SWGallery\WordPress\Mcp\McpAuditLog;
 use SWGallery\WordPress\Mcp\TierPolicy;
 
 class McpAbilitySecurityTest extends SwgTestCase {
 
-	use RestFixtures;
+	use RestItemFixtures;
 	use McpSecurityTestTrait;
 
 	private const ACTORS = array( 'anonymous', 'subscriber', 'contributor', 'author', 'other_author', 'editor', 'administrator' );
@@ -29,7 +29,14 @@ class McpAbilitySecurityTest extends SwgTestCase {
 		'list-layouts'   => array( 'tier' => 'read', 'expect' => array( 'X', 'F', 'A', 'A', 'A', 'A', 'A' ) ),
 		'list-media'     => array( 'tier' => 'read', 'expect' => array( 'X', 'F', 'F', 'A', 'A', 'A', 'A' ) ),
 		'render-gallery' => array( 'tier' => 'read', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
-		'update-gallery' => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'update-gallery'    => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'create-gallery'    => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'A', 'A', 'A', 'A', 'A' ) ),
+		'duplicate-gallery' => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'trash-gallery'     => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'restore-gallery'   => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'assign-items'      => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'update-item'       => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'reorder-items'     => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
 	);
 
 	/** @var array<string, int> */
@@ -50,6 +57,7 @@ class McpAbilitySecurityTest extends SwgTestCase {
 		}
 		$this->users['anonymous'] = 0;
 		$this->gallery            = $this->makeGallery( $this->users['author'], GalleryStatus::Draft, 'Secret draft' );
+		$this->seedItems( $this->gallery, $this->users['author'], 2 );
 		$this->reregisterAbilities( 'admin' );
 	}
 
@@ -69,8 +77,21 @@ class McpAbilitySecurityTest extends SwgTestCase {
 		if ( in_array( $name, array( 'list-galleries', 'list-layouts', 'list-media' ), true ) ) {
 			return array();
 		}
-		$base = array( 'id' => $this->gallery );
-		return 'update-gallery' === $name ? $base + array( 'expectedRevision' => 1, 'title' => 'Renamed' ) : $base;
+		if ( 'create-gallery' === $name ) {
+			return array( 'title' => 'Created by matrix' );
+		}
+		$base     = array( 'id' => $this->gallery );
+		$revision = array( 'expectedRevision' => $this->revisionOf( $this->gallery ) );
+		$items    = $this->itemIds( $this->gallery );
+		return match ( $name ) {
+			'update-gallery'    => $base + $revision + array( 'title' => 'Renamed' ),
+			'trash-gallery', 'restore-gallery' => $base + $revision,
+			'duplicate-gallery' => $base,
+			'assign-items'      => $base + $revision + array( 'attachmentIds' => array( $this->makeAttachment( $this->users['author'] ) ) ),
+			'update-item'       => $base + $revision + array( 'itemId' => $items[0], 'overrides' => array( 'title' => 'Item title' ) ),
+			'reorder-items'     => $base + $revision + array( 'itemIds' => array_reverse( $items ) ),
+			default             => $base,
+		};
 	}
 
 	public function test_inventory_matches_the_matrix_and_names_are_valid(): void {
@@ -175,12 +196,16 @@ class McpAbilitySecurityTest extends SwgTestCase {
 	 * @dataProvider matrixCases
 	 */
 	public function test_actor_matrix( string $name, string $actor, string $expect ): void {
+		if ( 'restore-gallery' === $name ) {
+			// Restore needs a trashed gallery; trash it as the administrator through the service.
+			\SWGallery\WordPress\Infrastructure\Services::gallery_service()->trash( new \SWGallery\Core\Domain\Access\Actor( $this->users['administrator'] ), $this->gallery, new \SWGallery\Core\Domain\Gallery\Revision( $this->revisionOf( $this->gallery ) ) );
+		}
 		$input = $this->validInput( $name );
 		if ( 'A' === $expect ) {
 			$result = $this->runAbility( $name, $input, $this->users[ $actor ] );
 			$this->assertNoLeak( $result, "$name as $actor" );
 			$this->assertIsArray( $result, "$name as $actor" );
-			if ( in_array( $name, array( 'get-gallery', 'update-gallery' ), true ) ) {
+			if ( in_array( $name, array( 'get-gallery', 'update-gallery', 'restore-gallery', 'trash-gallery' ), true ) ) {
 				$this->assertSame( $this->gallery, $result['id'] );
 			}
 			return;
@@ -205,7 +230,7 @@ class McpAbilitySecurityTest extends SwgTestCase {
 	}
 
 	public function test_missing_and_hidden_galleries_answer_identically(): void {
-		foreach ( array( 'get-gallery', 'update-gallery', 'list-items', 'render-gallery' ) as $name ) {
+		foreach ( array( 'get-gallery', 'update-gallery', 'list-items', 'render-gallery', 'trash-gallery', 'assign-items', 'update-item', 'reorder-items', 'duplicate-gallery' ) as $name ) {
 			$missing = $this->checkAbility( $name, array( 'id' => 999999 ) + $this->validInput( $name ), $this->users['other_author'] );
 			$hidden  = $this->checkAbility( $name, $this->validInput( $name ), $this->users['other_author'] );
 			$this->assertInstanceOf( WP_Error::class, $missing );
@@ -350,7 +375,7 @@ class McpAbilitySecurityTest extends SwgTestCase {
 	 */
 	public function test_hostile_input_is_rejected_and_nothing_is_written( array $extra ): void {
 		$before = $this->stateSnapshot();
-		$result = $this->runAbility( 'update-gallery', array( 'id' => $this->gallery, 'expectedRevision' => 1 ) + $extra, $this->users['administrator'] );
+		$result = $this->runAbility( 'update-gallery', array( 'id' => $this->gallery, 'expectedRevision' => $this->revisionOf( $this->gallery ) ) + $extra, $this->users['administrator'] );
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertNoLeak( $result, 'hostile input' );
 		$this->assertSame( $before, $this->stateSnapshot() );
@@ -368,7 +393,7 @@ class McpAbilitySecurityTest extends SwgTestCase {
 
 		$this->setExpectedIncorrectUsage( 'WP_Ability::execute' );
 		$this->runAbility( 'get-gallery', array( 'id' => $this->gallery ), $this->users['subscriber'] );
-		$this->runAbility( 'update-gallery', array( 'id' => $this->gallery, 'expectedRevision' => 1, 'title' => 'Audited title' ), $this->users['author'] );
+		$this->runAbility( 'update-gallery', array( 'id' => $this->gallery, 'expectedRevision' => $this->revisionOf( $this->gallery ), 'title' => 'Audited title' ), $this->users['author'] );
 		$entries = ( new McpAuditLog() )->recent();
 		$this->assertNotSame( array(), $entries );
 		$outcomes = array_column( $entries, 'outcome' );
@@ -409,7 +434,7 @@ class McpAbilitySecurityTest extends SwgTestCase {
 				throw new RuntimeException( '/var/www/secret/path SELECT leak' );
 			}
 		);
-		$result = $this->runAbility( 'update-gallery', array( 'id' => $this->gallery, 'expectedRevision' => 1, 'title' => 'Boom' ), $this->users['administrator'] );
+		$result = $this->runAbility( 'update-gallery', array( 'id' => $this->gallery, 'expectedRevision' => $this->revisionOf( $this->gallery ), 'title' => 'Boom' ), $this->users['administrator'] );
 		$this->assertNoLeak( $result, 'throwing listener' );
 		$this->assertStringNotContainsString( 'secret', (string) wp_json_encode( $result instanceof WP_Error ? $result->get_error_message() : $result ) );
 	}

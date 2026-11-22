@@ -28,6 +28,7 @@ use SWGallery\WordPress\Frontend\FrontendManifest;
 use SWGallery\WordPress\Frontend\PreviewGalleries;
 use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Gallery\GalleryLister;
+use SWGallery\WordPress\Gallery\ItemEditor;
 use SWGallery\WordPress\Gallery\ItemReader;
 use SWGallery\WordPress\Media\MediaLister;
 use SWGallery\WordPress\Rest\ItemPresenter;
@@ -70,6 +71,7 @@ final class Services {
 	private static ?GalleryEditor $gallery_editor            = null;
 	private static ?GalleryLister $gallery_lister            = null;
 	private static ?ItemReader $item_reader                  = null;
+	private static ?ItemEditor $item_editor                  = null;
 	private static ?MediaLister $media_lister                = null;
 	private static ?GalleryItemService $item_service         = null;
 	private static ?GalleryItemEditService $item_edit        = null;
@@ -170,7 +172,8 @@ final class Services {
 			self::revisions(),
 			self::relations(),
 			self::access(),
-			new GalleryPresenter( self::access() )
+			new GalleryPresenter( self::access() ),
+			self::settings()
 		);
 	}
 
@@ -180,6 +183,10 @@ final class Services {
 
 	public static function item_reader(): ItemReader {
 		return self::$item_reader ??= new ItemReader( self::gallery_editor(), self::items(), new ItemPresenter( self::media(), self::access() ), self::revisions() );
+	}
+
+	public static function item_editor(): ItemEditor {
+		return self::$item_editor ??= new ItemEditor( self::gallery_editor(), self::item_service(), self::item_edit_service(), self::items(), new ItemPresenter( self::media(), self::access() ) );
 	}
 
 	public static function media_lister(): MediaLister {
@@ -314,6 +321,7 @@ final class Services {
 		self::$gallery_editor      = null;
 		self::$gallery_lister      = null;
 		self::$item_reader         = null;
+		self::$item_editor         = null;
 		self::$media_lister        = null;
 		self::$item_service        = null;
 		self::$item_edit           = null;

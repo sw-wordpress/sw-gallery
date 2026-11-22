@@ -12,6 +12,7 @@ namespace SWGallery\WordPress\Mcp\Ability;
 use SWGallery\WordPress\Gallery\ItemReader;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\GallerySchema;
+use SWGallery\WordPress\Mcp\ItemSchema;
 use SWGallery\WordPress\Mcp\Paging;
 use SWGallery\WordPress\Mcp\TierPolicy;
 use SWGallery\Core\Exception\AccessDeniedException;
@@ -21,9 +22,6 @@ final class ListItemsAbility implements AbilityDefinition {
 	use ReadAbilityTrait;
 
 	private const PER_PAGE = 50;
-
-	/** Fields of an item that are returned (no URLs). */
-	private const FIELDS = array( 'id', 'attachmentId', 'position', 'overrides', 'effective', 'global', 'settings', 'missing' );
 
 	/**
 	 * @param \Closure $reader Lazy provider of the {@see ItemReader}.
@@ -58,38 +56,13 @@ final class ListItemsAbility implements AbilityDefinition {
 	}
 
 	public function outputSchema(): array {
-		$texts = array(
-			'type'                 => 'object',
-			'additionalProperties' => false,
-			'properties'           => array(
-				'title'   => array( 'type' => array( 'string', 'null' ) ),
-				'caption' => array( 'type' => array( 'string', 'null' ) ),
-				'alt'     => array( 'type' => array( 'string', 'null' ) ),
-			),
-		);
 		return array(
 			'type'                 => 'object',
 			'additionalProperties' => false,
 			'properties'           => array(
 				'items'    => array(
 					'type'  => 'array',
-					'items' => array(
-						'type'                 => 'object',
-						'additionalProperties' => false,
-						'properties'           => array(
-							'id'           => array( 'type' => 'integer' ),
-							'attachmentId' => array( 'type' => 'integer' ),
-							'position'     => array( 'type' => 'integer' ),
-							'overrides'    => $texts,
-							'effective'    => $texts,
-							'global'       => array( 'type' => array( 'object', 'null' ) ),
-							'settings'     => array(
-								'type'                 => 'object',
-								'additionalProperties' => true,
-							),
-							'missing'      => array( 'type' => 'boolean' ),
-						),
-					),
+					'items' => ItemSchema::output(),
 				),
 				'revision' => array( 'type' => 'integer' ),
 			) + Paging::outputProperties(),
@@ -107,7 +80,7 @@ final class ListItemsAbility implements AbilityDefinition {
 
 	public function execute( array $input ): array|\WP_Error {
 		$found = ( $this->reader )()->page( $this->actor(), self::int( $input, 'id' ), self::int( $input, 'page', 1 ), self::int( $input, 'per_page', self::PER_PAGE ) );
-		$items = array_map( static fn( array $item ): array => array_intersect_key( $item, array_flip( self::FIELDS ) ), $found['items'] );
+		$items = array_map( array( ItemSchema::class, 'project' ), $found['items'] );
 		return self::paged( $input, 'items', $items, $found['total'], self::PER_PAGE, array( 'revision' => $found['revision'] ) );
 	}
 }

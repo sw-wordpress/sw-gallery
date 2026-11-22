@@ -55,7 +55,6 @@ final class GalleryController extends AbstractController {
 		private readonly WpdbGalleryRelations $relations,
 		private readonly WpGalleryAccessPolicy $access,
 		private readonly GalleryPresenter $presenter,
-		private readonly PluginSettings $settings,
 		private readonly GalleryEditor $editor,
 		private readonly GalleryLister $lister
 	) {
@@ -268,30 +267,17 @@ final class GalleryController extends AbstractController {
 	public function create_item( $request ): \WP_REST_Response|\WP_Error {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
-				$actor  = $this->actor();
-				$status = $this->status_param( $request ) ?? GalleryStatus::Draft;
-				if ( GalleryEditor::needs_publish_right( $status ) && ! $this->access->canPublishNew( $actor ) ) {
-					return GalleryEditor::cannot_publish();
+				$fields = array();
+				foreach ( array( 'title', 'description', 'status', 'layout', 'sortMode', 'perPage', 'hover', 'settings' ) as $field ) {
+					if ( $request->has_param( $field ) ) {
+						$fields[ $field ] = $request->get_param( $field );
+					}
 				}
-				$settings = new GallerySettings(
-					$this->string_param( $request, 'layout' ) ?? $this->settings->get()['defaultLayout'],
-					SortMode::from( $this->string_param( $request, 'sortMode' ) ?? SortMode::Manual->value ),
-					$this->settings_param( $request ),
-					GallerySettings::SCHEMA_VERSION,
-					$this->per_page_param( $request ),
-					$this->hover_param( $request )
-				);
-				$result   = $this->service->create(
-					$actor,
-					new NewGallery(
-						(string) $this->string_param( $request, 'title' ),
-						$actor->userId,
-						$this->string_param( $request, 'description' ) ?? '',
-						$status,
-						$settings
-					)
-				);
-				return $this->created( $actor, $result );
+				$result = $this->editor->create( $this->actor(), $fields );
+				if ( $result instanceof \WP_Error ) {
+					return $result;
+				}
+				return $this->created( $result );
 			}
 		);
 	}
@@ -364,17 +350,8 @@ final class GalleryController extends AbstractController {
 	public function duplicate_item( $request ): \WP_REST_Response|\WP_Error {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
-				$actor  = $this->actor();
-				$source = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
-				if ( GalleryStatus::Trash === $source->status ) {
-					throw new InvalidStateException();
-				}
 				$title = $this->string_param( $request, 'title' );
-				if ( null === $title ) {
-					/* translators: %s: title of the duplicated gallery */
-					$title = sprintf( __( '%s (copy)', 'sw-gallery' ), $source->title );
-				}
-				return $this->created( $actor, $this->service->duplicate( $actor, $source->id, $title ) );
+				return $this->created( $this->editor->duplicate( $this->actor(), (int) $request->get_param( 'id' ), $title ) );
 			}
 		);
 	}
@@ -388,10 +365,7 @@ final class GalleryController extends AbstractController {
 	public function restore_item( $request ): \WP_REST_Response|\WP_Error {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
-				$actor   = $this->actor();
-				$gallery = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
-				$result  = $this->service->restore( $actor, $gallery->id, $this->expected_revision( $request ) );
-				return new \WP_REST_Response( $this->present( $actor, $result->gallery, $result->revision->value ), 200 );
+				return new \WP_REST_Response( $this->editor->restore( $this->actor(), (int) $request->get_param( 'id' ), $this->expected_revision( $request )->value ), 200 );
 			}
 		);
 	}
@@ -574,49 +548,6 @@ final class GalleryController extends AbstractController {
 	}
 
 	/**
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 */
-	private function status_param( \WP_REST_Request $request ): ?GalleryStatus {
-		$value = $this->string_param( $request, 'status' );
-		return null === $value ? null : GalleryStatus::tryFrom( $value );
-	}
-
-	/**
-	 * Hover texts; null (or absent) means the site-wide default. Types and values are enforced by the route schema.
-	 *
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 */
-	private function hover_param( \WP_REST_Request $request ): ?HoverEffect {
-		return HoverEffect::fromArray( $request->get_param( 'hover' ) );
-	}
-
-	/**
-	 * Items per page; null (or absent) means the site-wide default. The range is enforced by the route schema.
-	 *
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 */
-	private function per_page_param( \WP_REST_Request $request ): ?int {
-		$value = $request->get_param( 'perPage' );
-		return is_numeric( $value ) ? (int) $value : null;
-	}
-
-	/**
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 * @return array<string, mixed>
-	 */
-	private function settings_param( \WP_REST_Request $request ): array {
-		$values = array();
-		foreach ( (array) $request->get_param( 'settings' ) as $key => $value ) {
-			$values[ (string) $key ] = $value;
-		}
-		return $values;
-	}
-
-	/**
 	 * @param Actor   $actor    Actor.
 	 * @param Gallery $gallery  Gallery.
 	 * @param int     $revision Revision.
@@ -627,9 +558,12 @@ final class GalleryController extends AbstractController {
 		return $this->presenter->present( $actor, $gallery, $revision, $counts[ $gallery->id ] ?? 0 );
 	}
 
-	private function created( Actor $actor, GalleryResult $result ): \WP_REST_Response {
-		$response = new \WP_REST_Response( $this->present( $actor, $result->gallery, $result->revision->value ), 201 );
-		$response->header( 'Location', rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->rest_base, $result->gallery->id ) ) );
+	/**
+	 * @param array<string, mixed> $gallery Presented gallery.
+	 */
+	private function created( array $gallery ): \WP_REST_Response {
+		$response = new \WP_REST_Response( $gallery, 201 );
+		$response->header( 'Location', rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->rest_base, (int) $gallery['id'] ) ) );
 		return $response;
 	}
 }

@@ -191,3 +191,5 @@ Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und
 | Shared rules | `Gallery/GalleryEditor` owns view/update rules (404 for hidden, publish right, cover rights, revision); REST and MCP are thin callers. |
 | Audit | Own bounded, non-autoloaded option `swg_mcp_audit` (50 entries: time, verb-noun ability, user id, outcome, code; never payloads), separate from the error ring buffer; removed on uninstall data deletion. |
 | Adapter in tests | `wordpress/mcp-adapter` pinned in `tests/wp/composer.json` (needs `automattic/jetpack-autoloader` in `allow-plugins` of that test-only project); never a runtime dependency. |
+| Plain text on every path | Title, description and item texts are stripped to plain text inside `GalleryEditor`/`ItemEditor`, not only at the REST boundary, so MCP can not store markup. |
+| Write abilities | `create-gallery`, `duplicate-gallery`, `trash-gallery`, `restore-gallery`, `assign-items`, `update-item`, `reorder-items` (tier `write`); `Gallery/ItemEditor` owns the item write rules. |

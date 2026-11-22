@@ -237,8 +237,7 @@ class RestSecurityTest extends SwgTestCase {
 			Services::relations(),
 			Services::access(),
 			new GalleryPresenter( Services::access() ),
-			Services::settings(),
-			new GalleryEditor( $service, new ThrowingGalleries(), Services::revisions(), Services::relations(), Services::access(), new GalleryPresenter( Services::access() ) ),
+			new GalleryEditor( $service, new ThrowingGalleries(), Services::revisions(), Services::relations(), Services::access(), new GalleryPresenter( Services::access() ), Services::settings() ),
 			new GalleryLister( new ThrowingGalleries(), Services::relations(), Services::revisions(), new GalleryPresenter( Services::access() ) )
 		);
 		$admin      = $this->makeUser( 'administrator' );

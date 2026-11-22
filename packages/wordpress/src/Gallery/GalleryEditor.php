@@ -16,16 +16,20 @@ use SWGallery\Core\Contract\GalleryRepositoryInterface;
 use SWGallery\Core\Contract\RevisionStoreInterface;
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Gallery\Gallery;
+use SWGallery\Core\Domain\Gallery\GallerySettings;
 use SWGallery\Core\Domain\Gallery\GalleryStatus;
+use SWGallery\Core\Domain\Gallery\NewGallery;
 use SWGallery\Core\Domain\Gallery\HoverEffect;
 use SWGallery\Core\Domain\Gallery\Revision;
 use SWGallery\Core\Domain\Gallery\SortMode;
 use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\Core\Exception\GalleryNotFoundException;
+use SWGallery\Core\Exception\InvalidStateException;
 use SWGallery\WordPress\Repository\WpdbGalleryRelations;
 use SWGallery\WordPress\Rest\ErrorMapper;
 use SWGallery\WordPress\Rest\GalleryPresenter;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
+use SWGallery\WordPress\Settings\PluginSettings;
 
 /**
  * One implementation of "may this actor see/edit this gallery" and "apply these fields". The REST controller and the
@@ -47,7 +51,8 @@ final class GalleryEditor {
 		private readonly RevisionStoreInterface $revisions,
 		private readonly WpdbGalleryRelations $relations,
 		private readonly WpGalleryAccessPolicy $access,
-		private readonly GalleryPresenter $presenter
+		private readonly GalleryPresenter $presenter,
+		private readonly PluginSettings $settings
 	) {
 	}
 
@@ -111,6 +116,109 @@ final class GalleryEditor {
 	}
 
 	/**
+	 * @throws AccessDeniedException When the actor may not create galleries.
+	 */
+	public function creatable( Actor $actor ): void {
+		if ( ! $this->access->canCreate( $actor ) ) {
+			throw new AccessDeniedException();
+		}
+	}
+
+	/**
+	 * The gallery the actor may trash, restore or delete (404 when not viewable).
+	 *
+	 * @throws AccessDeniedException When viewable but not deletable.
+	 */
+	public function deletable( Actor $actor, int $id ): Gallery {
+		$gallery = $this->viewable( $actor, $id );
+		if ( ! $this->access->canDelete( $actor, $gallery ) ) {
+			throw new AccessDeniedException();
+		}
+		return $gallery;
+	}
+
+	/**
+	 * Creates a gallery owned by the actor. `$fields` holds the submitted keys `title`, `description`, `status`,
+	 * `layout`, `sortMode`, `perPage`, `hover`, `settings`; `publish` and `private` need the publish right.
+	 *
+	 * @param Actor                $actor  Actor.
+	 * @param array<string, mixed> $fields Submitted fields.
+	 * @return array<string, mixed>|\WP_Error Presented gallery (revision 1) or a 403 error.
+	 */
+	public function create( Actor $actor, array $fields ): array|\WP_Error {
+		$status = is_string( $fields['status'] ?? null ) ? GalleryStatus::tryFrom( $fields['status'] ) : null;
+		$status = $status ?? GalleryStatus::Draft;
+		if ( self::needs_publish_right( $status ) && ! $this->access->canPublishNew( $actor ) ) {
+			return self::cannot_publish();
+		}
+		$values = array();
+		foreach ( (array) ( $fields['settings'] ?? array() ) as $key => $value ) {
+			$values[ (string) $key ] = $value;
+		}
+		$layout   = is_string( $fields['layout'] ?? null ) ? $fields['layout'] : $this->settings->get()['defaultLayout'];
+		$sort     = is_string( $fields['sortMode'] ?? null ) ? SortMode::from( $fields['sortMode'] ) : SortMode::Manual;
+		$per_page = is_numeric( $fields['perPage'] ?? null ) ? (int) $fields['perPage'] : null;
+		$settings = new GallerySettings( $layout, $sort, $values, GallerySettings::SCHEMA_VERSION, $per_page, HoverEffect::fromArray( $fields['hover'] ?? null ) );
+		$result   = $this->service->create(
+			$actor,
+			new NewGallery(
+				sanitize_text_field( self::text( $fields['title'] ?? '' ) ),
+				$actor->userId,
+				sanitize_textarea_field( self::text( $fields['description'] ?? '' ) ),
+				$status,
+				$settings
+			)
+		);
+		return $this->present( $actor, $result->gallery, $result->revision->value );
+	}
+
+	/**
+	 * Copies membership and overrides into a new draft owned by the actor (revision 1).
+	 *
+	 * @return array<string, mixed>
+	 * @throws InvalidStateException When the source is trashed.
+	 */
+	public function duplicate( Actor $actor, int $id, ?string $title ): array {
+		$source = $this->viewable( $actor, $id );
+		if ( GalleryStatus::Trash === $source->status ) {
+			throw new InvalidStateException();
+		}
+		if ( null === $title ) {
+			/* translators: %s: title of the duplicated gallery */
+			$title = sprintf( __( '%s (copy)', 'sw-gallery' ), $source->title );
+		}
+		$result = $this->service->duplicate( $actor, $source->id, sanitize_text_field( $title ) );
+		return $this->present( $actor, $result->gallery, $result->revision->value );
+	}
+
+	/**
+	 * Moves the gallery to the trash (relations are kept).
+	 *
+	 * @return array{id: int, trashed: bool, status: string, revision: int}
+	 */
+	public function trash( Actor $actor, int $id, int $expected ): array {
+		$gallery  = $this->viewable( $actor, $id );
+		$revision = $this->service->trash( $actor, $gallery->id, new Revision( $expected ) );
+		return array(
+			'id'       => $gallery->id,
+			'trashed'  => true,
+			'status'   => GalleryStatus::Trash->value,
+			'revision' => $revision->value,
+		);
+	}
+
+	/**
+	 * Restores a trashed gallery as a draft.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function restore( Actor $actor, int $id, int $expected ): array {
+		$gallery = $this->viewable( $actor, $id );
+		$result  = $this->service->restore( $actor, $gallery->id, new Revision( $expected ) );
+		return $this->present( $actor, $result->gallery, $result->revision->value );
+	}
+
+	/**
 	 * @return array<string, mixed>
 	 */
 	public function present( Actor $actor, Gallery $gallery, int $revision ): array {
@@ -140,10 +248,10 @@ final class GalleryEditor {
 	private function apply( Actor $actor, Gallery $current, array $fields ): Gallery|\WP_Error {
 		$changed = $current;
 		if ( array_key_exists( 'title', $fields ) ) {
-			$changed = $changed->withTitle( self::text( $fields['title'] ) );
+			$changed = $changed->withTitle( sanitize_text_field( self::text( $fields['title'] ) ) );
 		}
 		if ( array_key_exists( 'description', $fields ) ) {
-			$changed = $changed->withDescription( self::text( $fields['description'] ) );
+			$changed = $changed->withDescription( sanitize_textarea_field( self::text( $fields['description'] ) ) );
 		}
 		if ( array_key_exists( 'status', $fields ) ) {
 			$status  = is_string( $fields['status'] ) ? GalleryStatus::tryFrom( $fields['status'] ) : null;

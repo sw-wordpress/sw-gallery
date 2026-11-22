@@ -11,14 +11,22 @@ namespace SWGallery\WordPress\Mcp;
 
 use SWGallery\WordPress\Bootstrap\RegistrarInterface;
 use SWGallery\WordPress\Gallery\GalleryEditor;
+use SWGallery\WordPress\Gallery\ItemEditor;
 use SWGallery\WordPress\Infrastructure\Services;
+use SWGallery\WordPress\Mcp\Ability\AssignItemsAbility;
+use SWGallery\WordPress\Mcp\Ability\CreateGalleryAbility;
+use SWGallery\WordPress\Mcp\Ability\DuplicateGalleryAbility;
 use SWGallery\WordPress\Mcp\Ability\GetGalleryAbility;
 use SWGallery\WordPress\Mcp\Ability\ListGalleriesAbility;
 use SWGallery\WordPress\Mcp\Ability\ListItemsAbility;
 use SWGallery\WordPress\Mcp\Ability\ListLayoutsAbility;
 use SWGallery\WordPress\Mcp\Ability\ListMediaAbility;
 use SWGallery\WordPress\Mcp\Ability\RenderGalleryAbility;
+use SWGallery\WordPress\Mcp\Ability\ReorderItemsAbility;
+use SWGallery\WordPress\Mcp\Ability\RestoreGalleryAbility;
+use SWGallery\WordPress\Mcp\Ability\TrashGalleryAbility;
 use SWGallery\WordPress\Mcp\Ability\UpdateGalleryAbility;
+use SWGallery\WordPress\Mcp\Ability\UpdateItemAbility;
 use SWGallery\WordPress\Rest\ErrorMapper;
 
 /**
@@ -61,14 +69,22 @@ final class McpRegistrar implements RegistrarInterface {
 	/** @return list<AbilityDefinition> */
 	private function definitions(): array {
 		$editor = static fn(): GalleryEditor => Services::gallery_editor();
+		$items  = static fn(): ItemEditor => Services::item_editor();
 		return array(
+			new AssignItemsAbility( $items, $editor ),
+			new CreateGalleryAbility( $editor ),
+			new DuplicateGalleryAbility( $editor ),
 			new GetGalleryAbility( $editor ),
 			new ListGalleriesAbility( static fn() => Services::gallery_lister() ),
 			new ListItemsAbility( static fn() => Services::item_reader() ),
 			new ListLayoutsAbility( static fn() => Services::layouts() ),
 			new ListMediaAbility( static fn() => Services::media_lister() ),
 			new RenderGalleryAbility( $editor, Services::preview_renderer( ... ) ),
+			new ReorderItemsAbility( $items, $editor ),
+			new RestoreGalleryAbility( $editor ),
+			new TrashGalleryAbility( $editor ),
 			new UpdateGalleryAbility( $editor ),
+			new UpdateItemAbility( $items, $editor ),
 		);
 	}
 }
