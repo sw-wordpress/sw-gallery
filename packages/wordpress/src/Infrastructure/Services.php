@@ -26,6 +26,7 @@ use SWGallery\WordPress\Frontend\EmbedRenderer;
 use SWGallery\WordPress\Frontend\FrontendAssets;
 use SWGallery\WordPress\Frontend\FrontendManifest;
 use SWGallery\WordPress\Frontend\PreviewGalleries;
+use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Hooks\ExtensionPoints;
 use SWGallery\WordPress\Media\ThumbnailResolver;
 use SWGallery\WordPress\Media\WpMediaRepository;
@@ -39,6 +40,7 @@ use SWGallery\WordPress\Repository\PostMetaRevisionStore;
 use SWGallery\WordPress\Repository\WpdbGalleryItemRepository;
 use SWGallery\WordPress\Repository\WpdbGalleryRelations;
 use SWGallery\WordPress\Repository\WpGalleryRepository;
+use SWGallery\WordPress\Rest\GalleryPresenter;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 use SWGallery\WordPress\Settings\PluginSettings;
 
@@ -59,6 +61,7 @@ final class Services {
 	private static ?WpGalleryAccessPolicy $access            = null;
 	private static ?PluginSettings $settings                 = null;
 	private static ?GalleryService $gallery_service          = null;
+	private static ?GalleryEditor $gallery_editor            = null;
 	private static ?GalleryItemService $item_service         = null;
 	private static ?GalleryItemEditService $item_edit        = null;
 	private static ?ThumbnailResolver $thumbnails            = null;
@@ -148,6 +151,17 @@ final class Services {
 			self::events(),
 			self::layouts(),
 			new SettingsSchemaValidator()
+		);
+	}
+
+	public static function gallery_editor(): GalleryEditor {
+		return self::$gallery_editor ??= new GalleryEditor(
+			self::gallery_service(),
+			self::galleries(),
+			self::revisions(),
+			self::relations(),
+			self::access(),
+			new GalleryPresenter( self::access() )
 		);
 	}
 
@@ -276,6 +290,7 @@ final class Services {
 		self::$access              = null;
 		self::$settings            = null;
 		self::$gallery_service     = null;
+		self::$gallery_editor      = null;
 		self::$item_service        = null;
 		self::$item_edit           = null;
 		self::$thumbnails          = null;

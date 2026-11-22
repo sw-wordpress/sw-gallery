@@ -20,6 +20,7 @@ use SWGallery\WordPress\Hooks\CacheInvalidationRegistrar;
 use SWGallery\WordPress\Hooks\GalleryLifecycleRegistrar;
 use SWGallery\WordPress\Hooks\ImportProvidersRegistrar;
 use SWGallery\WordPress\Infrastructure\EventBridgeRegistrar;
+use SWGallery\WordPress\Mcp\McpRegistrar;
 use SWGallery\WordPress\Rest\RestRegistrar;
 use SWGallery\WordPress\Shortcode\ShortcodeRegistrar;
 use SWGallery\WordPress\Update\UpdateRegistrar;
@@ -42,6 +43,7 @@ final class Registrars {
 			new FrontendRegistrar(),
 			new GalleryLifecycleRegistrar(),
 			new ImportProvidersRegistrar(),
+			new McpRegistrar(),
 			new MediaLibraryRegistrar(),
 			new PrivacyRegistrar(),
 			new RestRegistrar(),

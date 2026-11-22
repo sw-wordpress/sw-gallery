@@ -1,0 +1,64 @@
+<?php
+/**
+ * Registers the MCP abilities when the Abilities API and the mcp-adapter are present.
+ *
+ * @package sw-gallery
+ */
+
+declare(strict_types=1);
+
+namespace SWGallery\WordPress\Mcp;
+
+use SWGallery\WordPress\Bootstrap\RegistrarInterface;
+use SWGallery\WordPress\Gallery\GalleryEditor;
+use SWGallery\WordPress\Infrastructure\Services;
+use SWGallery\WordPress\Mcp\Ability\GetGalleryAbility;
+use SWGallery\WordPress\Mcp\Ability\UpdateGalleryAbility;
+use SWGallery\WordPress\Rest\ErrorMapper;
+
+/**
+ * Only the two Abilities API actions are hooked (and only when the API exists); everything else is decided inside
+ * by {@see McpAvailability}. No category, ability, option or UI exists without the adapter (docs/mcp-harness.md §2).
+ */
+final class McpRegistrar implements RegistrarInterface {
+
+	public function register(): void {
+		if ( ! function_exists( 'wp_register_ability' ) ) {
+			return;
+		}
+		add_action( 'wp_abilities_api_categories_init', array( $this, 'register_category' ) );
+		add_action( 'wp_abilities_api_init', array( $this, 'register_abilities' ) );
+	}
+
+	public function register_category(): void {
+		if ( ! McpAvailability::isAvailable() ) {
+			return;
+		}
+		wp_register_ability_category(
+			AbilityFactory::CATEGORY,
+			array(
+				'label'       => __( 'SW Gallery', 'sw-gallery' ),
+				'description' => 'Create, read and edit galleries of the SW Gallery plugin.',
+			)
+		);
+	}
+
+	public function register_abilities(): void {
+		if ( ! McpAvailability::isAvailable() ) {
+			return;
+		}
+		$factory = new AbilityFactory( new ErrorMapper( Services::logger() ), new McpAuditLog() );
+		foreach ( $this->definitions() as $definition ) {
+			$factory->register( $definition );
+		}
+	}
+
+	/** @return list<AbilityDefinition> */
+	private function definitions(): array {
+		$editor = static fn(): GalleryEditor => Services::gallery_editor();
+		return array(
+			new GetGalleryAbility( $editor ),
+			new UpdateGalleryAbility( $editor ),
+		);
+	}
+}

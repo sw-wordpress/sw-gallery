@@ -16,6 +16,7 @@ Everything not listed here is internal. Compatibility rules: `docs/extending.md`
 |---|---|---|---|---|---|
 | `swg_<event>` (10 events, below) | action | after commit | `array $payload` (ids/scalars) | no | throwing callback caught, logged, ignored |
 | `swg_before_gallery_trashing`, `swg_before_gallery_deleting` | filter | before any change | `true`, `array $payload` | yes (`false` / `WP_Error`) | throwing callback logged, does **not** veto (fails open) |
+| `swg_mcp_ability_called` | action | after every audited MCP ability call (adapter present only) | `string $ability` (verb-noun), `int $user_id`, `string $outcome` (`ok`/`denied`/`error`), `string $code` | no | caught, ignored (observer only) |
 | `swg_gallery_changed` | action | after every persisted gallery change, incl. attachment deletion/cover cleared/repair | `int $gallery_id` | no | caught, logged, ignored |
 | `swg_register_layouts` | action | once per request after `plugins_loaded`, built-ins registered | `LayoutRegistryInterface $registry`, `int $api_version` | no (a rejected layout is logged) | caught, logged; remaining callbacks of the hook skipped |
 | `swg_register_import_providers` | action | once per request after `plugins_loaded` | `ImportProviderRegistryInterface $registry` | no (a rejected provider is logged) | caught, logged; remaining callbacks skipped |

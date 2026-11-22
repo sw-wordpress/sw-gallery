@@ -16,6 +16,7 @@ use SWGallery\Tests\Support\RestFixtures;
 use SWGallery\Tests\Support\ThrowingGalleries;
 use SWGallery\WordPress\Infrastructure\Services;
 use SWGallery\WordPress\Rest\ErrorMapper;
+use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Rest\GalleryController;
 use SWGallery\WordPress\Rest\GalleryPresenter;
 
@@ -227,15 +228,17 @@ class RestSecurityTest extends SwgTestCase {
 
 	public function test_unexpected_failures_answer_500_without_details_and_are_logged(): void {
 		$logger     = new RecordingLogger();
+		$service    = new GalleryService( new ThrowingGalleries(), Services::revisions(), Services::transactions(), Services::access(), Services::events(), Services::layouts(), new SettingsSchemaValidator() );
 		$controller = new GalleryController(
 			new ErrorMapper( $logger ),
-			new GalleryService( new ThrowingGalleries(), Services::revisions(), Services::transactions(), Services::access(), Services::events(), Services::layouts(), new SettingsSchemaValidator() ),
+			$service,
 			new ThrowingGalleries(),
 			Services::revisions(),
 			Services::relations(),
 			Services::access(),
 			new GalleryPresenter( Services::access() ),
-			Services::settings()
+			Services::settings(),
+			new GalleryEditor( $service, new ThrowingGalleries(), Services::revisions(), Services::relations(), Services::access(), new GalleryPresenter( Services::access() ) )
 		);
 		$admin      = $this->makeUser( 'administrator' );
 		wp_set_current_user( $admin );

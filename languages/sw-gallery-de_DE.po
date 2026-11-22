@@ -59,7 +59,7 @@ msgstr "Galerie"
 msgid "Presentation"
 msgstr "Darstellung"
 
-#: assets/blocks/src/Edit.tsx:71
+#: assets/blocks/src/Edit.tsx:71 packages/wordpress/src/Mcp/McpRegistrar.php:39
 msgid "SW Gallery"
 msgstr "SW Gallery"
 
@@ -368,6 +368,43 @@ msgstr "Galerie bearbeiten: %s"
 #: packages/wordpress/src/Frontend/FrontendAssets.php:87
 msgid "Gallery diagnostic (visible to editors only): the gallery frontend assets are missing or invalid. Run \"npm run build\" in assets or install the release package."
 msgstr "Galerie-Diagnose (nur für Redakteure sichtbar): Die Frontend-Dateien der Galerie fehlen oder sind ungültig. Führe \"npm run build\" in assets aus oder installiere das Release-Paket."
+
+#: packages/wordpress/src/Gallery/GalleryEditor.php:100
+#: packages/wordpress/src/Rest/ItemController.php:301
+#: packages/wordpress/src/Rest/SettingsController.php:93
+msgid "The request does not change anything."
+msgstr "Die Anfrage ändert nichts."
+
+#: packages/wordpress/src/Gallery/GalleryEditor.php:128
+msgid "You are not allowed to publish galleries."
+msgstr "Sie dürfen keine Galerien veröffentlichen."
+
+#: packages/wordpress/src/Gallery/GalleryEditor.php:159
+msgid "The cover must be an image you may use."
+msgstr "Das Titelbild muss ein Bild sein, das Sie verwenden dürfen."
+
+#: packages/wordpress/src/Mcp/Ability/GetGalleryAbility.php:33
+msgid "Get gallery"
+msgstr "Galerie abrufen"
+
+#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:35
+msgid "Update gallery"
+msgstr "Galerie aktualisieren"
+
+#. translators: %s: argument name.
+#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:80
+#: packages/wordpress/src/Rest/AbstractController.php:125
+#, php-format
+msgid "%s is too large or nested too deeply."
+msgstr "%s ist zu groß oder zu tief verschachtelt."
+
+#: packages/wordpress/src/Mcp/AbilityFactory.php:76
+msgid "This action is disabled by the MCP access level of the site."
+msgstr "Diese Aktion ist durch die MCP-Zugriffsstufe der Website deaktiviert."
+
+#: packages/wordpress/src/Mcp/AbilityFactory.php:110
+msgid "The result is too large to return."
+msgstr "Das Ergebnis ist zu groß, um es zurückzugeben."
 
 #: packages/wordpress/src/Rendering/DiagnosticMarkup.php:36
 msgid "Gallery diagnostic (visible to editors only): this gallery does not exist."
@@ -862,12 +899,6 @@ msgstr "Nächste Seite"
 msgid "Page %1$d of %2$d"
 msgstr "Seite %1$d von %2$d"
 
-#. translators: %s: argument name.
-#: packages/wordpress/src/Rest/AbstractController.php:125
-#, php-format
-msgid "%s is too large or nested too deeply."
-msgstr "%s ist zu groß oder zu tief verschachtelt."
-
 #: packages/wordpress/src/Rest/ErrorMapper.php:55
 msgid "The gallery data was written by a newer version of SW Gallery. Update the plugin before making changes; nothing was saved."
 msgstr "Die Galeriedaten wurden von einer neueren Version von SW Gallery geschrieben. Aktualisieren Sie das Plugin, bevor Sie Änderungen vornehmen; es wurde nichts gespeichert."
@@ -880,25 +911,11 @@ msgstr "Die Anfrage enthält ungültige Werte."
 msgid "An unexpected error occurred."
 msgstr "Es ist ein unerwarteter Fehler aufgetreten."
 
-#: packages/wordpress/src/Rest/GalleryController.php:326
-#: packages/wordpress/src/Rest/ItemController.php:301
-#: packages/wordpress/src/Rest/SettingsController.php:93
-msgid "The request does not change anything."
-msgstr "Die Anfrage ändert nichts."
-
 #. translators: %s: title of the duplicated gallery
-#: packages/wordpress/src/Rest/GalleryController.php:394
+#: packages/wordpress/src/Rest/GalleryController.php:387
 #, php-format
 msgid "%s (copy)"
 msgstr "%s (Kopie)"
-
-#: packages/wordpress/src/Rest/GalleryController.php:633
-msgid "The cover must be an image you may use."
-msgstr "Das Titelbild muss ein Bild sein, das Sie verwenden dürfen."
-
-#: packages/wordpress/src/Rest/GalleryController.php:664
-msgid "You are not allowed to publish galleries."
-msgstr "Sie dürfen keine Galerien veröffentlichen."
 
 #: packages/wordpress/src/Rest/ItemController.php:472
 msgid "The settings must be an object."

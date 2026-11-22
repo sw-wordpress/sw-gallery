@@ -27,6 +27,7 @@ use SWGallery\Core\Domain\Gallery\SortMode;
 use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\InvalidStateException;
+use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Repository\WpdbGalleryRelations;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 use SWGallery\WordPress\Settings\PluginSettings;
@@ -38,13 +39,12 @@ use SWGallery\WordPress\Settings\PluginSettings;
  */
 final class GalleryController extends AbstractController {
 
-	public const CODE_CANNOT_PUBLISH = 'swg_cannot_publish';
-	public const CODE_INVALID_COVER  = 'swg_invalid_cover';
-	public const CODE_NO_CHANGES     = 'swg_no_changes';
+	public const CODE_CANNOT_PUBLISH = GalleryEditor::CODE_CANNOT_PUBLISH;
+	public const CODE_INVALID_COVER  = GalleryEditor::CODE_INVALID_COVER;
+	public const CODE_NO_CHANGES     = GalleryEditor::CODE_NO_CHANGES;
 
 	private const WRITABLE_STATUSES = array( 'draft', 'pending', 'publish', 'private' );
 	private const LIST_STATUSES     = array( 'draft', 'pending', 'publish', 'private', 'trash' );
-	private const PATCH_FIELDS      = array( 'title', 'description', 'status', 'ownerId', 'coverAttachmentId', 'layout', 'sortMode', 'perPage', 'hover', 'settings' );
 	private const ID_PATTERN        = '(?P<id>[1-9]\d{0,9})';
 
 	public function __construct(
@@ -55,7 +55,8 @@ final class GalleryController extends AbstractController {
 		private readonly WpdbGalleryRelations $relations,
 		private readonly WpGalleryAccessPolicy $access,
 		private readonly GalleryPresenter $presenter,
-		private readonly PluginSettings $settings
+		private readonly PluginSettings $settings,
+		private readonly GalleryEditor $editor
 	) {
 		parent::__construct( $errors );
 		$this->rest_base = 'galleries';
@@ -281,8 +282,8 @@ final class GalleryController extends AbstractController {
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
 				$actor  = $this->actor();
 				$status = $this->status_param( $request ) ?? GalleryStatus::Draft;
-				if ( $this->needs_publish_right( $status ) && ! $this->access->canPublishNew( $actor ) ) {
-					return $this->cannot_publish();
+				if ( GalleryEditor::needs_publish_right( $status ) && ! $this->access->canPublishNew( $actor ) ) {
+					return GalleryEditor::cannot_publish();
 				}
 				$settings = new GallerySettings(
 					$this->string_param( $request, 'layout' ) ?? $this->settings->get()['defaultLayout'],
@@ -317,23 +318,15 @@ final class GalleryController extends AbstractController {
 	public function update_item( $request ): \WP_REST_Response|\WP_Error {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
-				$actor   = $this->actor();
-				$current = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
-				if ( ! $this->access->canEdit( $actor, $current ) ) {
-					throw new AccessDeniedException();
+				$actor  = $this->actor();
+				$fields = array();
+				foreach ( GalleryEditor::UPDATE_FIELDS as $field ) {
+					if ( $request->has_param( $field ) ) {
+						$fields[ $field ] = $request->get_param( $field );
+					}
 				}
-				if ( array() === array_intersect( self::PATCH_FIELDS, array_keys( $request->get_params() ) ) ) {
-					return ErrorMapper::bad_request( self::CODE_NO_CHANGES, __( 'The request does not change anything.', 'sw-gallery' ) );
-				}
-				$changed = $this->apply_changes( $actor, $current, $request );
-				if ( $changed instanceof \WP_Error ) {
-					return $changed;
-				}
-				if ( $this->needs_publish_right( $changed->status ) && $request->has_param( 'status' ) && ! $this->access->canPublish( $actor, $current ) ) {
-					return $this->cannot_publish();
-				}
-				$result = $this->service->update( $actor, $changed, $this->expected_revision( $request ) );
-				return new \WP_REST_Response( $this->present( $actor, $result->gallery, $result->revision->value ), 200 );
+				$result = $this->editor->update( $actor, (int) $request->get_param( 'id' ), $this->expected_revision( $request )->value, $fields );
+				return $result instanceof \WP_Error ? $result : new \WP_REST_Response( $result, 200 );
 			}
 		);
 	}
@@ -596,74 +589,7 @@ final class GalleryController extends AbstractController {
 	 * @throws GalleryNotFoundException When missing or not viewable (the same answer, so existence does not leak).
 	 */
 	private function viewable( Actor $actor, int $id ): Gallery {
-		$gallery = $this->galleries->find( $id );
-		if ( null === $gallery || ! $this->access->canView( $actor, $gallery ) ) {
-			throw new GalleryNotFoundException();
-		}
-		return $gallery;
-	}
-
-	/**
-	 * Applies the submitted fields; returns a 422 error for an unusable cover or owner.
-	 *
-	 * @param Actor            $actor   Actor.
-	 * @param Gallery          $current Stored gallery.
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 */
-	private function apply_changes( Actor $actor, Gallery $current, \WP_REST_Request $request ): Gallery|\WP_Error {
-		$changed = $current;
-		if ( $request->has_param( 'title' ) ) {
-			$changed = $changed->withTitle( (string) $this->string_param( $request, 'title' ) );
-		}
-		if ( $request->has_param( 'description' ) ) {
-			$changed = $changed->withDescription( (string) $this->string_param( $request, 'description' ) );
-		}
-		if ( $request->has_param( 'status' ) ) {
-			$changed = $changed->withStatus( $this->status_param( $request ) ?? $current->status );
-		}
-		if ( $request->has_param( 'ownerId' ) ) {
-			// Authorisation (403) and validity (422 swg_invalid_owner) of a changed owner are decided by the service.
-			$changed = $changed->withOwner( absint( $request->get_param( 'ownerId' ) ) );
-		}
-		if ( $request->has_param( 'coverAttachmentId' ) ) {
-			$cover = $request->get_param( 'coverAttachmentId' );
-			$cover = null === $cover ? null : absint( $cover );
-			if ( null !== $cover && $cover !== $current->coverAttachmentId && ! $this->access->canUseAttachment( $actor, $cover ) ) {
-				return ErrorMapper::unprocessable( self::CODE_INVALID_COVER, __( 'The cover must be an image you may use.', 'sw-gallery' ) );
-			}
-			$changed = $changed->withCover( $cover );
-		}
-
-		$settings = $current->settings;
-		if ( $request->has_param( 'layout' ) ) {
-			$settings = $settings->withLayout( (string) $this->string_param( $request, 'layout' ) );
-		}
-		if ( $request->has_param( 'sortMode' ) ) {
-			$settings = $settings->withSortMode( SortMode::from( (string) $this->string_param( $request, 'sortMode' ) ) );
-		}
-		if ( $request->has_param( 'perPage' ) ) {
-			$settings = $settings->withPerPage( $this->per_page_param( $request ) );
-		}
-		if ( $request->has_param( 'hover' ) ) {
-			$settings = $settings->withHover( $this->hover_param( $request ) );
-		}
-		if ( $request->has_param( 'settings' ) ) {
-			$settings = $settings->withValues( $this->settings_param( $request ) );
-		}
-		return $changed->withSettings( $settings );
-	}
-
-	private function needs_publish_right( GalleryStatus $status ): bool {
-		return GalleryStatus::Publish === $status || GalleryStatus::Private === $status;
-	}
-
-	private function cannot_publish(): \WP_Error {
-		return new \WP_Error(
-			self::CODE_CANNOT_PUBLISH,
-			__( 'You are not allowed to publish galleries.', 'sw-gallery' ),
-			array( 'status' => 403 )
-		);
+		return $this->editor->viewable( $actor, $id );
 	}
 
 	/**

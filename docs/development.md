@@ -56,6 +56,7 @@ composer stan          # PHPStan level 8, no baseline
 composer test          # unit + integration (no database)
 composer test:wp       # WordPress integration tests (single site, needs the private DB)
 composer test:wp:ms    # same environment as multisite (sequentially, never in parallel with test:wp)
+composer test:wp:nomcp # MCP absence test without the mcp-adapter (the other WP suites load the pinned adapter, a dev dependency of tests/wp; see mcp-harness.md)
 composer test:perf     # performance budgets with 5k/10k seeded items (group `performance`, ~10 s; also part of test:wp), see `performance.md`
 wp eval-file bin/seed.php -- --items=5000 --galleries=2   # dev-only fixture seeder (refuses unless WP_ENVIRONMENT_TYPE is local/development/staging)
 UPDATE_SNAPSHOTS=1 composer test:wp -- --filter RenderSnapshotTest   # renderer snapshots in tests/wp/fixtures/render-snapshots (refused when CI is set)
