@@ -209,6 +209,50 @@ class McpTransportEndToEndTest extends SwgTestCase {
 		}
 	}
 
+	public function test_the_shared_server_respects_foreign_ability_visibility_and_permissions(): void {
+		$public = 'mcp-test/public-fixture';
+		$private = 'mcp-test/private-fixture';
+		global $wp_current_filter;
+		$wp_current_filter[] = 'wp_abilities_api_init';
+		try {
+			foreach ( array( $public => true, $private => false ) as $name => $exposed ) {
+				wp_register_ability(
+					$name,
+					array(
+						'label'               => 'MCP fixture',
+						'description'         => 'Test only.',
+						'category'            => 'sw-gallery',
+						'input_schema'        => array( 'type' => 'object' ),
+						'permission_callback' => static fn(): bool => current_user_can( 'manage_options' ),
+						'execute_callback'    => static fn(): array => array( 'ok' => true ),
+						'meta'                => array( 'mcp' => array( 'public' => $exposed ) ),
+					)
+				);
+			}
+		} finally {
+			array_pop( $wp_current_filter );
+		}
+
+		try {
+			$this->reregisterAbilities( 'off' );
+			$author = $this->connect( $this->author );
+			$refused = $this->tool( $author, 'mcp-adapter-execute-ability', array( 'ability_name' => $public, 'parameters' => new stdClass() ) );
+			$this->assertFalse( $refused['success'] );
+
+			$admin = $this->connect( $this->makeUser( 'administrator' ) );
+			$names = $this->discovered( $admin );
+			$this->assertContains( $public, $names );
+			$this->assertNotContains( $private, $names );
+			$allowed = $this->tool( $admin, 'mcp-adapter-execute-ability', array( 'ability_name' => $public, 'parameters' => new stdClass() ) );
+			$this->assertSame( array( 'ok' => true ), $allowed['data'] );
+			$hidden = $this->tool( $admin, 'mcp-adapter-execute-ability', array( 'ability_name' => $private, 'parameters' => new stdClass() ) );
+			$this->assertFalse( $hidden['success'] );
+		} finally {
+			wp_unregister_ability( $public );
+			wp_unregister_ability( $private );
+		}
+	}
+
 	public function test_anonymous_clients_cannot_open_a_session(): void {
 		wp_set_current_user( 0 );
 		$init = $this->rpc( array( 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'initialize', 'params' => array( 'protocolVersion' => '2025-06-18', 'capabilities' => new stdClass(), 'clientInfo' => array( 'name' => 'x', 'version' => '1' ) ) ) );
