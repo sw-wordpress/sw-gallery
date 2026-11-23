@@ -1,6 +1,6 @@
 # MCP Server
 
-SW Gallery can be operated by an AI assistant through the WordPress **MCP Adapter** plugin. The assistant works as a normal WordPress user: it sees and changes only what that user may see and change in the admin, and every change goes through the same rules as the editor (revision checks, publishing rights, plain-text storage).
+An AI assistant can manage SW Gallery through the default server provided by the [WordPress MCP Adapter](https://github.com/WordPress/mcp-adapter). SW Gallery registers its abilities with WordPress, and the adapter exposes them to the MCP client. The assistant works within the authenticated WordPress user's permissions.
 
 Without the MCP Adapter plugin nothing of this exists on your site: no tools, no options, no extra screens.
 
@@ -113,9 +113,19 @@ Lists are returned in pages. When there is more, the answer contains `next` with
 | Upload images | – | Not offered through MCP. Use images already in the Media Library (`list-media`). |
 | Change a gallery's owner | – | Not offered through MCP; use the admin app. |
 
+## Create a Masonry gallery from the Media Library
+
+With the `write` access level, use these abilities through the adapter's execute tool. Look up each ability's input schema with the adapter's ability-info tool.
+
+1. Call `sw-gallery/list-layouts` to confirm the `masonry` layout. Call `sw-gallery/list-media` and follow every `next` value to collect the attachment IDs the user can access.
+2. Call `sw-gallery/create-gallery` with `title: "Masonry"` and `layout: "masonry"`. Keep the default draft status while assembling the gallery.
+3. Call `sw-gallery/get-gallery` for the new gallery ID. Send the attachment IDs to `sw-gallery/assign-items` with that gallery ID and the current revision as `expectedRevision`. For more than 500 IDs, split the assignment into batches and read the latest revision before each batch.
+4. Compare the assigned IDs using `sw-gallery/list-items`, then call `sw-gallery/render-gallery` to check the layout, image count and diagnostics. To publish, read the gallery again and call `sw-gallery/update-gallery` with the current revision and `status: "publish"`.
+5. Embed the published gallery in a WordPress page using its shortcode, for example `[sw_gallery id="123"]` for gallery ID 123. Creating the WordPress page itself requires a separate page-management ability or the WordPress page editor. [Embedding guide](embedding.md)
+
 ## Rules every change follows
 
-- **Revision.** Each change needs `expectedRevision`, the number from the last read. If the gallery changed in between, the call fails and nothing is written. Read again, then decide.
+- **Revision.** Tools that require `expectedRevision` use the number from the last `get-gallery` call. If the gallery changed in between, the call fails before applying the change. Read again, then decide.
 - **Plain text.** Titles, descriptions and image texts are stored as plain text; markup is removed.
 - **Rights.** Publishing, covers and image use follow the WordPress rights of the user, exactly as in the editor. A gallery the user cannot see is reported as "not found".
 - **Images.** Attachments are never copied, modified or deleted.
