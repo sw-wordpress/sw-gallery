@@ -7,6 +7,7 @@ Every task ships with tests, i18n (en/de), docs and passes the Definition of Don
 
 ## 1.0 release readiness (2026-11-18)
 
+- [ ] MCP-05: On staging, confirm the default is Off and enabling Read exposes only read tools. See the [MCP guide](pages/ai-assistants.md#access-level).
 - [ ] Stefan: run the [recommended staging acceptance checks](docs/release.md#10-staging-acceptance). Record WordPress version, theme, browser/device and findings.
 - [ ] Run full E2E on the release candidate without retries (M5-07). Check for recurring Scattered lightbox and gallery deep-link failures. The overview count and Scattered RTL assertions were stabilized during the audit.
 - [ ] Refresh SonarCloud for the release candidate and triage the older main-branch findings (M5-13).

@@ -18,6 +18,7 @@ export default {
         { text: 'Layouts and presentation', link: '/layouts' },
         { text: 'Embedding', link: '/embedding' },
         { text: 'Settings, access and privacy', link: '/settings-and-access' },
+        { text: 'AI assistants (MCP)', link: '/ai-assistants' },
         { text: 'Troubleshooting', link: '/troubleshooting' },
         { text: 'Changelog', link: '/Changelog' }
       ]

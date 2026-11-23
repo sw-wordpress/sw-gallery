@@ -33,7 +33,7 @@ final class StatusReport {
 	/** Number of recent errors returned. */
 	public const MAX_ERRORS = 20;
 
-	private const GALLERY_STATUSES = array( 'draft', 'pending', 'publish', 'private', 'future', 'trash' );
+	public const GALLERY_STATUSES = array( 'draft', 'pending', 'publish', 'private', 'future', 'trash' );
 
 	public function __construct(
 		private readonly WpLogger $logger,
@@ -46,7 +46,7 @@ final class StatusReport {
 	}
 
 	/**
-	 * @return array<string, mixed>
+	 * @return array{schema: array<string, int|bool>, counts: array<string, mixed>, recentErrors: list<array{time: string, code: string, context: array<string, scalar|null>}>, versions: array<string, mixed>, multisite: bool, cache: array{state: string}, adminBuild: bool, hints: list<array{key: string, message: string}>}
 	 */
 	public function build(): array {
 		global $wpdb;

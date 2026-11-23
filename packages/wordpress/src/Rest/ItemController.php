@@ -21,6 +21,7 @@ use SWGallery\Core\Domain\Gallery\ItemOverrides;
 use SWGallery\Core\Domain\Gallery\Revision;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\ItemNotFoundException;
+use SWGallery\WordPress\Gallery\ItemEditor;
 use SWGallery\WordPress\Repository\WpdbGalleryItemRepository;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 
@@ -48,12 +49,12 @@ final class ItemController extends AbstractController {
 	public function __construct(
 		ErrorMapper $errors,
 		private readonly GalleryItemService $items,
-		private readonly GalleryItemEditService $edits,
 		private readonly GalleryRepositoryInterface $galleries,
 		private readonly WpdbGalleryItemRepository $item_repository,
 		private readonly RevisionStoreInterface $revisions,
 		private readonly WpGalleryAccessPolicy $access,
-		private readonly ItemPresenter $presenter
+		private readonly ItemPresenter $presenter,
+		private readonly ItemEditor $editor
 	) {
 		parent::__construct( $errors );
 		$this->rest_base = 'galleries';
@@ -286,36 +287,10 @@ final class ItemController extends AbstractController {
 	public function update_item( $request ): \WP_REST_Response|\WP_Error {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
-				$actor   = $this->actor();
-				$gallery = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
-				if ( ! $this->access->canEdit( $actor, $gallery ) ) {
-					throw new \SWGallery\Core\Exception\AccessDeniedException();
-				}
-				$item_id   = (int) $request->get_param( 'itemId' );
 				$overrides = $request->has_param( 'overrides' ) ? (array) $request->get_param( 'overrides' ) : array();
-				$settings  = $request->has_param( 'settings' ) ? $this->settings_param( $request ) : null;
-				if ( $settings instanceof \WP_Error ) {
-					return $settings;
-				}
-				if ( array() === $overrides && null === $settings ) {
-					return ErrorMapper::bad_request( GalleryController::CODE_NO_CHANGES, __( 'The request does not change anything.', 'sw-gallery' ) );
-				}
-				$current  = $this->item_repository->findWithSettings( $gallery->id, $item_id ) ?? throw new ItemNotFoundException();
-				$expect   = $this->expected_revision( $request );
-				$revision = $expect;
-				if ( null !== $settings ) {
-					$revision = $this->edits->setSettings( $actor, $gallery->id, $item_id, $settings, $expect )->revision;
-				}
-				if ( array() !== $overrides ) {
-					$revision = $this->edits->updateOverrides( $actor, $gallery->id, $item_id, $this->merged( $current->item->overrides, $overrides ), $revision );
-				}
-				return new \WP_REST_Response(
-					array(
-						'item'     => $this->stored_item( $actor, $gallery->id, $item_id ),
-						'revision' => $revision->value,
-					),
-					200
-				);
+				$settings  = $request->has_param( 'settings' ) ? (array) $request->get_param( 'settings' ) : null;
+				$result    = $this->editor->update( $this->actor(), (int) $request->get_param( 'id' ), (int) $request->get_param( 'itemId' ), $overrides, $settings, $this->expected_revision( $request )->value );
+				return $result instanceof \WP_Error ? $result : new \WP_REST_Response( $result, 200 );
 			}
 		);
 	}
@@ -404,16 +379,7 @@ final class ItemController extends AbstractController {
 	 * @param mixed $value Submitted value.
 	 */
 	public static function sanitize_overrides( mixed $value ): mixed {
-		if ( ! is_array( $value ) ) {
-			return $value;
-		}
-		foreach ( $value as $field => $text ) {
-			if ( ! is_string( $text ) ) {
-				continue;
-			}
-			$value[ $field ] = 'caption' === $field ? sanitize_textarea_field( $text ) : sanitize_text_field( $text );
-		}
-		return $value;
+		return ItemEditor::sanitize_overrides( $value );
 	}
 
 	/**
@@ -427,55 +393,6 @@ final class ItemController extends AbstractController {
 			throw new GalleryNotFoundException();
 		}
 		return $gallery;
-	}
-
-	/**
-	 * The item as stored after a write.
-	 *
-	 * @param Actor $actor      Requesting actor.
-	 * @param int   $gallery_id Gallery id.
-	 * @param int   $item_id    Item id.
-	 * @return array<string, mixed>
-	 * @throws ItemNotFoundException When the item vanished meanwhile.
-	 */
-	private function stored_item( Actor $actor, int $gallery_id, int $item_id ): array {
-		$row = $this->item_repository->findWithSettings( $gallery_id, $item_id ) ?? throw new ItemNotFoundException();
-		return $this->presenter->present( $actor, $row );
-	}
-
-	/**
-	 * Applies a partial overrides map on top of the stored overrides.
-	 *
-	 * @param ItemOverrides        $current Stored overrides.
-	 * @param array<string, mixed> $patch   Submitted (sanitized) fields.
-	 */
-	private function merged( ItemOverrides $current, array $patch ): ItemOverrides {
-		return new ItemOverrides(
-			array_key_exists( 'title', $patch ) ? $this->nullable_text( $patch['title'] ) : $current->title,
-			array_key_exists( 'caption', $patch ) ? $this->nullable_text( $patch['caption'] ) : $current->caption,
-			array_key_exists( 'alt', $patch ) ? $this->nullable_text( $patch['alt'] ) : $current->alt
-		);
-	}
-
-	private function nullable_text( mixed $value ): ?string {
-		return is_string( $value ) ? $value : null;
-	}
-
-	/**
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 * @return array<string, mixed>|\WP_Error
-	 */
-	private function settings_param( \WP_REST_Request $request ): array|\WP_Error {
-		$raw = (array) $request->get_param( 'settings' );
-		if ( array() !== $raw && array_is_list( $raw ) ) {
-			return ErrorMapper::bad_request( 'rest_invalid_param', __( 'The settings must be an object.', 'sw-gallery' ) );
-		}
-		$values = array();
-		foreach ( $raw as $key => $value ) {
-			$values[ (string) $key ] = $value;
-		}
-		return $values;
 	}
 
 	/**

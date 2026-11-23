@@ -92,6 +92,8 @@ jobs:
       # Both suites share one disposable database: keep these steps sequential.
       - name: Multisite
         run: composer test:wp:ms
+      - name: MCP absence (no adapter)
+        run: composer test:wp:nomcp
 
   coverage:
     name: PHP coverage gate (> 80 %)

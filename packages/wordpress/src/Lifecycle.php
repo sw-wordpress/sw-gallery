@@ -69,7 +69,7 @@ final class Lifecycle {
 				$wpdb->esc_like( '_transient_timeout_swg_' ) . '%'
 			)
 		);
-		foreach ( array( Schema::OPTION, Migrator::LOCK_OPTION, WpLogger::OPTION, PluginSettings::OPTION, MediaEpoch::OPTION, self::OPTION_DELETE_ON_UNINSTALL ) as $option ) {
+		foreach ( array( Schema::OPTION, Migrator::LOCK_OPTION, WpLogger::OPTION, Mcp\McpAuditLog::OPTION, Mcp\TierPolicy::OPTION, PluginSettings::OPTION, MediaEpoch::OPTION, self::OPTION_DELETE_ON_UNINSTALL ) as $option ) {
 			delete_option( $option );
 		}
 	}

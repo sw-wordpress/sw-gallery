@@ -56,10 +56,25 @@ if ( SWG_WP_DB_AVAILABLE ) {
 		'muplugins_loaded',
 		static function (): void {
 			require dirname( __DIR__, 2 ) . '/sw-gallery.php';
+			// The pinned mcp-adapter (dev dependency of this suite); SWG_WP_NO_MCP_ADAPTER=1 runs without it (absence tests).
+			if ( ! getenv( 'SWG_WP_NO_MCP_ADAPTER' ) && function_exists( 'wp_register_ability' ) ) {
+				define( 'WP_MCP_AUTOLOAD', false );
+				require __DIR__ . '/vendor/wordpress/mcp-adapter/mcp-adapter.php';
+			}
 		}
 	);
 
 	require $swg_tests_dir . '/includes/bootstrap.php';
+
+	// The adapter initialises once per process on the first `rest_api_init` and hooks its transport routes then; the test
+	// case restores the hooks after every test, so that first initialisation must happen before the first test.
+	if ( ! getenv( 'SWG_WP_NO_MCP_ADAPTER' ) && function_exists( 'wp_register_ability' ) ) {
+		rest_get_server();
+		// Building the REST routes created the plugin services and announced the extension points once; give the tests a
+		// pristine "once per request" state.
+		\SWGallery\WordPress\Infrastructure\Services::reset();
+		unset( $GLOBALS['wp_actions']['swg_register_layouts'], $GLOBALS['wp_actions']['swg_register_import_providers'] );
+	}
 } else {
 	fwrite( STDERR, "sw-gallery WordPress tests: test database unreachable (start it with bin/test-db.sh start); tests will be skipped.\n" );
 }

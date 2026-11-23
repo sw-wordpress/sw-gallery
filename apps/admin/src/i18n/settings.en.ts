@@ -12,6 +12,19 @@ export default {
   discard: 'Discard changes',
   unsaved: 'You have unsaved changes.',
   saved: 'Settings saved.',
+  mcp: {
+    title: 'MCP access',
+    level: 'Maximum access level',
+    hint: 'Each level includes the levels below it. WordPress user permissions still apply.',
+    effective: 'Effective level: {level}',
+    levels: {
+      off: 'Off',
+      read: 'Read only',
+      write: 'Read and write',
+      destructive: 'Allow permanent removal',
+      admin: 'Allow administration',
+    },
+  },
   problem: {
     required: 'Enter a number.',
     integer: 'Enter a whole number.',

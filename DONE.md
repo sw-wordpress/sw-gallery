@@ -1,5 +1,18 @@
 # DONE
 
+## 2026-11-24 — MCP access defaults to off
+
+- Require an explicit site setting to expose SW Gallery tools. Keep existing access levels and verify the fallback through the abilities registry and REST settings.
+
+## 2026-11-23 — MCP release acceptance follow-up
+
+- Consolidate repeated MCP schemas, annotations and permission checks reported in PR #8. Extend contract checks and run adapter calls at their required access levels.
+
+## 2026-11-23 — MCP-04
+
+- Add confirmed permanent removal of gallery items and galleries, display settings and system status abilities, and the translated MCP access control.
+- Extend the WordPress permission matrix, audit tests and adapter client tests to cover the new abilities and all access levels.
+
 ## 2026-11-09 — M1 slice 1
 - Tooling: Composer, PHPUnit, PHPCS (PSR-12 core/tests, WPCS adapter), PHPStan level 8, `.editorconfig`, `.gitignore`, `sonar-project.properties`.
 - Core: `GalleryItem`, `ItemOverrides` (null = inherit), `Revision`, `AssignResult`, typed exceptions with stable error codes, repository/revision/media contracts,

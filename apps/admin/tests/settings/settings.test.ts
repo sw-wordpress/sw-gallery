@@ -73,7 +73,25 @@ describe('Settings page', () => {
     expect(text).toContain('Default: on');
     expect(text).toContain('Images in the Media Library are never deleted');
     expect(text).toContain(NOTICE);
+    expect(text).not.toContain('MCP access');
     expect(isDisabled(saveButton())).toBe(true);
+  });
+
+  it('shows the configured and effective MCP levels and saves only the changed level', async () => {
+    const api = fakeSettingsApi(
+      makeSettings({ mcpAccessLevel: 'write', mcpEffectiveLevel: 'read' }),
+    );
+    await open(api);
+    const select = $<HTMLSelectElement>('select[id^="swg-set-mcp"]');
+    expect(select?.value).toBe('write');
+    expect($('.swg-settings')?.textContent).toContain('Effective level: Read only');
+    if (!select) throw new Error('MCP access control missing');
+    select.value = 'off';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    await settle();
+    saveButton().click();
+    await settle();
+    expect(api.settings.update).toHaveBeenCalledExactlyOnceWith({ mcpAccessLevel: 'off' });
   });
 
   it('validates the number inline with the server bounds and blocks saving', async () => {

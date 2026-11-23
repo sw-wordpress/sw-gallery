@@ -118,7 +118,7 @@ abstract class AbstractController extends \WP_REST_Controller {
 		if ( true !== $valid ) {
 			return $valid;
 		}
-		if ( is_array( $value ) && ( ! self::settings_shape_ok( $value, 1 ) || strlen( (string) wp_json_encode( $value ) ) > self::SETTINGS_MAX_BYTES ) ) {
+		if ( is_array( $value ) && ! self::settings_within_limits( $value ) ) {
 			return new \WP_Error(
 				'rest_invalid_param',
 				/* translators: %s: argument name. */
@@ -127,6 +127,15 @@ abstract class AbstractController extends \WP_REST_Controller {
 			);
 		}
 		return true;
+	}
+
+	/**
+	 * Whether a settings map respects the size bounds (bytes, depth, keys); shared with the MCP abilities.
+	 *
+	 * @param array<mixed> $value Submitted map.
+	 */
+	public static function settings_within_limits( array $value ): bool {
+		return self::settings_shape_ok( $value, 1 ) && strlen( (string) wp_json_encode( $value ) ) <= self::SETTINGS_MAX_BYTES;
 	}
 
 	/**

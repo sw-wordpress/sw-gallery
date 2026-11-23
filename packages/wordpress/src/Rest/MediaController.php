@@ -11,6 +11,7 @@ declare(strict_types=1);
 
 namespace SWGallery\WordPress\Rest;
 
+use SWGallery\WordPress\Media\MediaLister;
 use SWGallery\WordPress\Repository\WpdbGalleryRelations;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 
@@ -34,8 +35,7 @@ final class MediaController extends AbstractController {
 		private readonly MediaSearch $search,
 		private readonly MediaUploader $uploader,
 		private readonly MediaPresenter $presenter,
-		private readonly WpdbGalleryRelations $relations,
-		private readonly WpGalleryAccessPolicy $access
+		private readonly MediaLister $lister
 	) {
 		parent::__construct( $errors );
 	}
@@ -89,36 +89,17 @@ final class MediaController extends AbstractController {
 	public function get_items( $request ) {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
-				$actor    = $this->actor();
 				$per_page = $this->int_param( $request, 'per_page', self::DEFAULT_PER_PAGE );
-				// Only users who may see everybody's uploads can filter by uploader; for everyone else the filter is the caller.
-				$uploaded_by = $this->int_param( $request, 'uploadedBy', 0 );
-				if ( $uploaded_by > 0 && ! current_user_can( 'edit_others_posts' ) ) {
-					$uploaded_by = $actor->userId;
-				}
-				$found = $this->search->search(
-					$actor->userId,
+				$found    = $this->lister->list(
+					$this->actor(),
 					(string) ( $request->get_param( 'search' ) ?? '' ),
 					$this->int_param( $request, 'page', 1 ),
 					$per_page,
 					(string) ( $request->get_param( 'orderby' ) ?? 'date' ),
 					(string) ( $request->get_param( 'order' ) ?? 'desc' ),
-					$uploaded_by
+					$this->int_param( $request, 'uploadedBy', 0 )
 				);
-
-				$posts = array_values(
-					array_filter(
-						$found['posts'],
-						fn( \WP_Post $post ): bool => $this->access->canUseAttachment( $actor, $post->ID )
-					)
-				);
-				$ids   = array_map( static fn( \WP_Post $post ): int => $post->ID, $posts );
-				$used  = $this->relations->count_galleries_by_attachment( $ids );
-
-				$items = array();
-				foreach ( $posts as $post ) {
-					$items[] = $this->presenter->present( $post, $used[ $post->ID ] ?? 0 );
-				}
+				$items    = $found['items'];
 				return $this->with_pagination_headers( new \WP_REST_Response( $items ), $found['total'], $per_page );
 			}
 		);

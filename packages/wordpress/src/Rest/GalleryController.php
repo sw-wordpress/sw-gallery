@@ -27,6 +27,8 @@ use SWGallery\Core\Domain\Gallery\SortMode;
 use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\Core\Exception\GalleryNotFoundException;
 use SWGallery\Core\Exception\InvalidStateException;
+use SWGallery\WordPress\Gallery\GalleryEditor;
+use SWGallery\WordPress\Gallery\GalleryLister;
 use SWGallery\WordPress\Repository\WpdbGalleryRelations;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 use SWGallery\WordPress\Settings\PluginSettings;
@@ -38,24 +40,23 @@ use SWGallery\WordPress\Settings\PluginSettings;
  */
 final class GalleryController extends AbstractController {
 
-	public const CODE_CANNOT_PUBLISH = 'swg_cannot_publish';
-	public const CODE_INVALID_COVER  = 'swg_invalid_cover';
-	public const CODE_NO_CHANGES     = 'swg_no_changes';
+	public const CODE_CANNOT_PUBLISH = GalleryEditor::CODE_CANNOT_PUBLISH;
+	public const CODE_INVALID_COVER  = GalleryEditor::CODE_INVALID_COVER;
+	public const CODE_NO_CHANGES     = GalleryEditor::CODE_NO_CHANGES;
 
 	private const WRITABLE_STATUSES = array( 'draft', 'pending', 'publish', 'private' );
-	private const LIST_STATUSES     = array( 'draft', 'pending', 'publish', 'private', 'trash' );
-	private const PATCH_FIELDS      = array( 'title', 'description', 'status', 'ownerId', 'coverAttachmentId', 'layout', 'sortMode', 'perPage', 'hover', 'settings' );
+	private const LIST_STATUSES     = GalleryLister::LIST_STATUSES;
 	private const ID_PATTERN        = '(?P<id>[1-9]\d{0,9})';
 
 	public function __construct(
 		ErrorMapper $errors,
 		private readonly GalleryService $service,
-		private readonly GalleryRepositoryInterface $galleries,
 		private readonly RevisionStoreInterface $revisions,
 		private readonly WpdbGalleryRelations $relations,
 		private readonly WpGalleryAccessPolicy $access,
 		private readonly GalleryPresenter $presenter,
-		private readonly PluginSettings $settings
+		private readonly GalleryEditor $editor,
+		private readonly GalleryLister $lister
 	) {
 		parent::__construct( $errors );
 		$this->rest_base = 'galleries';
@@ -227,32 +228,19 @@ final class GalleryController extends AbstractController {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
 				$actor    = $this->actor();
-				$statuses = $this->requested_statuses( $request );
-				$trash    = in_array( GalleryStatus::Trash, $statuses, true );
-				if ( $trash && ! current_user_can( 'delete_posts' ) ) {
-					throw new AccessDeniedException();
-				}
-				$sees_all = current_user_can( 'edit_others_posts' ) && current_user_can( 'read_private_posts' )
-					&& ( ! $trash || current_user_can( 'delete_others_posts' ) );
-				$owner    = $request->has_param( 'owner' ) ? absint( $request->get_param( 'owner' ) ) : null;
-				$owner    = $sees_all ? $owner : $actor->userId;
-				$search   = $request->get_param( 'search' );
-				$page     = max( 1, (int) $request->get_param( 'page' ) );
 				$per_page = max( 1, (int) $request->get_param( 'per_page' ) );
-
-				$term   = is_string( $search ) && '' !== $search ? $search : null;
-				$result = $this->galleries->search( new GalleryQuery( $term, $statuses, $owner, ( $page - 1 ) * $per_page, $per_page ) );
-				$total  = $result->total;
-				if ( array() === $result->items && $page > 1 ) {
-					// WP_Query reports no total for an offset past the end; ask again so the client can step back.
-					$total = $this->galleries->search( new GalleryQuery( $term, $statuses, $owner, 0, 1 ) )->total;
-				}
-				$ids    = array_map( static fn( Gallery $gallery ): int => $gallery->id, $result->items );
-				$counts = $this->relations->count_by_gallery( $ids );
-				$data   = array();
-				foreach ( $result->items as $gallery ) {
-					$data[] = $this->presenter->present( $actor, $gallery, $this->revisions->current( $gallery->id )->value, $counts[ $gallery->id ] ?? 0 );
-				}
+				$search   = $request->get_param( 'search' );
+				$owner    = $request->has_param( 'owner' ) ? absint( $request->get_param( 'owner' ) ) : null;
+				$found    = $this->lister->list(
+					$actor,
+					is_string( $search ) ? $search : null,
+					GalleryLister::parse_statuses( $request->get_param( 'status' ) ),
+					$owner,
+					(int) $request->get_param( 'page' ),
+					$per_page
+				);
+				$data     = $found['items'];
+				$total    = $found['total'];
 				return $this->with_pagination_headers( new \WP_REST_Response( $data, 200 ), $total, $per_page );
 			}
 		);
@@ -279,30 +267,17 @@ final class GalleryController extends AbstractController {
 	public function create_item( $request ): \WP_REST_Response|\WP_Error {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
-				$actor  = $this->actor();
-				$status = $this->status_param( $request ) ?? GalleryStatus::Draft;
-				if ( $this->needs_publish_right( $status ) && ! $this->access->canPublishNew( $actor ) ) {
-					return $this->cannot_publish();
+				$fields = array();
+				foreach ( array( 'title', 'description', 'status', 'layout', 'sortMode', 'perPage', 'hover', 'settings' ) as $field ) {
+					if ( $request->has_param( $field ) ) {
+						$fields[ $field ] = $request->get_param( $field );
+					}
 				}
-				$settings = new GallerySettings(
-					$this->string_param( $request, 'layout' ) ?? $this->settings->get()['defaultLayout'],
-					SortMode::from( $this->string_param( $request, 'sortMode' ) ?? SortMode::Manual->value ),
-					$this->settings_param( $request ),
-					GallerySettings::SCHEMA_VERSION,
-					$this->per_page_param( $request ),
-					$this->hover_param( $request )
-				);
-				$result   = $this->service->create(
-					$actor,
-					new NewGallery(
-						(string) $this->string_param( $request, 'title' ),
-						$actor->userId,
-						$this->string_param( $request, 'description' ) ?? '',
-						$status,
-						$settings
-					)
-				);
-				return $this->created( $actor, $result );
+				$result = $this->editor->create( $this->actor(), $fields );
+				if ( $result instanceof \WP_Error ) {
+					return $result;
+				}
+				return $this->created( $result );
 			}
 		);
 	}
@@ -317,23 +292,15 @@ final class GalleryController extends AbstractController {
 	public function update_item( $request ): \WP_REST_Response|\WP_Error {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
-				$actor   = $this->actor();
-				$current = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
-				if ( ! $this->access->canEdit( $actor, $current ) ) {
-					throw new AccessDeniedException();
+				$actor  = $this->actor();
+				$fields = array();
+				foreach ( GalleryEditor::UPDATE_FIELDS as $field ) {
+					if ( $request->has_param( $field ) ) {
+						$fields[ $field ] = $request->get_param( $field );
+					}
 				}
-				if ( array() === array_intersect( self::PATCH_FIELDS, array_keys( $request->get_params() ) ) ) {
-					return ErrorMapper::bad_request( self::CODE_NO_CHANGES, __( 'The request does not change anything.', 'sw-gallery' ) );
-				}
-				$changed = $this->apply_changes( $actor, $current, $request );
-				if ( $changed instanceof \WP_Error ) {
-					return $changed;
-				}
-				if ( $this->needs_publish_right( $changed->status ) && $request->has_param( 'status' ) && ! $this->access->canPublish( $actor, $current ) ) {
-					return $this->cannot_publish();
-				}
-				$result = $this->service->update( $actor, $changed, $this->expected_revision( $request ) );
-				return new \WP_REST_Response( $this->present( $actor, $result->gallery, $result->revision->value ), 200 );
+				$result = $this->editor->update( $actor, (int) $request->get_param( 'id' ), $this->expected_revision( $request )->value, $fields );
+				return $result instanceof \WP_Error ? $result : new \WP_REST_Response( $result, 200 );
 			}
 		);
 	}
@@ -383,17 +350,8 @@ final class GalleryController extends AbstractController {
 	public function duplicate_item( $request ): \WP_REST_Response|\WP_Error {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
-				$actor  = $this->actor();
-				$source = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
-				if ( GalleryStatus::Trash === $source->status ) {
-					throw new InvalidStateException();
-				}
 				$title = $this->string_param( $request, 'title' );
-				if ( null === $title ) {
-					/* translators: %s: title of the duplicated gallery */
-					$title = sprintf( __( '%s (copy)', 'sw-gallery' ), $source->title );
-				}
-				return $this->created( $actor, $this->service->duplicate( $actor, $source->id, $title ) );
+				return $this->created( $this->editor->duplicate( $this->actor(), (int) $request->get_param( 'id' ), $title ) );
 			}
 		);
 	}
@@ -407,10 +365,7 @@ final class GalleryController extends AbstractController {
 	public function restore_item( $request ): \WP_REST_Response|\WP_Error {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
-				$actor   = $this->actor();
-				$gallery = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
-				$result  = $this->service->restore( $actor, $gallery->id, $this->expected_revision( $request ) );
-				return new \WP_REST_Response( $this->present( $actor, $result->gallery, $result->revision->value ), 200 );
+				return new \WP_REST_Response( $this->editor->restore( $this->actor(), (int) $request->get_param( 'id' ), $this->expected_revision( $request )->value ), 200 );
 			}
 		);
 	}
@@ -575,95 +530,12 @@ final class GalleryController extends AbstractController {
 	}
 
 	/**
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 * @return list<GalleryStatus>
-	 */
-	private function requested_statuses( \WP_REST_Request $request ): array {
-		$statuses = array();
-		foreach ( (array) $request->get_param( 'status' ) as $value ) {
-			$status = GalleryStatus::tryFrom( (string) $value );
-			if ( null !== $status && ! in_array( $status, $statuses, true ) ) {
-				$statuses[] = $status;
-			}
-		}
-		return $statuses;
-	}
-
-	/**
 	 * @param Actor $actor Actor.
 	 * @param int   $id    Gallery id.
 	 * @throws GalleryNotFoundException When missing or not viewable (the same answer, so existence does not leak).
 	 */
 	private function viewable( Actor $actor, int $id ): Gallery {
-		$gallery = $this->galleries->find( $id );
-		if ( null === $gallery || ! $this->access->canView( $actor, $gallery ) ) {
-			throw new GalleryNotFoundException();
-		}
-		return $gallery;
-	}
-
-	/**
-	 * Applies the submitted fields; returns a 422 error for an unusable cover or owner.
-	 *
-	 * @param Actor            $actor   Actor.
-	 * @param Gallery          $current Stored gallery.
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 */
-	private function apply_changes( Actor $actor, Gallery $current, \WP_REST_Request $request ): Gallery|\WP_Error {
-		$changed = $current;
-		if ( $request->has_param( 'title' ) ) {
-			$changed = $changed->withTitle( (string) $this->string_param( $request, 'title' ) );
-		}
-		if ( $request->has_param( 'description' ) ) {
-			$changed = $changed->withDescription( (string) $this->string_param( $request, 'description' ) );
-		}
-		if ( $request->has_param( 'status' ) ) {
-			$changed = $changed->withStatus( $this->status_param( $request ) ?? $current->status );
-		}
-		if ( $request->has_param( 'ownerId' ) ) {
-			// Authorisation (403) and validity (422 swg_invalid_owner) of a changed owner are decided by the service.
-			$changed = $changed->withOwner( absint( $request->get_param( 'ownerId' ) ) );
-		}
-		if ( $request->has_param( 'coverAttachmentId' ) ) {
-			$cover = $request->get_param( 'coverAttachmentId' );
-			$cover = null === $cover ? null : absint( $cover );
-			if ( null !== $cover && $cover !== $current->coverAttachmentId && ! $this->access->canUseAttachment( $actor, $cover ) ) {
-				return ErrorMapper::unprocessable( self::CODE_INVALID_COVER, __( 'The cover must be an image you may use.', 'sw-gallery' ) );
-			}
-			$changed = $changed->withCover( $cover );
-		}
-
-		$settings = $current->settings;
-		if ( $request->has_param( 'layout' ) ) {
-			$settings = $settings->withLayout( (string) $this->string_param( $request, 'layout' ) );
-		}
-		if ( $request->has_param( 'sortMode' ) ) {
-			$settings = $settings->withSortMode( SortMode::from( (string) $this->string_param( $request, 'sortMode' ) ) );
-		}
-		if ( $request->has_param( 'perPage' ) ) {
-			$settings = $settings->withPerPage( $this->per_page_param( $request ) );
-		}
-		if ( $request->has_param( 'hover' ) ) {
-			$settings = $settings->withHover( $this->hover_param( $request ) );
-		}
-		if ( $request->has_param( 'settings' ) ) {
-			$settings = $settings->withValues( $this->settings_param( $request ) );
-		}
-		return $changed->withSettings( $settings );
-	}
-
-	private function needs_publish_right( GalleryStatus $status ): bool {
-		return GalleryStatus::Publish === $status || GalleryStatus::Private === $status;
-	}
-
-	private function cannot_publish(): \WP_Error {
-		return new \WP_Error(
-			self::CODE_CANNOT_PUBLISH,
-			__( 'You are not allowed to publish galleries.', 'sw-gallery' ),
-			array( 'status' => 403 )
-		);
+		return $this->editor->viewable( $actor, $id );
 	}
 
 	/**
@@ -673,49 +545,6 @@ final class GalleryController extends AbstractController {
 	private function string_param( \WP_REST_Request $request, string $name ): ?string {
 		$value = $request->get_param( $name );
 		return is_string( $value ) ? $value : null;
-	}
-
-	/**
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 */
-	private function status_param( \WP_REST_Request $request ): ?GalleryStatus {
-		$value = $this->string_param( $request, 'status' );
-		return null === $value ? null : GalleryStatus::tryFrom( $value );
-	}
-
-	/**
-	 * Hover texts; null (or absent) means the site-wide default. Types and values are enforced by the route schema.
-	 *
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 */
-	private function hover_param( \WP_REST_Request $request ): ?HoverEffect {
-		return HoverEffect::fromArray( $request->get_param( 'hover' ) );
-	}
-
-	/**
-	 * Items per page; null (or absent) means the site-wide default. The range is enforced by the route schema.
-	 *
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 */
-	private function per_page_param( \WP_REST_Request $request ): ?int {
-		$value = $request->get_param( 'perPage' );
-		return is_numeric( $value ) ? (int) $value : null;
-	}
-
-	/**
-	 * @param \WP_REST_Request $request Request.
-	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
-	 * @return array<string, mixed>
-	 */
-	private function settings_param( \WP_REST_Request $request ): array {
-		$values = array();
-		foreach ( (array) $request->get_param( 'settings' ) as $key => $value ) {
-			$values[ (string) $key ] = $value;
-		}
-		return $values;
 	}
 
 	/**
@@ -729,9 +558,12 @@ final class GalleryController extends AbstractController {
 		return $this->presenter->present( $actor, $gallery, $revision, $counts[ $gallery->id ] ?? 0 );
 	}
 
-	private function created( Actor $actor, GalleryResult $result ): \WP_REST_Response {
-		$response = new \WP_REST_Response( $this->present( $actor, $result->gallery, $result->revision->value ), 201 );
-		$response->header( 'Location', rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->rest_base, $result->gallery->id ) ) );
+	/**
+	 * @param array<string, mixed> $gallery Presented gallery.
+	 */
+	private function created( array $gallery ): \WP_REST_Response {
+		$response = new \WP_REST_Response( $gallery, 201 );
+		$response->header( 'Location', rest_url( sprintf( '%s/%s/%d', $this->namespace, $this->rest_base, (int) $gallery['id'] ) ) );
 		return $response;
 	}
 }

@@ -9,6 +9,8 @@
 use SWGallery\Tests\Support\RestFixtures;
 use SWGallery\WordPress\Infrastructure\Services;
 use SWGallery\WordPress\Lifecycle;
+use SWGallery\WordPress\Mcp\McpAvailability;
+use SWGallery\WordPress\Mcp\TierPolicy;
 use SWGallery\WordPress\Settings\PluginSettings;
 
 class RestSettingsTest extends SwgTestCase {
@@ -77,6 +79,30 @@ class RestSettingsTest extends SwgTestCase {
 		$this->assertSame( 12, $data['itemsPerPage'] );
 		$this->assertFalse( $data['lightbox'], 'an untouched key keeps its stored value' );
 		$this->assertEquals( $data, $this->data( $this->call( 'GET', '/settings', array(), $this->admin ) ) );
+	}
+
+	public function test_mcp_tier_round_trips_including_off_and_cannot_be_changed_by_editor(): void {
+		if ( ! McpAvailability::adapterPresent() ) {
+			$this->markTestSkipped( 'The adapter is unavailable.' );
+		}
+		delete_option( TierPolicy::OPTION );
+		$initial = $this->data( $this->call( 'GET', '/settings', array(), $this->admin ) );
+		$this->assertSame( 'off', $initial['mcpAccessLevel'] );
+		$this->assertSame( 'off', $initial['mcpEffectiveLevel'] );
+		$this->assertFalse( get_option( TierPolicy::OPTION, false ) );
+		$denied = $this->call( 'PATCH', '/settings', array( 'mcpAccessLevel' => 'admin' ), $this->makeUser( 'editor' ) );
+		$this->assertSame( 403, $denied->get_status() );
+		$invalid = $this->call( 'PATCH', '/settings', array( 'mcpAccessLevel' => 'invalid', 'itemsPerPage' => 12 ), $this->admin );
+		$this->assertSame( 400, $invalid->get_status() );
+		$this->assertFalse( get_option( PluginSettings::OPTION, false ) );
+		foreach ( array( 'read', 'write', 'off' ) as $tier ) {
+			$response = $this->call( 'PATCH', '/settings', array( 'mcpAccessLevel' => $tier ), $this->admin );
+			$this->assertSame( 200, $response->get_status() );
+			$this->assertSame( $tier, $this->data( $response )['mcpAccessLevel'] );
+			$this->assertSame( $tier, $this->data( $response )['mcpEffectiveLevel'] );
+			$this->assertSame( $tier, get_option( TierPolicy::OPTION ) );
+		}
+		delete_option( TierPolicy::OPTION );
 	}
 
 	public function test_the_hover_defaults_round_trip_and_bad_stored_values_fall_back(): void {

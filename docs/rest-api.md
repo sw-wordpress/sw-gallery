@@ -120,6 +120,8 @@ PATCH is partial; unknown request keys are ignored, a body without a known key i
 
 `deleteDataOnUninstall` is the existing per-site option `swg_delete_data_on_uninstall` (read by the uninstall routine). Turning it **on** needs `confirmDeleteData: true` in the same request, otherwise 422 `swg_confirmation_required` and nothing changes; repeating `true` or turning it off needs no confirmation.
 
+When the WordPress MCP Adapter is available, the response adds `mcpAccessLevel` (configured level) and `mcpEffectiveLevel` (after configuration overrides). PATCH can change `mcpAccessLevel` to `off`, `read`, `write`, `destructive` or `admin`. The default is `off`. See [MCP abilities](mcp-abilities.md#1-for-site-owners).
+
 ## Status
 
 `GET /status` (`manage_options`), no secrets, paths, hostnames or SQL:

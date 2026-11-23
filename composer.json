@@ -51,6 +51,7 @@
         "test:coverage:merge": "php tests/coverage/merge.php coverage/unit.xml coverage/wordpress.xml && php tests/coverage/check.php coverage/clover.xml",
         "test:wp": "cd tests/wp && vendor/bin/phpunit -c phpunit.xml.dist",
         "test:wp:ms": "cd tests/wp && vendor/bin/phpunit -c phpunit-ms.xml.dist",
+        "test:wp:nomcp": "cd tests/wp && SWG_WP_NO_MCP_ADAPTER=1 vendor/bin/phpunit -c phpunit.xml.dist --filter McpAbsenceTest",
         "version:check": "bin/version.sh check",
         "test:perf": "cd tests/wp && vendor/bin/phpunit -c phpunit.xml.dist --group performance",
         "check": ["@version:check", "@cs", "@cs:wp", "@stan", "@test"]

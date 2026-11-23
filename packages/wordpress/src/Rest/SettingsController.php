@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace SWGallery\WordPress\Rest;
 
 use SWGallery\Core\Domain\Gallery\HoverAnimation;
+use SWGallery\WordPress\Mcp\McpAvailability;
+use SWGallery\WordPress\Mcp\TierPolicy;
 use SWGallery\WordPress\Settings\ConfirmationRequiredException;
 use SWGallery\WordPress\Settings\PluginSettings;
 
@@ -89,11 +91,18 @@ final class SettingsController extends AbstractController {
 		try {
 			$params  = $request->get_params();
 			$changes = array_intersect_key( $params, PluginSettings::DEFAULTS );
-			if ( array() === $changes ) {
+			$tier    = $params['mcpAccessLevel'] ?? null;
+			if ( null !== $tier && ( ! McpAvailability::adapterPresent() || ! in_array( $tier, TierPolicy::all(), true ) ) ) {
+				return ErrorMapper::bad_request( 'swg_invalid_mcp_access_level', __( 'The MCP access level is unavailable or invalid.', 'sw-gallery' ) );
+			}
+			if ( array() === $changes && null === $tier ) {
 				return ErrorMapper::bad_request( self::CODE_NO_CHANGES, __( 'The request does not change anything.', 'sw-gallery' ) );
 			}
 			$confirmed = isset( $params['confirmDeleteData'] ) && true === $params['confirmDeleteData'];
 			$updated   = $this->settings->update( $changes, $confirmed );
+			if ( is_string( $tier ) ) {
+				update_option( TierPolicy::OPTION, $tier, false );
+			}
 			return new \WP_REST_Response( $this->present( $updated ) );
 		} catch ( ConfirmationRequiredException ) {
 			return ErrorMapper::unprocessable(
@@ -110,6 +119,10 @@ final class SettingsController extends AbstractController {
 	 * @return array<string, mixed>
 	 */
 	private function present( array $values ): array {
+		if ( McpAvailability::adapterPresent() ) {
+			$values['mcpAccessLevel']    = TierPolicy::configured();
+			$values['mcpEffectiveLevel'] = McpAvailability::isAvailable() ? TierPolicy::effective() : TierPolicy::OFF;
+		}
 		return $values + array(
 			'schemaVersion'    => PluginSettings::SCHEMA_VERSION,
 			'defaults'         => PluginSettings::DEFAULTS,
@@ -161,6 +174,10 @@ final class SettingsController extends AbstractController {
 					'description' => 'Explicit confirmation required together with deleteDataOnUninstall: true.',
 					'type'        => 'boolean',
 					'default'     => false,
+				),
+				'mcpAccessLevel'        => array(
+					'type' => 'string',
+					'enum' => TierPolicy::all(),
 				),
 			)
 		);

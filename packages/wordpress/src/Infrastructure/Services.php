@@ -26,6 +26,14 @@ use SWGallery\WordPress\Frontend\EmbedRenderer;
 use SWGallery\WordPress\Frontend\FrontendAssets;
 use SWGallery\WordPress\Frontend\FrontendManifest;
 use SWGallery\WordPress\Frontend\PreviewGalleries;
+use SWGallery\WordPress\Gallery\GalleryEditor;
+use SWGallery\WordPress\Gallery\GalleryLister;
+use SWGallery\WordPress\Gallery\ItemEditor;
+use SWGallery\WordPress\Gallery\ItemReader;
+use SWGallery\WordPress\Media\MediaLister;
+use SWGallery\WordPress\Rest\ItemPresenter;
+use SWGallery\WordPress\Rest\MediaPresenter;
+use SWGallery\WordPress\Rest\MediaSearch;
 use SWGallery\WordPress\Hooks\ExtensionPoints;
 use SWGallery\WordPress\Media\ThumbnailResolver;
 use SWGallery\WordPress\Media\WpMediaRepository;
@@ -39,6 +47,7 @@ use SWGallery\WordPress\Repository\PostMetaRevisionStore;
 use SWGallery\WordPress\Repository\WpdbGalleryItemRepository;
 use SWGallery\WordPress\Repository\WpdbGalleryRelations;
 use SWGallery\WordPress\Repository\WpGalleryRepository;
+use SWGallery\WordPress\Rest\GalleryPresenter;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 use SWGallery\WordPress\Settings\PluginSettings;
 
@@ -59,6 +68,11 @@ final class Services {
 	private static ?WpGalleryAccessPolicy $access            = null;
 	private static ?PluginSettings $settings                 = null;
 	private static ?GalleryService $gallery_service          = null;
+	private static ?GalleryEditor $gallery_editor            = null;
+	private static ?GalleryLister $gallery_lister            = null;
+	private static ?ItemReader $item_reader                  = null;
+	private static ?ItemEditor $item_editor                  = null;
+	private static ?MediaLister $media_lister                = null;
 	private static ?GalleryItemService $item_service         = null;
 	private static ?GalleryItemEditService $item_edit        = null;
 	private static ?ThumbnailResolver $thumbnails            = null;
@@ -139,6 +153,10 @@ final class Services {
 		return self::$settings ??= new PluginSettings( self::layouts() );
 	}
 
+	public static function status_report(): \SWGallery\WordPress\Rest\StatusReport {
+		return new \SWGallery\WordPress\Rest\StatusReport( self::logger(), self::relations(), SWGALLERY_DIR . 'assets/admin' );
+	}
+
 	public static function gallery_service(): GalleryService {
 		return self::$gallery_service ??= new GalleryService(
 			self::galleries(),
@@ -149,6 +167,34 @@ final class Services {
 			self::layouts(),
 			new SettingsSchemaValidator()
 		);
+	}
+
+	public static function gallery_editor(): GalleryEditor {
+		return self::$gallery_editor ??= new GalleryEditor(
+			self::gallery_service(),
+			self::galleries(),
+			self::revisions(),
+			self::relations(),
+			self::access(),
+			new GalleryPresenter( self::access() ),
+			self::settings()
+		);
+	}
+
+	public static function gallery_lister(): GalleryLister {
+		return self::$gallery_lister ??= new GalleryLister( self::galleries(), self::relations(), self::revisions(), new GalleryPresenter( self::access() ) );
+	}
+
+	public static function item_reader(): ItemReader {
+		return self::$item_reader ??= new ItemReader( self::gallery_editor(), self::items(), new ItemPresenter( self::media(), self::access() ), self::revisions() );
+	}
+
+	public static function item_editor(): ItemEditor {
+		return self::$item_editor ??= new ItemEditor( self::gallery_editor(), self::item_service(), self::item_edit_service(), self::items(), new ItemPresenter( self::media(), self::access() ) );
+	}
+
+	public static function media_lister(): MediaLister {
+		return self::$media_lister ??= new MediaLister( new MediaSearch(), new MediaPresenter(), self::relations(), self::access() );
 	}
 
 	public static function item_service(): GalleryItemService {
@@ -276,6 +322,11 @@ final class Services {
 		self::$access              = null;
 		self::$settings            = null;
 		self::$gallery_service     = null;
+		self::$gallery_editor      = null;
+		self::$gallery_lister      = null;
+		self::$item_reader         = null;
+		self::$item_editor         = null;
+		self::$media_lister        = null;
 		self::$item_service        = null;
 		self::$item_edit           = null;
 		self::$thumbnails          = null;
