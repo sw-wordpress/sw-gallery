@@ -1,4 +1,4 @@
-# AI assistants (MCP)
+# MCP Server
 
 SW Gallery can be operated by an AI assistant through the WordPress **MCP Adapter** plugin. The assistant works as a normal WordPress user: it sees and changes only what that user may see and change in the admin, and every change goes through the same rules as the editor (revision checks, publishing rights, plain-text storage).
 
