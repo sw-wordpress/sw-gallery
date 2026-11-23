@@ -14,13 +14,13 @@ namespace SWGallery\WordPress\Mcp\Ability;
 use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
+use SWGallery\WordPress\Mcp\DestructiveInput;
 use SWGallery\WordPress\Mcp\GallerySchema;
 use SWGallery\WordPress\Mcp\TierPolicy;
 
 final class DeleteGalleryAbility implements AbilityDefinition {
 
 	use WriteAbilityTrait;
-	use DestructiveAbilityTrait;
 
 	/**
 	 * @param \Closure $editor Lazy provider of the {@see GalleryEditor}.
@@ -53,7 +53,7 @@ final class DeleteGalleryAbility implements AbilityDefinition {
 			'properties'           => array(
 				'id'               => GallerySchema::id(),
 				'expectedRevision' => GallerySchema::expectedRevision(),
-				'confirm'          => self::confirmation_schema(),
+				'confirm'          => DestructiveInput::schema(),
 			),
 		);
 	}
@@ -87,7 +87,7 @@ final class DeleteGalleryAbility implements AbilityDefinition {
 
 	public function execute( array $input ): array|\WP_Error {
 		if ( true !== ( $input['confirm'] ?? null ) ) {
-			return self::confirmation_error();
+			return DestructiveInput::error();
 		}
 		$id = self::int( $input, 'id' );
 		( $this->editor )()->delete( $this->actor(), $id, self::int( $input, 'expectedRevision' ) );

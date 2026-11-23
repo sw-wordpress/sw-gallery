@@ -15,6 +15,7 @@ use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Gallery\ItemEditor;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
+use SWGallery\WordPress\Mcp\DestructiveInput;
 use SWGallery\WordPress\Mcp\GallerySchema;
 use SWGallery\WordPress\Mcp\ItemSchema;
 use SWGallery\WordPress\Mcp\TierPolicy;
@@ -23,7 +24,6 @@ use SWGallery\Core\Application\Service\GalleryItemService;
 final class RemoveItemsAbility implements AbilityDefinition {
 
 	use WriteAbilityTrait;
-	use DestructiveAbilityTrait;
 
 	/**
 	 * @param \Closure $items  Lazy provider of the {@see ItemEditor}.
@@ -65,7 +65,7 @@ final class RemoveItemsAbility implements AbilityDefinition {
 					'items'       => ItemSchema::itemId(),
 				),
 				'expectedRevision' => GallerySchema::expectedRevision(),
-				'confirm'          => self::confirmation_schema(),
+				'confirm'          => DestructiveInput::schema(),
 			),
 		);
 	}
@@ -100,7 +100,7 @@ final class RemoveItemsAbility implements AbilityDefinition {
 
 	public function execute( array $input ): array|\WP_Error {
 		if ( true !== ( $input['confirm'] ?? null ) ) {
-			return self::confirmation_error();
+			return DestructiveInput::error();
 		}
 		$result = ( $this->items )()->remove( $this->actor(), self::int( $input, 'id' ), self::ids( $input, 'itemIds' ), self::int( $input, 'expectedRevision' ) );
 		return array(

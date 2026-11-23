@@ -415,10 +415,6 @@ msgstr "%s ist zu groß oder zu tief verschachtelt."
 msgid "Permanently delete gallery"
 msgstr "Galerie endgültig löschen"
 
-#: packages/wordpress/src/Mcp/Ability/DestructiveAbilityTrait.php:26
-msgid "Confirm permanent removal explicitly."
-msgstr "Bestätige das endgültige Entfernen ausdrücklich."
-
 #: packages/wordpress/src/Mcp/Ability/DuplicateGalleryAbility.php:39
 msgid "Duplicate gallery"
 msgstr "Galerie duplizieren"
@@ -483,13 +479,17 @@ msgstr "Galerie-Bild aktualisieren"
 msgid "Update gallery settings"
 msgstr "Galerie-Einstellungen aktualisieren"
 
-#: packages/wordpress/src/Mcp/AbilityFactory.php:76
+#: packages/wordpress/src/Mcp/AbilityFactory.php:79
 msgid "This action is disabled by the MCP access level of the site."
 msgstr "Diese Aktion ist durch die MCP-Zugriffsstufe der Website deaktiviert."
 
-#: packages/wordpress/src/Mcp/AbilityFactory.php:110
+#: packages/wordpress/src/Mcp/AbilityFactory.php:113
 msgid "The result is too large to return."
 msgstr "Das Ergebnis ist zu groß, um es zurückzugeben."
+
+#: packages/wordpress/src/Mcp/DestructiveInput.php:26
+msgid "Confirm permanent removal explicitly."
+msgstr "Bestätige das endgültige Entfernen ausdrücklich."
 
 #: packages/wordpress/src/Mcp/Paging.php:104
 msgid "A single record is too large to return."

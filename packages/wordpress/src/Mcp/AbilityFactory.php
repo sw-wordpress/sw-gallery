@@ -41,6 +41,9 @@ final class AbilityFactory {
 			return null;
 		}
 		$id = self::NAMESPACE_SLUG . '/' . $definition->name();
+		if ( $definition->annotations()['destructive'] ) {
+			add_filter( 'wp_ability_validate_input', array( DestructiveInput::class, 'validate' ), 10, 3 );
+		}
 		wp_register_ability(
 			$id,
 			array(

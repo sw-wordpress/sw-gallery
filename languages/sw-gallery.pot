@@ -416,10 +416,6 @@ msgstr ""
 msgid "Permanently delete gallery"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/DestructiveAbilityTrait.php:26
-msgid "Confirm permanent removal explicitly."
-msgstr ""
-
 #: packages/wordpress/src/Mcp/Ability/DuplicateGalleryAbility.php:39
 msgid "Duplicate gallery"
 msgstr ""
@@ -484,12 +480,16 @@ msgstr ""
 msgid "Update gallery settings"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/AbilityFactory.php:76
+#: packages/wordpress/src/Mcp/AbilityFactory.php:79
 msgid "This action is disabled by the MCP access level of the site."
 msgstr ""
 
-#: packages/wordpress/src/Mcp/AbilityFactory.php:110
+#: packages/wordpress/src/Mcp/AbilityFactory.php:113
 msgid "The result is too large to return."
+msgstr ""
+
+#: packages/wordpress/src/Mcp/DestructiveInput.php:26
+msgid "Confirm permanent removal explicitly."
 msgstr ""
 
 #: packages/wordpress/src/Mcp/Paging.php:104

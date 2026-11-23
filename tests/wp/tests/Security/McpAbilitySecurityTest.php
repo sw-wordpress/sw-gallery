@@ -119,7 +119,8 @@ class McpAbilitySecurityTest extends SwgTestCase {
 			$meta = $ability->get_meta();
 			$name = substr( $id, strlen( 'sw-gallery/' ) );
 			$this->assertTrue( $meta['mcp']['public'] ?? null, $id . ' mcp.public' );
-			$this->assertArrayNotHasKey( 'public', $meta, $id . ' high-level public flag stays unset' );
+			// Recent WordPress versions normalize the unset flag to false.
+			$this->assertFalse( $meta['public'] ?? false, $id . ' high-level public flag stays disabled' );
 			$this->assertFalse( $meta['show_in_rest'], $id . ' is not exposed through the core REST abilities endpoint' );
 			foreach ( array( 'readonly', 'destructive', 'idempotent' ) as $annotation ) {
 				$this->assertIsBool( $meta['annotations'][ $annotation ] ?? null, $id . ' annotation ' . $annotation );
@@ -422,8 +423,12 @@ class McpAbilitySecurityTest extends SwgTestCase {
 		foreach ( array( 'remove-items', 'delete-gallery' ) as $name ) {
 			$valid = $this->validInput( $name );
 			$before = $this->stateSnapshot();
+			$this->assertTrue( apply_filters( 'wp_ability_validate_input', true, $valid, 'sw-gallery/' . $name ) );
 			foreach ( array( false, 1, 'true' ) as $bad ) {
-				$this->assertInstanceOf( WP_Error::class, $this->runAbility( $name, array( 'confirm' => $bad ) + $valid, $user ) );
+				$input = array( 'confirm' => $bad ) + $valid;
+				$validation = apply_filters( 'wp_ability_validate_input', true, $input, 'sw-gallery/' . $name );
+				$this->assertSame( 'swg_confirmation_required', $validation->get_error_code() );
+				$this->assertInstanceOf( WP_Error::class, $this->runAbility( $name, $input, $user ) );
 			}
 			$missing = array_diff_key( $valid, array( 'confirm' => true ) );
 			$this->assertInstanceOf( WP_Error::class, $this->runAbility( $name, $missing, $user ) );
