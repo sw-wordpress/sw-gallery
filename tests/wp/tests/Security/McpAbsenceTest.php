@@ -35,9 +35,12 @@ class McpAbsenceTest extends SwgTestCase {
 	}
 
 	public function test_even_a_high_tier_registers_nothing_without_the_adapter(): void {
-		update_option( TierPolicy::OPTION, 'admin' );
-		$this->reregisterAbilities( 'admin' );
-		$this->assertSame( array(), $this->ourAbilities() );
+		try {
+			$this->reregisterAbilities( 'admin' );
+			$this->assertSame( array(), $this->ourAbilities() );
+		} finally {
+			delete_option( TierPolicy::OPTION );
+		}
 	}
 
 	public function test_settings_hide_the_control_and_reject_updates_without_adapter(): void {
