@@ -25,6 +25,19 @@ const de: typeof en = {
       'Das Löschen der Daten bei der Deinstallation muss ausdrücklich bestätigt werden. Es wurde nichts geändert. Schalte die Option erneut ein und bestätige.',
     unknownLayout: 'Das gewählte Layout ist nicht (mehr) verfügbar. Es wurde nichts gespeichert.',
   },
+  mcp: {
+    title: 'MCP-Zugriff',
+    level: 'Maximale Zugriffsstufe',
+    hint: 'Jede Stufe umfasst die niedrigeren Stufen. Die WordPress-Benutzerrechte gelten weiterhin.',
+    effective: 'Wirksame Stufe: {level}',
+    levels: {
+      off: 'Aus',
+      read: 'Nur lesen',
+      write: 'Lesen und schreiben',
+      destructive: 'Endgültiges Entfernen erlauben',
+      admin: 'Verwaltung erlauben',
+    },
+  },
   display: {
     title: 'Darstellung',
     subtitle: 'Gilt dort, wo eine Galerie oder ein Shortcode keinen eigenen Wert festlegt.',

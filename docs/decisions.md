@@ -181,7 +181,7 @@ Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und
 | Scattered | `overlap` is a maximum: the planner lowers it so every print stays >= 60 % visible in every grid the CSS can show (narrow, touch included); stacking is a seeded permutation, DOM order unchanged. |
 | Bubbles / jigsaw / honeycomb | Bubbles reuse the plan markup contract (circles as bounding boxes, `border-radius: 50%`); jigsaw edge codes per viewport breakpoint with one inline SVG per gallery (ids prefixed by the instance); honeycomb writes per-item row flags per breakpoint instead of `repeat(calc())`. |
 
-## MCP abilities (MCP-01)
+## MCP abilities
 
 | Topic | Decision |
 |---|---|
@@ -193,3 +193,5 @@ Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und
 | Adapter in tests | `wordpress/mcp-adapter` pinned in `tests/wp/composer.json` (needs `automattic/jetpack-autoloader` in `allow-plugins` of that test-only project); never a runtime dependency. |
 | Plain text on every path | Title, description and item texts are stripped to plain text inside `GalleryEditor`/`ItemEditor`, not only at the REST boundary, so MCP can not store markup. |
 | Write abilities | `create-gallery`, `duplicate-gallery`, `trash-gallery`, `restore-gallery`, `assign-items`, `update-item`, `reorder-items` (tier `write`); `Gallery/ItemEditor` owns the item write rules. |
+| Permanent removal | `remove-items` and `delete-gallery` share the gallery services with REST and require a matching revision and the JSON boolean `true`. |
+| Administration | MCP settings use the display settings schema. The WordPress Settings screen owns the access-level control, and the status ability returns error codes and hint keys. |

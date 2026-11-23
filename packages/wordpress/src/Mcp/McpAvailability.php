@@ -19,7 +19,7 @@ final class McpAvailability {
 	public const ADAPTER_CLASS     = '\\WP\\MCP\\Plugin';
 
 	public static function isAvailable(): bool {
-		if ( ! function_exists( 'wp_register_ability' ) || ! class_exists( self::ADAPTER_CLASS, false ) ) {
+		if ( ! self::adapterPresent() ) {
 			return false;
 		}
 		if ( defined( self::DISABLED_CONSTANT ) && constant( self::DISABLED_CONSTANT ) ) {

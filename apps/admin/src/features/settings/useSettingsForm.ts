@@ -34,6 +34,7 @@ const KEYS: readonly SettingsField[] = [
   'hoverCaption',
   'hoverAnimation',
   'deleteDataOnUninstall',
+  'mcpAccessLevel',
 ];
 
 function toApiError(failure: unknown): ApiError {
@@ -152,6 +153,9 @@ export function useSettingsForm(api: SettingsFeatureApi) {
     if (draft.hoverTitle !== base.hoverTitle) patch.hoverTitle = draft.hoverTitle;
     if (draft.hoverCaption !== base.hoverCaption) patch.hoverCaption = draft.hoverCaption;
     if (draft.hoverAnimation !== base.hoverAnimation) patch.hoverAnimation = draft.hoverAnimation;
+    if (draft.mcpAccessLevel !== undefined && draft.mcpAccessLevel !== base.mcpAccessLevel) {
+      patch.mcpAccessLevel = draft.mcpAccessLevel;
+    }
     if (draft.deleteDataOnUninstall !== base.deleteDataOnUninstall) {
       patch.deleteDataOnUninstall = draft.deleteDataOnUninstall;
       if (draft.deleteDataOnUninstall && deleteConfirmed.value) patch.confirmDeleteData = true;

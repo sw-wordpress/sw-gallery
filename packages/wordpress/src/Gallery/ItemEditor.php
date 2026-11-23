@@ -14,6 +14,7 @@ use SWGallery\Core\Application\Service\GalleryItemService;
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Gallery\AssignResult;
 use SWGallery\Core\Domain\Gallery\ItemOverrides;
+use SWGallery\Core\Domain\Gallery\RemoveResult;
 use SWGallery\Core\Domain\Gallery\Revision;
 use SWGallery\Core\Exception\ItemNotFoundException;
 use SWGallery\WordPress\Repository\ItemRecord;
@@ -69,6 +70,18 @@ final class ItemEditor {
 		// The access checks and the existence query of the service read every attachment: one query for the batch.
 		_prime_post_caches( array_slice( array_values( array_filter( $attachment_ids, static fn( int $item ): bool => $item > 0 ) ), 0, GalleryItemService::MAX_BATCH ), false, false );
 		return $this->items->assign( $actor, $gallery->id, $attachment_ids, new Revision( $expected ) );
+	}
+
+	/**
+	 * @param Actor $actor    Actor.
+	 * @param int   $id       Gallery id.
+	 * @param int[] $item_ids Relation ids to remove.
+	 * @param int   $expected Revision the caller last saw.
+	 * @phpstan-param list<int> $item_ids
+	 */
+	public function remove( Actor $actor, int $id, array $item_ids, int $expected ): RemoveResult {
+		$gallery = $this->galleries->viewable( $actor, $id );
+		return $this->items->removeMany( $actor, $gallery->id, $item_ids, new Revision( $expected ) );
 	}
 
 	/**

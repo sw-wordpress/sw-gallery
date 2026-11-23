@@ -3,7 +3,7 @@ import { computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { errorMessage } from '@/api/errorMessage';
 import { HOVER_ANIMATIONS } from '@/api/galleries';
-import { ITEMS_PER_PAGE_MAX, ITEMS_PER_PAGE_MIN } from '@/api/settings';
+import { ITEMS_PER_PAGE_MAX, ITEMS_PER_PAGE_MIN, MCP_ACCESS_LEVELS } from '@/api/settings';
 import ConfirmDialog from '@/components/ui/ConfirmDialog.vue';
 import DataState from '@/components/ui/DataState.vue';
 import PageHeader from '@/components/ui/PageHeader.vue';
@@ -29,6 +29,8 @@ const hoverOptions = computed(() =>
 const layoutId = uid('swg-set-layout');
 const layoutHintId = uid('swg-set-layout-hint');
 const deleteHintId = uid('swg-set-delete-hint');
+const mcpId = uid('swg-set-mcp');
+const mcpHintId = uid('swg-set-mcp-hint');
 
 const confirmOpen = ref(false);
 
@@ -264,6 +266,40 @@ async function save(): Promise<void> {
                 }}
               </p>
             </div>
+          </div>
+        </SwgCard>
+
+        <SwgCard
+          v-if="f.server?.mcpAccessLevel !== undefined"
+          :title="t('settings.mcp.title')"
+          icon="r_security"
+        >
+          <div class="swg-settings__field">
+            <label :for="mcpId" class="swg-settings__label">{{ t('settings.mcp.level') }}</label>
+            <select
+              :id="mcpId"
+              v-model="f.draft.mcpAccessLevel"
+              class="swg-settings__select"
+              :aria-describedby="mcpHintId"
+            >
+              <option v-for="level in MCP_ACCESS_LEVELS" :key="level" :value="level">
+                {{ t(`settings.mcp.levels.${level}`) }}
+              </option>
+            </select>
+            <p :id="mcpHintId" class="swg-settings__hint">{{ t('settings.mcp.hint') }}</p>
+            <p
+              v-if="
+                f.server.mcpEffectiveLevel !== undefined &&
+                f.server.mcpEffectiveLevel !== f.server.mcpAccessLevel
+              "
+              class="swg-settings__hint"
+            >
+              {{
+                t('settings.mcp.effective', {
+                  level: t(`settings.mcp.levels.${f.server.mcpEffectiveLevel}`),
+                })
+              }}
+            </p>
           </div>
         </SwgCard>
 

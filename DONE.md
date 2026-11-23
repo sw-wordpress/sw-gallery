@@ -1,5 +1,10 @@
 # DONE
 
+## 2026-11-23 — MCP-04
+
+- Add confirmed permanent removal of gallery items and galleries, display settings and system status abilities, and the translated MCP access control.
+- Extend the WordPress permission matrix, audit tests and adapter client tests to cover the new abilities and all access levels.
+
 ## 2026-11-09 — M1 slice 1
 - Tooling: Composer, PHPUnit, PHPCS (PSR-12 core/tests, WPCS adapter), PHPStan level 8, `.editorconfig`, `.gitignore`, `sonar-project.properties`.
 - Core: `GalleryItem`, `ItemOverrides` (null = inherit), `Revision`, `AssignResult`, typed exceptions with stable error codes, repository/revision/media contracts,

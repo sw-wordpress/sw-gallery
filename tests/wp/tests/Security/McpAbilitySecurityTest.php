@@ -37,6 +37,11 @@ class McpAbilitySecurityTest extends SwgTestCase {
 		'assign-items'      => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
 		'update-item'       => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
 		'reorder-items'     => array( 'tier' => 'write', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'remove-items'      => array( 'tier' => 'destructive', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'delete-gallery'    => array( 'tier' => 'destructive', 'expect' => array( 'X', 'F', 'N', 'A', 'N', 'A', 'A' ) ),
+		'get-settings'      => array( 'tier' => 'admin', 'expect' => array( 'X', 'F', 'F', 'F', 'F', 'F', 'A' ) ),
+		'update-settings'   => array( 'tier' => 'admin', 'expect' => array( 'X', 'F', 'F', 'F', 'F', 'F', 'A' ) ),
+		'get-status'        => array( 'tier' => 'admin', 'expect' => array( 'X', 'F', 'F', 'F', 'F', 'F', 'A' ) ),
 	);
 
 	/** @var array<string, int> */
@@ -74,7 +79,7 @@ class McpAbilitySecurityTest extends SwgTestCase {
 
 	/** @return array<string, mixed> */
 	private function validInput( string $name ): array {
-		if ( in_array( $name, array( 'list-galleries', 'list-layouts', 'list-media' ), true ) ) {
+		if ( in_array( $name, array( 'list-galleries', 'list-layouts', 'list-media', 'get-settings', 'get-status' ), true ) ) {
 			return array();
 		}
 		if ( 'create-gallery' === $name ) {
@@ -90,6 +95,9 @@ class McpAbilitySecurityTest extends SwgTestCase {
 			'assign-items'      => $base + $revision + array( 'attachmentIds' => array( $this->makeAttachment( $this->users['author'] ) ) ),
 			'update-item'       => $base + $revision + array( 'itemId' => $items[0], 'overrides' => array( 'title' => 'Item title' ) ),
 			'reorder-items'     => $base + $revision + array( 'itemIds' => array_reverse( $items ) ),
+			'remove-items'      => $base + $revision + array( 'itemIds' => array( $items[0] ), 'confirm' => true ),
+			'delete-gallery'    => $base + $revision + array( 'confirm' => true ),
+			'update-settings'   => array( 'itemsPerPage' => 44 ),
 			default             => $base,
 		};
 	}
@@ -118,10 +126,9 @@ class McpAbilitySecurityTest extends SwgTestCase {
 			}
 			$tier = self::MATRIX[ $name ]['tier'];
 			$this->assertContains( $tier, TierPolicy::all() );
-			if ( 'read' === $tier ) {
-				$this->assertTrue( $meta['annotations']['readonly'], $id . ' read tier is readonly' );
-			} else {
-				$this->assertFalse( $meta['annotations']['readonly'], $id . ' non-read tier is not readonly' );
+			$this->assertSame( 'read' === $tier || in_array( $name, array( 'get-settings', 'get-status' ), true ), $meta['annotations']['readonly'] );
+			if ( 'destructive' === $tier ) {
+				$this->assertContains( 'confirm', $ability->get_input_schema()['required'] );
 			}
 			$this->assertSame( 'destructive' === $tier, $meta['annotations']['destructive'], $id . ' destructive annotation follows the tier' );
 			$this->assertNotSame( array(), $ability->get_output_schema(), $id . ' output schema' );
@@ -283,7 +290,7 @@ class McpAbilitySecurityTest extends SwgTestCase {
 	}
 
 	public function test_every_readonly_ability_leaves_the_state_untouched(): void {
-		foreach ( array( 'list-galleries', 'list-items', 'list-layouts', 'list-media', 'render-gallery', 'get-gallery' ) as $name ) {
+		foreach ( array( 'list-galleries', 'list-items', 'list-layouts', 'list-media', 'render-gallery', 'get-gallery', 'get-settings', 'get-status' ) as $name ) {
 			$before = $this->stateSnapshot();
 			$result = $this->runAbility( $name, $this->validInput( $name ), $this->users['administrator'] );
 			$this->assertIsArray( $result, $name );
@@ -405,6 +412,63 @@ class McpAbilitySecurityTest extends SwgTestCase {
 			$this->assertMatchesRegularExpression( '/^[a-z]+(-[a-z]+)+$/', $entry['ability'] );
 		}
 		$this->assertContains( 'update-gallery', array_column( $entries, 'ability' ) );
+	}
+
+	public function test_destructive_abilities_require_confirmation_and_keep_attachments(): void {
+		$user = $this->users['author'];
+		$items = $this->runAbility( 'list-items', array( 'id' => $this->gallery ), $user );
+		$attachments = array_column( $items['items'], 'attachmentId' );
+
+		foreach ( array( 'remove-items', 'delete-gallery' ) as $name ) {
+			$valid = $this->validInput( $name );
+			$before = $this->stateSnapshot();
+			foreach ( array( false, 1, 'true' ) as $bad ) {
+				$this->assertInstanceOf( WP_Error::class, $this->runAbility( $name, array( 'confirm' => $bad ) + $valid, $user ) );
+			}
+			$missing = array_diff_key( $valid, array( 'confirm' => true ) );
+			$this->assertInstanceOf( WP_Error::class, $this->runAbility( $name, $missing, $user ) );
+			$this->assertSame( $before, $this->stateSnapshot() );
+
+			$stale = array( 'expectedRevision' => $valid['expectedRevision'] - 1 ) + $valid;
+			$this->assertSame( 'swg_revision_conflict', $this->runAbility( $name, $stale, $user )->get_error_code() );
+			$result = $this->runAbility( $name, $valid, $user );
+			if ( 'remove-items' === $name ) {
+				$this->assertSame( $valid['itemIds'], $result['removed'] );
+				$this->assertSame( array(), $result['notFound'] );
+			} else {
+				$this->assertSame( array( 'id' => $this->gallery, 'deleted' => true ), $result );
+				$this->assertNull( get_post( $this->gallery ) );
+				$this->assertSame( array(), $this->itemIds( $this->gallery ) );
+			}
+		}
+		foreach ( $attachments as $attachment ) {
+			$this->assertSame( 'attachment', get_post_type( $attachment ) );
+		}
+		$success = array_filter( ( new McpAuditLog() )->recent(), static fn( array $entry ): bool => 'ok' === $entry['outcome'] );
+		$this->assertSame( array( 'delete-gallery', 'remove-items' ), array_column( $success, 'ability' ) );
+	}
+
+	public function test_admin_abilities_limit_settings_and_status_fields(): void {
+		$user = $this->users['administrator'];
+		$initial = $this->runAbility( 'get-settings', array(), $user );
+		$this->assertSame( array( 'defaultLayout', 'itemsPerPage', 'lightbox', 'hoverTitle', 'hoverCaption', 'hoverAnimation' ), array_keys( $initial ) );
+		foreach ( array( 'deleteDataOnUninstall' => true, 'confirmDeleteData' => true, 'mcpAccessLevel' => 'off', 'itemsPerPage' => 201, 'defaultLayout' => 'unregistered' ) as $field => $value ) {
+			$this->assertInstanceOf( WP_Error::class, $this->runAbility( 'update-settings', array( $field => $value ), $user ) );
+		}
+		$this->assertSame( $initial, $this->runAbility( 'get-settings', array(), $user ) );
+		$this->assertFalse( \SWGallery\WordPress\Infrastructure\Services::settings()->get()['deleteDataOnUninstall'] );
+		$this->assertSame( 'admin', get_option( TierPolicy::OPTION ) );
+		$result = $this->runAbility( 'update-settings', array( 'lightbox' => false, 'itemsPerPage' => 41 ), $user );
+		$this->assertSame( array_replace( $initial, array( 'lightbox' => false, 'itemsPerPage' => 41 ) ), $result );
+		$this->assertSame( $result, $this->runAbility( 'get-settings', array(), $user ) );
+
+		\SWGallery\WordPress\Infrastructure\Services::logger()->log( \SWGallery\Core\Logging\LogLevel::Error, 'schema_newer', array( 'gallery_id' => $this->gallery ) );
+		$status = $this->runAbility( 'get-status', array(), $user );
+		$this->assertSame( array( 'schema', 'counts', 'versions', 'recentErrors', 'hints' ), array_keys( $status ) );
+		$this->assertSame( array( 'time', 'code' ), array_keys( $status['recentErrors'][0] ) );
+		$this->assertSame( array( 'export_limitation' ), $status['hints'] );
+		$success = array_filter( ( new McpAuditLog() )->recent(), static fn( array $entry ): bool => 'ok' === $entry['outcome'] );
+		$this->assertSame( array( 'update-settings' ), array_column( $success, 'ability' ) );
 	}
 
 	public function test_audit_is_bounded_and_survives_a_throwing_observer(): void {

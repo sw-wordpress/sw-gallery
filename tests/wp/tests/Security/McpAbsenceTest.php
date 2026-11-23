@@ -11,10 +11,12 @@ require_once dirname( __DIR__, 2 ) . '/support/McpSecurityTestTrait.php';
 use SWGallery\WordPress\Mcp\McpAuditLog;
 use SWGallery\WordPress\Mcp\McpAvailability;
 use SWGallery\WordPress\Mcp\TierPolicy;
+use SWGallery\Tests\Support\RestFixtures;
 
 class McpAbsenceTest extends SwgTestCase {
 
 	use McpSecurityTestTrait;
+	use RestFixtures;
 
 	public function set_up(): void {
 		parent::set_up();
@@ -36,5 +38,20 @@ class McpAbsenceTest extends SwgTestCase {
 		update_option( TierPolicy::OPTION, 'admin' );
 		$this->reregisterAbilities( 'admin' );
 		$this->assertSame( array(), $this->ourAbilities() );
+	}
+
+	public function test_settings_hide_the_control_and_reject_updates_without_adapter(): void {
+		$this->bootRest();
+		try {
+			$admin = $this->makeUser( 'administrator' );
+			$data  = $this->data( $this->call( 'GET', '/settings', array(), $admin ) );
+			$this->assertArrayNotHasKey( 'mcpAccessLevel', $data );
+			$this->assertArrayNotHasKey( 'mcpEffectiveLevel', $data );
+			$response = $this->call( 'PATCH', '/settings', array( 'mcpAccessLevel' => 'admin' ), $admin );
+			$this->assertSame( 400, $response->get_status() );
+			$this->assertFalse( get_option( TierPolicy::OPTION, false ) );
+		} finally {
+			$this->shutdownRest();
+		}
 	}
 }

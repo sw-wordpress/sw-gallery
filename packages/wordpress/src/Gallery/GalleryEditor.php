@@ -208,6 +208,14 @@ final class GalleryEditor {
 	}
 
 	/**
+	 * Permanently deletes the gallery and its relations through the shared service.
+	 */
+	public function delete( Actor $actor, int $id, int $expected ): void {
+		$gallery = $this->viewable( $actor, $id );
+		$this->service->delete( $actor, $gallery->id, new Revision( $expected ) );
+	}
+
+	/**
 	 * Restores a trashed gallery as a draft.
 	 *
 	 * @return array<string, mixed>

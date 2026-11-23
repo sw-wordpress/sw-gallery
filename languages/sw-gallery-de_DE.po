@@ -59,7 +59,7 @@ msgstr "Galerie"
 msgid "Presentation"
 msgstr "Darstellung"
 
-#: assets/blocks/src/Edit.tsx:71 packages/wordpress/src/Mcp/McpRegistrar.php:53
+#: assets/blocks/src/Edit.tsx:71 packages/wordpress/src/Mcp/McpRegistrar.php:58
 msgid "SW Gallery"
 msgstr "SW Gallery"
 
@@ -370,8 +370,9 @@ msgid "Gallery diagnostic (visible to editors only): the gallery frontend assets
 msgstr "Galerie-Diagnose (nur für Redakteure sichtbar): Die Frontend-Dateien der Galerie fehlen oder sind ungültig. Führe \"npm run build\" in assets aus oder installiere das Release-Paket."
 
 #: packages/wordpress/src/Gallery/GalleryEditor.php:105
-#: packages/wordpress/src/Gallery/ItemEditor.php:105
-#: packages/wordpress/src/Rest/SettingsController.php:93
+#: packages/wordpress/src/Gallery/ItemEditor.php:118
+#: packages/wordpress/src/Mcp/Ability/UpdateSettingsAbility.php:56
+#: packages/wordpress/src/Rest/SettingsController.php:99
 msgid "The request does not change anything."
 msgstr "Die Anfrage ändert nichts."
 
@@ -381,15 +382,15 @@ msgstr "Die Anfrage ändert nichts."
 msgid "%s (copy)"
 msgstr "%s (Kopie)"
 
-#: packages/wordpress/src/Gallery/GalleryEditor.php:236
+#: packages/wordpress/src/Gallery/GalleryEditor.php:244
 msgid "You are not allowed to publish galleries."
 msgstr "Sie dürfen keine Galerien veröffentlichen."
 
-#: packages/wordpress/src/Gallery/GalleryEditor.php:267
+#: packages/wordpress/src/Gallery/GalleryEditor.php:275
 msgid "The cover must be an image you may use."
 msgstr "Das Titelbild muss ein Bild sein, das Sie verwenden dürfen."
 
-#: packages/wordpress/src/Gallery/ItemEditor.php:102
+#: packages/wordpress/src/Gallery/ItemEditor.php:115
 msgid "The settings must be an object."
 msgstr "Die Einstellungen müssen ein Objekt sein."
 
@@ -410,6 +411,14 @@ msgstr "Galerie erstellen"
 msgid "%s is too large or nested too deeply."
 msgstr "%s ist zu groß oder zu tief verschachtelt."
 
+#: packages/wordpress/src/Mcp/Ability/DeleteGalleryAbility.php:41
+msgid "Permanently delete gallery"
+msgstr "Galerie endgültig löschen"
+
+#: packages/wordpress/src/Mcp/Ability/DestructiveAbilityTrait.php:26
+msgid "Confirm permanent removal explicitly."
+msgstr "Bestätige das endgültige Entfernen ausdrücklich."
+
 #: packages/wordpress/src/Mcp/Ability/DuplicateGalleryAbility.php:39
 msgid "Duplicate gallery"
 msgstr "Galerie duplizieren"
@@ -417,6 +426,14 @@ msgstr "Galerie duplizieren"
 #: packages/wordpress/src/Mcp/Ability/GetGalleryAbility.php:38
 msgid "Get gallery"
 msgstr "Galerie abrufen"
+
+#: packages/wordpress/src/Mcp/Ability/GetSettingsAbility.php:24
+msgid "Get gallery settings"
+msgstr "Galerie-Einstellungen abrufen"
+
+#: packages/wordpress/src/Mcp/Ability/GetStatusAbility.php:32
+msgid "Get gallery system status"
+msgstr "Galerie-Systemstatus abrufen"
 
 #: packages/wordpress/src/Mcp/Ability/ListGalleriesAbility.php:42
 msgid "List galleries"
@@ -433,6 +450,10 @@ msgstr "Layouts auflisten"
 #: packages/wordpress/src/Mcp/Ability/ListMediaAbility.php:44
 msgid "List media"
 msgstr "Medien auflisten"
+
+#: packages/wordpress/src/Mcp/Ability/RemoveItemsAbility.php:46
+msgid "Remove gallery items"
+msgstr "Galerie-Bilder entfernen"
 
 #: packages/wordpress/src/Mcp/Ability/RenderGalleryAbility.php:46
 msgid "Render gallery"
@@ -457,6 +478,10 @@ msgstr "Galerie aktualisieren"
 #: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:46
 msgid "Update gallery item"
 msgstr "Galerie-Bild aktualisieren"
+
+#: packages/wordpress/src/Mcp/Ability/UpdateSettingsAbility.php:27
+msgid "Update gallery settings"
+msgstr "Galerie-Einstellungen aktualisieren"
 
 #: packages/wordpress/src/Mcp/AbilityFactory.php:76
 msgid "This action is disabled by the MCP access level of the site."
@@ -1021,11 +1046,15 @@ msgstr "Die Datei ist größer als die maximal erlaubte Upload-Größe."
 msgid "This file type is not supported. Use a JPEG, PNG, GIF, WebP or AVIF image."
 msgstr "Dieser Dateityp wird nicht unterstützt. Verwende ein JPEG-, PNG-, GIF-, WebP- oder AVIF-Bild."
 
-#: packages/wordpress/src/Rest/SettingsController.php:101
+#: packages/wordpress/src/Rest/SettingsController.php:96
+msgid "The MCP access level is unavailable or invalid."
+msgstr "Die MCP-Zugriffsstufe ist nicht verfügbar oder ungültig."
+
+#: packages/wordpress/src/Rest/SettingsController.php:110
 msgid "Confirm explicitly that galleries and their image relations may be deleted when the plugin is deleted."
 msgstr "Bestätige ausdrücklich, dass Galerien und ihre Bildzuordnungen beim Löschen des Plugins gelöscht werden dürfen."
 
-#: packages/wordpress/src/Rest/SettingsController.php:116
+#: packages/wordpress/src/Rest/SettingsController.php:129
 msgid "When the plugin is deleted, all galleries and their image relations are removed. Images in the Media Library are never deleted."
 msgstr "Beim Löschen des Plugins werden alle Galerien und ihre Bildzuordnungen entfernt. Bilder in der Mediathek werden nie gelöscht."
 

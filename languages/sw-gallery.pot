@@ -60,7 +60,7 @@ msgstr ""
 msgid "Presentation"
 msgstr ""
 
-#: assets/blocks/src/Edit.tsx:71 packages/wordpress/src/Mcp/McpRegistrar.php:53
+#: assets/blocks/src/Edit.tsx:71 packages/wordpress/src/Mcp/McpRegistrar.php:58
 msgid "SW Gallery"
 msgstr ""
 
@@ -371,8 +371,9 @@ msgid "Gallery diagnostic (visible to editors only): the gallery frontend assets
 msgstr ""
 
 #: packages/wordpress/src/Gallery/GalleryEditor.php:105
-#: packages/wordpress/src/Gallery/ItemEditor.php:105
-#: packages/wordpress/src/Rest/SettingsController.php:93
+#: packages/wordpress/src/Gallery/ItemEditor.php:118
+#: packages/wordpress/src/Mcp/Ability/UpdateSettingsAbility.php:56
+#: packages/wordpress/src/Rest/SettingsController.php:99
 msgid "The request does not change anything."
 msgstr ""
 
@@ -382,15 +383,15 @@ msgstr ""
 msgid "%s (copy)"
 msgstr ""
 
-#: packages/wordpress/src/Gallery/GalleryEditor.php:236
+#: packages/wordpress/src/Gallery/GalleryEditor.php:244
 msgid "You are not allowed to publish galleries."
 msgstr ""
 
-#: packages/wordpress/src/Gallery/GalleryEditor.php:267
+#: packages/wordpress/src/Gallery/GalleryEditor.php:275
 msgid "The cover must be an image you may use."
 msgstr ""
 
-#: packages/wordpress/src/Gallery/ItemEditor.php:102
+#: packages/wordpress/src/Gallery/ItemEditor.php:115
 msgid "The settings must be an object."
 msgstr ""
 
@@ -411,12 +412,28 @@ msgstr ""
 msgid "%s is too large or nested too deeply."
 msgstr ""
 
+#: packages/wordpress/src/Mcp/Ability/DeleteGalleryAbility.php:41
+msgid "Permanently delete gallery"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/DestructiveAbilityTrait.php:26
+msgid "Confirm permanent removal explicitly."
+msgstr ""
+
 #: packages/wordpress/src/Mcp/Ability/DuplicateGalleryAbility.php:39
 msgid "Duplicate gallery"
 msgstr ""
 
 #: packages/wordpress/src/Mcp/Ability/GetGalleryAbility.php:38
 msgid "Get gallery"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/GetSettingsAbility.php:24
+msgid "Get gallery settings"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/GetStatusAbility.php:32
+msgid "Get gallery system status"
 msgstr ""
 
 #: packages/wordpress/src/Mcp/Ability/ListGalleriesAbility.php:42
@@ -433,6 +450,10 @@ msgstr ""
 
 #: packages/wordpress/src/Mcp/Ability/ListMediaAbility.php:44
 msgid "List media"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/RemoveItemsAbility.php:46
+msgid "Remove gallery items"
 msgstr ""
 
 #: packages/wordpress/src/Mcp/Ability/RenderGalleryAbility.php:46
@@ -457,6 +478,10 @@ msgstr ""
 
 #: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:46
 msgid "Update gallery item"
+msgstr ""
+
+#: packages/wordpress/src/Mcp/Ability/UpdateSettingsAbility.php:27
+msgid "Update gallery settings"
 msgstr ""
 
 #: packages/wordpress/src/Mcp/AbilityFactory.php:76
@@ -1022,11 +1047,15 @@ msgstr ""
 msgid "This file type is not supported. Use a JPEG, PNG, GIF, WebP or AVIF image."
 msgstr ""
 
-#: packages/wordpress/src/Rest/SettingsController.php:101
+#: packages/wordpress/src/Rest/SettingsController.php:96
+msgid "The MCP access level is unavailable or invalid."
+msgstr ""
+
+#: packages/wordpress/src/Rest/SettingsController.php:110
 msgid "Confirm explicitly that galleries and their image relations may be deleted when the plugin is deleted."
 msgstr ""
 
-#: packages/wordpress/src/Rest/SettingsController.php:116
+#: packages/wordpress/src/Rest/SettingsController.php:129
 msgid "When the plugin is deleted, all galleries and their image relations are removed. Images in the Media Library are never deleted."
 msgstr ""
 

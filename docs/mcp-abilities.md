@@ -1,6 +1,6 @@
 # MCP abilities of sw-gallery
 
-**Part 2 of 2.** Status: **MCP-01 to MCP-03 are implemented** (gate, tier ceiling, audit, security test, all read abilities and all `write`-tier abilities); the destructive and admin abilities below are still plans. Rules: [`mcp-harness.md`](mcp-harness.md) – tiers, auth layers, ability contract, mandatory security test. Field semantics, bounds and error codes are those of [`rest-api.md`](rest-api.md); this file only lists what differs. 
+**Part 2 of 2.** Status: **MCP-01 to MCP-04 are implemented.** Rules: [`mcp-harness.md`](mcp-harness.md) – tiers, authentication, ability contract and security tests. Field semantics, bounds and error codes follow [`rest-api.md`](rest-api.md).
 
 | Placeholder | Value |
 |---|---|
@@ -10,7 +10,7 @@
 | `{CONST}` | `SW_GALLERY` (`SW_GALLERY_MCP_DISABLED`, `SW_GALLERY_MCP_MAX_TIER`, `SW_GALLERY_MCP_MAX_OUTPUT`) |
 | Requires | WordPress ≥ 6.9 (plugin minimum stays 6.4; abilities simply stay off below 6.9), `mcp-adapter` (developed against 0.7.2, pre-1.0: pin and re-test on update) |
 
-Code: `packages/wordpress/src/Mcp/` (`McpRegistrar` in `Registrars::all()`); shared rules live in `Gallery/GalleryEditor`, `Gallery/ItemEditor`, `Gallery/GalleryLister` and `Media/MediaLister`, which the REST controllers use too (`Gallery/ItemReader` serves `list-items`). Tests: `composer test:wp`, `composer test:wp:ms`, and `composer test:wp:nomcp` (adapter not loaded, harness §8 #11), plus the [project checks and coverage suites](development.md). Until MCP-04, the tier is set with the option `swg_mcp_max_tier` (`wp option update`) or the constant; the settings control ships with MCP-04.
+Code: `packages/wordpress/src/Mcp/` (`McpRegistrar` in `Registrars::all()`); shared rules live in `Gallery/GalleryEditor`, `Gallery/ItemEditor`, `Gallery/GalleryLister` and `Media/MediaLister`, which the REST controllers use too (`Gallery/ItemReader` serves `list-items`). Tests: `composer test:wp`, `composer test:wp:ms`, and `composer test:wp:nomcp` (adapter not loaded, harness §8 #11), plus the [project checks and coverage suites](development.md). The Settings screen writes the site option `swg_mcp_max_tier`.
 
 ## 1. For site owners
 
@@ -130,7 +130,7 @@ Additional cases (beyond the harness list): `create-gallery`/`update-gallery` wi
 1. **MCP-01 — done (2026-11-22, `feat/mcp-adapter`).** Register `get-gallery` and `update-gallery` with their matrix rows. Extract shared view, publish and cover checks from the controller for use by both entry points. On an isolated test site with the pinned adapter and an application password, discover and read an owned draft, deny access to a hidden draft, update the owned draft and replay its stale revision. Capture the client-visible results and verify the second write had no effect. Deliver the gate and tier ceiling. Audit mutation outcomes and permission denials using bounded persistent storage with debug logging disabled. Store the validated slug and verb-noun separately so logger slash redaction preserves the identity. Exercise the real sink and repeated permission probes.
 2. **MCP-02 — done (2026-11-22).** Share the REST list visibility predicates. Through MCP compare the concatenated layout pages with the live REST presenter, including all built-ins and a third-party fixture. Compare complete schemas after JSON encoding (enum types, localized labels, defaults, bounds, nested item settings, empty objects) and all breakpoint keys. Compare list filter and sort enums with REST and domain sources via `get-ability-info`. Exercise filtered results and forced continuation under a small output cap, with no duplicate or skipped records on a stable dataset.
 3. **MCP-03 — done (2026-11-22).** Verify contributor publish/private refusal, cover rights, concurrent edits, partial item updates and recovery. Check that lists exclude foreign drafts.
-4. **MCP-04 — destructive and admin abilities.** Test strict confirmation, settings field allowlists and the translated tier control. Extend the MCP-01 audit cases to settings changes and permanent deletion.
+4. **MCP-04 — implemented.** Destructive and admin abilities, the translated tier control, and tests for confirmation, settings allowlists and audit behavior.
 5. **MCP-05 — release acceptance.** Repeat the client suite across all shipped tiers, run SonarCloud and update the security and decision records.
 
 ## 10. Design decisions

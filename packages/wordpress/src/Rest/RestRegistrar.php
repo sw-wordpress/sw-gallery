@@ -65,7 +65,7 @@ final class RestRegistrar implements RegistrarInterface {
 			),
 			new PreviewController( $errors, Services::galleries(), Services::access(), Services::layouts(), Services::preview_renderer( ... ), Services::frontend_assets() ),
 			new SettingsController( $errors, Services::settings() ),
-			new StatusController( $errors, new StatusReport( Services::logger(), Services::relations(), SWGALLERY_DIR . 'assets/admin' ) ),
+			new StatusController( $errors, Services::status_report() ),
 		);
 	}
 }

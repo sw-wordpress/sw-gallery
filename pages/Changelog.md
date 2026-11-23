@@ -10,6 +10,7 @@ User-facing changes summarized from the repository's [existing changelog](https:
 - Show image titles/captions on hover or focus with four animations; set defaults site-wide or per gallery.
 - Set **Images per page** per gallery, with a shortcode override when needed.
 - Let AI assistants read and edit galleries through the MCP Adapter plugin on WordPress 6.9+, with read-only access by default and an audit trail for changes. The [MCP guide](ai-assistants.md) covers setup and creating a Masonry gallery from the Media Library.
+- Choose the MCP access level in Gallery Settings. Additional levels allow confirmed permanent removal and administration of display settings and diagnostics.
 
 ### Bugs
 

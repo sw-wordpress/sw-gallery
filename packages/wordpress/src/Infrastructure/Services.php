@@ -153,6 +153,10 @@ final class Services {
 		return self::$settings ??= new PluginSettings( self::layouts() );
 	}
 
+	public static function status_report(): \SWGallery\WordPress\Rest\StatusReport {
+		return new \SWGallery\WordPress\Rest\StatusReport( self::logger(), self::relations(), SWGALLERY_DIR . 'assets/admin' );
+	}
+
 	public static function gallery_service(): GalleryService {
 		return self::$gallery_service ??= new GalleryService(
 			self::galleries(),

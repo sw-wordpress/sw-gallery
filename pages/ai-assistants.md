@@ -12,6 +12,7 @@ Without the MCP Adapter plugin nothing of this exists on your site: no tools, no
 - An MCP client that connects to `https://<your-site>/wp-json/mcp/mcp-adapter-default-server` with HTTP Basic authentication (user name and application password).
 
 Revoke the application password to cut off access immediately. Failed log-in attempts are not rate-limited by WordPress; use your web server or a firewall for that.
+The password also authenticates the account on other enabled WordPress endpoints. Choose an account whose permissions fit those endpoints as well.
 
 ## Access level
 
@@ -22,13 +23,13 @@ The **access level** limits what the assistant may do with SW Gallery, on top of
 | `off` | None | MCP completely disabled for SW Gallery. |
 | `read` (default) | Read-only tools | Let an assistant look at galleries, images and layouts. |
 | `write` | Read tools plus tools that add or change data and can be undone | Let an assistant build and edit galleries. |
-| `destructive` | Adds tools that remove data permanently | *No tools at this level yet.* |
-| `admin` | Adds plugin-wide settings and diagnostics | *No tools at this level yet.* |
+| `destructive` | Remove gallery items or permanently delete a gallery | Both actions keep the original Media Library attachments. |
+| `admin` | Read and change site-wide display settings and read system status | Requires WordPress permission to manage site options. |
 
 Levels are cumulative. The default is `read`, so a fresh installation can read but not write.
 
 ::: tip Change the level
-A settings screen for this is not available yet. Use WP-CLI (the change applies to the next request, no restart needed):
+In WordPress, open **Galleries → Settings → MCP access**, choose a level and save. The setting is visible while the adapter is active, including at **Off**. The new level applies to the next request. You can also use WP-CLI:
 
 ```sh
 wp option update swg_mcp_max_tier write
@@ -104,14 +105,24 @@ Lists are returned in pages. When there is more, the answer contains `next` with
 | `update-item` | Changes the title, caption and alt text of one image in the gallery and/or its per-image settings. | `id`, `itemId`, `expectedRevision`, `overrides`, `settings` |
 | `reorder-items` | Sets the manual order. The list must contain every image of the gallery exactly once. | `id`, `itemIds`, `expectedRevision` |
 
-### Not available yet
+### Permanent removal (level `destructive`)
 
-| Planned tool | Level | Status |
+Both tools require the current gallery revision and an explicit JSON boolean `"confirm": true`.
+
+| Tool | What it does | Main parameters |
 | --- | --- | --- |
-| Remove images from a gallery, delete a gallery permanently | `destructive` | Not implemented. |
-| Read and change plugin settings, read system status | `admin` | Not implemented. |
-| Upload images | – | Not offered through MCP. Use images already in the Media Library (`list-media`). |
-| Change a gallery's owner | – | Not offered through MCP; use the admin app. |
+| `remove-items` | Removes gallery items, their text overrides and per-image settings. | `id`, `itemIds`, `expectedRevision`, `confirm` |
+| `delete-gallery` | Permanently deletes a gallery and its item relations. Use `trash-gallery` for reversible removal. | `id`, `expectedRevision`, `confirm` |
+
+### Administration (level `admin`)
+
+| Tool | What it does |
+| --- | --- |
+| `get-settings` | Reads the default layout, page size, lightbox and hover settings. |
+| `update-settings` | Changes the supplied display settings. |
+| `get-status` | Reports schema state, counts, software versions, recent error codes and diagnostic hint keys. |
+
+Use the WordPress admin for media uploads, ownership changes, MCP access and the uninstall setting.
 
 ## Create a Masonry gallery from the Media Library
 

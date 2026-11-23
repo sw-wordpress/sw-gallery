@@ -109,7 +109,7 @@ final class AbilityFactory {
 			$this->audit->record( $definition->name(), $actor->userId, McpAuditLog::ERROR, self::CODE_TOO_LARGE );
 			return new \WP_Error( self::CODE_TOO_LARGE, __( 'The result is too large to return.', 'sw-gallery' ), array( 'status' => 413 ) );
 		}
-		if ( TierPolicy::READ !== $definition->tier() ) {
+		if ( ! $definition->annotations()['readonly'] ) {
 			$this->audit->record( $definition->name(), $actor->userId, McpAuditLog::OK, 'ok' );
 		}
 		return $result;

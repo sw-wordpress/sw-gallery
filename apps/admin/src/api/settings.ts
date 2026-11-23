@@ -1,6 +1,9 @@
 import type { ApiClient } from './client';
 import type { HoverAnimation } from './galleries';
 
+export const MCP_ACCESS_LEVELS = ['off', 'read', 'write', 'destructive', 'admin'] as const;
+export type McpAccessLevel = (typeof MCP_ACCESS_LEVELS)[number];
+
 /** `GET`/`PATCH /settings` (docs/rest-api.md "Settings"). */
 export interface SettingsValues {
   defaultLayout: string;
@@ -11,6 +14,7 @@ export interface SettingsValues {
   hoverCaption: boolean;
   hoverAnimation: HoverAnimation;
   deleteDataOnUninstall: boolean;
+  mcpAccessLevel?: McpAccessLevel;
 }
 
 export interface Settings extends SettingsValues {
@@ -18,6 +22,7 @@ export interface Settings extends SettingsValues {
   defaults: SettingsValues;
   /** Plain statement of what deleting the plugin removes (and that attachments are never deleted). */
   deleteDataNotice: string;
+  mcpEffectiveLevel?: McpAccessLevel;
 }
 
 export interface SettingsPatch extends Partial<SettingsValues> {

@@ -143,25 +143,29 @@ final class PluginSettings {
 	private function schema(): array {
 		return array(
 			'type'       => 'object',
-			'properties' => array(
-				'defaultLayout'         => array(
-					'type'      => 'string',
-					'minLength' => 1,
-					'maxLength' => 64,
-				),
-				'itemsPerPage'          => array(
-					'type'    => 'integer',
-					'minimum' => self::MIN_ITEMS_PER_PAGE,
-					'maximum' => self::MAX_ITEMS_PER_PAGE,
-				),
-				'lightbox'              => array( 'type' => 'boolean' ),
-				'hoverTitle'            => array( 'type' => 'boolean' ),
-				'hoverCaption'          => array( 'type' => 'boolean' ),
-				'hoverAnimation'        => array(
-					'type' => 'string',
-					'enum' => array_map( static fn( HoverAnimation $animation ): string => $animation->value, HoverAnimation::cases() ),
-				),
-				'deleteDataOnUninstall' => array( 'type' => 'boolean' ),
+			'properties' => self::display_properties() + array( 'deleteDataOnUninstall' => array( 'type' => 'boolean' ) ),
+		);
+	}
+
+	/** @return array<string, array<string, mixed>> Schema of the public display settings. */
+	public static function display_properties(): array {
+		return array(
+			'defaultLayout'  => array(
+				'type'      => 'string',
+				'minLength' => 1,
+				'maxLength' => 64,
+			),
+			'itemsPerPage'   => array(
+				'type'    => 'integer',
+				'minimum' => self::MIN_ITEMS_PER_PAGE,
+				'maximum' => self::MAX_ITEMS_PER_PAGE,
+			),
+			'lightbox'       => array( 'type' => 'boolean' ),
+			'hoverTitle'     => array( 'type' => 'boolean' ),
+			'hoverCaption'   => array( 'type' => 'boolean' ),
+			'hoverAnimation' => array(
+				'type' => 'string',
+				'enum' => array_map( static fn( HoverAnimation $animation ): string => $animation->value, HoverAnimation::cases() ),
 			),
 		);
 	}

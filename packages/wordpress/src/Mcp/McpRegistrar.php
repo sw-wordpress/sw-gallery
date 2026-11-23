@@ -15,18 +15,23 @@ use SWGallery\WordPress\Gallery\ItemEditor;
 use SWGallery\WordPress\Infrastructure\Services;
 use SWGallery\WordPress\Mcp\Ability\AssignItemsAbility;
 use SWGallery\WordPress\Mcp\Ability\CreateGalleryAbility;
+use SWGallery\WordPress\Mcp\Ability\DeleteGalleryAbility;
 use SWGallery\WordPress\Mcp\Ability\DuplicateGalleryAbility;
 use SWGallery\WordPress\Mcp\Ability\GetGalleryAbility;
+use SWGallery\WordPress\Mcp\Ability\GetSettingsAbility;
+use SWGallery\WordPress\Mcp\Ability\GetStatusAbility;
 use SWGallery\WordPress\Mcp\Ability\ListGalleriesAbility;
 use SWGallery\WordPress\Mcp\Ability\ListItemsAbility;
 use SWGallery\WordPress\Mcp\Ability\ListLayoutsAbility;
 use SWGallery\WordPress\Mcp\Ability\ListMediaAbility;
+use SWGallery\WordPress\Mcp\Ability\RemoveItemsAbility;
 use SWGallery\WordPress\Mcp\Ability\RenderGalleryAbility;
 use SWGallery\WordPress\Mcp\Ability\ReorderItemsAbility;
 use SWGallery\WordPress\Mcp\Ability\RestoreGalleryAbility;
 use SWGallery\WordPress\Mcp\Ability\TrashGalleryAbility;
 use SWGallery\WordPress\Mcp\Ability\UpdateGalleryAbility;
 use SWGallery\WordPress\Mcp\Ability\UpdateItemAbility;
+use SWGallery\WordPress\Mcp\Ability\UpdateSettingsAbility;
 use SWGallery\WordPress\Rest\ErrorMapper;
 
 /**
@@ -73,18 +78,23 @@ final class McpRegistrar implements RegistrarInterface {
 		return array(
 			new AssignItemsAbility( $items, $editor ),
 			new CreateGalleryAbility( $editor ),
+			new DeleteGalleryAbility( $editor ),
 			new DuplicateGalleryAbility( $editor ),
 			new GetGalleryAbility( $editor ),
+			new GetSettingsAbility( Services::settings( ... ) ),
+			new GetStatusAbility( Services::status_report( ... ) ),
 			new ListGalleriesAbility( static fn() => Services::gallery_lister() ),
 			new ListItemsAbility( static fn() => Services::item_reader() ),
 			new ListLayoutsAbility( static fn() => Services::layouts() ),
 			new ListMediaAbility( static fn() => Services::media_lister() ),
+			new RemoveItemsAbility( $items, $editor ),
 			new RenderGalleryAbility( $editor, Services::preview_renderer( ... ) ),
 			new ReorderItemsAbility( $items, $editor ),
 			new RestoreGalleryAbility( $editor ),
 			new TrashGalleryAbility( $editor ),
 			new UpdateGalleryAbility( $editor ),
 			new UpdateItemAbility( $items, $editor ),
+			new UpdateSettingsAbility( Services::settings( ... ) ),
 		);
 	}
 }

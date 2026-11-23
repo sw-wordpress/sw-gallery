@@ -101,17 +101,47 @@ class McpTransportEndToEndTest extends SwgTestCase {
 	}
 
 	public function test_discovery_lists_only_abilities_of_the_effective_tier(): void {
-		$session = $this->connect( $this->author );
-		$names   = $this->discovered( $session );
-		$this->assertContains( 'sw-gallery/get-gallery', $names );
-		$this->assertContains( 'sw-gallery/update-gallery', $names );
+		$session = $this->connect( $this->makeUser( 'administrator' ) );
+		$tiers = array(
+			'off' => array(),
+			'read' => array( 'get-gallery', 'list-galleries', 'list-items', 'list-layouts', 'list-media', 'render-gallery' ),
+			'write' => array( 'create-gallery', 'update-gallery', 'duplicate-gallery', 'trash-gallery', 'restore-gallery', 'assign-items', 'update-item', 'reorder-items' ),
+			'destructive' => array( 'remove-items', 'delete-gallery' ),
+			'admin' => array( 'get-settings', 'update-settings', 'get-status' ),
+		);
+		$expected = array();
+		foreach ( $tiers as $tier => $added ) {
+			$this->reregisterAbilities( $tier );
+			$expected = array_merge( $expected, array_map( static fn( string $name ): string => 'sw-gallery/' . $name, $added ) );
+			$names = array_values( array_filter( $this->discovered( $session ), static fn( string $name ): bool => str_starts_with( $name, 'sw-gallery/' ) ) );
+			$this->assertEqualsCanonicalizing( $expected, $names, $tier );
+			if ( 'admin' !== $tier ) {
+				$refused = $this->execute_tool( $session, 'get-status', new stdClass() );
+				$this->assertFalse( $refused['success'], $tier );
+			}
+		}
+		$this->assertTrue( $this->execute_tool( $session, 'get-status', new stdClass() )['success'] );
+	}
 
-		$this->reregisterAbilities( 'read' );
-		$names = $this->discovered( $session );
-		$this->assertContains( 'sw-gallery/get-gallery', $names );
-		$this->assertNotContains( 'sw-gallery/update-gallery', $names );
-		$refused = $this->tool( $session, 'mcp-adapter-execute-ability', array( 'ability_name' => 'sw-gallery/update-gallery', 'parameters' => array( 'id' => $this->gallery, 'expectedRevision' => 1, 'title' => 'x' ) ) );
-		$this->assertFalse( $refused['success'] );
+	public function test_permanent_delete_rejects_coerced_confirmation_over_json_rpc(): void {
+		$session = $this->connect( $this->author );
+		$input = array( 'id' => $this->gallery, 'expectedRevision' => 1 );
+		foreach ( array( array(), array( 'confirm' => false ), array( 'confirm' => 1 ), array( 'confirm' => 'true' ) ) as $confirmation ) {
+			$result = $this->execute_tool( $session, 'delete-gallery', $input + $confirmation );
+			$this->assertFalse( $result['success'] );
+			$this->assertInstanceOf( WP_Post::class, get_post( $this->gallery ) );
+		}
+		$result = $this->execute_tool( $session, 'delete-gallery', $input + array( 'confirm' => true ) );
+		$this->assertTrue( $result['success'], wp_json_encode( $result ) );
+		$this->assertNull( get_post( $this->gallery ) );
+	}
+
+	/**
+	 * @param array<string, mixed>|stdClass $parameters Ability input.
+	 * @return array<string, mixed>
+	 */
+	private function execute_tool( string $session, string $ability, array|stdClass $parameters ): array {
+		return $this->tool( $session, 'mcp-adapter-execute-ability', array( 'ability_name' => 'sw-gallery/' . $ability, 'parameters' => $parameters ) );
 	}
 
 	public function test_owner_reads_and_writes_while_others_get_one_generic_refusal(): void {
@@ -141,6 +171,34 @@ class McpTransportEndToEndTest extends SwgTestCase {
 		$session = $this->connect( $this->makeUser( 'subscriber' ) );
 		$result = $this->tool( $session, 'mcp-adapter-execute-ability', array( 'ability_name' => 'sw-gallery/get-gallery', 'parameters' => array( 'id' => $this->gallery ) ) );
 		$this->assertFalse( $result['success'] );
+	}
+
+	public function test_application_password_uses_the_authenticated_wordpress_users_gallery_access(): void {
+		add_filter( 'wp_is_application_passwords_available', '__return_true' );
+		add_filter( 'application_password_is_api_request', '__return_true' );
+		try {
+			foreach ( array( $this->author, $this->other ) as $user_id ) {
+				[ $password ] = WP_Application_Passwords::create_new_application_password( $user_id, array( 'name' => 'MCP client test' ) );
+				wp_set_current_user( 0 );
+				$_SERVER['PHP_AUTH_USER'] = get_userdata( $user_id )->user_login;
+				$_SERVER['PHP_AUTH_PW']   = $password;
+				$authenticated = apply_filters( 'determine_current_user', false );
+				$this->assertSame( $user_id, $authenticated );
+				$session = $this->connect( $authenticated );
+				$result = $this->execute_tool( $session, 'get-gallery', array( 'id' => $this->gallery ) );
+				$this->assertSame( $this->author === $user_id, $result['success'] );
+			}
+			wp_set_current_user( 0 );
+			$_SERVER['PHP_AUTH_PW'] = 'invalid application password';
+			$this->assertFalse( (bool) apply_filters( 'determine_current_user', false ) );
+			$error = apply_filters( 'rest_authentication_errors', null );
+			$this->assertInstanceOf( WP_Error::class, $error );
+			$this->assertSame( 401, $error->get_error_data()['status'] );
+		} finally {
+			unset( $_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'], $GLOBALS['wp_rest_application_password_status'] );
+			remove_filter( 'wp_is_application_passwords_available', '__return_true' );
+			remove_filter( 'application_password_is_api_request', '__return_true' );
+		}
 	}
 
 	public function test_unknown_and_foreign_abilities_are_not_executable(): void {
