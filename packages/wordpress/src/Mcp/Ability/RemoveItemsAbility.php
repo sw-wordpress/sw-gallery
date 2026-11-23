@@ -11,9 +11,6 @@ declare(strict_types=1);
 
 namespace SWGallery\WordPress\Mcp\Ability;
 
-use SWGallery\Core\Exception\AccessDeniedException;
-use SWGallery\WordPress\Gallery\GalleryEditor;
-use SWGallery\WordPress\Gallery\ItemEditor;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\DestructiveInput;
 use SWGallery\WordPress\Mcp\GallerySchema;
@@ -23,16 +20,7 @@ use SWGallery\Core\Application\Service\GalleryItemService;
 
 final class RemoveItemsAbility implements AbilityDefinition {
 
-	use WriteAbilityTrait;
-
-	/**
-	 * @param \Closure $items  Lazy provider of the {@see ItemEditor}.
-	 * @param \Closure $editor Lazy provider of the {@see GalleryEditor}.
-	 * @phpstan-param \Closure():ItemEditor $items
-	 * @phpstan-param \Closure():GalleryEditor $editor
-	 */
-	public function __construct( private readonly \Closure $items, private readonly \Closure $editor ) {
-	}
+	use ItemWriteAbilityTrait;
 
 	public function name(): string {
 		return 'remove-items';
@@ -88,14 +76,6 @@ final class RemoveItemsAbility implements AbilityDefinition {
 			'destructive' => true,
 			'idempotent'  => true,
 		);
-	}
-
-	public function permission( array $input ): true|\WP_Error {
-		if ( ! current_user_can( 'edit_posts' ) ) {
-			throw new AccessDeniedException();
-		}
-		( $this->editor )()->editable( $this->actor(), self::int( $input, 'id' ) );
-		return true;
 	}
 
 	public function execute( array $input ): array|\WP_Error {

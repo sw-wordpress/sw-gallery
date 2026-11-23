@@ -9,16 +9,16 @@ declare(strict_types=1);
 
 namespace SWGallery\WordPress\Mcp\Ability;
 
-use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\GallerySchema;
-use SWGallery\WordPress\Mcp\TierPolicy;
 use SWGallery\WordPress\Rest\AbstractController;
 use SWGallery\WordPress\Rest\ErrorMapper;
 
 final class UpdateGalleryAbility implements AbilityDefinition {
+
+	use WriteAbilityTrait;
 
 	/**
 	 * @param \Closure $editor Lazy provider: registering an ability must not build the services (and so must not
@@ -32,10 +32,6 @@ final class UpdateGalleryAbility implements AbilityDefinition {
 		return 'update-gallery';
 	}
 
-	public function tier(): string {
-		return TierPolicy::WRITE;
-	}
-
 	public function label(): string {
 		return __( 'Update gallery', 'sw-gallery' );
 	}
@@ -45,27 +41,11 @@ final class UpdateGalleryAbility implements AbilityDefinition {
 	}
 
 	public function inputSchema(): array {
-		return array(
-			'type'                 => 'object',
-			'additionalProperties' => false,
-			'required'             => array( 'id', 'expectedRevision' ),
-			'properties'           => array(
-				'id'               => GallerySchema::id(),
-				'expectedRevision' => GallerySchema::expectedRevision(),
-			) + GallerySchema::writableFields(),
-		);
+		return GallerySchema::revisionInput( GallerySchema::writableFields() );
 	}
 
 	public function outputSchema(): array {
 		return GallerySchema::output();
-	}
-
-	public function annotations(): array {
-		return array(
-			'readonly'    => false,
-			'destructive' => false,
-			'idempotent'  => true,
-		);
 	}
 
 	public function permission( array $input ): true|\WP_Error {
@@ -87,14 +67,5 @@ final class UpdateGalleryAbility implements AbilityDefinition {
 		}
 		$result = ( $this->editor )()->update( $this->actor(), self::int( $input, 'id' ), self::int( $input, 'expectedRevision' ), $fields );
 		return $result instanceof \WP_Error ? $result : GallerySchema::project( $result );
-	}
-
-	private function actor(): Actor {
-		return new Actor( max( 0, get_current_user_id() ) );
-	}
-
-	/** @param array<string, mixed> $input Validated input. */
-	private static function int( array $input, string $key ): int {
-		return is_numeric( $input[ $key ] ?? null ) ? (int) $input[ $key ] : 0;
 	}
 }

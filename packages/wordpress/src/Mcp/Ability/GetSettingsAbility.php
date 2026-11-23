@@ -13,7 +13,7 @@ use SWGallery\WordPress\Mcp\AbilityDefinition;
 
 final class GetSettingsAbility implements AbilityDefinition {
 
-	use ReadAbilityTrait;
+	use ReadAnnotationsTrait;
 	use SettingsAbilityTrait;
 
 	public function name(): string {

@@ -14,7 +14,6 @@ use SWGallery\WordPress\Media\MediaLister;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\GallerySchema;
 use SWGallery\WordPress\Mcp\Paging;
-use SWGallery\WordPress\Mcp\TierPolicy;
 
 final class ListMediaAbility implements AbilityDefinition {
 
@@ -36,10 +35,6 @@ final class ListMediaAbility implements AbilityDefinition {
 		return 'list-media';
 	}
 
-	public function tier(): string {
-		return TierPolicy::READ;
-	}
-
 	public function label(): string {
 		return __( 'List media', 'sw-gallery' );
 	}
@@ -49,15 +44,10 @@ final class ListMediaAbility implements AbilityDefinition {
 	}
 
 	public function inputSchema(): array {
-		return array(
-			'type'                 => 'object',
-			'additionalProperties' => false,
-			'properties'           => array(
-				'search'     => array(
-					'description' => 'Search text (title, caption, description).',
-					'type'        => 'string',
-					'maxLength'   => 200,
-				),
+		return Paging::inputSchema(
+			self::PER_PAGE,
+			array(
+				'search'     => Paging::searchProperty( 'Search text (title, caption, description).' ),
 				'orderby'    => array(
 					'description' => 'Sort field.',
 					'type'        => 'string',
@@ -76,7 +66,7 @@ final class ListMediaAbility implements AbilityDefinition {
 					'minimum'     => 1,
 					'maximum'     => GallerySchema::ID_MAX,
 				),
-			) + Paging::inputProperties( self::PER_PAGE ),
+			)
 		);
 	}
 

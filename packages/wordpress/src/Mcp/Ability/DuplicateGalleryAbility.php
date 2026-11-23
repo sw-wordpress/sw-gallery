@@ -14,7 +14,6 @@ namespace SWGallery\WordPress\Mcp\Ability;
 use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\GallerySchema;
-use SWGallery\WordPress\Mcp\TierPolicy;
 
 final class DuplicateGalleryAbility implements AbilityDefinition {
 
@@ -29,10 +28,6 @@ final class DuplicateGalleryAbility implements AbilityDefinition {
 
 	public function name(): string {
 		return 'duplicate-gallery';
-	}
-
-	public function tier(): string {
-		return TierPolicy::WRITE;
 	}
 
 	public function label(): string {

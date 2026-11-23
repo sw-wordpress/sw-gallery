@@ -132,9 +132,28 @@ class McpAbilitySecurityTest extends SwgTestCase {
 				$this->assertContains( 'confirm', $ability->get_input_schema()['required'] );
 			}
 			$this->assertSame( 'destructive' === $tier, $meta['annotations']['destructive'], $id . ' destructive annotation follows the tier' );
+			$this->assertSame( ! in_array( $name, array( 'create-gallery', 'duplicate-gallery' ), true ), $meta['annotations']['idempotent'], $id . ' idempotent annotation' );
 			$this->assertNotSame( array(), $ability->get_output_schema(), $id . ' output schema' );
 			$this->assertSchemaBounded( $ability->get_input_schema(), $id );
 			$this->assertDoesNotMatchRegularExpression( '/\p{L}*[äöüß]/u', $ability->get_description(), $id . ' description stays English' );
+		}
+	}
+
+	public function test_gallery_tools_keep_their_required_input_fields(): void {
+		$expected = array(
+			'get-gallery'     => array( 'id' ),
+			'render-gallery'  => array( 'id' ),
+			'update-gallery'  => array( 'id', 'expectedRevision' ),
+			'trash-gallery'   => array( 'id', 'expectedRevision' ),
+			'restore-gallery' => array( 'id', 'expectedRevision' ),
+			'delete-gallery'  => array( 'id', 'expectedRevision', 'confirm' ),
+		);
+		foreach ( $expected as $name => $required ) {
+			$schema = $this->ourAbilities()[ 'sw-gallery/' . $name ]->get_input_schema();
+			$this->assertSame( $required, $schema['required'], $name );
+			foreach ( $required as $field ) {
+				$this->assertArrayHasKey( $field, $schema['properties'], $name );
+			}
 		}
 	}
 

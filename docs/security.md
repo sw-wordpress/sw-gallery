@@ -69,7 +69,7 @@ Independent adversarial review of sw-gallery 0.1.0 by a reviewer who did not wri
 
 ## How the permanent guards run
 
-The [MCP security matrix](mcp-abilities.md#8-security-matrix-data-of-the-mandatory-test) covers WordPress permissions, tier gates, strict confirmation, revision conflicts, settings allowlists and audit. The adapter transport tests check discovery across all five levels and confirm that invalid deletion requests leave galleries intact.
+The [MCP security matrix](mcp-abilities.md#8-security-matrix-data-of-the-mandatory-test) covers WordPress permissions, tier gates, strict confirmation, revision conflicts, settings allowlists and audit. The adapter transport tests verify discovery across all five levels and execution at the required levels. Invalid confirmation leaves the gallery intact.
 
 `composer test` (scan, sniff guard), `composer test:wp` and `composer test:wp:ms` (matrix, boundary, input, escaping, upload),
 `npm run test:coverage` in apps/admin (lint probes, bundle scan), `bin/test-e2e.sh` (real HTTP boundary, foreign admin screens).

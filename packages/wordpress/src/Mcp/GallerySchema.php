@@ -25,6 +25,33 @@ final class GallerySchema {
 	public const WRITABLE_STATUSES = array( 'draft', 'pending', 'publish', 'private' );
 
 	/** @return array<string, mixed> */
+	public static function idInput(): array {
+		return array(
+			'type'                 => 'object',
+			'additionalProperties' => false,
+			'required'             => array( 'id' ),
+			'properties'           => array( 'id' => self::id() ),
+		);
+	}
+
+	/**
+	 * @param array<string, array<string, mixed>> $fields Additional input properties.
+	 * @param string[]                            $required Required keys among those properties.
+	 * @return array<string, mixed>
+	 */
+	public static function revisionInput( array $fields = array(), array $required = array() ): array {
+		return array(
+			'type'                 => 'object',
+			'additionalProperties' => false,
+			'required'             => array_merge( array( 'id', 'expectedRevision' ), $required ),
+			'properties'           => array(
+				'id'               => self::id(),
+				'expectedRevision' => self::expectedRevision(),
+			) + $fields,
+		);
+	}
+
+	/** @return array<string, mixed> */
 	public static function id(): array {
 		return array(
 			'description' => 'Gallery id.',

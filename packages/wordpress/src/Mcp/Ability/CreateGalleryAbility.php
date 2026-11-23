@@ -15,7 +15,6 @@ use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\GallerySchema;
-use SWGallery\WordPress\Mcp\TierPolicy;
 use SWGallery\WordPress\Rest\AbstractController;
 use SWGallery\WordPress\Rest\ErrorMapper;
 
@@ -32,10 +31,6 @@ final class CreateGalleryAbility implements AbilityDefinition {
 
 	public function name(): string {
 		return 'create-gallery';
-	}
-
-	public function tier(): string {
-		return TierPolicy::WRITE;
 	}
 
 	public function label(): string {

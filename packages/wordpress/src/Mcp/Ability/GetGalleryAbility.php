@@ -9,14 +9,14 @@ declare(strict_types=1);
 
 namespace SWGallery\WordPress\Mcp\Ability;
 
-use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\GallerySchema;
-use SWGallery\WordPress\Mcp\TierPolicy;
 
 final class GetGalleryAbility implements AbilityDefinition {
+
+	use ReadAbilityTrait;
 
 	/**
 	 * @param \Closure $editor Lazy provider: registering an ability must not build the services (and so must not
@@ -30,10 +30,6 @@ final class GetGalleryAbility implements AbilityDefinition {
 		return 'get-gallery';
 	}
 
-	public function tier(): string {
-		return TierPolicy::READ;
-	}
-
 	public function label(): string {
 		return __( 'Get gallery', 'sw-gallery' );
 	}
@@ -43,44 +39,22 @@ final class GetGalleryAbility implements AbilityDefinition {
 	}
 
 	public function inputSchema(): array {
-		return array(
-			'type'                 => 'object',
-			'additionalProperties' => false,
-			'required'             => array( 'id' ),
-			'properties'           => array( 'id' => GallerySchema::id() ),
-		);
+		return GallerySchema::idInput();
 	}
 
 	public function outputSchema(): array {
 		return GallerySchema::output();
 	}
 
-	public function annotations(): array {
-		return array(
-			'readonly'    => true,
-			'destructive' => false,
-			'idempotent'  => true,
-		);
-	}
-
 	public function permission( array $input ): true|\WP_Error {
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			throw new AccessDeniedException();
 		}
-		( $this->editor )()->viewable( $this->actor(), self::id( $input ) );
+		( $this->editor )()->viewable( $this->actor(), self::int( $input, 'id' ) );
 		return true;
 	}
 
 	public function execute( array $input ): array {
-		return GallerySchema::project( ( $this->editor )()->view( $this->actor(), self::id( $input ) ) );
-	}
-
-	private function actor(): Actor {
-		return new Actor( max( 0, get_current_user_id() ) );
-	}
-
-	/** @param array<string, mixed> $input Validated input. */
-	private static function id( array $input ): int {
-		return is_numeric( $input['id'] ?? null ) ? (int) $input['id'] : 0;
+		return GallerySchema::project( ( $this->editor )()->view( $this->actor(), self::int( $input, 'id' ) ) );
 	}
 }

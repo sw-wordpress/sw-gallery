@@ -15,7 +15,6 @@ use SWGallery\WordPress\Gallery\GalleryLister;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\GallerySchema;
 use SWGallery\WordPress\Mcp\Paging;
-use SWGallery\WordPress\Mcp\TierPolicy;
 
 final class ListGalleriesAbility implements AbilityDefinition {
 
@@ -34,10 +33,6 @@ final class ListGalleriesAbility implements AbilityDefinition {
 		return 'list-galleries';
 	}
 
-	public function tier(): string {
-		return TierPolicy::READ;
-	}
-
 	public function label(): string {
 		return __( 'List galleries', 'sw-gallery' );
 	}
@@ -47,15 +42,10 @@ final class ListGalleriesAbility implements AbilityDefinition {
 	}
 
 	public function inputSchema(): array {
-		return array(
-			'type'                 => 'object',
-			'additionalProperties' => false,
-			'properties'           => array(
-				'search' => array(
-					'description' => 'Search in title and description.',
-					'type'        => 'string',
-					'maxLength'   => 200,
-				),
+		return Paging::inputSchema(
+			self::PER_PAGE,
+			array(
+				'search' => Paging::searchProperty( 'Search in title and description.' ),
 				'status' => array(
 					'description' => 'Statuses to list (default: all except trash). trash needs the right to delete galleries.',
 					'type'        => 'array',
@@ -71,7 +61,7 @@ final class ListGalleriesAbility implements AbilityDefinition {
 					'minimum'     => 1,
 					'maximum'     => GallerySchema::ID_MAX,
 				),
-			) + Paging::inputProperties( self::PER_PAGE ),
+			)
 		);
 	}
 

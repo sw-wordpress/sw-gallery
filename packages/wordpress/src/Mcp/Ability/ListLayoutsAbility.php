@@ -14,7 +14,6 @@ use SWGallery\Core\Domain\Settings\SettingsSchemaValidator;
 use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\Paging;
-use SWGallery\WordPress\Mcp\TierPolicy;
 use SWGallery\WordPress\Rest\LayoutPresenter;
 
 final class ListLayoutsAbility implements AbilityDefinition {
@@ -34,10 +33,6 @@ final class ListLayoutsAbility implements AbilityDefinition {
 		return 'list-layouts';
 	}
 
-	public function tier(): string {
-		return TierPolicy::READ;
-	}
-
 	public function label(): string {
 		return __( 'List layouts', 'sw-gallery' );
 	}
@@ -47,11 +42,7 @@ final class ListLayoutsAbility implements AbilityDefinition {
 	}
 
 	public function inputSchema(): array {
-		return array(
-			'type'                 => 'object',
-			'additionalProperties' => false,
-			'properties'           => Paging::inputProperties( self::PER_PAGE ),
-		);
+		return Paging::inputSchema( self::PER_PAGE );
 	}
 
 	public function outputSchema(): array {

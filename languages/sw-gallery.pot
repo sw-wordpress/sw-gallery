@@ -395,32 +395,32 @@ msgstr ""
 msgid "The settings must be an object."
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/AssignItemsAbility.php:43
+#: packages/wordpress/src/Mcp/Ability/AssignItemsAbility.php:27
 msgid "Add images to gallery"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:42
+#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:37
 msgid "Create gallery"
 msgstr ""
 
 #. translators: %s: argument name.
-#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:82
-#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:85
-#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:107
+#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:77
+#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:65
+#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:74
 #: packages/wordpress/src/Rest/AbstractController.php:125
 #, php-format
 msgid "%s is too large or nested too deeply."
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/DeleteGalleryAbility.php:41
+#: packages/wordpress/src/Mcp/Ability/DeleteGalleryAbility.php:32
 msgid "Permanently delete gallery"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/DuplicateGalleryAbility.php:39
+#: packages/wordpress/src/Mcp/Ability/DuplicateGalleryAbility.php:34
 msgid "Duplicate gallery"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/GetGalleryAbility.php:38
+#: packages/wordpress/src/Mcp/Ability/GetGalleryAbility.php:34
 msgid "Get gallery"
 msgstr ""
 
@@ -432,47 +432,47 @@ msgstr ""
 msgid "Get gallery system status"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/ListGalleriesAbility.php:42
+#: packages/wordpress/src/Mcp/Ability/ListGalleriesAbility.php:37
 msgid "List galleries"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/ListItemsAbility.php:42
+#: packages/wordpress/src/Mcp/Ability/ListItemsAbility.php:37
 msgid "List gallery items"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/ListLayoutsAbility.php:42
+#: packages/wordpress/src/Mcp/Ability/ListLayoutsAbility.php:37
 msgid "List layouts"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/ListMediaAbility.php:44
+#: packages/wordpress/src/Mcp/Ability/ListMediaAbility.php:39
 msgid "List media"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/RemoveItemsAbility.php:46
+#: packages/wordpress/src/Mcp/Ability/RemoveItemsAbility.php:34
 msgid "Remove gallery items"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/RenderGalleryAbility.php:46
+#: packages/wordpress/src/Mcp/Ability/RenderGalleryAbility.php:41
 msgid "Render gallery"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/ReorderItemsAbility.php:45
+#: packages/wordpress/src/Mcp/Ability/ReorderItemsAbility.php:28
 msgid "Reorder gallery items"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/RestoreGalleryAbility.php:40
+#: packages/wordpress/src/Mcp/Ability/RestoreGalleryAbility.php:26
 msgid "Restore gallery"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/TrashGalleryAbility.php:40
+#: packages/wordpress/src/Mcp/Ability/TrashGalleryAbility.php:26
 msgid "Trash gallery"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:40
+#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:36
 msgid "Update gallery"
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:46
+#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:29
 msgid "Update gallery item"
 msgstr ""
 
@@ -492,7 +492,7 @@ msgstr ""
 msgid "Confirm permanent removal explicitly."
 msgstr ""
 
-#: packages/wordpress/src/Mcp/Paging.php:104
+#: packages/wordpress/src/Mcp/Paging.php:129
 msgid "A single record is too large to return."
 msgstr ""
 

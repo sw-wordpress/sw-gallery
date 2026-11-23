@@ -11,32 +11,16 @@ declare(strict_types=1);
 
 namespace SWGallery\WordPress\Mcp\Ability;
 
-use SWGallery\WordPress\Gallery\GalleryEditor;
-use SWGallery\WordPress\Gallery\ItemEditor;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\GallerySchema;
-use SWGallery\WordPress\Mcp\TierPolicy;
 use SWGallery\Core\Application\Service\GalleryItemService;
 
 final class AssignItemsAbility implements AbilityDefinition {
 
-	use WriteAbilityTrait;
-
-	/**
-	 * @param \Closure $items  Lazy provider of the {@see ItemEditor}.
-	 * @param \Closure $editor Lazy provider of the {@see GalleryEditor}.
-	 * @phpstan-param \Closure():ItemEditor $items
-	 * @phpstan-param \Closure():GalleryEditor $editor
-	 */
-	public function __construct( private readonly \Closure $items, private readonly \Closure $editor ) {
-	}
+	use ItemWriteAbilityTrait;
 
 	public function name(): string {
 		return 'assign-items';
-	}
-
-	public function tier(): string {
-		return TierPolicy::WRITE;
 	}
 
 	public function label(): string {
@@ -85,22 +69,6 @@ final class AssignItemsAbility implements AbilityDefinition {
 				'revision'        => array( 'type' => 'integer' ),
 			),
 		);
-	}
-
-	public function annotations(): array {
-		return array(
-			'readonly'    => false,
-			'destructive' => false,
-			'idempotent'  => true,
-		);
-	}
-
-	public function permission( array $input ): true|\WP_Error {
-		if ( ! current_user_can( 'edit_posts' ) ) {
-			throw new \SWGallery\Core\Exception\AccessDeniedException();
-		}
-		( $this->editor )()->editable( $this->actor(), self::int( $input, 'id' ) );
-		return true;
 	}
 
 	public function execute( array $input ): array {

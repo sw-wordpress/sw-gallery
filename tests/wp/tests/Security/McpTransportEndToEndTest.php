@@ -124,6 +124,7 @@ class McpTransportEndToEndTest extends SwgTestCase {
 	}
 
 	public function test_permanent_delete_rejects_coerced_confirmation_over_json_rpc(): void {
+		$this->reregisterAbilities( 'destructive' );
 		$session = $this->connect( $this->author );
 		$input = array( 'id' => $this->gallery, 'expectedRevision' => 1 );
 		foreach ( array( array(), array( 'confirm' => false ), array( 'confirm' => 1 ), array( 'confirm' => 'true' ) ) as $confirmation ) {
@@ -145,11 +146,13 @@ class McpTransportEndToEndTest extends SwgTestCase {
 	}
 
 	public function test_owner_reads_and_writes_while_others_get_one_generic_refusal(): void {
+		$this->reregisterAbilities( 'read' );
 		$session = $this->connect( $this->author );
 		$read    = $this->tool( $session, 'mcp-adapter-execute-ability', array( 'ability_name' => 'sw-gallery/get-gallery', 'parameters' => array( 'id' => $this->gallery ) ) );
 		$this->assertTrue( $read['success'], wp_json_encode( $read ) );
 		$this->assertSame( 'Transport draft', $read['data']['title'] );
 
+		$this->reregisterAbilities( 'write' );
 		$write = $this->tool( $session, 'mcp-adapter-execute-ability', array( 'ability_name' => 'sw-gallery/update-gallery', 'parameters' => array( 'id' => $this->gallery, 'expectedRevision' => $read['data']['revision'], 'title' => 'Via MCP' ) ) );
 		$this->assertTrue( $write['success'], wp_json_encode( $write ) );
 		$this->assertSame( 'Via MCP', $write['data']['title'] );

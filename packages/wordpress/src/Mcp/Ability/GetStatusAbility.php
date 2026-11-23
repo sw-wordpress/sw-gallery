@@ -15,7 +15,7 @@ use SWGallery\WordPress\Rest\StatusReport;
 final class GetStatusAbility implements AbilityDefinition {
 
 	use AdminPermissionTrait;
-	use ReadAbilityTrait;
+	use ReadAnnotationsTrait;
 
 	/**
 	 * @param \Closure $report Lazy status report provider.

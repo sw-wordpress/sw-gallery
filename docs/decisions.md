@@ -195,3 +195,4 @@ Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und
 | Write abilities | `create-gallery`, `duplicate-gallery`, `trash-gallery`, `restore-gallery`, `assign-items`, `update-item`, `reorder-items` (tier `write`); `Gallery/ItemEditor` owns the item write rules. |
 | Permanent removal | `remove-items` and `delete-gallery` share the gallery services with REST and require a matching revision and the JSON boolean `true`. |
 | Administration | MCP settings use the display settings schema. The WordPress Settings screen owns the access-level control, and the status ability returns error codes and hint keys. |
+| Shared MCP definitions | Item mutations share the gallery edit permission. Trash, restore and permanent gallery deletion share the gallery delete permission. Common schemas define the required gallery ID, revision and pagination fields. |

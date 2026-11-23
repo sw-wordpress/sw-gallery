@@ -14,7 +14,6 @@ use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\GallerySchema;
 use SWGallery\WordPress\Mcp\ItemSchema;
 use SWGallery\WordPress\Mcp\Paging;
-use SWGallery\WordPress\Mcp\TierPolicy;
 use SWGallery\Core\Exception\AccessDeniedException;
 
 final class ListItemsAbility implements AbilityDefinition {
@@ -32,10 +31,6 @@ final class ListItemsAbility implements AbilityDefinition {
 
 	public function name(): string {
 		return 'list-items';
-	}
-
-	public function tier(): string {
-		return TierPolicy::READ;
 	}
 
 	public function label(): string {

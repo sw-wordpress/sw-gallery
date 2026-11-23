@@ -18,7 +18,6 @@ use SWGallery\Core\Exception\AccessDeniedException;
 use SWGallery\WordPress\Gallery\GalleryEditor;
 use SWGallery\WordPress\Mcp\AbilityDefinition;
 use SWGallery\WordPress\Mcp\GallerySchema;
-use SWGallery\WordPress\Mcp\TierPolicy;
 use SWGallery\WordPress\Rendering\GalleryRenderer;
 
 final class RenderGalleryAbility implements AbilityDefinition {
@@ -38,10 +37,6 @@ final class RenderGalleryAbility implements AbilityDefinition {
 		return 'render-gallery';
 	}
 
-	public function tier(): string {
-		return TierPolicy::READ;
-	}
-
 	public function label(): string {
 		return __( 'Render gallery', 'sw-gallery' );
 	}
@@ -51,12 +46,7 @@ final class RenderGalleryAbility implements AbilityDefinition {
 	}
 
 	public function inputSchema(): array {
-		return array(
-			'type'                 => 'object',
-			'additionalProperties' => false,
-			'required'             => array( 'id' ),
-			'properties'           => array( 'id' => GallerySchema::id() ),
-		);
+		return GallerySchema::idInput();
 	}
 
 	public function outputSchema(): array {

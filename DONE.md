@@ -1,5 +1,9 @@
 # DONE
 
+## 2026-11-23 — MCP release acceptance follow-up
+
+- Consolidate repeated MCP schemas, annotations and permission checks reported in PR #8. Extend contract checks and run adapter calls at their required access levels.
+
 ## 2026-11-23 — MCP-04
 
 - Add confirmed permanent removal of gallery items and galleries, display settings and system status abilities, and the translated MCP access control.

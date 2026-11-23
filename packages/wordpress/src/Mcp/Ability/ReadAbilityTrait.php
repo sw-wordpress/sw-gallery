@@ -14,16 +14,14 @@ namespace SWGallery\WordPress\Mcp\Ability;
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\WordPress\Mcp\AbilityFactory;
 use SWGallery\WordPress\Mcp\Paging;
+use SWGallery\WordPress\Mcp\TierPolicy;
 
 trait ReadAbilityTrait {
 
-	/** @return array{readonly: bool, destructive: bool, idempotent: bool} */
-	public function annotations(): array {
-		return array(
-			'readonly'    => true,
-			'destructive' => false,
-			'idempotent'  => true,
-		);
+	use ReadAnnotationsTrait;
+
+	public function tier(): string {
+		return TierPolicy::READ;
 	}
 
 	private function actor(): Actor {

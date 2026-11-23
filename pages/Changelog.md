@@ -18,6 +18,7 @@ User-facing changes summarized from the repository's [existing changelog](https:
 
 ### Other topics
 
+- Share MCP input schemas and permission checks across gallery tools to keep their behavior consistent.
 - Add searchable user documentation covering installation, editing, layouts, embedding, permissions, privacy and troubleshooting, with a navigable changelog and genuine demo screenshots of the overview, gallery list and Bubbles frontend.
 - Layout-setting explanations are available behind **?** help buttons to keep the sidebar shorter.
 

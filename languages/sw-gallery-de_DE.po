@@ -394,32 +394,32 @@ msgstr "Das Titelbild muss ein Bild sein, das Sie verwenden dürfen."
 msgid "The settings must be an object."
 msgstr "Die Einstellungen müssen ein Objekt sein."
 
-#: packages/wordpress/src/Mcp/Ability/AssignItemsAbility.php:43
+#: packages/wordpress/src/Mcp/Ability/AssignItemsAbility.php:27
 msgid "Add images to gallery"
 msgstr "Bilder zur Galerie hinzufügen"
 
-#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:42
+#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:37
 msgid "Create gallery"
 msgstr "Galerie erstellen"
 
 #. translators: %s: argument name.
-#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:82
-#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:85
-#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:107
+#: packages/wordpress/src/Mcp/Ability/CreateGalleryAbility.php:77
+#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:65
+#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:74
 #: packages/wordpress/src/Rest/AbstractController.php:125
 #, php-format
 msgid "%s is too large or nested too deeply."
 msgstr "%s ist zu groß oder zu tief verschachtelt."
 
-#: packages/wordpress/src/Mcp/Ability/DeleteGalleryAbility.php:41
+#: packages/wordpress/src/Mcp/Ability/DeleteGalleryAbility.php:32
 msgid "Permanently delete gallery"
 msgstr "Galerie endgültig löschen"
 
-#: packages/wordpress/src/Mcp/Ability/DuplicateGalleryAbility.php:39
+#: packages/wordpress/src/Mcp/Ability/DuplicateGalleryAbility.php:34
 msgid "Duplicate gallery"
 msgstr "Galerie duplizieren"
 
-#: packages/wordpress/src/Mcp/Ability/GetGalleryAbility.php:38
+#: packages/wordpress/src/Mcp/Ability/GetGalleryAbility.php:34
 msgid "Get gallery"
 msgstr "Galerie abrufen"
 
@@ -431,47 +431,47 @@ msgstr "Galerie-Einstellungen abrufen"
 msgid "Get gallery system status"
 msgstr "Galerie-Systemstatus abrufen"
 
-#: packages/wordpress/src/Mcp/Ability/ListGalleriesAbility.php:42
+#: packages/wordpress/src/Mcp/Ability/ListGalleriesAbility.php:37
 msgid "List galleries"
 msgstr "Galerien auflisten"
 
-#: packages/wordpress/src/Mcp/Ability/ListItemsAbility.php:42
+#: packages/wordpress/src/Mcp/Ability/ListItemsAbility.php:37
 msgid "List gallery items"
 msgstr "Galerie-Bilder auflisten"
 
-#: packages/wordpress/src/Mcp/Ability/ListLayoutsAbility.php:42
+#: packages/wordpress/src/Mcp/Ability/ListLayoutsAbility.php:37
 msgid "List layouts"
 msgstr "Layouts auflisten"
 
-#: packages/wordpress/src/Mcp/Ability/ListMediaAbility.php:44
+#: packages/wordpress/src/Mcp/Ability/ListMediaAbility.php:39
 msgid "List media"
 msgstr "Medien auflisten"
 
-#: packages/wordpress/src/Mcp/Ability/RemoveItemsAbility.php:46
+#: packages/wordpress/src/Mcp/Ability/RemoveItemsAbility.php:34
 msgid "Remove gallery items"
 msgstr "Galerie-Bilder entfernen"
 
-#: packages/wordpress/src/Mcp/Ability/RenderGalleryAbility.php:46
+#: packages/wordpress/src/Mcp/Ability/RenderGalleryAbility.php:41
 msgid "Render gallery"
 msgstr "Galerie rendern"
 
-#: packages/wordpress/src/Mcp/Ability/ReorderItemsAbility.php:45
+#: packages/wordpress/src/Mcp/Ability/ReorderItemsAbility.php:28
 msgid "Reorder gallery items"
 msgstr "Galerie-Bilder neu ordnen"
 
-#: packages/wordpress/src/Mcp/Ability/RestoreGalleryAbility.php:40
+#: packages/wordpress/src/Mcp/Ability/RestoreGalleryAbility.php:26
 msgid "Restore gallery"
 msgstr "Galerie wiederherstellen"
 
-#: packages/wordpress/src/Mcp/Ability/TrashGalleryAbility.php:40
+#: packages/wordpress/src/Mcp/Ability/TrashGalleryAbility.php:26
 msgid "Trash gallery"
 msgstr "Galerie in den Papierkorb legen"
 
-#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:40
+#: packages/wordpress/src/Mcp/Ability/UpdateGalleryAbility.php:36
 msgid "Update gallery"
 msgstr "Galerie aktualisieren"
 
-#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:46
+#: packages/wordpress/src/Mcp/Ability/UpdateItemAbility.php:29
 msgid "Update gallery item"
 msgstr "Galerie-Bild aktualisieren"
 
@@ -491,7 +491,7 @@ msgstr "Das Ergebnis ist zu groß, um es zurückzugeben."
 msgid "Confirm permanent removal explicitly."
 msgstr "Bestätige das endgültige Entfernen ausdrücklich."
 
-#: packages/wordpress/src/Mcp/Paging.php:104
+#: packages/wordpress/src/Mcp/Paging.php:129
 msgid "A single record is too large to return."
 msgstr "Ein einzelner Eintrag ist zu groß, um ihn zurückzugeben."
 

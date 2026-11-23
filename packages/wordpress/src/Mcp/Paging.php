@@ -25,6 +25,31 @@ final class Paging {
 	private const ENVELOPE_RESERVE = 2048;
 
 	/**
+	 * @param int                                 $default_per_page Default page size.
+	 * @param array<string, array<string, mixed>> $filters Additional filter properties.
+	 * @return array<string, mixed>
+	 */
+	public static function inputSchema( int $default_per_page, array $filters = array() ): array {
+		return array(
+			'type'                 => 'object',
+			'additionalProperties' => false,
+			'properties'           => $filters + self::inputProperties( $default_per_page ),
+		);
+	}
+
+	/**
+	 * @param string $description Search scope shown to the MCP client.
+	 * @return array<string, mixed>
+	 */
+	public static function searchProperty( string $description ): array {
+		return array(
+			'description' => $description,
+			'type'        => 'string',
+			'maxLength'   => 200,
+		);
+	}
+
+	/**
 	 * Input schema properties `page`, `per_page`, `offset`.
 	 *
 	 * @param int $default_per_page Default page size.
