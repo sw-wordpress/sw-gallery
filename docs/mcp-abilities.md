@@ -15,7 +15,7 @@ Code: `packages/wordpress/src/Mcp/` (`McpRegistrar` in `Registrars::all()`); sha
 ## 1. For site owners
 
 1. Install and activate `mcp-adapter`. sw-gallery then registers its abilities automatically; without the adapter nothing changes.
-2. Default access is **read only**. Raise it in *Galleries → Settings → MCP access* (`off`, `read`, `write`, `destructive`, `admin`) or hard-cap it in `wp-config.php`: `define( 'SW_GALLERY_MCP_MAX_TIER', 'write' );` (the lower tier wins). Kill switch: `define( 'SW_GALLERY_MCP_DISABLED', true );`.
+2. Access defaults to **off** when no level is saved. Enable it in *Galleries → Settings → MCP access* (`off`, `read`, `write`, `destructive`, `admin`). To cap the saved level in `wp-config.php`, use `define( 'SW_GALLERY_MCP_MAX_TIER', 'write' );`. The kill switch is `define( 'SW_GALLERY_MCP_DISABLED', true );`.
 3. Create a dedicated WordPress user for the agent with the lowest sufficient role (Author or Editor; Administrator only for the `admin` tier), create an **application password** in its profile (HTTPS required), and connect the client to `https://<site>/wp-json/mcp/mcp-adapter-default-server` with HTTP Basic auth. This tier limits the sw-gallery MCP tools. The same password also works at other enabled WordPress endpoints with the rights of this account. Choose the account’s capabilities with those endpoints in mind.
 4. Revoke the application password to cut access immediately. Rate limiting of failed logins is a web-server/WAF task.
 
@@ -135,4 +135,4 @@ Additional cases (beyond the harness list): `create-gallery`/`update-gallery` wi
 
 ## 10. Design decisions
 
-Use the default shared server and initial tier `read`. Preview returns render diagnostics and counts. Agents work with existing library attachments. Machine-facing ability and schema descriptions stay English and are not translated (confirmed); only labels and admin UI texts are translated (harness §6).
+Use the default shared server. SW Gallery defaults to `off`, overriding the default tier in harness §4 and §8. Preview returns render diagnostics and counts. Agents work with existing library attachments. Machine-facing ability and schema descriptions stay English and are not translated (confirmed); only labels and admin UI texts are translated (harness §6).

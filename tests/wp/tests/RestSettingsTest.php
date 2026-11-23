@@ -87,14 +87,15 @@ class RestSettingsTest extends SwgTestCase {
 		}
 		delete_option( TierPolicy::OPTION );
 		$initial = $this->data( $this->call( 'GET', '/settings', array(), $this->admin ) );
-		$this->assertSame( 'read', $initial['mcpAccessLevel'] );
+		$this->assertSame( 'off', $initial['mcpAccessLevel'] );
+		$this->assertSame( 'off', $initial['mcpEffectiveLevel'] );
 		$this->assertFalse( get_option( TierPolicy::OPTION, false ) );
 		$denied = $this->call( 'PATCH', '/settings', array( 'mcpAccessLevel' => 'admin' ), $this->makeUser( 'editor' ) );
 		$this->assertSame( 403, $denied->get_status() );
 		$invalid = $this->call( 'PATCH', '/settings', array( 'mcpAccessLevel' => 'invalid', 'itemsPerPage' => 12 ), $this->admin );
 		$this->assertSame( 400, $invalid->get_status() );
 		$this->assertFalse( get_option( PluginSettings::OPTION, false ) );
-		foreach ( array( 'off', 'write' ) as $tier ) {
+		foreach ( array( 'read', 'write', 'off' ) as $tier ) {
 			$response = $this->call( 'PATCH', '/settings', array( 'mcpAccessLevel' => $tier ), $this->admin );
 			$this->assertSame( 200, $response->get_status() );
 			$this->assertSame( $tier, $this->data( $response )['mcpAccessLevel'] );

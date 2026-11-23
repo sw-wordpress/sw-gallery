@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace SWGallery\WordPress\Mcp;
 
 /**
- * Effective tier = the lower of the site option and the optional `SW_GALLERY_MCP_MAX_TIER` ceiling. Default `read`.
+ * Effective tier = the lower of the site option and the optional `SW_GALLERY_MCP_MAX_TIER` ceiling. Default `off`.
  * Invalid stored values fail closed (`off`). Tiers are cumulative.
  */
 final class TierPolicy {
@@ -37,11 +37,15 @@ final class TierPolicy {
 		return array_keys( self::RANK );
 	}
 
+	/** The site setting before any configuration overrides. */
+	public static function configured(): string {
+		return self::normalize( get_option( self::OPTION, self::OFF ) );
+	}
+
 	/** The tier in force right now (never raises above the constant). */
 	public static function effective(): string {
-		$option  = self::normalize( get_option( self::OPTION, self::READ ) );
 		$ceiling = defined( self::CONSTANT ) ? self::normalize( constant( self::CONSTANT ) ) : self::ADMIN;
-		return self::lower( $option, $ceiling );
+		return self::lower( self::configured(), $ceiling );
 	}
 
 	/** Whether an ability of `$tier` may be registered and executed under the effective tier. */

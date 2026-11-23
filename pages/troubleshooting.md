@@ -12,7 +12,7 @@
 | Saving conflict | Compare the dialog's server changes with your unsaved changes. Re-apply or discard deliberately; re-applied changes still need **Save**. |
 | Interrupted save | Read the saved/not-saved summary. The editor retains remaining staged changes; do not assume everything failed or blindly repeat actions. |
 | Newer database schema / saving refused | A newer plugin version upgraded the schema. Reinstall a compatible newer plugin; do not attempt to “fix” it by manually reducing the schema version. Reading/rendering can continue during this state. |
-| AI assistant lacks a tool (for example `create-gallery`) | The MCP access level is still the default `read`, or the MCP Adapter is not active. See [A tool is missing?](ai-assistants.md#a-tool-is-missing). |
+| AI assistant lacks a tool (for example `create-gallery`) | MCP access starts off. Activate the MCP Adapter and choose a level that includes the tool. See [A tool is missing?](ai-assistants.md#a-tool-is-missing). |
 | Layout unavailable | The renderer falls back to Grid. Select an available layout and save, or restore the trusted extension providing the missing one. |
 | Images missing after deletion/migration | Check Media Library files, attachment IDs and orphan relations. The plugin does not implement export/import remapping or recover deleted files. Restore from a tested backup where needed. |
 

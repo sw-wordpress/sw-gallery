@@ -20,13 +20,13 @@ The **access level** limits what the assistant may do with SW Gallery, on top of
 
 | Level | Tools available | Typical use |
 | --- | --- | --- |
-| `off` | None | MCP completely disabled for SW Gallery. |
-| `read` (default) | Read-only tools | Let an assistant look at galleries, images and layouts. |
+| `off` (default) | None | MCP access is disabled for SW Gallery. |
+| `read` | Read-only tools | Let an assistant look at galleries, images and layouts. |
 | `write` | Read tools plus tools that add or change data and can be undone | Let an assistant build and edit galleries. |
 | `destructive` | Remove gallery items or permanently delete a gallery | Both actions keep the original Media Library attachments. |
 | `admin` | Read and change site-wide display settings and read system status | Requires WordPress permission to manage site options. |
 
-Levels are cumulative. The default is `read`, so a fresh installation can read but not write.
+Levels are cumulative. Choose and save an access level to enable MCP for SW Gallery. Sites with a saved level continue to use it.
 
 ::: tip Change the level
 In WordPress, open **Galleries → Settings → MCP access**, choose a level and save. The setting is visible while the adapter is active, including at **Off**. The new level applies to the next request. You can also use WP-CLI:

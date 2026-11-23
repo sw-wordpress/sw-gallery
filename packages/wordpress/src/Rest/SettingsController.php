@@ -120,7 +120,7 @@ final class SettingsController extends AbstractController {
 	 */
 	private function present( array $values ): array {
 		if ( McpAvailability::adapterPresent() ) {
-			$values['mcpAccessLevel']    = TierPolicy::normalize( get_option( TierPolicy::OPTION, TierPolicy::READ ) );
+			$values['mcpAccessLevel']    = TierPolicy::configured();
 			$values['mcpEffectiveLevel'] = McpAvailability::isAvailable() ? TierPolicy::effective() : TierPolicy::OFF;
 		}
 		return $values + array(

@@ -1,5 +1,9 @@
 # DONE
 
+## 2026-11-24 — MCP access defaults to off
+
+- Require an explicit site setting to expose SW Gallery tools. Keep existing access levels and verify the fallback through the abilities registry and REST settings.
+
 ## 2026-11-23 — MCP release acceptance follow-up
 
 - Consolidate repeated MCP schemas, annotations and permission checks reported in PR #8. Extend contract checks and run adapter calls at their required access levels.

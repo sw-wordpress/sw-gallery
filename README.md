@@ -61,7 +61,7 @@ Existing task-oriented reference: [docs/user-guide.md](docs/user-guide.md).
 ## AI assistants via MCP
 
 On WordPress 6.9 or newer, the [WordPress MCP Adapter](https://github.com/WordPress/mcp-adapter) exposes SW Gallery's `sw-gallery/*` abilities through its default MCP server at `/wp-json/mcp/mcp-adapter-default-server`.
-An MCP client connects over HTTPS with a WordPress user name and application password. SW Gallery defaults to read-only access. Set the access level to `write` to allow gallery creation and editing within that user's WordPress permissions.
+An MCP client connects over HTTPS with a WordPress user name and application password. SW Gallery starts with MCP access off. Enable `read` to inspect galleries, or `write` to create and edit them within the user's WordPress permissions.
 See the [MCP setup and Masonry example](pages/ai-assistants.md) for configuration and the gallery workflow.
 
 ## Extending

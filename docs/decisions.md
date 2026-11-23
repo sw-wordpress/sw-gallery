@@ -187,7 +187,7 @@ Defaults chosen during planning as low-risk details (AGENTS.md "Unsicherheit und
 |---|---|
 | Rules and catalogue | `mcp-harness.md` (generic, copied between sw-* plugins) and `mcp-abilities.md` (this plugin). |
 | Descriptions | Machine-facing ability and schema descriptions stay English and are not translated; labels and admin texts are (en/de). |
-| Default access | Tier `read`; `SW_GALLERY_MCP_MAX_TIER` can only lower the option; invalid values fail closed (`off`). |
+| Default access | Tier `off` until the site opts in. `SW_GALLERY_MCP_MAX_TIER` can only lower the saved level. Invalid values resolve to `off`. |
 | Shared rules | `Gallery/GalleryEditor` owns view/update rules (404 for hidden, publish right, cover rights, revision); REST and MCP are thin callers. |
 | Audit | Own bounded, non-autoloaded option `swg_mcp_audit` (50 entries: time, verb-noun ability, user id, outcome, code; never payloads), separate from the error ring buffer; removed on uninstall data deletion. |
 | Adapter in tests | `wordpress/mcp-adapter` pinned in `tests/wp/composer.json` (needs `automattic/jetpack-autoloader` in `allow-plugins` of that test-only project); never a runtime dependency. |

@@ -267,9 +267,14 @@ class McpAbilitySecurityTest extends SwgTestCase {
 		}
 	}
 
-	public function test_default_tier_is_read_and_registers_only_read_abilities(): void {
-		delete_option( TierPolicy::OPTION );
-		$this->assertSame( 'read', TierPolicy::effective() );
+	public function test_default_tier_is_off_and_read_requires_an_explicit_setting(): void {
+		wp_unregister_ability_category( 'sw-gallery' );
+		$this->reregisterAbilities( null );
+		$this->assertSame( 'off', TierPolicy::effective() );
+		$this->assertSame( array(), $this->ourAbilities() );
+		$this->assertFalse( wp_has_ability_category( 'sw-gallery' ) );
+		$this->assertFalse( get_option( TierPolicy::OPTION, false ) );
+
 		$this->reregisterAbilities( 'read' );
 		$this->assertSame(
 			array( 'sw-gallery/get-gallery', 'sw-gallery/list-galleries', 'sw-gallery/list-items', 'sw-gallery/list-layouts', 'sw-gallery/list-media', 'sw-gallery/render-gallery' ),
@@ -284,6 +289,7 @@ class McpAbilitySecurityTest extends SwgTestCase {
 		update_option( TierPolicy::OPTION, 'root' );
 		$this->assertSame( 'off', TierPolicy::effective() );
 		$this->assertSame( 'off', TierPolicy::normalize( array( 'admin' ) ) );
+		$this->assertSame( 'off', TierPolicy::lower( 'off', 'admin' ) );
 		$this->assertSame( 'read', TierPolicy::lower( 'read', 'admin' ) );
 		$this->assertSame( 'read', TierPolicy::lower( 'admin', 'read' ) );
 		$this->assertFalse( TierPolicy::allows( 'off' ) );

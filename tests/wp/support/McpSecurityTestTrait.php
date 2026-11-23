@@ -13,9 +13,13 @@ trait McpSecurityTestTrait {
 
 	private const MCP_PREFIX = 'sw-gallery/';
 
-	/** Sets the tier option and registers the abilities again (the registry is built once per process). */
-	protected function reregisterAbilities( string $tier ): void {
-		update_option( TierPolicy::OPTION, $tier );
+	/** Sets or clears the tier option and registers again (the registries are built once per process). */
+	protected function reregisterAbilities( ?string $tier ): void {
+		if ( null === $tier ) {
+			delete_option( TierPolicy::OPTION );
+		} else {
+			update_option( TierPolicy::OPTION, $tier );
+		}
 		if ( ! function_exists( 'wp_register_ability' ) ) {
 			return; // WordPress < 6.9 has no Abilities API.
 		}
@@ -23,8 +27,14 @@ trait McpSecurityTestTrait {
 			wp_unregister_ability( $name );
 		}
 		global $wp_current_filter;
+		$registrar = new McpRegistrar();
+		if ( ! wp_has_ability_category( 'sw-gallery' ) ) {
+			$wp_current_filter[] = 'wp_abilities_api_categories_init';
+			$registrar->register_category();
+			array_pop( $wp_current_filter );
+		}
 		$wp_current_filter[] = 'wp_abilities_api_init';
-		( new McpRegistrar() )->register_abilities();
+		$registrar->register_abilities();
 		array_pop( $wp_current_filter );
 	}
 
