@@ -26,7 +26,8 @@ final class NativeGalleryWriteGuard {
 	}
 
 	/**
-	 * @param list<string> $required Capabilities required by WordPress.
+	 * @param string[]     $required Capabilities required by WordPress.
+	 * @phpstan-param list<string> $required
 	 * @param string       $cap      The requested capability.
 	 * @param int          $user_id  WordPress user being checked.
 	 * @param array<mixed> $args     Arguments including the stored post ID.
