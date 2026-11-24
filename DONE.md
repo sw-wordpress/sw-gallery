@@ -1,5 +1,9 @@
 # DONE
 
+## 2026-11-24 — Protect password-protected gallery content
+
+- Require gallery edit access for protected details and copies. Keep passwords on duplicated galleries and exclude protected descriptions from collection search.
+
 ## 2026-11-24 — MCP access defaults to off
 
 - Require an explicit site setting to expose SW Gallery tools. Keep existing access levels and verify the fallback through the abilities registry and REST settings.

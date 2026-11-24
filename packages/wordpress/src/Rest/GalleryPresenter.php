@@ -13,6 +13,7 @@ namespace SWGallery\WordPress\Rest;
 
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Gallery\Gallery;
+use SWGallery\Core\Domain\Gallery\GallerySettings;
 use SWGallery\WordPress\Security\WpGalleryAccessPolicy;
 
 /**
@@ -32,24 +33,28 @@ final class GalleryPresenter {
 	 * @return array<string, mixed>
 	 */
 	public function present( Actor $actor, Gallery $gallery, int $revision, int $item_count ): array {
+		$can_edit         = $this->access->canEdit( $actor, $gallery );
+		$can_view_content = ! $gallery->passwordProtected || ( $can_edit && $this->access->canView( $actor, $gallery ) );
+		$settings         = $can_view_content ? $gallery->settings : new GallerySettings();
+		$cover            = $can_view_content ? $gallery->coverAttachmentId : null;
 		return array(
 			'id'                => $gallery->id,
 			'title'             => $gallery->title,
-			'description'       => $gallery->description,
+			'description'       => $can_view_content ? $gallery->description : '',
 			'status'            => $gallery->status->value,
 			'ownerId'           => $gallery->ownerId,
-			'coverAttachmentId' => $gallery->coverAttachmentId,
-			'coverUrl'          => $this->cover_url( $actor, $gallery->coverAttachmentId ),
-			'layout'            => $gallery->settings->layout,
-			'sortMode'          => $gallery->settings->sortMode->value,
-			'perPage'           => $gallery->settings->perPage,
-			'hover'             => $gallery->settings->hover?->toArray(),
-			'settings'          => (object) $gallery->settings->values,
+			'coverAttachmentId' => $cover,
+			'coverUrl'          => $this->cover_url( $actor, $cover ),
+			'layout'            => $settings->layout,
+			'sortMode'          => $settings->sortMode->value,
+			'perPage'           => $settings->perPage,
+			'hover'             => $settings->hover?->toArray(),
+			'settings'          => (object) $settings->values,
 			'passwordProtected' => $gallery->passwordProtected,
 			'modified'          => $gallery->modifiedAt->setTimezone( new \DateTimeZone( 'UTC' ) )->format( 'Y-m-d\TH:i:s\Z' ),
 			'revision'          => $revision,
-			'itemCount'         => $item_count,
-			'canEdit'           => $this->access->canEdit( $actor, $gallery ),
+			'itemCount'         => $can_view_content ? $item_count : 0,
+			'canEdit'           => $can_edit,
 			'canDelete'         => $this->access->canDelete( $actor, $gallery ),
 			'canPublish'        => $this->access->canPublish( $actor, $gallery ),
 		);
