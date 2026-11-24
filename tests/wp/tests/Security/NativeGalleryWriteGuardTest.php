@@ -16,6 +16,7 @@ class NativeGalleryWriteGuardTest extends SwgTestCase {
 	use RestItemFixtures;
 
 	public function test_native_ajax_refuses_gallery_saves_and_lifecycle_writes(): void {
+		global $wp_current_filter;
 		$user        = $this->makeUser( 'author' );
 		$gallery     = $this->makeGallery( $user );
 		$trashed     = $this->makeGallery( $user );
@@ -30,6 +31,7 @@ class NativeGalleryWriteGuardTest extends SwgTestCase {
 		$this->assertFalse( current_user_can( 'delete_post', $gallery ) );
 
 		add_filter( 'wp_doing_ajax', '__return_true' );
+		$wp_current_filter[] = 'wp_ajax_inline-save';
 		try {
 			$this->assertFalse( current_user_can( 'edit_post', $gallery ) );
 			$this->assertTrue( current_user_can( 'edit_post', $normal_post ) );
@@ -40,6 +42,7 @@ class NativeGalleryWriteGuardTest extends SwgTestCase {
 			$this->assertFalse( wp_delete_post( $gallery, true ) );
 			$this->assertFalse( wp_untrash_post( $trashed ) );
 		} finally {
+			array_pop( $wp_current_filter );
 			remove_filter( 'wp_doing_ajax', '__return_true' );
 		}
 
@@ -53,13 +56,24 @@ class NativeGalleryWriteGuardTest extends SwgTestCase {
 	public function test_native_post_screen_refuses_gallery_save_without_affecting_other_posts(): void {
 		global $pagenow;
 		$previous = $pagenow;
-		$pagenow  = 'post.php'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Simulate the native post script.
+		$method   = $_SERVER['REQUEST_METHOD'] ?? null;
+		$user     = $this->makeUser( 'author' );
+		$gallery  = $this->makeGallery( $user );
+		wp_set_current_user( $user );
+		$pagenow = 'post.php'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Simulate the native post script.
 		set_current_screen( 'edit-post' );
+		$_SERVER['REQUEST_METHOD'] = 'POST';
 		try {
+			$this->assertFalse( current_user_can( 'edit_post', $gallery ) );
 			$this->assertTrue( apply_filters( 'wp_insert_post_empty_content', false, array( 'post_type' => PostTypes::GALLERY ) ) );
 			$this->assertFalse( apply_filters( 'wp_insert_post_empty_content', false, array( 'post_type' => 'post' ) ) );
 		} finally {
 			set_current_screen( 'front' );
+			if ( null === $method ) {
+				unset( $_SERVER['REQUEST_METHOD'] );
+			} else {
+				$_SERVER['REQUEST_METHOD'] = $method;
+			}
 			$pagenow = $previous; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restore the native request context.
 		}
 	}

@@ -35,7 +35,7 @@ final class NativeGalleryWriteGuard {
 	 */
 	public function deny_native_management( array $required, string $cap, int $user_id, array $args ): array {
 		if ( ! in_array( $cap, array( 'edit_post', 'delete_post', 'edit_page', 'delete_page' ), true )
-			|| ! $this->is_native_request() ) {
+			|| ! $this->is_native_mutation() ) {
 			return $required;
 		}
 
@@ -64,6 +64,29 @@ final class NativeGalleryWriteGuard {
 	 */
 	public function reject_native_removal( mixed $result, \WP_Post $post ): mixed {
 		return PostTypes::GALLERY === $post->post_type && $this->is_native_request() ? false : $result;
+	}
+
+	/** Restrict the early capability veto to write handlers. Media reads also check gallery edit access. */
+	private function is_native_mutation(): bool {
+		if ( ! $this->is_native_request() ) {
+			return false;
+		}
+		if ( wp_doing_ajax() ) {
+			return doing_action( 'wp_ajax_inline-save' )
+				|| doing_action( 'wp_ajax_add-meta' )
+				|| doing_action( 'wp_ajax_delete-meta' )
+				|| doing_action( 'wp_ajax_wp-fullscreen-save-post' )
+				|| doing_action( 'wp_ajax_set-post-thumbnail' );
+		}
+		if ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) {
+			return true;
+		}
+
+		global $pagenow;
+		// Core may submit a bulk edit by GET. The request can activate this veto, never grant writes.
+		$method = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ?? '' ) );
+		return 'POST' === $method
+			|| ( 'edit.php' === $pagenow && isset( $_GET['bulk_edit'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- WordPress verifies the nonce. Storage guards apply regardless.
 	}
 
 	private function is_native_request(): bool {
