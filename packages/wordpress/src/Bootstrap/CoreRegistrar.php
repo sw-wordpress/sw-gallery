@@ -11,6 +11,7 @@ namespace SWGallery\WordPress\Bootstrap;
 
 use SWGallery\WordPress\Database\Schema;
 use SWGallery\WordPress\PostTypes;
+use SWGallery\WordPress\Security\NativeGalleryWriteGuard;
 
 final class CoreRegistrar implements RegistrarInterface {
 
@@ -18,6 +19,7 @@ final class CoreRegistrar implements RegistrarInterface {
 		add_action( 'init', array( PostTypes::class, 'register' ) );
 		add_action( 'plugins_loaded', array( Schema::class, 'maybe_migrate' ) );
 		add_action( 'init', array( $this, 'load_textdomain' ) );
+		( new NativeGalleryWriteGuard() )->register();
 	}
 
 	public function load_textdomain(): void {

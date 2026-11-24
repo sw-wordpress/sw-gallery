@@ -9,6 +9,7 @@ Every task ships with tests, i18n (en/de), docs and passes the Definition of Don
 
 - [ ] MCP-05: On staging, confirm the default is Off and enabling Read exposes only read tools. See the [MCP guide](pages/ai-assistants.md#access-level).
 - [ ] Stefan: run the [recommended staging acceptance checks](docs/release.md#10-staging-acceptance). Record WordPress version, theme, browser/device and findings.
+- [ ] Verify gallery trash and restore with authorized and restricted roles on staging.
 - [ ] Run full E2E on the release candidate without retries (M5-07). Check for recurring Scattered lightbox and gallery deep-link failures. The overview count and Scattered RTL assertions were stabilized during the audit.
 - [ ] Refresh SonarCloud for the release candidate and triage the older main-branch findings (M5-13).
 - [ ] Verify release-tag protection and required reviewer settings against the [operator guide](docs/GITHUB-UPDATES-BETRIEB.md). The environment already allows numeric release tags, but the API showed no required-reviewer rule and no active tag-targeting ruleset.

@@ -12,6 +12,8 @@ Independent adversarial review of sw-gallery 0.1.0 by a reviewer who did not wri
 | Trust boundaries | HTTP request → REST argument schema → coarse capability check → access policy / core services (object level) → repositories (prepared SQL) → renderer (escaping at the sink) → browser. Uploads: multipart → type sniffing → `wp_handle_upload`. Admin app: server-rendered bootstrap → Vue app (no markup sinks) → REST. |
 | Out of scope | Server hardening, a compromised administrator account, a malicious plugin/theme/mu-plugin (PHP runs with full rights). |
 
+Native WordPress post editing screens, AJAX and XML-RPC cannot save, trash, restore or delete gallery posts. Use the plugin interface for these operations so authorization and revisions are enforced.
+
 ## Known limitations (state in the README)
 
 - Private, draft and password-protected galleries hide the gallery **markup**, not the upload URLs: anybody who knows an image URL can fetch it.

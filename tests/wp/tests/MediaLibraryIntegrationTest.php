@@ -81,6 +81,32 @@ class MediaLibraryIntegrationTest extends SwgTestCase {
 		$this->assertStringNotContainsString( 'and ', str_replace( 'Used in 2 galleries', '', $html ), 'Nothing is hidden, so no "and n more".' );
 	}
 
+	public function test_attachment_details_keep_gallery_links_on_the_edit_screen_and_in_ajax(): void {
+		global $pagenow;
+		$editor = $this->makeUser( 'editor' );
+		wp_set_current_user( $editor );
+		$image   = $this->makeAttachment( $editor, 'image/jpeg' );
+		$gallery = $this->gallery( 'Linked gallery', $editor, $image );
+		$link    = '#/galleries/' . $gallery . '"';
+
+		$previous = $pagenow;
+		$pagenow  = 'post.php'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Simulate the attachment edit screen.
+		set_current_screen( 'attachment' );
+		try {
+			$this->assertStringContainsString( $link, $this->field_html( $image ) );
+		} finally {
+			$pagenow = $previous; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restore the native request context.
+			set_current_screen( 'front' );
+		}
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		try {
+			$this->assertStringContainsString( $link, $this->field_html( $image ) );
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+		}
+	}
+
 	public function test_a_user_who_may_edit_none_of_the_galleries_sees_only_the_count(): void {
 		$admin = $this->makeUser( 'administrator' );
 		$image = $this->makeAttachment( 0, 'image/jpeg' );

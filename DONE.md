@@ -4,6 +4,10 @@
 
 - Require an explicit site setting to expose SW Gallery tools. Keep existing access levels and verify the fallback through the abilities registry and REST settings.
 
+## 2026-11-24 — Protect native gallery writes
+
+- Reject gallery saves, trash, restore and delete from native post editing screens, AJAX and XML-RPC. Leave gallery actions to the plugin interfaces.
+
 ## 2026-11-23 — MCP release acceptance follow-up
 
 - Consolidate repeated MCP schemas, annotations and permission checks reported in PR #8. Extend contract checks and run adapter calls at their required access levels.
