@@ -57,7 +57,7 @@ JSON `{code, message, data: {status, ...}}`, messages translated (en/de), never 
 
 A changed `coverAttachmentId` must pass `canUseAttachment` (D11), else 422 `swg_invalid_cover`; an unchanged one is not re-checked.
 
-Password-protected gallery details, items and duplication require edit access to the gallery. Collection rows can show the title and status with protected fields omitted or set to defaults for other users. Collection search matches protected galleries by title. An authorized duplicate preserves the password.
+Password-protected gallery details, items, previews and duplication require edit access to the gallery. For users allowed to access the management API, object routes return 404 when the gallery is hidden. Collection rows can show the title and status with protected fields omitted or set to defaults for other users. Collection search matches protected galleries by title. An authorized duplicate preserves the password.
 
 ## Items and order
 

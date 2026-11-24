@@ -102,7 +102,7 @@ class PreviewRouteTest extends SwgTestCase {
 		yield 'publish foreign author may read but not edit' => array( 'publish', '', 'other', 403 );
 		yield 'password owner' => array( 'publish', 'secret', 'author', 200 );
 		yield 'password editor' => array( 'publish', 'secret', 'editor', 200 );
-		yield 'password foreign author' => array( 'publish', 'secret', 'other', 403 );
+		yield 'password foreign author is treated as missing' => array( 'publish', 'secret', 'other', 404 );
 		yield 'subscriber' => array( 'publish', '', 'subscriber', 403 );
 		yield 'anonymous' => array( 'publish', '', 'anonymous', 401 );
 		yield 'anonymous draft' => array( 'draft', '', 'anonymous', 401 );
