@@ -78,12 +78,10 @@ final class WpGalleryRepository implements GalleryRepositoryInterface {
 		}
 		$search = null === $query->search ? '' : trim( $query->search );
 		if ( '' !== $search ) {
-			$args['s']              = $search;
-			$args['sentence']       = true;
-			$args['search_columns'] = array( 'post_title', 'post_content' );
+			$args['s'] = $search;
 		}
 
-		$wp_query  = new \WP_Query( $args );
+		$wp_query  = new GallerySearchQuery( $args );
 		$galleries = array();
 		foreach ( (array) $wp_query->posts as $post ) {
 			if ( $post instanceof \WP_Post ) {
@@ -145,7 +143,7 @@ final class WpGalleryRepository implements GalleryRepositoryInterface {
 		$source  = $this->post( $sourceId ) ?? throw new GalleryNotFoundException();
 		$gallery = $this->hydrate( $source );
 
-		$copy_id = $this->insert( $title, $gallery->description, GalleryStatus::Draft, $ownerId );
+		$copy_id = $this->insert( $title, $gallery->description, GalleryStatus::Draft, $ownerId, $source->post_password );
 		try {
 			$this->write_settings( $copy_id, $gallery->settings );
 			$this->write_cover( $copy_id, $gallery->coverAttachmentId );
@@ -225,16 +223,17 @@ final class WpGalleryRepository implements GalleryRepositoryInterface {
 		return $this->trash_enabled ?? ( ! defined( 'EMPTY_TRASH_DAYS' ) || (int) EMPTY_TRASH_DAYS > 0 );
 	}
 
-	private function insert( string $title, string $description, GalleryStatus $status, int $owner_id ): int {
+	private function insert( string $title, string $description, GalleryStatus $status, int $owner_id, string $password = '' ): int {
 		$id = $this->plain_text_storage(
 			static fn() => wp_insert_post(
 				wp_slash(
 					array(
-						'post_type'    => PostTypes::GALLERY,
-						'post_title'   => self::clean_title( $title ),
-						'post_content' => self::clean_description( $description ),
-						'post_status'  => $status->value,
-						'post_author'  => $owner_id,
+						'post_type'     => PostTypes::GALLERY,
+						'post_title'    => self::clean_title( $title ),
+						'post_content'  => self::clean_description( $description ),
+						'post_status'   => $status->value,
+						'post_author'   => $owner_id,
+						'post_password' => $password,
 					)
 				),
 				true

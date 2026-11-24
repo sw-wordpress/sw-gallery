@@ -16,6 +16,7 @@ User-facing changes summarized from the repository's [existing changelog](https:
 
 - Route gallery edits and trash actions through the permission and revision checks in the gallery service.
 - Overview and System Status warn when the database schema is newer than the plugin, and saving gives an actionable error.
+- Enforce gallery passwords when reading or copying galleries through the management interfaces.
 
 ### Other topics
 

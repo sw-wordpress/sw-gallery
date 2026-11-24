@@ -56,10 +56,12 @@ final class WpGalleryAccessPolicy implements GalleryAccessPolicyInterface {
 
 	/**
 	 * The admin app is for users who can write posts; within it a gallery is visible when the user may read it
-	 * (own drafts, published, private only for owners or users with `read_private_posts`).
+	 * (own drafts, published, private only for owners or users with `read_private_posts`). Protected content is
+	 * available in management interfaces only to users who may edit the gallery.
 	 */
 	public function canView( Actor $actor, Gallery $gallery ): bool {
-		return $this->can( $actor, 'edit_posts' ) && $this->can( $actor, 'read_post', $gallery->id );
+		return $this->can( $actor, 'edit_posts' ) && $this->can( $actor, 'read_post', $gallery->id )
+			&& ( ! $gallery->passwordProtected || $this->canEdit( $actor, $gallery ) );
 	}
 
 	public function canEdit( Actor $actor, Gallery $gallery ): bool {
