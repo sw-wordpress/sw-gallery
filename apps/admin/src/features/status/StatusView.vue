@@ -43,6 +43,16 @@ const errorDetail = computed(() => {
       : error.code;
 });
 const report = computed(() => status.report.value);
+const cacheStatus = computed(() => {
+  switch (report.value?.cache.state) {
+    case 'persistent':
+      return { kind: 'info' as const, label: t('status.runtime.cachePersistent') };
+    case 'database':
+      return { kind: 'info' as const, label: t('status.runtime.cacheDatabase') };
+    default:
+      return { kind: 'neutral' as const, label: t('status.runtime.cacheUnknown') };
+  }
+});
 const formatTime = (iso: string): string => formatModified(iso, config.locale, config.timezone);
 const fetched = computed(() =>
   status.fetchedAt.value === null
@@ -257,15 +267,7 @@ async function copySummary(): Promise<void> {
         <SwgCard :title="t('status.runtime.title')" icon="r_memory" tag="section">
           <ul class="swg-status__checks">
             <li>
-              <StatusChip
-                :kind="report.cache.state === 'none' ? 'neutral' : 'info'"
-                :label="
-                  report.cache.state === 'none'
-                    ? t('status.runtime.cacheNone')
-                    : t('status.runtime.cacheState', { state: report.cache.state })
-                "
-              />
-              <span class="swg-muted">{{ t('status.runtime.cacheHint') }}</span>
+              <StatusChip :kind="cacheStatus.kind" :label="cacheStatus.label" />
             </li>
             <li>
               <StatusChip

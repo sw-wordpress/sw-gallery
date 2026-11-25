@@ -157,7 +157,7 @@ the preview, dialogs and menus trap and restore focus.
 | Symptom | Check |
 |---|---|
 | The gallery shows nothing | Status must be Published (visitors) or you must be allowed to see it; open the **Preview** for editor notes. The gallery may be empty or all its images unavailable (deleted, wrong type: SVG and HEIC are not supported), see System Status > orphan relations. A wrong `id` prints nothing for visitors. |
-| Changes do not appear on the website | Published galleries are cached for up to 12 hours but any gallery or image change invalidates the cache; a page cache or CDN in front may need a purge (`swg_gallery_changed`, [hooks.md](hooks.md)). |
+| Changes do not appear on the website | Eligible gallery HTML can be cached for up to 12 hours in WordPress transients. Gallery and image changes invalidate the render cache, and a page cache or CDN in front may need a purge (`swg_gallery_changed`, [hooks.md](hooks.md)). |
 | The admin page is empty or "build missing" | The plugin was not installed from the release ZIP (no `assets/admin`). Reinstall from the ZIP or build ([development.md](development.md)). System Status > Runtime shows it. |
 | "Newer schema" or saving is refused (503) | The database was upgraded by a newer plugin version and this older one was installed afterwards: install the newer version again. |
 | Saving reports a conflict | Somebody else saved the gallery; use the conflict dialog. |

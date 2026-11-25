@@ -63,9 +63,9 @@ export default {
   },
   runtime: {
     title: 'Runtime',
-    cacheNone: 'No render cache active',
-    cacheState: 'Cache: {state}',
-    cacheHint: 'Galleries are rendered on every request.',
+    cachePersistent: 'Render cache via persistent object cache',
+    cacheDatabase: 'Render cache via WordPress database',
+    cacheUnknown: 'Render cache status unknown',
     buildOk: 'Admin app build is complete',
     buildMissing: 'Admin app build is missing',
     buildHint: 'Rebuild the admin app or reinstall the plugin package.',

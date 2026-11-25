@@ -96,10 +96,32 @@ class RestStatusTest extends SwgTestCase {
 		$this->assertContains( $data['versions']['database']['type'], array( 'MariaDB', 'MySQL' ) );
 		$this->assertNotSame( '', $data['versions']['database']['version'] );
 		$this->assertSame( is_multisite(), $data['multisite'] );
-		$this->assertSame( array( 'state' => 'none' ), $data['cache'] );
+		$this->assertSame( array( 'state' => wp_using_ext_object_cache() ? 'persistent' : 'database' ), $data['cache'] );
 		$this->assertIsBool( $data['adminBuild'] );
 		$this->assertSame( 'export_limitation', $data['hints'][0]['key'] );
 		$this->assertStringContainsString( 'not exported', $data['hints'][0]['message'] );
+	}
+
+	/**
+	 * @dataProvider cache_states
+	 */
+	public function test_the_render_cache_state_follows_the_wordpress_object_cache( bool $external, string $state ): void {
+		$previous = (bool) wp_using_ext_object_cache();
+		try {
+			wp_using_ext_object_cache( $external );
+			$data = $this->data( $this->call( 'GET', '/status', array(), $this->admin ) );
+			$this->assertSame( array( 'state' => $state ), $data['cache'] );
+		} finally {
+			wp_using_ext_object_cache( $previous );
+		}
+	}
+
+	/** @return array<string, array{bool, string}> */
+	public static function cache_states(): array {
+		return array(
+			'database transients'   => array( false, 'database' ),
+			'external object cache' => array( true, 'persistent' ),
+		);
 	}
 
 	public function test_counts_follow_the_item_table_and_orphans_are_found_read_only(): void {

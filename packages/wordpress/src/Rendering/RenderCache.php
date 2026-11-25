@@ -1,6 +1,6 @@
 <?php
 /**
- * Fragment cache of rendered gallery markup (object cache group `swg_render`).
+ * Transient cache of rendered gallery markup.
  *
  * @package sw-gallery
  */
@@ -33,17 +33,22 @@ use SWGallery\WordPress\Settings\PluginSettings;
  * inside the `data-swg-instance` attribute and filled on every hit, so ids stay unique per request and a hit equals
  * a fresh render byte for byte.
  *
- * Works with and without a persistent object cache; without one the cache lives for one request.
+ * WordPress stores the transients in the persistent object cache when available and in the database otherwise. Each
+ * site has a fixed set of slots. A collision replaces a fragment and the full key is checked on every hit.
  */
 final class RenderCache {
 
-	public const GROUP = 'swg_render';
+	public const TRANSIENT_PREFIX = 'swg_render_';
 
 	/** Entries expire after twelve hours even if nothing invalidates them. */
 	public const TTL = 12 * HOUR_IN_SECONDS;
 
 	/** Bump to drop all entries when the stored shape changes. */
-	private const FORMAT = 1;
+	private const FORMAT = 2;
+
+	/** Two hexadecimal digits give 256 slots. Bound the serialized payload to 128 KiB per slot. */
+	private const SLOT_COUNT       = 256;
+	private const MAX_ENTRY_BYTES = 128 * 1024;
 
 	private const PLACEHOLDER = 'swg-instance-placeholder';
 
@@ -103,8 +108,9 @@ final class RenderCache {
 	 * @param string $instance_id Instance id of this request's embed.
 	 */
 	public function lookup( string $key, string $instance_id ): ?RenderResult {
-		$data = wp_cache_get( $key, self::GROUP );
-		if ( ! is_array( $data ) || ! isset( $data['html'], $data['page'], $data['totalPages'], $data['totalItems'], $data['renderedItems'] ) ) {
+		$payload = get_transient( self::transient_name( $key ) );
+		$data    = is_string( $payload ) ? json_decode( $payload, true ) : null;
+		if ( ! is_array( $data ) || ( $data['key'] ?? null ) !== $key || ! isset( $data['html'], $data['page'], $data['totalPages'], $data['totalItems'], $data['renderedItems'] ) ) {
 			return null;
 		}
 		if ( ! is_string( $data['html'] ) || ! is_int( $data['page'] ) || ! is_int( $data['totalPages'] ) || ! is_int( $data['totalItems'] ) || ! is_int( $data['renderedItems'] ) ) {
@@ -138,12 +144,12 @@ final class RenderCache {
 	 * @param string       $instance_id Instance id used in the result's html.
 	 */
 	public function store( string $key, RenderResult $result, string $instance_id ): void {
-		if ( RenderAccess::Render !== $result->access || array() !== $result->diagnostics ) {
+		if ( RenderAccess::Render !== $result->access || array() !== $result->diagnostics || strlen( $result->html ) > self::MAX_ENTRY_BYTES ) {
 			return;
 		}
-		wp_cache_set(
-			$key,
+		$payload = wp_json_encode(
 			array(
+				'key'           => $key,
 				'html'          => self::swap_instance( $result->html, $instance_id, self::PLACEHOLDER ),
 				'assets'        => array_map( static fn ( RenderAsset $asset ): string => $asset->value, $result->assets ),
 				'page'          => $result->page,
@@ -152,9 +158,22 @@ final class RenderCache {
 				'renderedItems' => $result->renderedItems,
 				'layoutId'      => $result->layoutId,
 			),
-			self::GROUP,
-			self::TTL
+			JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
 		);
+		if ( is_string( $payload ) && strlen( $payload ) <= self::MAX_ENTRY_BYTES ) {
+			set_transient( self::transient_name( $key ), $payload, self::TTL );
+		}
+	}
+
+	/** Removes the current site's render transients from the external object cache on opt-in uninstall. */
+	public static function clear_external(): void {
+		for ( $slot = 0; $slot < self::SLOT_COUNT; ++$slot ) {
+			delete_transient( self::TRANSIENT_PREFIX . sprintf( '%02x', $slot ) );
+		}
+	}
+
+	private static function transient_name( string $key ): string {
+		return self::TRANSIENT_PREFIX . substr( hash( 'sha256', $key ), 0, 2 );
 	}
 
 	private static function instance_attribute( string $instance_id ): string {

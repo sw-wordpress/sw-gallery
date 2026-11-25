@@ -12,6 +12,7 @@ use SWGallery\WordPress\Infrastructure\WpLogger;
 use SWGallery\WordPress\Lifecycle;
 use SWGallery\WordPress\PostTypes;
 use SWGallery\WordPress\Rendering\MediaEpoch;
+use SWGallery\WordPress\Rendering\RenderCache;
 use SWGallery\WordPress\Settings\PluginSettings;
 use SWGallery\WordPress\Repository\WpdbGalleryItemRepository;
 
@@ -74,6 +75,27 @@ class UninstallTest extends SwgTestCase {
 		$this->assertSame( 'keep', get_transient( 'other_transient' ) );
 		$this->assertInstanceOf( WP_Post::class, get_post( $attachment ), 'Attachments are never deleted.' );
 		delete_transient( 'other_transient' );
+	}
+
+	public function test_opted_in_uninstall_clears_external_render_transients(): void {
+		update_option( Lifecycle::OPTION_DELETE_ON_UNINSTALL, '1' );
+		$this->use_real_ddl();
+		$previous = (bool) wp_using_ext_object_cache();
+		$slot     = RenderCache::TRANSIENT_PREFIX . 'ff';
+		wp_using_ext_object_cache( true );
+		try {
+			set_transient( $slot, 'render fragment', RenderCache::TTL );
+			set_transient( 'other_render', 'keep', RenderCache::TTL );
+
+			Lifecycle::uninstall_site();
+
+			$this->assertFalse( get_transient( $slot ) );
+			$this->assertSame( 'keep', get_transient( 'other_render' ) );
+		} finally {
+			delete_transient( $slot );
+			delete_transient( 'other_render' );
+			wp_using_ext_object_cache( $previous );
+		}
 	}
 
 	public function test_uninstall_stops_when_a_gallery_cannot_be_deleted(): void {

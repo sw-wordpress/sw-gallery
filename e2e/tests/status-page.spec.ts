@@ -36,7 +36,7 @@ test.describe('as administrator', () => {
     await expect(content).toContainText('Item table present');
     await expect(content).toContainText('Recent errors');
     await expect(content).toContainText('Admin app build is complete');
-    await expect(content).toContainText('No render cache active');
+    await expect(content).toContainText('Render cache via WordPress database');
     // counts equal the API's
     const published = root(page).locator('.swg-stat', { hasText: 'Published' }).first();
     await expect(published.locator('.swg-stat__value')).toHaveText(

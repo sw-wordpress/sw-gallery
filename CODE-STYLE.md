@@ -78,6 +78,7 @@ If guidance conflicts, report the conflict and choose the least risky compatible
 - Existing native attachment metadata must never be mutated by gallery-local overrides. Differentiate `NULL` (inherit) from an explicit empty override where schema semantics require it.
 - Attachment deletions need a reliable hook-based cleanup strategy plus a consistency repair operation. Avoid hard deletions on missing references during ordinary read requests.
 - Deactivation preserves all user data. Uninstallation preserves data by default; irreversible removal requires an explicit administrator-authorized option and tested cleanup semantics.
+- Use the WordPress Object Cache API for request-local caching or optional reuse across requests. Use [expiring transients](https://developer.wordpress.org/apis/transients/) when a feature needs reuse across requests on sites without a persistent object cache. Bound the number and size of entries and regenerate missing values.
 - Cache keys must include relevant gallery revision, settings and visibility context. Invalidate when gallery membership, cover, metadata, or referenced attachment changes. **Never cache private content into a public fragment.**
 
 ## 5. WordPress security and permissions

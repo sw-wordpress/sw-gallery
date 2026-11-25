@@ -31,6 +31,9 @@ class RenderCacheTest extends SwgTestCase {
 		$this->admin  = $this->makeUser( 'administrator' );
 		$this->lockPassword();
 		wp_cache_flush();
+		foreach ( $this->cache_entries() as $name ) {
+			delete_transient( $name );
+		}
 	}
 
 	public function tear_down(): void {
@@ -78,7 +81,7 @@ class RenderCacheTest extends SwgTestCase {
 	public function test_a_second_render_is_a_hit_with_identical_html(): void {
 		$gallery = $this->gallery();
 		$fresh   = $this->render( $gallery );
-		$misses  = $this->queries_of( fn() => $this->render( $gallery ) );
+		$warm    = $this->queries_of( fn() => $this->render( $gallery ) );
 		$hit     = $this->render( $gallery );
 
 		$this->assertSame( $fresh->html, $hit->html );
@@ -87,9 +90,10 @@ class RenderCacheTest extends SwgTestCase {
 		$this->assertSame( RenderAccess::Render, $hit->access );
 		$this->assertStringContainsString( '<img', $hit->html );
 
+		delete_transient( $this->transient_name( $this->key( $gallery ) ) );
 		wp_cache_flush();
 		$cold = $this->queries_of( fn() => $this->render( $gallery ) );
-		$this->assertLessThan( $cold, $misses, 'a hit needs fewer queries than a cold render' );
+		$this->assertLessThan( $cold, $warm, 'a hit needs fewer queries than a cold render' );
 	}
 
 	public function test_a_hit_equals_a_fresh_render_for_logged_in_users_who_cannot_edit(): void {
@@ -100,7 +104,7 @@ class RenderCacheTest extends SwgTestCase {
 		$user    = $this->render( $gallery, $subscriber );
 
 		$this->assertSame( $visitor->html, $user->html );
-		$this->assertNotFalse( wp_cache_get( $this->key( $gallery ), RenderCache::GROUP ) );
+		$this->assertNotFalse( get_transient( $this->transient_name( $this->key( $gallery ) ) ) );
 	}
 
 	public function test_instance_ids_stay_unique_per_request_on_cache_hits(): void {
@@ -257,36 +261,72 @@ class RenderCacheTest extends SwgTestCase {
 		$this->render( $gallery, 0, EntryPoint::Shortcode, array( 'per_page' => 2, 'page' => 41 ) );
 
 		$this->assertCount( 1, $this->cache_entries() );
-		$this->assertNotFalse( wp_cache_get( $this->key( $gallery, EntryPoint::Shortcode, 3, 2 ), RenderCache::GROUP ) );
+		$this->assertNotFalse( get_transient( $this->transient_name( $this->key( $gallery, EntryPoint::Shortcode, 3, 2 ) ) ) );
 	}
 
-	public function test_it_works_without_a_persistent_object_cache(): void {
+	public function test_database_cache_survives_a_request_and_expires(): void {
 		$this->assertFalse( (bool) wp_using_ext_object_cache() );
 		$gallery = $this->gallery();
+		$fresh   = $this->render( $gallery );
+		$key     = $this->key( $gallery );
+		$name    = $this->transient_name( $key );
 
-		$a = $this->render( $gallery );
-		$b = $this->render( $gallery );
+		wp_cache_flush();
+		Services::reset();
+		$cached = Services::render_cache()->lookup( $key, 'swg-' . $gallery . '-1' );
+		$this->assertSame( $fresh->html, $cached?->html );
+		$this->assertArrayNotHasKey( '_transient_' . $name, wp_load_alloptions() );
+		$this->assertGreaterThanOrEqual( time() + RenderCache::TTL - 5, (int) get_option( '_transient_timeout_' . $name ) );
 
-		$this->assertSame( $a->html, $b->html );
-		$this->assertNotFalse( wp_cache_get( $this->key( $gallery ), RenderCache::GROUP ) );
+		update_option( '_transient_timeout_' . $name, time() - 1 );
+		wp_cache_flush();
+		$this->assertNull( Services::render_cache()->lookup( $key, 'swg-' . $gallery . '-1' ) );
+		$this->assertSame( $fresh->html, $this->render( $gallery )->html );
+		$this->assertNotFalse( get_transient( $name ) );
+	}
+
+	public function test_a_slot_collision_replaces_the_entry_without_serving_another_fragment(): void {
+		$cache = Services::render_cache();
+		$first = 'fixture-6';
+		$other = 'fixture-25';
+		$this->assertSame( $this->transient_name( $first ), $this->transient_name( $other ) );
+		$cache->store( $first, new RenderResult( 'First', RenderAccess::Render ), 'swg-1-1' );
+		$this->assertSame( 'First', $cache->lookup( $first, 'swg-1-1' )?->html );
+
+		$cache->store( $other, new RenderResult( 'Other', RenderAccess::Render ), 'swg-1-1' );
+		$this->assertNull( $cache->lookup( $first, 'swg-1-1' ) );
+		$this->assertSame( 'Other', $cache->lookup( $other, 'swg-1-1' )?->html );
+		$this->assertCount( 1, $this->cache_entries() );
+	}
+
+	public function test_oversized_fragments_are_not_stored(): void {
+		$cache = Services::render_cache();
+		$cache->store( 'raw', new RenderResult( str_repeat( 'x', 140 * 1024 ), RenderAccess::Render ), 'swg-1-1' );
+		$cache->store( 'encoded', new RenderResult( str_repeat( '"', 80 * 1024 ), RenderAccess::Render ), 'swg-1-1' );
+		$this->assertSame( array(), $this->cache_entries() );
 	}
 
 	public function test_a_corrupt_cache_entry_is_ignored(): void {
 		$gallery = $this->gallery();
 		$fresh   = $this->render( $gallery );
-		wp_cache_set( $this->key( $gallery ), array( 'html' => 5 ), RenderCache::GROUP );
+		$key     = $this->key( $gallery );
+		$name    = $this->transient_name( $key );
+		set_transient( $name, wp_json_encode( array( 'key' => $key, 'html' => 5, 'page' => 1, 'totalPages' => 1, 'totalItems' => 3, 'renderedItems' => 3 ) ), RenderCache::TTL );
 		$this->assertSame( $fresh->html, $this->render( $gallery )->html );
 
-		wp_cache_set( $this->key( $gallery ), 'junk', RenderCache::GROUP );
+		set_transient( $name, 'junk', RenderCache::TTL );
 		$this->assertSame( $fresh->html, $this->render( $gallery )->html );
 	}
 
-	/**
-	 * @return array<string, mixed> Entries of the render group in the (non persistent) object cache.
-	 */
+	private function transient_name( string $key ): string {
+		return RenderCache::TRANSIENT_PREFIX . substr( hash( 'sha256', $key ), 0, 2 );
+	}
+
+	/** @return list<string> Render transients stored in the database. */
 	private function cache_entries(): array {
-		global $wp_object_cache;
-		$group = $wp_object_cache->cache[ RenderCache::GROUP ] ?? array();
-		return is_array( $group ) ? $group : array();
+		global $wpdb;
+		$prefix  = '_transient_' . RenderCache::TRANSIENT_PREFIX;
+		$options = $wpdb->get_col( $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( $prefix ) . '%' ) ); // phpcs:ignore WordPress.DB
+		return array_map( static fn( string $name ): string => substr( $name, strlen( '_transient_' ) ), $options );
 	}
 }

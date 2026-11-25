@@ -67,9 +67,9 @@ const de: typeof en = {
   },
   runtime: {
     title: 'Laufzeit',
-    cacheNone: 'Kein Render-Cache aktiv',
-    cacheState: 'Cache: {state}',
-    cacheHint: 'Galerien werden bei jeder Anfrage neu gerendert.',
+    cachePersistent: 'Render-Cache über persistenten Objektcache',
+    cacheDatabase: 'Render-Cache über WordPress-Datenbank',
+    cacheUnknown: 'Render-Cache-Status unbekannt',
     buildOk: 'Build der Admin-App ist vollständig',
     buildMissing: 'Build der Admin-App fehlt',
     buildHint: 'Baue die Admin-App neu oder installiere das Plugin-Paket erneut.',
