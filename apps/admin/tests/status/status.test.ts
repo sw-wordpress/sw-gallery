@@ -61,7 +61,8 @@ describe('System Status page', () => {
     expect(content).toContain('6.8.1');
     expect(content).toContain('8.3.4');
     expect(content).toContain('MariaDB 11.4.2');
-    expect(content).toContain('No render cache active');
+    expect(content).toContain('Render cache via WordPress database');
+    expect(content).toContain('in the database for reuse across page loads');
     expect(content).toContain('Admin app build is complete');
     expect(content).toContain('Galleries are not exported in 1.0.');
   });
@@ -177,11 +178,20 @@ describe('System Status page', () => {
     expect(text()).not.toContain('No errors recorded');
   });
 
-  it('shows a non-default cache state and multisite', async () => {
-    await open(fakeStatusApi(makeStatus({ cache: { state: 'warm' }, multisite: true, hints: [] })));
-    expect(text()).toContain('Cache: warm');
+  it('shows the persistent cache and multisite', async () => {
+    await open(
+      fakeStatusApi(makeStatus({ cache: { state: 'persistent' }, multisite: true, hints: [] })),
+    );
+    expect(text()).toContain('Render cache via persistent object cache');
+    expect(text()).toContain('in its external object cache for reuse across page loads');
     expect($$('.swg-status__dl dd').map((d) => d.textContent?.trim())).toContain('Yes');
     expect(text()).not.toContain('Good to know');
+  });
+
+  it('reports an unknown cache state from older plugin versions', async () => {
+    await open(fakeStatusApi(makeStatus({ cache: { state: 'none' } })));
+    expect(text()).toContain('Render cache status unknown');
+    expect(text()).not.toContain('in the database for reuse across page loads');
   });
 
   it('refreshes on demand without polling and keeps the report when the refresh fails', async () => {

@@ -38,7 +38,7 @@ rules run without WordPress or a database.
 | Gallery meta | `_swg_revision`, `_swg_layout`, `_swg_settings`, `_swg_sort_mode`, `_swg_schema_version` | `PostTypes`, `PostMetaRevisionStore` |
 | Items (order, relation to attachment, overrides) | table `{prefix}swg_gallery_items`, versioned by option `swg_schema_version` | `Database/Schema` (steps), `Migrator`, `WpdbGalleryItemRepository` |
 | Options | `swg_settings`, `swg_delete_data_on_uninstall`, `swg_media_epoch`, a log ring buffer, a migration lock; none autoloaded | `Settings/PluginSettings`, `Lifecycle`, `Rendering/MediaEpoch`, `Infrastructure/WpLogger`, `Database/Migrator` |
-| Caches | object cache group `swg_render` (fragments, TTL 12 h); no transients are written (uninstall still removes any `swg_` transient) | `Rendering/RenderCache` |
+| Caches | per-site WordPress render transients (database or external object cache), bounded slots, TTL 12 h | `Rendering/RenderCache` |
 
 Attachments are the source of truth and are never copied or deleted by gallery operations. Uninstall removes the plugin's own data only when
 the owner opted in ([user-guide.md](user-guide.md)). Not public: tables, meta and option names ([extending.md](extending.md) compatibility policy).

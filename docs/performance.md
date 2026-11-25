@@ -16,9 +16,9 @@ wp eval-file bin/seed.php -- --purge                      # removes what the see
 |---|---|---|---|---|---|
 | REST list, page 1 (100 per page) | 1k / 5k / 10k | 10 / 10 / 10 | 1.4 / 1.3 / 0.9 MB | 52 KB | 17 / 29 / 33 |
 | REST list, last page | 1k / 5k / 10k | 10 / 10 / 10 | 0.7 MB | 53 KB | 17 / 34 / 43 |
-| Render page 1 (60 per page, grid) | 1k / 5k / 10k | 14 / 14 / 14 | 0.5 / 0.5 / 0.3 MB | 63 KB HTML | 14 / 32 / 37 |
-| Render later page / last page | 10k | 14 / 14 | 0.6 / 0.4 MB | 63 / 43 KB | 45 / 57 |
-| Render, fragment cache hit | any | 0 | 0.1 MB | 63 KB | about 1 |
+| Render page 1 (60 per page, grid) | 1k / 5k / 10k | 18 / 18 / 18 | 1.1 / 0.8 / 0.8 MB | 63 KB HTML | 42 / 28 / 29 |
+| Render later page / last page | 10k | 18 / 18 | 0.8 / 0.5 MB | 63 / 43 KB | 35 / 49 |
+| Render, warm fragment cache hit | any | 0 | 0.13 MB | 63 KB | about 1 |
 | Duplicate gallery | 1k / 5k / 10k | 33 / 34 / 33 | 2 KB | - | 138 / 284 / 122 |
 | Reorder, one move (complete list sent) | 1k / 5k / 10k | 11 / 16 / 21 | 0.9 / 4.1 / 8.0 MB | 5 / 25 / 60 KB request | 78 / 202 / 244 |
 | Bulk assign 100 attachments | 1k / 5k / 10k | 212 / 213 / 212 | 0.1-0.4 MB | 0.6 KB | 66-228 |

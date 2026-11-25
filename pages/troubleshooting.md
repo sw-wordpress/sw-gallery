@@ -20,6 +20,8 @@
 
 Administrators open **Galleries → System Status**. The read-only report includes **Database schema**, **Counts**, **Recent errors**, **Versions**, **Runtime** and **Good to know**. Orphan relations point at missing attachments and are skipped during rendering. The recent-error list is bounded to the latest 20 entries.
 
+Under **Runtime**, System Status shows where WordPress stores the render transients. Both the WordPress database and an external object cache such as Redis or Memcached can reuse HTML across page loads for published galleries without a password. Editor previews and visitors who can edit the gallery always get a fresh render.
+
 Use **Copy summary** for a support request. Review even sanitized diagnostics before sharing; never send login credentials or private image URLs. Include the action, expected/actual result, plugin/WordPress versions and whether the issue also occurs with a small gallery of non-sensitive test images. With `WP_DEBUG_LOG` enabled, an administrator can also inspect the site's `debug.log`; do not publish the full log without checking for information from other plugins.
 
 Administrators/developers can investigate orphan relations with `wp swg repair`. Do not run `wp swg repair --apply` on production without a backup and an understanding of the changes. See [development and repair tools](https://github.com/sw-wordpress/sw-gallery/blob/main/docs/development.md) and [security reporting](https://github.com/sw-wordpress/sw-gallery/blob/main/SECURITY.md).

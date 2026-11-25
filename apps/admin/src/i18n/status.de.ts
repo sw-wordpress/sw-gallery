@@ -67,9 +67,13 @@ const de: typeof en = {
   },
   runtime: {
     title: 'Laufzeit',
-    cacheNone: 'Kein Render-Cache aktiv',
-    cacheState: 'Cache: {state}',
-    cacheHint: 'Galerien werden bei jeder Anfrage neu gerendert.',
+    cachePersistent: 'Render-Cache über persistenten Objektcache',
+    cachePersistentHint:
+      'WordPress speichert öffentliches Galerie-HTML im externen Objektcache und kann es bei späteren Seitenaufrufen wiederverwenden.',
+    cacheDatabase: 'Render-Cache über WordPress-Datenbank',
+    cacheDatabaseHint:
+      'WordPress speichert öffentliches Galerie-HTML in der Datenbank und kann es bei späteren Seitenaufrufen wiederverwenden.',
+    cacheUnknown: 'Render-Cache-Status unbekannt',
     buildOk: 'Build der Admin-App ist vollständig',
     buildMissing: 'Build der Admin-App fehlt',
     buildHint: 'Baue die Admin-App neu oder installiere das Plugin-Paket erneut.',

@@ -23,7 +23,7 @@ export function makeStatus(overrides: Partial<StatusReport> = {}): StatusReport 
       database: { type: 'MariaDB', version: '11.4.2' },
     },
     multisite: false,
-    cache: { state: 'none' },
+    cache: { state: 'database' },
     adminBuild: true,
     hints: [
       {

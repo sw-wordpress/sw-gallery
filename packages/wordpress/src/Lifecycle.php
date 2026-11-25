@@ -13,6 +13,7 @@ use SWGallery\WordPress\Database\Migrator;
 use SWGallery\WordPress\Database\Schema;
 use SWGallery\WordPress\Infrastructure\WpLogger;
 use SWGallery\WordPress\Rendering\MediaEpoch;
+use SWGallery\WordPress\Rendering\RenderCache;
 use SWGallery\WordPress\Settings\PluginSettings;
 
 final class Lifecycle {
@@ -58,6 +59,10 @@ final class Lifecycle {
 		}
 
 		self::delete_galleries();
+
+		if ( wp_using_ext_object_cache() ) {
+			RenderCache::clear_external();
+		}
 
 		$table = Schema::items_table();
 		$wpdb->query( "DROP TABLE IF EXISTS `{$table}`" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQL.NotPrepared -- identifier built from $wpdb->prefix and a constant.

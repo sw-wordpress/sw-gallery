@@ -1,5 +1,9 @@
 # DONE
 
+## 2026-11-25 — Render-cache status
+
+- Store public gallery fragments in bounded WordPress transients, and report the backing store in System Status.
+
 ## 2026-11-24 — Protect password-protected gallery content
 
 - Require gallery edit access for protected details and copies. Keep passwords on duplicated galleries and exclude protected descriptions from collection search.

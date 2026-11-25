@@ -43,6 +43,24 @@ const errorDetail = computed(() => {
       : error.code;
 });
 const report = computed(() => status.report.value);
+const cacheStatus = computed(() => {
+  switch (report.value?.cache.state) {
+    case 'persistent':
+      return {
+        kind: 'info' as const,
+        label: t('status.runtime.cachePersistent'),
+        hint: t('status.runtime.cachePersistentHint'),
+      };
+    case 'database':
+      return {
+        kind: 'info' as const,
+        label: t('status.runtime.cacheDatabase'),
+        hint: t('status.runtime.cacheDatabaseHint'),
+      };
+    default:
+      return { kind: 'neutral' as const, label: t('status.runtime.cacheUnknown'), hint: '' };
+  }
+});
 const formatTime = (iso: string): string => formatModified(iso, config.locale, config.timezone);
 const fetched = computed(() =>
   status.fetchedAt.value === null
@@ -257,15 +275,8 @@ async function copySummary(): Promise<void> {
         <SwgCard :title="t('status.runtime.title')" icon="r_memory" tag="section">
           <ul class="swg-status__checks">
             <li>
-              <StatusChip
-                :kind="report.cache.state === 'none' ? 'neutral' : 'info'"
-                :label="
-                  report.cache.state === 'none'
-                    ? t('status.runtime.cacheNone')
-                    : t('status.runtime.cacheState', { state: report.cache.state })
-                "
-              />
-              <span class="swg-muted">{{ t('status.runtime.cacheHint') }}</span>
+              <StatusChip :kind="cacheStatus.kind" :label="cacheStatus.label" />
+              <span v-if="cacheStatus.hint" class="swg-muted">{{ cacheStatus.hint }}</span>
             </li>
             <li>
               <StatusChip

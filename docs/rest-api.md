@@ -131,7 +131,7 @@ When the WordPress MCP Adapter is available, the response adds `mcpAccessLevel` 
 - `schema`: `stored`, `current`, `migrationPending`, `newerThanCode`, `itemTablePresent`.
 - `counts.galleries` per status (`draft, pending, publish, private, future, trash`); `counts.itemRows` `{count, capped}` (exact up to 50000 rows, then `capped: true`); `counts.orphanRelations` `{count, complete}`: a read-only scan with the repair command's query, only on non-capped tables and for at most one second. Otherwise `complete: false` (`count: null` when skipped); the repair itself stays WP-CLI only.
 - `recentErrors`: the logger ring buffer, newest first, at most 20, already sanitized (`time` ISO UTC, `code`, `context`).
-- `versions` (`plugin`, `wordpress`, `php`, `database: {type, version}`), `multisite`, `cache: {state: "none"}` (until the renderer cache exists), `adminBuild` (boolean: the build manifest is valid), `hints[]` (`{key: "export_limitation", message}`, decision D12).
+- `versions` (`plugin`, `wordpress`, `php`, `database: {type, version}`), `multisite`, `cache.state` (`database` for database-backed render transients, `persistent` when WordPress reports an external object cache), `adminBuild` (boolean: the build manifest is valid), `hints[]` (`{key: "export_limitation", message}`, decision D12).
 
 ## Preview
 

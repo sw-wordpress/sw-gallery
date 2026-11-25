@@ -116,12 +116,12 @@ class PerfBudgetTest extends SwgTestCase {
 				function () use ( $gallery, $page, $per_page ): int {
 					wp_set_current_user( 0 );
 					Services::reset();
-					wp_cache_flush();
 					$result = Services::gallery_renderer()->render( $gallery, EntryPoint::Shortcode, array( 'page' => $page, 'per_page' => $per_page ) );
 					$this->assertLessThanOrEqual( $per_page, $result->renderedItems );
 					$this->assertGreaterThan( 0, $result->renderedItems );
 					return strlen( $result->html );
-				}
+				},
+				static fn() => Services::media_epoch()->bump()
 			);
 			$this->assertLessThanOrEqual( 30, $render['queries'], $name . ': ' . $this->describe( $render ) );
 			$this->assertLessThanOrEqual( 150000, $render['bytes'], 'Rendered HTML is bounded by per_page, not by gallery size' );
@@ -235,13 +235,17 @@ class PerfBudgetTest extends SwgTestCase {
 	/**
 	 * Runs a read operation 3 times from a cold object cache and keeps the median time; counts come from the first run.
 	 *
-	 * @param callable():int $operation Returns the response size in bytes.
+	 * @param callable():int       $operation Returns the response size in bytes.
+	 * @param (callable():void)|null $before Runs before each sample, outside measurement.
 	 * @return array<string, int|float>
 	 */
-	private function measure_read( int $size, string $name, callable $operation ): array {
+	private function measure_read( int $size, string $name, callable $operation, ?callable $before = null ): array {
 		$times = array();
 		$first = array();
 		for ( $run = 0; $run < 3; $run++ ) {
+			if ( null !== $before ) {
+				$before();
+			}
 			$result = $this->measure_once( $size, $name, $operation );
 			$times[] = $result['ms'];
 			$first   = array() === $first ? $result : $first;

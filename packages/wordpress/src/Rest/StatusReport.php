@@ -46,7 +46,7 @@ final class StatusReport {
 	}
 
 	/**
-	 * @return array{schema: array<string, int|bool>, counts: array<string, mixed>, recentErrors: list<array{time: string, code: string, context: array<string, scalar|null>}>, versions: array<string, mixed>, multisite: bool, cache: array{state: string}, adminBuild: bool, hints: list<array{key: string, message: string}>}
+	 * @return array{schema: array<string, int|bool>, counts: array<string, mixed>, recentErrors: list<array{time: string, code: string, context: array<string, scalar|null>}>, versions: array<string, mixed>, multisite: bool, cache: array{state: 'database'|'persistent'}, adminBuild: bool, hints: list<array{key: string, message: string}>}
 	 */
 	public function build(): array {
 		global $wpdb;
@@ -81,7 +81,7 @@ final class StatusReport {
 				),
 			),
 			'multisite'    => is_multisite(),
-			'cache'        => array( 'state' => 'none' ),
+			'cache'        => array( 'state' => wp_using_ext_object_cache() ? 'persistent' : 'database' ),
 			'adminBuild'   => null !== ( new AssetManifest( $this->assets_dir ) )->resolve(),
 			'hints'        => array(
 				array(
