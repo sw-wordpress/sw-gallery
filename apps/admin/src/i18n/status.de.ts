@@ -68,11 +68,7 @@ const de: typeof en = {
   runtime: {
     title: 'Laufzeit',
     cachePersistent: 'Render-Cache über persistenten Objektcache',
-    cachePersistentHint:
-      'WordPress speichert öffentliches Galerie-HTML im externen Objektcache und kann es bei späteren Seitenaufrufen wiederverwenden.',
     cacheDatabase: 'Render-Cache über WordPress-Datenbank',
-    cacheDatabaseHint:
-      'WordPress speichert öffentliches Galerie-HTML in der Datenbank und kann es bei späteren Seitenaufrufen wiederverwenden.',
     cacheUnknown: 'Render-Cache-Status unbekannt',
     buildOk: 'Build der Admin-App ist vollständig',
     buildMissing: 'Build der Admin-App fehlt',

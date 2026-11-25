@@ -31,6 +31,10 @@ Plan, waves and owned paths: `TODO.md` → "Parallelization plan". Sub-agents wo
 ## Translations
 Every change to user-facing text updates all languages (English + German minimum; PHP gettext catalogs in `languages/`, SPA catalogs in `apps/admin/src/i18n/`). Run `bin/i18n.sh update` and `bin/i18n.sh check`; the PHPUnit test `I18nTest` and the Vitest parity test enforce it. See `docs/translations.md`.
 
+## Texte in der WordPress-Oberfläche
+
+- Zeige nur Informationen, die bei einer Entscheidung, Aktion oder Fehlerbehebung helfen. Lass Zusatztexte weg, wenn ein Status, eine Beschriftung oder der Kontext dieselbe Information bereits vermittelt. Technische Hintergründe gehören in die Dokumentation.
+
 ## Dokumentation
 
 Bei jeder Änderung muss `pages/Changelog.md` im selben Arbeitsschritt aktualisiert werden. Noch nicht veröffentlichte Änderungen werden unter `Unreleased` in der passenden Kategorie `Feature`, `Bugs` oder `Other topics` eingetragen. Beschreibe die Änderung knapp und sachlich; fasse zusammengehörige Änderungen zusammen und vermeide doppelte Einträge. Kategorien und Versionsabschnitte dürfen nur erscheinen, wenn sie Einträge enthalten. Bei einer Veröffentlichung werden die zugehörigen Unreleased-Einträge der tatsächlichen Version mit Veröffentlichungsdatum zugeordnet.

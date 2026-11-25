@@ -23,6 +23,10 @@ const button = (text: string): HTMLElement | undefined =>
   $$('button').find((b) => b.textContent?.includes(text));
 const live = (): string => $('.swg-shell > [role="status"]')?.textContent?.trim() ?? '';
 const text = (): string => $('.swg-status')?.textContent ?? '';
+const checkRow = (label: string): HTMLElement | undefined =>
+  $$('.swg-status__checks > li').find(
+    (item) => item.querySelector('.swg-chip__text')?.textContent === label,
+  );
 
 async function settle(): Promise<void> {
   await flushPromises();
@@ -61,8 +65,7 @@ describe('System Status page', () => {
     expect(content).toContain('6.8.1');
     expect(content).toContain('8.3.4');
     expect(content).toContain('MariaDB 11.4.2');
-    expect(content).toContain('Render cache via WordPress database');
-    expect(content).toContain('in the database for reuse across page loads');
+    expect(checkRow('Render cache via WordPress database')?.childElementCount).toBe(1);
     expect(content).toContain('Admin app build is complete');
     expect(content).toContain('Galleries are not exported in 1.0.');
   });
@@ -182,8 +185,7 @@ describe('System Status page', () => {
     await open(
       fakeStatusApi(makeStatus({ cache: { state: 'persistent' }, multisite: true, hints: [] })),
     );
-    expect(text()).toContain('Render cache via persistent object cache');
-    expect(text()).toContain('in its external object cache for reuse across page loads');
+    expect(checkRow('Render cache via persistent object cache')?.childElementCount).toBe(1);
     expect($$('.swg-status__dl dd').map((d) => d.textContent?.trim())).toContain('Yes');
     expect(text()).not.toContain('Good to know');
   });
@@ -191,7 +193,6 @@ describe('System Status page', () => {
   it('reports an unknown cache state from older plugin versions', async () => {
     await open(fakeStatusApi(makeStatus({ cache: { state: 'none' } })));
     expect(text()).toContain('Render cache status unknown');
-    expect(text()).not.toContain('in the database for reuse across page loads');
   });
 
   it('refreshes on demand without polling and keeps the report when the refresh fails', async () => {

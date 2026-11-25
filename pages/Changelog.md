@@ -14,7 +14,7 @@ User-facing changes summarized from the repository's [existing changelog](https:
 
 ### Bugs
 
-- Cache public gallery HTML across requests with WordPress transients. System Status identifies the database or external object cache used for storage.
+- Cache public gallery HTML across requests with WordPress transients. System Status shows the storage backend in a single label.
 - Route gallery edits and trash actions through the permission and revision checks in the gallery service.
 - Overview and System Status warn when the database schema is newer than the plugin, and saving gives an actionable error.
 - Enforce gallery passwords when reading or copying galleries through the management interfaces.

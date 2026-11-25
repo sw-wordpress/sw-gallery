@@ -2,7 +2,7 @@
 
 ## 2026-11-25 — Render-cache status
 
-- Store public gallery fragments in bounded WordPress transients, and report the backing store in System Status.
+- Store public gallery fragments in bounded WordPress transients, and report the backing store in System Status with a single label.
 
 ## 2026-11-24 — Protect password-protected gallery content
 

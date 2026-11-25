@@ -46,19 +46,11 @@ const report = computed(() => status.report.value);
 const cacheStatus = computed(() => {
   switch (report.value?.cache.state) {
     case 'persistent':
-      return {
-        kind: 'info' as const,
-        label: t('status.runtime.cachePersistent'),
-        hint: t('status.runtime.cachePersistentHint'),
-      };
+      return { kind: 'info' as const, label: t('status.runtime.cachePersistent') };
     case 'database':
-      return {
-        kind: 'info' as const,
-        label: t('status.runtime.cacheDatabase'),
-        hint: t('status.runtime.cacheDatabaseHint'),
-      };
+      return { kind: 'info' as const, label: t('status.runtime.cacheDatabase') };
     default:
-      return { kind: 'neutral' as const, label: t('status.runtime.cacheUnknown'), hint: '' };
+      return { kind: 'neutral' as const, label: t('status.runtime.cacheUnknown') };
   }
 });
 const formatTime = (iso: string): string => formatModified(iso, config.locale, config.timezone);
@@ -276,7 +268,6 @@ async function copySummary(): Promise<void> {
           <ul class="swg-status__checks">
             <li>
               <StatusChip :kind="cacheStatus.kind" :label="cacheStatus.label" />
-              <span v-if="cacheStatus.hint" class="swg-muted">{{ cacheStatus.hint }}</span>
             </li>
             <li>
               <StatusChip
