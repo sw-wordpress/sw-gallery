@@ -7,8 +7,7 @@ namespace SWGallery\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use SWGallery\Core\Application\Service\GalleryItemEditService;
 use SWGallery\Core\Application\Service\LayoutRegistry;
-use SWGallery\Core\Contract\ItemOverridesStoreInterface;
-use SWGallery\Core\Contract\ItemSettingsStoreInterface;
+use SWGallery\Core\Contract\ItemEditStoreInterface;
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Gallery\ItemOverrides;
 use SWGallery\Core\Domain\Gallery\NewGallery;
@@ -64,7 +63,6 @@ final class GalleryItemEditServiceTest extends TestCase
             $this->store,
             $this->galleries,
             $layouts,
-            $this->store,
             $this->store,
             $this->store,
             new SettingsSchemaValidator(),
@@ -205,9 +203,35 @@ final class GalleryItemEditServiceTest extends TestCase
         $this->service->setSettings($this->admin, $this->galleryId, 999, ['zoom' => 1], new Revision(1));
     }
 
+    public function testCombinedEditUsesOneWriteAndEmitsOneEvent(): void
+    {
+        $this->store->failAfterWrites(1);
+        $result = $this->service->updateItem(
+            $this->admin,
+            $this->galleryId,
+            $this->itemId,
+            new ItemOverrides('Combined'),
+            ['focus' => 'top'],
+            new Revision(1)
+        );
+
+        self::assertSame(2, $result->revision->value);
+        self::assertSame(['focus' => 'top'], $this->store->itemSettings($this->galleryId, $this->itemId));
+        self::assertCount(1, $this->payloads);
+    }
+
     public function testItemVanishingBetweenCheckAndWriteRollsBack(): void
     {
-        $rejecting = new class implements ItemOverridesStoreInterface, ItemSettingsStoreInterface {
+        $rejecting = new class implements ItemEditStoreInterface {
+            public function saveItemEdit(
+                int $galleryId,
+                int $itemId,
+                ?ItemOverrides $overrides,
+                ?array $settings
+            ): bool {
+                return false;
+            }
+
             public function saveOverrides(int $galleryId, int $itemId, ItemOverrides $overrides): bool
             {
                 return false;
@@ -230,7 +254,6 @@ final class GalleryItemEditServiceTest extends TestCase
             $this->galleries,
             $layouts,
             $this->store,
-            $rejecting,
             $rejecting,
             new SettingsSchemaValidator(),
             new InMemoryTransactionRunner([$this->store]),

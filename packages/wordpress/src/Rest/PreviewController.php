@@ -101,7 +101,7 @@ final class PreviewController extends AbstractController {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
 				$actor   = $this->actor();
-				$gallery = $this->editable( $actor, (int) $request->get_param( 'id' ) );
+				$gallery = $this->editable( $actor, $this->route_id( $request, 'id' ) );
 				$gallery = $this->with_unsaved_state( $gallery, $request );
 
 				$options = array();

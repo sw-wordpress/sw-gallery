@@ -13,12 +13,14 @@ use SWGallery\Core\Contract\LayoutRegistryInterface;
 use SWGallery\Core\Contract\LoggerInterface;
 use SWGallery\Core\Contract\MediaReferenceRepositoryInterface;
 use SWGallery\Core\Contract\RenderItemSourceInterface;
+use SWGallery\Core\Contract\RenderMediaAccessPolicyInterface;
 use SWGallery\Core\Contract\RevisionStoreInterface;
 use SWGallery\Core\Contract\SimpleMarkupRendererInterface;
 use SWGallery\Core\Contract\ThumbnailResolverInterface;
 use SWGallery\Core\Domain\Access\RenderAccess;
 use SWGallery\Core\Domain\Gallery\Gallery;
 use SWGallery\Core\Domain\Gallery\GallerySettings;
+use SWGallery\Core\Domain\Gallery\GalleryStatus;
 use SWGallery\Core\Domain\Layout\ImageHints;
 use SWGallery\Core\Domain\Layout\ImageRequest;
 use SWGallery\Core\Domain\Layout\ImageRole;
@@ -96,10 +98,14 @@ final class RenderGallery
         }
         $diagnosticsVisible = $canEdit && $context->entryPoint->isInteractive();
 
-        $page = $this->loadPage($context, $settings);
-        $referencesByAttachment = $this->media->findReferences(
-            array_map(static fn ($item): int => $item->attachmentId, $page['items']->items)
-        );
+        $publicOnly = $context->entryPoint !== EntryPoint::Preview && $gallery->status === GalleryStatus::Publish;
+        $page = $this->loadPage($context, $settings, $publicOnly);
+        $attachmentIds = array_map(static fn ($item): int => $item->attachmentId, $page['items']->items);
+        $referencesByAttachment = $this->media->findReferences($attachmentIds);
+        if ($this->access instanceof RenderMediaAccessPolicyInterface) {
+            $readable = $this->access->readableRenderAttachments($context, $gallery, array_keys($referencesByAttachment));
+            $referencesByAttachment = array_intersect_key($referencesByAttachment, array_flip($readable));
+        }
 
         try {
             $hints = $layout instanceof ImageHintsProviderInterface ? $layout->imageHints($settings) : ImageHints::fallback();
@@ -235,15 +241,15 @@ final class RenderGallery
      *
      * @return array{items: RenderItemPage, page: int, totalPages: int}
      */
-    private function loadPage(RenderContext $context, GallerySettings $settings): array
+    private function loadPage(RenderContext $context, GallerySettings $settings, bool $publicOnly): array
     {
         $perPage = $context->perPage;
         $page = $context->page;
-        $items = $this->items->findRenderPage($context->galleryId, $settings->sortMode, ($page - 1) * $perPage, $perPage);
+        $items = $this->items->findRenderPage($context->galleryId, $settings->sortMode, ($page - 1) * $perPage, $perPage, $publicOnly);
         $totalPages = (int) ceil($items->total / $perPage);
         if ($items->items === [] && $items->total > 0 && $page > $totalPages) {
             $page = $totalPages;
-            $items = $this->items->findRenderPage($context->galleryId, $settings->sortMode, ($page - 1) * $perPage, $perPage);
+            $items = $this->items->findRenderPage($context->galleryId, $settings->sortMode, ($page - 1) * $perPage, $perPage, $publicOnly);
         }
 
         return ['items' => $items, 'page' => $page, 'totalPages' => $totalPages];

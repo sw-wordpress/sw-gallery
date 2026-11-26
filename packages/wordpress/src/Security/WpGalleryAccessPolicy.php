@@ -11,7 +11,10 @@ declare(strict_types=1);
 
 namespace SWGallery\WordPress\Security;
 
+use SWGallery\Core\Application\Render\EntryPoint;
+use SWGallery\Core\Application\Render\RenderContext;
 use SWGallery\Core\Contract\GalleryAccessPolicyInterface;
+use SWGallery\Core\Contract\RenderMediaAccessPolicyInterface;
 use SWGallery\Core\Domain\Access\Actor;
 use SWGallery\Core\Domain\Access\RenderAccess;
 use SWGallery\Core\Domain\Access\StatusAccessRules;
@@ -26,7 +29,7 @@ use SWGallery\WordPress\PostTypes;
  * consulted. The galleries use the `post` capability type with `map_meta_cap`: owners manage their own galleries,
  * foreign ones need `edit_others_posts` / `delete_others_posts`, published ones `edit_published_posts` and so on.
  */
-final class WpGalleryAccessPolicy implements GalleryAccessPolicyInterface {
+final class WpGalleryAccessPolicy implements GalleryAccessPolicyInterface, RenderMediaAccessPolicyInterface {
 
 	public function canCreate( Actor $actor ): bool {
 		return $this->can( $actor, $this->capabilities()->create_posts );
@@ -119,6 +122,49 @@ final class WpGalleryAccessPolicy implements GalleryAccessPolicyInterface {
 		return AllowedMimeTypes::is_allowed( (string) $attachment->post_mime_type )
 			&& $this->can( $actor, 'edit_posts' )
 			&& $this->can( $actor, 'read_post', $attachmentId );
+	}
+
+	public function readableRenderAttachments( RenderContext $context, Gallery $gallery, array $attachmentIds ): array {
+		$posts   = array();
+		$parents = array();
+		foreach ( $attachmentIds as $id ) {
+			$post = $this->attachment( $id );
+			if ( null !== $post && 'inherit' === $post->post_status ) {
+				$posts[ $id ] = $post;
+				if ( $post->post_parent > 0 ) {
+					$parents[ $post->post_parent ] = $post->post_parent;
+				}
+			}
+		}
+		if ( array() !== $parents ) {
+			_prime_post_caches( array_values( $parents ), false, false );
+		}
+
+		$public  = EntryPoint::Preview !== $context->entryPoint && GalleryStatus::Publish === $gallery->status;
+		$allowed = array();
+		foreach ( $posts as $id => $post ) {
+			$parent = $post->post_parent > 0 ? get_post( $post->post_parent ) : null;
+			if ( $public ) {
+				if ( '' === $post->post_password && ( ! $parent instanceof \WP_Post || ( 'publish' === $parent->post_status && '' === $parent->post_password ) ) && 'publish' === get_post_status( $post ) ) {
+					$allowed[] = $id;
+				}
+				continue;
+			}
+
+			if ( $this->can( $context->actor, 'read_post', $id )
+				&& $this->can_render_protected_post( $context, $post )
+				&& ( ! $parent instanceof \WP_Post || $this->can_render_protected_post( $context, $parent ) ) ) {
+				$allowed[] = $id;
+			}
+		}
+		return $allowed;
+	}
+
+	private function can_render_protected_post( RenderContext $context, \WP_Post $post ): bool {
+		return '' === $post->post_password
+			|| ( EntryPoint::Preview === $context->entryPoint
+				? $this->can( $context->actor, 'edit_post', $post->ID )
+				: ! post_password_required( $post ) );
 	}
 
 	/** Changing global attachment metadata needs `edit_post` on the attachment itself. */

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace SWGallery\Tests\Support;
 
 use SWGallery\Core\Contract\GalleryItemRepositoryInterface;
-use SWGallery\Core\Contract\ItemOverridesStoreInterface;
-use SWGallery\Core\Contract\ItemSettingsStoreInterface;
+use SWGallery\Core\Contract\ItemEditStoreInterface;
 use SWGallery\Core\Contract\MediaRepositoryInterface;
 use SWGallery\Core\Contract\RevisionStoreInterface;
 use SWGallery\Core\Domain\Gallery\GalleryItem;
@@ -22,8 +21,7 @@ final class InMemoryItems implements
     GalleryItemRepositoryInterface,
     RevisionStoreInterface,
     MediaRepositoryInterface,
-    ItemOverridesStoreInterface,
-    ItemSettingsStoreInterface,
+    ItemEditStoreInterface,
     Snapshotable
 {
     /** @var array<int, array<int, array{id: int, attachment: int, position: int}>> */
@@ -155,13 +153,7 @@ final class InMemoryItems implements
 
     public function saveOverrides(int $galleryId, int $itemId, ItemOverrides $overrides): bool
     {
-        $this->guardWrite();
-        if (!isset($this->rows[$galleryId][$itemId])) {
-            return false;
-        }
-        $this->overrides[$galleryId][$itemId] = $overrides;
-
-        return true;
+        return $this->saveItemEdit($galleryId, $itemId, $overrides, null);
     }
 
     public function itemSettings(int $galleryId, int $itemId): array
@@ -171,11 +163,21 @@ final class InMemoryItems implements
 
     public function saveItemSettings(int $galleryId, int $itemId, array $settings): bool
     {
+        return $this->saveItemEdit($galleryId, $itemId, null, $settings);
+    }
+
+    public function saveItemEdit(int $galleryId, int $itemId, ?ItemOverrides $overrides, ?array $settings): bool
+    {
         $this->guardWrite();
         if (!isset($this->rows[$galleryId][$itemId])) {
             return false;
         }
-        $this->settings[$galleryId][$itemId] = $settings;
+        if ($overrides !== null) {
+            $this->overrides[$galleryId][$itemId] = $overrides;
+        }
+        if ($settings !== null) {
+            $this->settings[$galleryId][$itemId] = $settings;
+        }
 
         return true;
     }

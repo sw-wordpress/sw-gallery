@@ -20,6 +20,7 @@ interface RenderItemSourceInterface
      *
      * @param int $offset Zero-based.
      * @param int $limit  Page size, clamped to 1..500 by implementations.
+     * @param bool $publicOnly Exclude protected media from both pagination and totals.
      */
-    public function findRenderPage(int $galleryId, SortMode $sortMode, int $offset, int $limit): RenderItemPage;
+    public function findRenderPage(int $galleryId, SortMode $sortMode, int $offset, int $limit, bool $publicOnly = false): RenderItemPage;
 }

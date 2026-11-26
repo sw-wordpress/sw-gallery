@@ -107,6 +107,23 @@ class RenderCacheTest extends SwgTestCase {
 		$this->assertNotFalse( get_transient( $this->transient_name( $this->key( $gallery ) ) ) );
 	}
 
+	public function test_public_fragments_exclude_media_when_the_parent_is_protected(): void {
+		$gallery = $this->makeGalleryPost( $this->author, 'publish' );
+		$parent  = self::factory()->post->create( array( 'post_status' => 'publish' ) );
+		$image   = $this->makeImage( 'Attached image', 1600, 1200, array(), null, 'Attached image' );
+		wp_update_post( array( 'ID' => $image, 'post_parent' => $parent ) );
+		$this->addItems( $gallery, array( $image, $this->makeImage( 'Unattached image', 1600, 1200 ) ) );
+
+		$this->assertSame( 2, $this->render( $gallery )->totalItems );
+		wp_update_post( array( 'ID' => $parent, 'post_password' => 'protected-parent' ) );
+
+		$filtered = $this->render( $gallery );
+		$this->assertSame( 1, $filtered->totalItems );
+		$this->assertStringNotContainsString( 'Attached image', $filtered->html );
+		$this->assertSame( $filtered->html, $this->render( $gallery )->html );
+		$this->assertSame( 1, $this->render( $gallery, $this->author )->totalItems );
+	}
+
 	public function test_instance_ids_stay_unique_per_request_on_cache_hits(): void {
 		$gallery = $this->gallery();
 		$this->render( $gallery );

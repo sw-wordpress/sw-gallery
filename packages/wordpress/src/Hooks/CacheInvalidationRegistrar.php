@@ -17,23 +17,23 @@ use SWGallery\WordPress\Infrastructure\Services;
 /**
  * - Attachment edited, updated, trashed, restored, deleted, sub-sizes regenerated, alt text or file changed: the
  *   {@see \SWGallery\WordPress\Rendering\MediaEpoch} moves, so every cached gallery fragment misses once. (Gallery,
- *   item and settings changes need no hook here: they bump the gallery revision, which is part of the cache key.)
+ *   item and settings changes also bump the gallery revision.) Parent visibility changes invalidate immediately.
  * - Every persisted gallery change (core events, see docs/hooks.md) fires `swg_gallery_changed( int $gallery_id )` so
  *   page caches and CDN plugins can purge the pages that embed the gallery.
  */
 final class CacheInvalidationRegistrar implements RegistrarInterface {
 
 	/** Attachment meta keys that change what a gallery shows. */
-	private const MEDIA_META_KEYS = array( '_wp_attachment_image_alt', '_wp_attached_file' );
+	private const MEDIA_META_KEYS = array( '_wp_attachment_image_alt', '_wp_attached_file', '_wp_attachment_metadata' );
 
 	public function register(): void {
-		foreach ( array( 'edit_attachment', 'attachment_updated', 'delete_attachment' ) as $hook ) {
-			add_action( $hook, array( $this, 'on_attachment' ) );
-		}
+		add_action( 'edit_attachment', array( $this, 'on_attachment' ) );
+		add_action( 'attachment_updated', array( $this, 'on_attachment_updated' ), 10, 3 );
 		foreach ( array( 'trashed_post', 'untrashed_post', 'deleted_post' ) as $hook ) {
 			add_action( $hook, array( $this, 'on_post_status' ), 10, 2 );
 		}
-		add_filter( 'wp_update_attachment_metadata', array( $this, 'on_metadata' ) );
+		add_action( 'post_updated', array( $this, 'on_parent_updated' ), 10, 3 );
+		add_action( 'transition_post_status', array( $this, 'on_parent_status' ), 10, 2 );
 		foreach ( array( 'added_post_meta', 'updated_post_meta' ) as $hook ) {
 			add_action( $hook, array( $this, 'on_meta' ), 10, 3 );
 		}
@@ -48,31 +48,61 @@ final class CacheInvalidationRegistrar implements RegistrarInterface {
 	}
 
 	/**
-	 * Trash, restore and permanent deletion of posts: only attachments matter.
+	 * Trash, restore and deletion can change the visibility of attachments, including those of a parent post.
 	 *
 	 * @param int|string        $post_id Post id.
 	 * @param \WP_Post|null|int $post    The post (core passes it since 5.5; older callers omit it).
 	 */
 	public function on_post_status( $post_id, $post = null ): void {
 		$type = $post instanceof \WP_Post ? $post->post_type : get_post_type( (int) $post_id );
-		if ( 'attachment' === $type ) {
-			Services::media_epoch()->bump();
+		if ( false !== $type ) {
+			Services::media_epoch()->bump( true );
 		}
 	}
 
 	/**
-	 * Filter `wp_update_attachment_metadata`: regenerated sub-sizes. The value passes through unchanged.
+	 * Inherited media visibility changes with the parent's status and password.
 	 *
-	 * @param mixed $data Attachment metadata.
-	 * @return mixed
+	 * @param int      $post_id Parent id.
+	 * @param \WP_Post $after   Saved post.
+	 * @param \WP_Post $before  Previous post.
 	 */
-	public function on_metadata( $data ) {
-		Services::media_epoch()->bump();
-		return $data;
+	public function on_parent_updated( int $post_id, \WP_Post $after, \WP_Post $before ): void {
+		if ( $after->post_password !== $before->post_password ) {
+			Services::media_epoch()->bump( true );
+		}
 	}
 
 	/**
-	 * Meta hooks (`added_`, `updated_`, `deleted_post_meta`): only the alt text and the file path matter.
+	 * Status transitions include scheduled publication.
+	 *
+	 * @param string $after  Saved status.
+	 * @param string $before Previous status.
+	 */
+	public function on_parent_status( string $after, string $before ): void {
+		if ( 'new' !== $before && $after !== $before ) {
+			Services::media_epoch()->bump( true );
+		}
+	}
+
+	/**
+	 * Invalidate for changes to the attachment's own visibility or its parent.
+	 *
+	 * @param int      $post_id Attachment id.
+	 * @param \WP_Post $after   Saved attachment.
+	 * @param \WP_Post $before  Previous attachment.
+	 */
+	public function on_attachment_updated( int $post_id, \WP_Post $after, \WP_Post $before ): void {
+		if ( $after->post_parent !== $before->post_parent || $after->post_status !== $before->post_status ) {
+			Services::media_epoch()->bump( true );
+			return;
+		}
+
+		$this->on_parent_updated( $post_id, $after, $before );
+	}
+
+	/**
+	 * Meta hooks (`added_`, `updated_`, `deleted_post_meta`): listen after the attachment metadata has been stored.
 	 *
 	 * @param mixed  $meta_id    Meta id(s), unused.
 	 * @param mixed  $object_id  Post id, unused.

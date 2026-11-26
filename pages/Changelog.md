@@ -14,6 +14,8 @@ User-facing changes summarized from the repository's [existing changelog](https:
 
 ### Bugs
 
+- Respect media visibility in gallery previews and public embeds, including after attachment or parent changes.
+- Bind REST operations to the URL path and save image settings and text changes together.
 - Cache public gallery HTML across requests with WordPress transients. System Status shows the storage backend in a single label.
 - Route gallery edits and trash actions through the permission and revision checks in the gallery service.
 - Overview and System Status warn when the database schema is newer than the plugin, and saving gives an actionable error.

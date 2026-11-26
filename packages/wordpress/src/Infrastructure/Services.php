@@ -216,7 +216,6 @@ final class Services {
 			self::layouts(),
 			self::revisions(),
 			self::items(),
-			self::items(),
 			new SettingsSchemaValidator(),
 			self::transactions(),
 			self::events(),

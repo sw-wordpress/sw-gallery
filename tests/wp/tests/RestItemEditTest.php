@@ -247,7 +247,7 @@ class RestItemEditTest extends SwgTestCase {
 		$this->assertEquals( (object) array(), $this->listed( $gallery, $items[0] )['settings'] );
 	}
 
-	public function test_overrides_and_settings_in_one_patch_are_applied_in_order_and_invalid_settings_write_nothing(): void {
+	public function test_overrides_and_settings_in_one_patch_share_a_revision_and_invalid_settings_write_nothing(): void {
 		$gallery  = $this->gallery_with_item_schema();
 		$item     = $this->itemIds( $gallery )[0];
 		$revision = $this->revisionOf( $gallery );
@@ -259,9 +259,20 @@ class RestItemEditTest extends SwgTestCase {
 
 		$both = $this->patch( $gallery, $item, array( 'overrides' => array( 'title' => 'Both' ), 'settings' => array( 'focus' => 'top' ) ) );
 		$this->assertSame( 200, $both->get_status() );
-		$this->assertSame( $revision + 2, $both->get_data()['revision'], 'one revision step per applied part' );
+		$this->assertSame( $revision + 1, $both->get_data()['revision'], 'one revision for both parts' );
 		$this->assertSame( 'Both', $both->get_data()['item']['overrides']['title'] );
 		$this->assertSame( 'top', $both->get_data()['item']['settings']->focus );
+	}
+
+	public function test_item_edit_uses_the_item_id_in_the_path(): void {
+		list( $gallery, $items ) = $this->gallery_with_items( 2 );
+		$patch = array( 'itemId' => $items[1], 'overrides' => array( 'title' => 'Updated' ) );
+
+		$response = $this->patch( $gallery, $items[0], $patch );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'Updated', $this->listed( $gallery, $items[0] )['overrides']['title'] );
+		$this->assertNull( $this->listed( $gallery, $items[1] )['overrides']['title'] );
 	}
 
 	// Remove.

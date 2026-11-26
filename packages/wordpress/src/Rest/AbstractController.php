@@ -81,6 +81,17 @@ abstract class AbstractController extends \WP_REST_Controller {
 	}
 
 	/**
+	 * Reads the identity matched by the route. Query and body arguments are never used to select the object.
+	 *
+	 * @param \WP_REST_Request $request Matched request.
+	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
+	 * @param string           $name    Named path capture.
+	 */
+	protected function route_id( \WP_REST_Request $request, string $name ): int {
+		return (int) $request->get_url_params()[ $name ];
+	}
+
+	/**
 	 * @param \WP_REST_Request $request Request carrying the validated `expectedRevision`.
 	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
 	 */

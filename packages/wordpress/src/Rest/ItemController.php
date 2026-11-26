@@ -233,7 +233,7 @@ final class ItemController extends AbstractController {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
 				$actor    = $this->actor();
-				$gallery  = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
+				$gallery  = $this->viewable( $actor, $this->route_id( $request, 'id' ) );
 				$page     = max( 1, (int) $request->get_param( 'page' ) );
 				$per_page = max( 1, (int) $request->get_param( 'per_page' ) );
 				$rows     = $this->item_repository->findPageWithSettings( $gallery->id, ( $page - 1 ) * $per_page, $per_page );
@@ -256,7 +256,7 @@ final class ItemController extends AbstractController {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
 				$actor   = $this->actor();
-				$gallery = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
+				$gallery = $this->viewable( $actor, $this->route_id( $request, 'id' ) );
 				$ids     = $this->id_list( $request, 'attachmentIds' );
 				if ( $ids instanceof \WP_Error ) {
 					return $ids;
@@ -279,7 +279,7 @@ final class ItemController extends AbstractController {
 
 	/**
 	 * Partial update. Absent override fields keep their stored value; `settings` replaces the item's map. When both
-	 * parts are sent, settings are validated and written first, then the overrides (two revision steps).
+	 * parts are sent, they are saved together under one revision.
 	 *
 	 * @param \WP_REST_Request $request Request.
 	 * @phpstan-param \WP_REST_Request<array<string, mixed>> $request
@@ -289,7 +289,7 @@ final class ItemController extends AbstractController {
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
 				$overrides = $request->has_param( 'overrides' ) ? (array) $request->get_param( 'overrides' ) : array();
 				$settings  = $request->has_param( 'settings' ) ? (array) $request->get_param( 'settings' ) : null;
-				$result    = $this->editor->update( $this->actor(), (int) $request->get_param( 'id' ), (int) $request->get_param( 'itemId' ), $overrides, $settings, $this->expected_revision( $request )->value );
+				$result    = $this->editor->update( $this->actor(), $this->route_id( $request, 'id' ), $this->route_id( $request, 'itemId' ), $overrides, $settings, $this->expected_revision( $request )->value );
 				return $result instanceof \WP_Error ? $result : new \WP_REST_Response( $result, 200 );
 			}
 		);
@@ -305,8 +305,8 @@ final class ItemController extends AbstractController {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
 				$actor    = $this->actor();
-				$gallery  = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
-				$item_id  = (int) $request->get_param( 'itemId' );
+				$gallery  = $this->viewable( $actor, $this->route_id( $request, 'id' ) );
+				$item_id  = $this->route_id( $request, 'itemId' );
 				$revision = $this->items->remove( $actor, $gallery->id, $item_id, $this->expected_revision( $request ) );
 				return new \WP_REST_Response(
 					array(
@@ -328,7 +328,7 @@ final class ItemController extends AbstractController {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
 				$actor   = $this->actor();
-				$gallery = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
+				$gallery = $this->viewable( $actor, $this->route_id( $request, 'id' ) );
 				$ids     = $this->id_list( $request, 'itemIds' );
 				if ( $ids instanceof \WP_Error ) {
 					return $ids;
@@ -356,7 +356,7 @@ final class ItemController extends AbstractController {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response|\WP_Error {
 				$actor   = $this->actor();
-				$gallery = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
+				$gallery = $this->viewable( $actor, $this->route_id( $request, 'id' ) );
 				$ids     = $this->id_list( $request, 'itemIds' );
 				if ( $ids instanceof \WP_Error ) {
 					return $ids;

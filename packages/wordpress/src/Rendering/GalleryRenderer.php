@@ -92,14 +92,15 @@ final class GalleryRenderer {
 		if ( null === $gallery || ! $this->cache->is_cacheable( $gallery, $context->entryPoint, $this->access->canEdit( $context->actor, $gallery ) ) ) {
 			return $this->pipeline->render( $context );
 		}
-		$key = $this->cache->key( $context, $context->page );
-		$hit = $this->cache->lookup( $key, $context->instanceId );
+		$cache_base = $this->cache->key_base( $context );
+		$key        = RenderCache::page_key( $cache_base, $context->page );
+		$hit        = $this->cache->lookup( $key, $context->instanceId );
 		if ( null !== $hit ) {
 			return $hit;
 		}
 		$result = $this->pipeline->render( $context );
 		// A page past the end is stored under the clamped page only, so arbitrary page numbers cannot fill the cache.
-		$this->cache->store( $result->page === $context->page ? $key : $this->cache->key( $context, $result->page ), $result, $context->instanceId );
+		$this->cache->store( RenderCache::page_key( $cache_base, $result->page ), $result, $context->instanceId );
 		return $result;
 	}
 

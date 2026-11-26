@@ -7,6 +7,8 @@ Every task ships with tests, i18n (en/de), docs and passes the Definition of Don
 
 ## 1.0 release readiness (2026-11-18)
 
+- [ ] Confirm gallery preview and public embeds respect changes to an attachment’s parent visibility and combined item edits save together.
+
 - [ ] MCP-05: On staging, confirm the default is Off and enabling Read exposes only read tools. See the [MCP guide](pages/ai-assistants.md#access-level).
 - [ ] Verify the database-backed render cache and its single status label locally. Optionally verify the external-cache indicator on a site that already has an external object cache.
 - [ ] Verify protected gallery reads and duplication with a gallery editor and another contributor on staging.
