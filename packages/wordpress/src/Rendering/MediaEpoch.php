@@ -16,7 +16,7 @@ namespace SWGallery\WordPress\Rendering;
  *
  * The token is random, not a counter: two requests that bump concurrently cannot both end on the same value a cache
  * entry was written under. Writes are bounded per request: the first change writes at once, further changes in the
- * same request are merged into one more write at `shutdown` (a bulk edit costs at most two writes).
+ * same request are merged into one more write at `shutdown`. Changes to visibility are recorded immediately.
  */
 final class MediaEpoch {
 
@@ -32,11 +32,16 @@ final class MediaEpoch {
 		return is_string( $value ) && '' !== $value ? $value : '0';
 	}
 
-	/** Records a media change; see the class description for the write budget. */
-	public function bump(): void {
-		if ( ! $this->written ) {
+	/**
+	 * Records a media change.
+	 *
+	 * @param bool $immediate Persist a visibility change before the request continues.
+	 */
+	public function bump( bool $immediate = false ): void {
+		if ( $immediate || ! $this->written ) {
 			$this->write();
 			$this->written = true;
+			$this->dirty   = false;
 			return;
 		}
 		$this->dirty = true;

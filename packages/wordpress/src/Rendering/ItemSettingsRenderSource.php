@@ -28,8 +28,8 @@ final class ItemSettingsRenderSource implements RenderItemSourceInterface {
 	public function __construct( private readonly RenderItemSourceInterface $inner ) {
 	}
 
-	public function findRenderPage( int $galleryId, SortMode $sortMode, int $offset, int $limit ): RenderItemPage {
-		$page = $this->inner->findRenderPage( $galleryId, $sortMode, $offset, $limit );
+	public function findRenderPage( int $galleryId, SortMode $sortMode, int $offset, int $limit, bool $publicOnly = false ): RenderItemPage {
+		$page = $this->inner->findRenderPage( $galleryId, $sortMode, $offset, $limit, $publicOnly );
 		if ( array() === $page->items ) {
 			return $page;
 		}

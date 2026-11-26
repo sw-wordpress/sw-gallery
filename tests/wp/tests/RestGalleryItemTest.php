@@ -42,6 +42,17 @@ class RestGalleryItemTest extends SwgTestCase {
 
 	// Read.
 
+	public function test_gallery_reads_use_the_id_in_the_route(): void {
+		$user   = $this->makeUser( 'author' );
+		$target = $this->makeGallery( $user );
+		$other  = $this->makeGallery( $user );
+
+		$response = $this->call( 'GET', "/galleries/$target", array(), $user, array( 'id' => $other ) );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( $target, $response->get_data()['id'] );
+	}
+
 	public function test_get_returns_the_gallery_with_its_revision_and_item_count(): void {
 		$id     = $this->makeGallery( $this->author, GalleryStatus::Draft, 'Mine' );
 		$images = array( $this->makeAttachment( $this->author ), $this->makeAttachment( $this->author ) );

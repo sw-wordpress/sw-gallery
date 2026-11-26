@@ -23,7 +23,7 @@ final class ListRenderItemSource implements RenderItemSourceInterface
     {
     }
 
-    public function findRenderPage(int $galleryId, SortMode $sortMode, int $offset, int $limit): RenderItemPage
+    public function findRenderPage(int $galleryId, SortMode $sortMode, int $offset, int $limit, bool $publicOnly = false): RenderItemPage
     {
         ++$this->calls;
         $this->lastSortMode = $sortMode;

@@ -1,5 +1,9 @@
 # DONE
 
+## 2026-11-26 — Endpoint and rendering review
+
+- Enforce media visibility in renders, invalidate fragments after persisted media changes, bind REST targets to path IDs and save item edits atomically.
+
 ## 2026-11-25 — Render-cache status
 
 - Store public gallery fragments in bounded WordPress transients, and report the backing store in System Status with a single label.

@@ -4,6 +4,8 @@ Contract: `SPECIFICATION.md` §8, security rules `CODE-STYLE.md` §5. Code: `pac
 
 Every route needs a logged-in user (cookie + `X-WP-Nonce`); 1.0 has no unauthenticated route (decision D5). Permission callbacks are coarse (capability), the access policy and the core services decide per object and enforce it again.
 
+Object identifiers in routes are taken from the URL path. Query and body parameters cannot select another object.
+
 ## Routes
 
 | Method, route | Needs | Success |
@@ -82,7 +84,7 @@ Items are listed in stored manual order (display sort modes belong to the render
 
 ### PATCH semantics
 
-`overrides` is partial: fields that are absent keep their stored value, `null` resets that field to inherit, `""` stores a blank. Unknown keys are 400. `settings` replaces the item's map and is validated against the layout's `x-item-settings` schema (422 `swg_validation_failed`; layouts without the key store it untouched); `{}` clears it (schema defaults apply). A PATCH without `overrides` fields and without `settings` is 400 `swg_no_changes`. With both parts the settings are validated and written first, then the overrides: the revision rises once per applied part (two steps). Bounds: `title` <= 200, `caption` <= 5000, `alt` <= 500 characters (checked before sanitising).
+`overrides` is partial: fields that are absent keep their stored value, `null` resets that field to inherit, `""` stores a blank. Unknown keys are 400. `settings` replaces the item's map and is validated against the layout's `x-item-settings` schema (422 `swg_validation_failed`; layouts without the key store it untouched); `{}` clears it (schema defaults apply). A PATCH without `overrides` fields and without `settings` is 400 `swg_no_changes`. A combined PATCH validates settings first and saves both parts in one row update under a single new revision. Bounds: `title` <= 200, `caption` <= 5000, `alt` <= 500 characters (checked before sanitising).
 
 Texts are plain text: `title` and `alt` go through `sanitize_text_field`, `caption` through `sanitize_textarea_field` (line breaks kept); markup is stripped on save (a `<script>` is never stored). Global attachment metadata is never changed. Clients must still render all texts as plain text.
 

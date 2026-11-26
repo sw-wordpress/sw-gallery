@@ -254,7 +254,7 @@ final class GalleryController extends AbstractController {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
 				$actor   = $this->actor();
-				$gallery = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
+				$gallery = $this->viewable( $actor, $this->route_id( $request, 'id' ) );
 				return new \WP_REST_Response( $this->present( $actor, $gallery, $this->revisions->current( $gallery->id )->value ), 200 );
 			}
 		);
@@ -299,7 +299,7 @@ final class GalleryController extends AbstractController {
 						$fields[ $field ] = $request->get_param( $field );
 					}
 				}
-				$result = $this->editor->update( $actor, (int) $request->get_param( 'id' ), $this->expected_revision( $request )->value, $fields );
+				$result = $this->editor->update( $actor, $this->route_id( $request, 'id' ), $this->expected_revision( $request )->value, $fields );
 				return $result instanceof \WP_Error ? $result : new \WP_REST_Response( $result, 200 );
 			}
 		);
@@ -315,7 +315,7 @@ final class GalleryController extends AbstractController {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
 				$actor    = $this->actor();
-				$gallery  = $this->viewable( $actor, (int) $request->get_param( 'id' ) );
+				$gallery  = $this->viewable( $actor, $this->route_id( $request, 'id' ) );
 				$expected = $this->expected_revision( $request );
 				if ( filter_var( $request->get_param( 'force' ), FILTER_VALIDATE_BOOLEAN ) ) {
 					$this->service->delete( $actor, $gallery->id, $expected );
@@ -351,7 +351,7 @@ final class GalleryController extends AbstractController {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
 				$title = $this->string_param( $request, 'title' );
-				return $this->created( $this->editor->duplicate( $this->actor(), (int) $request->get_param( 'id' ), $title ) );
+				return $this->created( $this->editor->duplicate( $this->actor(), $this->route_id( $request, 'id' ), $title ) );
 			}
 		);
 	}
@@ -365,7 +365,7 @@ final class GalleryController extends AbstractController {
 	public function restore_item( $request ): \WP_REST_Response|\WP_Error {
 		return $this->guard(
 			function () use ( $request ): \WP_REST_Response {
-				return new \WP_REST_Response( $this->editor->restore( $this->actor(), (int) $request->get_param( 'id' ), $this->expected_revision( $request )->value ), 200 );
+				return new \WP_REST_Response( $this->editor->restore( $this->actor(), $this->route_id( $request, 'id' ), $this->expected_revision( $request )->value ), 200 );
 			}
 		);
 	}

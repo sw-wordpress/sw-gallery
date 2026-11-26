@@ -87,6 +87,21 @@ class PreviewRouteTest extends SwgTestCase {
 		$this->assertSame( array(), $data['diagnostics'] );
 	}
 
+	public function test_preview_media_is_limited_to_readable_attachments(): void {
+		$gallery   = $this->makeGalleryPost( $this->author, 'draft' );
+		$parent    = self::factory()->post->create( array( 'post_status' => 'private', 'post_author' => $this->editor ) );
+		$protected = $this->makeImage( 'Protected', 1200, 900, array(), null, 'Protected media' );
+		wp_update_post( array( 'ID' => $protected, 'post_parent' => $parent, 'post_author' => $this->editor ) );
+		$this->addItems( $gallery, array( $this->makeImage( 'Public', 1200, 900 ), $protected ) );
+
+		$author = $this->data( $this->preview( $gallery, array(), $this->author ) );
+		$editor = $this->data( $this->preview( $gallery, array(), $this->editor ) );
+
+		$this->assertSame( 1, substr_count( $author['html'], '<img' ) );
+		$this->assertStringNotContainsString( 'Protected media', $author['html'] );
+		$this->assertSame( 2, substr_count( $editor['html'], '<img' ) );
+	}
+
 	/**
 	 * @return iterable<string, array{string, string, string, int}>
 	 */

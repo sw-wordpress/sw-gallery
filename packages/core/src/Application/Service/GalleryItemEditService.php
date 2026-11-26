@@ -7,8 +7,7 @@ namespace SWGallery\Core\Application\Service;
 use SWGallery\Core\Contract\GalleryAccessPolicyInterface;
 use SWGallery\Core\Contract\GalleryItemRepositoryInterface;
 use SWGallery\Core\Contract\GalleryRepositoryInterface;
-use SWGallery\Core\Contract\ItemOverridesStoreInterface;
-use SWGallery\Core\Contract\ItemSettingsStoreInterface;
+use SWGallery\Core\Contract\ItemEditStoreInterface;
 use SWGallery\Core\Contract\LayoutRegistryInterface;
 use SWGallery\Core\Contract\RevisionStoreInterface;
 use SWGallery\Core\Contract\TransactionRunnerInterface;
@@ -44,8 +43,7 @@ final class GalleryItemEditService
         private readonly GalleryRepositoryInterface $galleries,
         private readonly LayoutRegistryInterface $layouts,
         private readonly RevisionStoreInterface $revisions,
-        private readonly ItemOverridesStoreInterface $overrides,
-        private readonly ItemSettingsStoreInterface $itemSettings,
+        private readonly ItemEditStoreInterface $edits,
         private readonly SettingsSchemaValidator $validator,
         private readonly TransactionRunnerInterface $transactions,
         private readonly EventDispatcherInterface $events,
@@ -68,22 +66,7 @@ final class GalleryItemEditService
         ItemOverrides $overrides,
         Revision $expected
     ): Revision {
-        $this->authorize($actor, $galleryId);
-        $revision = $this->transactions->run(
-            function () use ($galleryId, $itemId, $overrides, $expected): Revision {
-                $this->requireItem($galleryId, $itemId);
-                $revision = $this->revisions->compareAndIncrement($galleryId, $expected);
-                if (!$this->overrides->saveOverrides($galleryId, $itemId, $overrides)) {
-                    throw new ItemNotFoundException();
-                }
-
-                return $revision;
-            }
-        );
-
-        $this->events->dispatch(new ItemUpdated($galleryId, $itemId, $revision->value));
-
-        return $revision;
+        return $this->updateItem($actor, $galleryId, $itemId, $overrides, null, $expected)->revision;
     }
 
     /**
@@ -103,24 +86,33 @@ final class GalleryItemEditService
         array $settings,
         Revision $expected
     ): ItemSettingsResult {
-        $gallery = $this->authorize($actor, $galleryId);
-        $schema = $this->layouts->resolve($gallery->settings->layout)->layout->getSettingsSchema();
-        $itemSchema = $schema[self::ITEM_SCHEMA_KEY] ?? null;
+        return $this->updateItem($actor, $galleryId, $itemId, null, $settings, $expected);
+    }
 
-        $values = $settings;
-        if (is_array($itemSchema)) {
-            $validation = $this->validator->validate($itemSchema, $settings);
-            if (!$validation->isValid()) {
-                throw new ValidationFailedException($validation->errors);
-            }
-            $values = $validation->values;
+    /**
+     * Saves the supplied fields together under one revision and publishes one event after the commit.
+     *
+     * @param array<string, mixed>|null $settings
+     */
+    public function updateItem(
+        Actor $actor,
+        int $galleryId,
+        int $itemId,
+        ?ItemOverrides $overrides,
+        ?array $settings,
+        Revision $expected
+    ): ItemSettingsResult {
+        if ($overrides === null && $settings === null) {
+            throw new \InvalidArgumentException('An item edit must include overrides or settings.');
         }
 
+        $gallery = $this->authorize($actor, $galleryId);
+        $values = $settings === null ? null : $this->validateSettings($gallery, $settings);
         $revision = $this->transactions->run(
-            function () use ($galleryId, $itemId, $values, $expected): Revision {
+            function () use ($galleryId, $itemId, $overrides, $values, $expected): Revision {
                 $this->requireItem($galleryId, $itemId);
                 $revision = $this->revisions->compareAndIncrement($galleryId, $expected);
-                if (!$this->itemSettings->saveItemSettings($galleryId, $itemId, $values)) {
+                if (!$this->edits->saveItemEdit($galleryId, $itemId, $overrides, $values)) {
                     throw new ItemNotFoundException();
                 }
 
@@ -130,7 +122,27 @@ final class GalleryItemEditService
 
         $this->events->dispatch(new ItemUpdated($galleryId, $itemId, $revision->value));
 
-        return new ItemSettingsResult($values, $revision);
+        return new ItemSettingsResult($values ?? [], $revision);
+    }
+
+    /**
+     * @param array<string, mixed> $settings
+     * @return array<string, mixed>
+     */
+    private function validateSettings(Gallery $gallery, array $settings): array
+    {
+        $schema = $this->layouts->resolve($gallery->settings->layout)->layout->getSettingsSchema();
+        $itemSchema = $schema[self::ITEM_SCHEMA_KEY] ?? null;
+        if (!is_array($itemSchema)) {
+            return $settings;
+        }
+
+        $validation = $this->validator->validate($itemSchema, $settings);
+        if (!$validation->isValid()) {
+            throw new ValidationFailedException($validation->errors);
+        }
+
+        return $validation->values;
     }
 
     private function authorize(Actor $actor, int $galleryId): Gallery

@@ -11,8 +11,7 @@ namespace SWGallery\WordPress\Repository;
 
 use SWGallery\Core\Application\Render\RenderItemPage;
 use SWGallery\Core\Contract\GalleryItemRepositoryInterface;
-use SWGallery\Core\Contract\ItemOverridesStoreInterface;
-use SWGallery\Core\Contract\ItemSettingsStoreInterface;
+use SWGallery\Core\Contract\ItemEditStoreInterface;
 use SWGallery\Core\Contract\RenderItemSourceInterface;
 use SWGallery\Core\Domain\Gallery\GalleryItem;
 use SWGallery\Core\Domain\Gallery\ItemOverrides;
@@ -21,7 +20,7 @@ use SWGallery\WordPress\Database\Schema;
 use SWGallery\WordPress\Media\AllowedMimeTypes;
 use SWGallery\WordPress\Infrastructure\WpTransactionRunner;
 
-final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface, ItemOverridesStoreInterface, ItemSettingsStoreInterface, RenderItemSourceInterface {
+final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface, ItemEditStoreInterface, RenderItemSourceInterface {
 
 	/** Upper bound of the stored JSON of one item's settings, in bytes. */
 	public const MAX_SETTINGS_BYTES = 65536;
@@ -53,7 +52,7 @@ final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface,
 	 * not trashed, allowed MIME type) are counted and returned, ordered in SQL and cut with LIMIT/OFFSET. Relations of
 	 * unusable attachments stay untouched. Two queries (page, total) regardless of the page size.
 	 */
-	public function findRenderPage( int $galleryId, SortMode $sortMode, int $offset, int $limit ): RenderItemPage {
+	public function findRenderPage( int $galleryId, SortMode $sortMode, int $offset, int $limit, bool $publicOnly = false ): RenderItemPage {
 		global $wpdb;
 		$table = Schema::items_table();
 		$mimes = AllowedMimeTypes::all();
@@ -67,6 +66,11 @@ final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface,
 			SortMode::TitleDesc => 'p.post_title DESC, i.id ASC',
 		};
 		$from = "FROM {$table} i INNER JOIN {$wpdb->posts} p ON p.ID = i.attachment_id AND p.post_type = 'attachment' AND p.post_status = 'inherit' AND p.post_mime_type IN ({$in}) WHERE i.gallery_id = %d";
+
+		if ( $publicOnly ) {
+			// Inherited attachments are public when unattached or attached to a published, unprotected parent.
+			$from .= " AND p.post_password = '' AND (p.post_parent = 0 OR NOT EXISTS (SELECT 1 FROM {$wpdb->posts} parent WHERE parent.ID = p.post_parent AND (parent.post_status <> 'publish' OR parent.post_password <> '')))";
+		}
 
 		$total = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) {$from}", array_merge( $mimes, array( $galleryId ) ) ) ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- table name from prefix, placeholders generated.
 		if ( 0 === $total ) {
@@ -203,23 +207,7 @@ final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface,
 
 	/** NULL columns mean "inherit", empty strings are intentional blanks; both round-trip exactly. */
 	public function saveOverrides( int $galleryId, int $itemId, ItemOverrides $overrides ): bool {
-		global $wpdb;
-		$result = $wpdb->update(
-			Schema::items_table(),
-			array(
-				'title_override'   => $overrides->title,
-				'caption_override' => $overrides->caption,
-				'alt_override'     => $overrides->alt,
-				'updated_at'       => gmdate( 'Y-m-d H:i:s' ),
-			),
-			array(
-				'id'         => $itemId,
-				'gallery_id' => $galleryId,
-			),
-			array( '%s', '%s', '%s', '%s' ),
-			array( '%d', '%d' )
-		);
-		return $this->updated_or_exists( $result, $galleryId, $itemId );
+		return $this->saveItemEdit( $galleryId, $itemId, $overrides, null );
 	}
 
 	public function itemSettings( int $galleryId, int $itemId ): array {
@@ -307,31 +295,51 @@ final class WpdbGalleryItemRepository implements GalleryItemRepositoryInterface,
 	}
 
 	public function saveItemSettings( int $galleryId, int $itemId, array $settings ): bool {
+		return $this->saveItemEdit( $galleryId, $itemId, null, $settings );
+	}
+
+	public function saveItemEdit( int $galleryId, int $itemId, ?ItemOverrides $overrides, ?array $settings ): bool {
 		global $wpdb;
-		$json = null;
-		if ( array() !== $settings ) {
-			$json = wp_json_encode( $settings );
-			if ( false === $json ) {
-				throw new \InvalidArgumentException( 'The item settings are not JSON compatible.' );
-			}
-			if ( strlen( $json ) > self::MAX_SETTINGS_BYTES ) {
-				throw new \LengthException( 'The item settings are too large.' );
-			}
+		$data = array( 'updated_at' => gmdate( 'Y-m-d H:i:s' ) );
+		if ( null !== $overrides ) {
+			$data['title_override']   = $overrides->title;
+			$data['caption_override'] = $overrides->caption;
+			$data['alt_override']     = $overrides->alt;
 		}
+		if ( null !== $settings ) {
+			$data['settings'] = $this->encode_settings( $settings );
+		}
+
 		$result = $wpdb->update(
 			Schema::items_table(),
-			array(
-				'settings'   => $json,
-				'updated_at' => gmdate( 'Y-m-d H:i:s' ),
-			),
+			$data,
 			array(
 				'id'         => $itemId,
 				'gallery_id' => $galleryId,
 			),
-			array( '%s', '%s' ),
+			array_fill( 0, count( $data ), '%s' ),
 			array( '%d', '%d' )
 		);
 		return $this->updated_or_exists( $result, $galleryId, $itemId );
+	}
+
+	/**
+	 * @param array<string, mixed> $settings Settings to store.
+	 * @throws \InvalidArgumentException Settings cannot be encoded as JSON.
+	 * @throws \LengthException Settings exceed the storage limit.
+	 */
+	private function encode_settings( array $settings ): ?string {
+		if ( array() === $settings ) {
+			return null;
+		}
+		$json = wp_json_encode( $settings );
+		if ( false === $json ) {
+			throw new \InvalidArgumentException( 'The item settings are not JSON compatible.' );
+		}
+		if ( strlen( $json ) > self::MAX_SETTINGS_BYTES ) {
+			throw new \LengthException( 'The item settings are too large.' );
+		}
+		return $json;
 	}
 
 	/**

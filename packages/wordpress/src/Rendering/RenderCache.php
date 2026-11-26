@@ -44,10 +44,10 @@ final class RenderCache {
 	public const TTL = 12 * HOUR_IN_SECONDS;
 
 	/** Bump to drop all entries when the stored shape changes. */
-	private const FORMAT = 2;
+	private const FORMAT = 3;
 
 	/** Two hexadecimal digits give 256 slots. Bound the serialized payload to 128 KiB per slot. */
-	private const SLOT_COUNT       = 256;
+	private const SLOT_COUNT      = 256;
 	private const MAX_ENTRY_BYTES = 128 * 1024;
 
 	private const PLACEHOLDER = 'swg-instance-placeholder';
@@ -78,6 +78,15 @@ final class RenderCache {
 	 * @param int           $page    Page the entry is stored for (the clamped page of a result).
 	 */
 	public function key( RenderContext $context, int $page ): string {
+		return self::page_key( $this->key_base( $context ), $page );
+	}
+
+	/**
+	 * Capture the render inputs once, including the gallery revision and media epoch.
+	 *
+	 * @param RenderContext $context Render context of the request.
+	 */
+	public function key_base( RenderContext $context ): string {
 		$settings = $this->settings->get();
 		unset( $settings['deleteDataOnUninstall'] );
 		$parts = array(
@@ -86,7 +95,6 @@ final class RenderCache {
 			'revision'  => $this->revisions->current( $context->galleryId )->value,
 			'class'     => 'public',
 			'entry'     => $context->entryPoint->value,
-			'page'      => $page,
 			'perPage'   => $context->perPage,
 			'hover'     => $context->hover?->toArray(),
 			'layout'    => $context->layoutOverride,
@@ -101,6 +109,14 @@ final class RenderCache {
 			'media'     => $this->epoch->current(),
 		);
 		return 'g' . $context->galleryId . '-' . hash( 'sha256', (string) wp_json_encode( $parts ) );
+	}
+
+	/**
+	 * @param string $base Cache key base captured before rendering.
+	 * @param int    $page Page of the result.
+	 */
+	public static function page_key( string $base, int $page ): string {
+		return $base . '-p' . $page;
 	}
 
 	/**

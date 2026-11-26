@@ -250,13 +250,35 @@ class CacheInvalidationTest extends SwgTestCase {
 		$this->assertStringNotContainsString( 'secret-token-123', (string) wp_json_encode( ( new WpLogger() )->recent() ) );
 	}
 
+	public function test_attachment_metadata_invalidates_only_after_persistence(): void {
+		$image = $this->makeImage( 'Dimensions', 1200, 900 );
+		Services::reset();
+		$epoch  = Services::media_epoch()->current();
+		$before = null;
+		$watch  = static function ( array $metadata, int $id ) use ( $image, &$before ): array {
+			if ( $image === $id ) {
+				$before = Services::media_epoch()->current();
+			}
+			return $metadata;
+		};
+		add_filter( 'wp_update_attachment_metadata', $watch, PHP_INT_MAX, 2 );
+		try {
+			wp_update_attachment_metadata( $image, array( 'width' => 1800, 'height' => 1350 ) );
+		} finally {
+			remove_filter( 'wp_update_attachment_metadata', $watch, PHP_INT_MAX );
+		}
+
+		$this->assertSame( $epoch, $before );
+		$this->assertNotSame( $epoch, Services::media_epoch()->current() );
+		$this->assertSame( 1800, wp_get_attachment_metadata( $image )['width'] );
+	}
+
 	public function test_the_registrar_attaches_its_hooks(): void {
 		$registrar = new CacheInvalidationRegistrar();
 		$registrar->register();
 
 		$this->assertNotFalse( has_action( 'edit_attachment', array( $registrar, 'on_attachment' ) ) );
-		$this->assertNotFalse( has_filter( 'wp_update_attachment_metadata', array( $registrar, 'on_metadata' ) ) );
+		$this->assertNotFalse( has_action( 'post_updated', array( $registrar, 'on_parent_updated' ) ) );
 		$this->assertNotFalse( has_action( 'updated_post_meta', array( $registrar, 'on_meta' ) ) );
-		$this->assertSame( array( 'a' => 1 ), $registrar->on_metadata( array( 'a' => 1 ) ) );
 	}
 }

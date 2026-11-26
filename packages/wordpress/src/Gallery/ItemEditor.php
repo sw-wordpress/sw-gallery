@@ -99,7 +99,7 @@ final class ItemEditor {
 
 	/**
 	 * Partial update: absent override fields keep their value, `null` inherits, `''` blanks; `settings` replaces the
-	 * item's map. With both parts, settings are written first, then the overrides (two revision steps).
+	 * item's map. Both parts share one revision and one write.
 	 *
 	 * @param Actor                $actor     Actor.
 	 * @param int                  $id        Gallery id.
@@ -119,17 +119,21 @@ final class ItemEditor {
 		}
 		$overrides = (array) self::sanitize_overrides( $overrides );
 		$current   = $this->stored( $gallery->id, $item_id );
-		$revision  = new Revision( $expected );
+		$values    = null;
 		if ( null !== $settings ) {
 			$values = array();
 			foreach ( $settings as $key => $value ) {
 				$values[ (string) $key ] = $value;
 			}
-			$revision = $this->edits->setSettings( $actor, $gallery->id, $item_id, $values, $revision )->revision;
 		}
-		if ( array() !== $overrides ) {
-			$revision = $this->edits->updateOverrides( $actor, $gallery->id, $item_id, $this->merged( $current->item->overrides, $overrides ), $revision );
-		}
+		$revision = $this->edits->updateItem(
+			$actor,
+			$gallery->id,
+			$item_id,
+			array() === $overrides ? null : $this->merged( $current->item->overrides, $overrides ),
+			$values,
+			new Revision( $expected )
+		)->revision;
 		return array(
 			'item'     => $this->presenter->present( $actor, $this->stored( $gallery->id, $item_id ) ),
 			'revision' => $revision->value,
